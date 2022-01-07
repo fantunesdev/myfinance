@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+{% load static %}
+{% load  i18n %}
+<html lang="pt-br">
+    <head>
+        <title>
+            {% block title %}
+
+            {% endblock title %}
+        </title>
+        <meta charset="utf-8">
+        <link rel="stylesheet" href="{% static 'balanco/css/style.css' %}">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+        <link href="https://fonts.googleapis.com/css2?family=Philosopher:wght@700&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:ital,wght@0,200;1,200&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300&display=swap" rel="stylesheet">
+        <link rel="icon" href="{% static 'balanco/img/favicon.png' %}">
+    </head>
+    <body>
+        <header class="main-header">
+        </header>
+
+
+        <main class="login">
+            <div class="login-box">
+                {% block content %}
+
+                {% endblock content %}
+            </div>
+
+        </main>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/js/all.min.js"></script>
+    </body>
+</html>

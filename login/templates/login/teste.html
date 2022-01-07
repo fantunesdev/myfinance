@@ -1,0 +1,12 @@
+{% extends "login/index.html" %}
+{% load static %}
+{% load  i18n %}
+
+{% block title %}
+    Login
+{% endblock title %}
+
+{% block content %}
+O usuário está logado<br>
+<a href="{% url 'deslogar_usuario' %}">Deslogar</a>
+{% endblock content %}
