@@ -1,0 +1,45 @@
+{% extends "login/index.html" %}
+{% load static %}
+{% load  i18n %}
+
+{% block title %}
+    Alterar Senha
+{% endblock title %}
+
+{% block content %}
+    <div class="box box-primary">
+        <div class="box-header with-border">
+            <h3 class="box-title">Alterar senha</h3>
+        </div>
+        <div class="box-body">
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    {{ form_senha.old_password.errors }}
+                    <label>Senha antiga: </label>
+                    {{ form_senha.old_password }}
+                </div>
+
+                <div class="form-group">
+                    {{ form_senha.new_password1.errors }}
+                    <label>Senha: </label>
+                    {{ form_senha.new_password1 }}
+                </div>
+
+                <div class="form-group">
+                    {{ form_senha.new_password2.errors }}
+                    <label>Confirmação de Senha: </label>
+                    {{ form_senha.new_password2 }}
+                </div>
+
+        <div class="box-footer">
+            <div class="form-group">
+                <div class="form-group">
+                    <input type="submit" value="Alterar" class="btn btn-primary">
+                    <a href="{% url 'logar_usuario' %}" class="btn btn-primary">Voltar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock content %}

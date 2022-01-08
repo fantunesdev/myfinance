@@ -7,6 +7,15 @@
 {% endblock title %}
 
 {% block content %}
-O usuário está logado<br>
-<a href="{% url 'deslogar_usuario' %}">Deslogar</a>
+    O usuário está logado<br>
+    <a href="{% url 'deslogar_usuario' %}">Deslogar</a><br><br>
+    Id: {{ user.id }}<br>
+    Nome: {{ user.nome }}<br>
+    Último Login: {{ user.last_login }}<br>
+    E-mail: {{ user.email }}<br>
+    Username: {{ user.username }}<br>
+    Desde: {{ user.date_joined }}<br><br>
+
+    <a href="{% url 'editar_perfil' %}">Editar Perfil</a><br>
+    <a href="{% url 'alterar_senha' %}">Alterar Senha</a>
 {% endblock content %}

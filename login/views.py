@@ -1,9 +1,11 @@
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import PasswordChangeForm
 from django.shortcuts import render, redirect
-from .forms import usuario_form, login_form
+from .forms import usuario_form, login_form, perfil_form, senha_form
 from .entidades.usuario import Usuario
 from .services import usuario_service
+
 
 # Create your views here.
 
@@ -27,8 +29,34 @@ def cadastrar_usuario(request):
     return render(request, 'login/cadastro.html', {'form_usuario': form_usuario})
 
 
+@login_required
+def alterar_senha(request):
+    if request.method == 'POST':
+        form_senha = senha_form.PasswordChangeCustomForm(request.user, request.POST)
+        if form_senha.is_valid():
+            user = form_senha.save()
+            update_session_auth_hash(request, user)
+            return redirect('logado')
+    else:
+        form_senha = PasswordChangeForm(request.user)
+    return render(request, 'login/alterar_senha.html', {'form_senha': form_senha})
+
+
+@login_required
+def editar_perfil(request):
+    if request.method == 'POST':
+        form_perfil = perfil_form.PerfilForm(request.POST, instance=request.user)
+        if form_perfil.is_valid():
+            form_perfil.save()
+            return redirect('logado')
+    else:
+        print('é GET')
+        form_perfil = perfil_form.PerfilForm(instance=request.user)
+    return render(request, 'login/perfil.html', {'form_perfil': form_perfil})
+
+
 def logar_usuario(request):
-    if request.method == "POST":
+    if request.method == 'POST':
         form_login = login_form.LoginForm(data=request.POST)
         if form_login.is_valid():
             username = form_login.cleaned_data["username"]
