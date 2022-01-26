@@ -12,6 +12,7 @@ class Usuario(AbstractBaseUser):
     email = models.EmailField(unique=True, null=False, blank=False)
     username = models.CharField(unique=True, max_length=50, null=False, blank=False)
     date_joined = models.DateTimeField(default=datetime.now())
+    foto = models.ImageField(upload_to='imagens/', null=True, blank=True)
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['nome', 'email', 'date_joined']

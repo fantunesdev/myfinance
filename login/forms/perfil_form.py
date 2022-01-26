@@ -10,4 +10,4 @@ class PerfilForm(UserChangeForm):
 
     class Meta:
         model = Usuario
-        fields = ['nome', 'email', 'username']
+        fields = ['nome', 'email', 'username', 'foto']

@@ -8,7 +8,7 @@ class UsuarioForm(forms.ModelForm):
 
     class Meta:
         model = Usuario
-        fields = ('nome', 'email', 'username')
+        fields = ('nome', 'email', 'username', 'foto')
         widgets = {
             'nome': forms.TextInput(attrs={'class': 'form-control'}),
             'email': forms.TextInput(attrs={'class': 'form-control'}),

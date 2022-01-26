@@ -16,6 +16,12 @@
                 {% csrf_token %}
 
                 <div class="form-group">
+                    {{ form_usuario.foto.errors }}
+                    <label>Foto: </label><br>
+                    {{ form_usuario.foto }}
+                </div><br>
+
+                <div class="form-group">
                     {{ form_usuario.nome.errors }}
                     <label>Nome completo: </label>
                     {{ form_usuario.nome }}

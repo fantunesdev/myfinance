@@ -6,5 +6,5 @@ def cadastrar_usuario(usuario):
                                           email=usuario.email,
                                           username=usuario.username,
                                           password=usuario.password)
-    usuario.save()
+    #usuario.save()
 

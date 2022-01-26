@@ -12,18 +12,15 @@ from .services import usuario_service
 
 def cadastrar_usuario(request):
     if request.method == 'POST':
-        form_usuario = usuario_form.UsuarioForm(data=request.POST)
-        print('teste')
+        form_usuario = usuario_form.UsuarioForm(request.POST, request.FILES)
         if form_usuario.is_valid():
             usuario_novo = Usuario(nome=form_usuario.cleaned_data['nome'],
                                    email=form_usuario.cleaned_data['email'],
                                    username=form_usuario.cleaned_data['username'],
-                                   password=form_usuario.cleaned_data['password1'])
-            print('passou')
+                                   password=form_usuario.cleaned_data['password1'],
+                                   foto=form_usuario.cleaned_data['foto'])
             usuario_service.cadastrar_usuario(usuario_novo)
             return redirect('logar_usuario')
-        else:
-            print('não passou')
     else:
         form_usuario = usuario_form.UsuarioForm()
     return render(request, 'login/cadastro.html', {'form_usuario': form_usuario})
@@ -45,12 +42,12 @@ def alterar_senha(request):
 @login_required
 def editar_perfil(request):
     if request.method == 'POST':
-        form_perfil = perfil_form.PerfilForm(request.POST, instance=request.user)
+        form_perfil = perfil_form.PerfilForm(request.POST, request.FILES, instance=request.user)
         if form_perfil.is_valid():
+            form_perfil.foto = form_perfil.cleaned_data['foto']
             form_perfil.save()
             return redirect('logado')
     else:
-        print('é GET')
         form_perfil = perfil_form.PerfilForm(instance=request.user)
     return render(request, 'login/perfil.html', {'form_perfil': form_perfil})
 

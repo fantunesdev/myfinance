@@ -9,6 +9,9 @@
 {% block content %}
     O usuário está logado<br>
     <a href="{% url 'deslogar_usuario' %}">Deslogar</a><br><br>
+    {% if user.foto %}
+        <img src="{{ user.foto.url }}" alt="Foto de Perfil"><br>
+    {% endif %}
     Id: {{ user.id }}<br>
     Nome: {{ user.nome }}<br>
     Último Login: {{ user.last_login }}<br>
