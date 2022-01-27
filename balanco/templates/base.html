@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+{% load static %}
+{% load  i18n %}
+<html lang="pt-br">
+    <head>
+        <title>
+            {% block title %}
+
+            {% endblock title %}
+        </title>
+        <meta charset="utf-8">
+        <link rel="stylesheet" href="{% static 'balanco/css/style.css' %}">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+        <link href="https://fonts.googleapis.com/css2?family=Philosopher:wght@700&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:ital,wght@0,200;1,200&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Baloo+Chettan+2:wght@500&family=Nunito+Sans&display=swap" rel="stylesheet">
+        <link rel="icon" href="{% static 'balanco/img/favicon.png' %}">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+    </head>
+    <body>
+        <header class="main-header">
+            <nav class="main-header">
+                <span id="logo">Financeiro</span>
+                <input type="checkbox" id="check" value="off">
+                <a href=""><label id="button" for="check" onclick="toggle()">☰</label></a>
+                <section class="profile-button" onclick="colapseProfile('profile')">
+                    <img id="profile-photo" src="{% static 'balanco/img/profile.jpg' %}" alt="">
+                </section>
+                <div id="profile">
+                    <div class="profile-main">
+                        <img id="photo" src="{% static 'balanco/img/profile.jpg' %}" alt="">
+			<label for="photo" id="nome">{{ request.user.first_name }} {{ request.user.last_name }}</label>
+			<span id="mail">{{ request.user.email  }}</span>
+			<span id="desde">Membro desde {{ request.user.date_joined  }}</span>
+                    </div>
+                    <div class="profile-footer">
+                        <div id="footer-left">
+                            <a class="btn" href="">Perfil</a>
+                        </div>
+                        <div id="footer-right">
+				<a class="btn" href="{% url 'deslogar_usuario'  %}">Logoff</a>
+                        </div>
+
+                    </div>
+                </div>
+            </nav>
+        </header>
+        <aside id="navegacao">
+            <div id="user-panel">
+                <img id="aside-profile-photo" src="{% static 'balanco/img/profile.jpg' %}" alt="">
+		<span id="aside-profile-name">{{ request.user.username }}</span>
+            </div>
+            <ul class="menu">
+                <li class="menu-item">
+                    <a href="{% url 'listar_categorias' %}" class="menu-item-link" onclick="mostrar('categorias')">
+                        <i class="bi bi-diagram-3-fill icon"></i><span>Categorias</span>
+                    </a>
+                </li>
+                    <ul class="sub-menu" id="categorias">
+                        <li class="sub-menu-item">
+                            <a href="{% url 'cadastrar_categoria' %}" class="sub-menu-item-link">Cadastrar Categoria</a>
+                        </li>
+                        <li class="sub-menu-item">
+                            <a href="{% url 'listar_categorias_tipo' tipo='entrada' %}" class="sub-menu-item-link">Listar Categorias de Entradas</a>
+                        </li>
+                        <li class="sub-menu-item">
+                            <a href="{% url 'listar_categorias_tipo' tipo='saida' %}" class="sub-menu-item-link">Listar Categorias de Saídas</a>
+                        </li>
+                    </ul>
+            </ul>
+        </aside>
+
+        <main id="conteudo">
+        {% block content %}
+
+        {% endblock content %}
+        </main>
+        <script src="{% static 'balanco/js/script.js' %}"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/js/all.min.js"></script>
+    </body>
+</html>

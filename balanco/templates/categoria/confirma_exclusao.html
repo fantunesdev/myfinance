@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+    {% block content %}
+        <div class="card">
+            <div class="card-header btn btn-danger">
+                Tem certeza que deseja remover a categoria de entrada abaixo?
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Nome: {{ categoria.descricao }}</h5>
+                <form method="post">
+                    {% csrf_token %}
+                    <a href="{{request.META.HTTP_REFERER}}" class="btn btn-primary">Voltar</a>
+
+                    <button class="btn btn-danger" type="submit">Remover</button>
+                </form>
+            </div>
+        </div>
+
+    {% endblock content %}
