@@ -22,6 +22,7 @@ from login.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('categoria/', include('balanco.urls.categoria_url')),
     path('usuarios/', include('login.urls')),
     path('login/', logar_usuario, name='logar_usuario'),
     path('logout/', deslogar_usuario, name='deslogar_usuario'),
