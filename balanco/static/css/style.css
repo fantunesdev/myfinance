@@ -1,9 +1,16 @@
 body{
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
     margin: 0;
     padding: 0;
     background: #212121;
     color: #ffffff;
 }
+
+html {
+  height: -webkit-fill-available;
+}
+
 /* ######### HEADER ######### */
 
 .main-header{
@@ -352,6 +359,7 @@ body{
     background-color: #191919;
     z-index: 0;
     transition: all .25s linear;
+    min-height: 100vh;
 
 }
 

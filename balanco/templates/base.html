@@ -3,11 +3,7 @@
 {% load  i18n %}
 <html lang="pt-br">
     <head>
-        <title>
-            {% block title %}
-
-            {% endblock title %}
-        </title>
+        <title>Financeiro</title>
         <meta charset="utf-8">
         <link rel="stylesheet" href="{% static 'balanco/css/style.css' %}">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
@@ -48,7 +44,9 @@
         </header>
         <aside id="navegacao">
             <div id="user-panel">
-                <img id="aside-profile-photo" src="{% static 'balanco/img/profile.jpg' %}" alt="">
+                {% if user.foto %}
+                    <img src="{{ user.foto.url }}" id="aside-profile-photo" alt="Foto de Perfil"><br>
+                {% endif %}
 		<span id="aside-profile-name">{{ request.user.username }}</span>
             </div>
             <ul class="menu">
