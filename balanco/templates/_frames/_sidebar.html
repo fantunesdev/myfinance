@@ -1,0 +1,29 @@
+        <aside id="navegacao">
+            <div id="user-panel">
+                {% if user.foto %}
+                    <img src="{{ user.foto.url }}" id="aside-profile-photo" alt="Foto de Perfil"><br>
+                {% endif %}
+		<span id="aside-profile-name">{{ request.user.username }}</span>
+            </div>
+            <ul class="menu">
+                <li class="menu-item">
+                    <a class="menu-item-link" onclick="mostrar('categoria')">
+                        <i class="bi bi-diagram-3-fill icon"></i><span>Categorias</span>
+                    </a>
+                </li>
+                    <ul class="sub-menu" id="categoria">
+                        <li class="sub-menu-item">
+                            <a href="{% url 'cadastrar_categoria' %}" class="sub-menu-item-link">Cadastrar Categoria</a>
+                        </li>
+                        <li class="sub-menu-item">
+                            <a href="{% url 'listar_categorias' %}" class="sub-menu-item-link">Listar Categorias</a>
+                        </li>
+                        <li class="sub-menu-item">
+                            <a href="{% url 'listar_categorias_tipo' tipo='entrada' %}" class="sub-menu-item-link">Listar Categorias de Entradas</a>
+                        </li>
+                        <li class="sub-menu-item">
+                            <a href="{% url 'listar_categorias_tipo' tipo='saida' %}" class="sub-menu-item-link">Listar Categorias de Saídas</a>
+                        </li>
+                    </ul>
+            </ul>
+        </aside>
