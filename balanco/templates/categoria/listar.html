@@ -19,8 +19,8 @@
                             {% if i.tipo == 'entrada' %}
                                 <tr>
                                     <td><a href="#">{{ i.descricao }}</a></td>
-                                    <td><a href="#">{{ i.cor }}</a></td>
-                                    <td><a href="#">{{ i.icone }}</a></td>
+                                    <td><a href="#"><i class="fa-solid fa-circle" style="color: {{ i.cor }};"></i></a></td>
+                                    <td><a href="#"><i class="{{ i.icone }}"></i></a></td>
                                     <td><a href="{% url 'editar_categoria' i.id %}">Editar</a></td>
                                 </tr>
                             {% endif %}
@@ -53,8 +53,8 @@
                             {% if i.tipo == 'saida' %}
                                 <tr>
                                     <td><a href="#">{{ i.descricao }}</a></td>
-                                    <td><a href="#">{{ i.cor }}</a></td>
-                                    <td><a href="#">{{ i.icone }}</a></td>
+                                    <td><a href="#"><i class="fa-solid fa-circle" style="color: {{ i.cor }};"></i></a></td>
+                                    <td><a href="#"><i class="{{ i.icone }}"></i></a></td>
                                     <td><a href="{% url 'editar_categoria' i.id %}">Editar</a></td>
                                 </tr>
                             {% endif %}
