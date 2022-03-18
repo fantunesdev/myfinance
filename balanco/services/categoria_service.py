@@ -1,4 +1,4 @@
-from ..models.movimentacao_model import Categoria
+from balanco.models import Categoria
 
 
 def cadastrar_categoria(categoria):
