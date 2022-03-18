@@ -11,7 +11,7 @@ class Usuario(AbstractBaseUser):
     nome = models.CharField(max_length=100, null=False, blank=False)
     email = models.EmailField(unique=True, null=False, blank=False)
     username = models.CharField(unique=True, max_length=50, null=False, blank=False)
-    date_joined = models.DateTimeField(default=datetime.now())
+    date_joined = models.DateTimeField(null=False, blank=False)
     foto = models.ImageField(upload_to='imagens/', null=True, blank=True)
 
     USERNAME_FIELD = 'username'

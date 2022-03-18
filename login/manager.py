@@ -2,7 +2,7 @@ from django.contrib.auth.base_user import BaseUserManager
 
 
 class UsuarioManager(BaseUserManager):
-    def create_user(self, nome, email, username, password):
+    def create_user(self, nome, email, username, password, date_joined, foto):
         if not email:
             raise ValueError('O campo e-mail não foi informado.')
         if not username:
@@ -10,7 +10,9 @@ class UsuarioManager(BaseUserManager):
         usuario = self.model(
             nome=nome,
             email=self.normalize_email(email),
-            username=username
+            username=username,
+            date_joined=date_joined,
+            foto=foto
         )
         usuario.set_password(password)
         usuario.save()
