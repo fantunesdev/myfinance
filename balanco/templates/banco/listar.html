@@ -1,0 +1,38 @@
+{% extends 'index.html' %}
+{% load static %}
+    {% block title %}Listar Bancos{% endblock %}
+
+    {% block content %}
+        <div class="box box-primary">
+            <div class="box-header">
+                <h3 class="box-title">Listar Bancos</h3>
+            </div>
+            <div class="box-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Descrição</th>
+                            <th>Código</th>
+                            <th>Ícone</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i in bancos %}
+                        <tr>
+                            <td><a href="#">{{ i.descricao }}</a></td>
+                            <td>{{ i.codigo }}</td>
+                            <td><img src="{{ i.icone.url }}" alt="Ícone {{ i.descricao }}" style="max-height: 25px;"></td>
+                            <td><a href="{% url 'editar_banco' i.id %}">Editar</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="box-footer">
+                <span>Total de ítens listados: {{ bandeiras.count }}</span>
+            </div>
+        </div>
+
+        </div>
+    {% endblock content %}

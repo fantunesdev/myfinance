@@ -15,18 +15,29 @@ class Categoria(models.Model):
         return self.descricao
 
 
-class Conta(models.Model):
+class Banco(models.Model):
     descricao = models.CharField(max_length=30, blank=False, null=False)
-    saldo = models.FloatField(default=0, blank=False, null=False)
-    limite = models.FloatField(default=0, blank=False, null=False)
-    tela_inicial = models.BooleanField(default=False, blank=False, null=False)
+    codigo = models.CharField(max_length=10, blank=True, null=True)
+    icone = models.ImageField(upload_to='imagens/', null=True, blank=True)
 
     def __str__(self):
         return self.descricao
 
 
+class Conta(models.Model):
+    banco = models.ForeignKey(Banco, on_delete=models.PROTECT)
+    agencia = models.CharField(max_length=10, blank=True, null=True)
+    numero = models.CharField(max_length=20, blank=True, null=True)
+    saldo = models.FloatField(default=0, blank=False, null=False)
+    limite = models.FloatField(default=0, blank=False, null=False)
+    tela_inicial = models.BooleanField(default=False, blank=False, null=False)
+
+    def __str__(self):
+        return self.banco
+
+
 class Bandeira(models.Model):
-    descricao = models.CharField(max_length=20, blank=True, null=True)
+    descricao = models.CharField(max_length=20, blank=False, null=False)
     icone = models.ImageField(upload_to='imagens/', null=True, blank=True)
 
 

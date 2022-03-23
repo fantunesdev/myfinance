@@ -18,7 +18,7 @@ def cadastrar_bandeira(request):
             return redirect('listar_bandeiras')
     else:
         form_bandeira = BandeiraForm()
-        return render(request, 'bandeira/form_bandeira.html', {'form_bandeira': form_bandeira})
+    return render(request, 'bandeira/form_bandeira.html', {'form_bandeira': form_bandeira})
 
 
 def listar_bandeiras(request):
@@ -38,6 +38,7 @@ def editar_bandeira(request, id):
         return redirect('listar_bandeiras')
     return render(request, 'bandeira/editar.html', {'form_bandeira': form_bandeira,
                                                     'bandeira_antiga': bandeira_antiga})
+
 
 def remover_bandeira(request, id):
     bandeira = bandeira_service.listar_bandeira_id(id)

@@ -24,6 +24,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('categoria/', include('balanco.urls.categoria_url')),
     path('bandeira/', include('balanco.urls.bandeira_url')),
+    path('banco/', include('balanco.urls.banco_url')),
+    path('conta/', include('balanco.urls.conta_url')),
     path('usuarios/', include('login.urls')),
     path('login/', logar_usuario, name='logar_usuario'),
     path('logout/', deslogar_usuario, name='deslogar_usuario'),
