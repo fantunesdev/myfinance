@@ -8,9 +8,9 @@
                 <h5 class="card-title">Nome: {{ categoria.descricao }}</h5>
                 <form method="post">
                     {% csrf_token %}
-                    <a href="{{request.META.HTTP_REFERER}}" class="btn btn-primary">Voltar</a>
-
-                    <button class="btn btn-danger" type="submit">Remover</button>
+                    {% form_exclusao %}
+                    <a href="{{request.META.HTTP_REFERER}}""><input type="button" value="Voltar" class="btn"></a>
+                    <input type="submit" value="Excluir" class="btn btn-danger">
                 </form>
             </div>
         </div>

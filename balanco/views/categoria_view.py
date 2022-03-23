@@ -28,7 +28,7 @@ def listar_categorias(request):
 def listar_categorias_tipo(request, tipo):
     categorias = categoria_service.listar_categorias_tipo(tipo)
     return render(request, 'categoria/listar_tipo.html', {'categorias': categorias,
-                                                     'tipo': tipo})
+                                                          'tipo': tipo})
 
 
 def listar_categoria_id(request, id):
@@ -48,12 +48,11 @@ def editar_categoria(request, id):
 
         return redirect('listar_categorias')
     return render(request, 'categoria/editar.html', {'form_categoria': form_categoria,
-                                                      'categoria_antiga': categoria_antiga})
+                                                     'categoria_antiga': categoria_antiga})
 
 
 def remover_categoria(request, id):
     categoria = categoria_service.listar_categoria_id(id)
-    print(categoria)
     if request.method == 'POST':
         categoria_service.remover_categoria(categoria)
         return redirect('listar_categorias')

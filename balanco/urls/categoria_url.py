@@ -1,4 +1,5 @@
 from django.urls import path
+
 from ..views.categoria_view import *
 
 urlpatterns = [
