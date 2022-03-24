@@ -24,6 +24,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('categoria/', include('balanco.urls.categoria_url')),
     path('bandeira/', include('balanco.urls.bandeira_url')),
+    path('movimentacao/', include('balanco.urls.movimentacao_url')),
     path('banco/', include('balanco.urls.banco_url')),
     path('conta/', include('balanco.urls.conta_url')),
     path('usuarios/', include('login.urls')),

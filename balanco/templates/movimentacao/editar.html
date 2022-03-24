@@ -1,0 +1,5 @@
+{% extends "movimentacao/form_movimentacao.html" %}
+
+{% block excluir %}
+    <a href="{% url 'remover_movimentacao' movimentacao_antiga.id %}"><input type="button" value="Excluir" class="btn btn-danger"></a>
+{% endblock excluir %}

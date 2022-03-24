@@ -1,0 +1,70 @@
+{% extends 'index.html' %}
+
+    {% block title %}Cadastrar movimentacao{% endblock title %}
+
+    {% block content %}
+        <div class="box box-primary">
+            <div class="box-header">
+                <h3 class="box-title">Cadastrar Nova movimentacao</h3>
+            </div>
+            <form method="post" enctype="multipart/form-data">
+                <div class="box-body">
+                        {% csrf_token %}
+
+                        {{ form_movimentacao.valor.errors }}
+                        <label for="id_valor">Valor</label>
+                        {{ form_movimentacao.valor }}
+
+                        {{ form_movimentacao.data.errors }}
+                        <label for="id_data">Data</label>
+                        {{ form_movimentacao.data }}
+
+                        {{ form_movimentacao.repetir.errors }}
+                        {{ form_movimentacao.repetir }}
+                        <label for="id_repetir">Repetir</label><br><br>
+
+                        {{ form_movimentacao.parcelas.errors }}
+                        <label for="id_parcelas">Parcelas</label>
+                        {{ form_movimentacao.parcelas }}
+
+                        {{ form_movimentacao.descricao.errors }}
+                        <label for="id_descricao">Descrição</label>
+                        {{ form_movimentacao.descricao }}
+
+                        {{ form_movimentacao.categoria.errors }}
+                        <label for="id_categoria">Categoria</label>
+                        {{ form_movimentacao.categoria }}
+
+                        {{ form_movimentacao.conta.errors }}
+                        <label for="id_conta">Conta</label>
+                        {{ form_movimentacao.conta }}
+
+                        {{ form_movimentacao.fixa.errors }}
+                        {{ form_movimentacao.fixa }}
+                        <label for="id_fixa">Fixa</label><br><br>
+
+                        {{ form_movimentacao.moeda.errors }}
+                        <label for="id_moeda">Moeda</label>
+                        {{ form_movimentacao.moeda }}
+
+                        {{ form_movimentacao.observacao.errors }}
+                        <label for="id_observacao">Observação</label>
+                        {{ form_movimentacao.observacao }}
+
+                        {{ form_movimentacao.lembrar.errors }}
+                        {{ form_movimentacao.lembrar }}
+                        <label for="id_lembrar">Lembrar</label><br><br>
+
+                        {{ form_movimentacao.efetivado.errors }}
+                        {{ form_movimentacao.efetivado }}
+                        <label for="id_efetivado">Efetivado</label><br><br>
+                </div>
+                <div class="box-footer">
+                    <input class="btn btn-primary" type="submit" name="Cadastrar">
+                    <a href="{{request.META.HTTP_REFERER}}" class="btn btn-info">Voltar</a>
+                    {% block excluir %}
+                    {% endblock excluir %}
+                </div>
+            </form>
+        </div>
+    {% endblock content %}

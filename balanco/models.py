@@ -33,7 +33,7 @@ class Conta(models.Model):
     tela_inicial = models.BooleanField(default=False, blank=False, null=False)
 
     def __str__(self):
-        return self.banco
+        return self.banco.descricao
 
 
 class Bandeira(models.Model):
@@ -51,15 +51,24 @@ class Cartao(models.Model):
     pagamento = models.IntegerField(blank=True, null=True)
 
 
+class Moeda(models.Model):
+    id = models.CharField(max_length=3, primary_key=True, blank=False, null=False)
+    descricao = models.CharField(max_length=20, blank=False, null=False)
+
+    def __str__(self):
+        return self.descricao
+
+
 class Movimentacao(models.Model):
     valor = models.FloatField(default=0, blank=False, null=False)
-    repetir = models.BooleanField(default=False, blank=False, null=False)
     data = models.DateField()
+    repetir = models.BooleanField(default=False, blank=False, null=False)
+    parcelas = models.IntegerField(default=0, blank=True, null=True)
     descricao = models.CharField(max_length=50, blank=False, null=False)
     categoria = models.ForeignKey(Categoria, on_delete=models.PROTECT)
+    conta = models.ForeignKey(Conta, on_delete=models.PROTECT)
     fixa = models.BooleanField(default=False, blank=False, null=False)
-    parcelas = models.IntegerField(default=0, blank=True, null=True)
-    moeda = models.CharField(max_length=3, default='BRL', blank=False, null=False)
+    moeda = models.ForeignKey(Moeda, on_delete=models.PROTECT, default='BRL')
     observacao = models.TextField(blank=True, null=True)
     lembrar = models.BooleanField(default=False, blank=False, null=False)
     tipo = models.BooleanField(blank=False, null=False)
@@ -67,13 +76,3 @@ class Movimentacao(models.Model):
 
     def __str__(self):
         return self.descricao
-
-
-class MovimentacaoCartao(models.Model):
-    movimentacao = models.ForeignKey(Movimentacao, on_delete=models.CASCADE)
-    cartao = models.ForeignKey(Cartao, on_delete=models.PROTECT)
-
-
-class MovimentacaoConta(models.Model):
-    movimentacao = models.ForeignKey(Movimentacao, on_delete=models.CASCADE)
-    conta = models.ForeignKey(Conta, on_delete=models.PROTECT)
