@@ -17,16 +17,22 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 
+from balanco.views.movimentacao_view import listar_movimentacoes, configurar
 from financeiro import settings
 from login.views import *
 
 urlpatterns = [
+    path('', listar_movimentacoes),
+
     path('admin/', admin.site.urls),
-    path('categoria/', include('balanco.urls.categoria_url')),
-    path('bandeira/', include('balanco.urls.bandeira_url')),
-    path('movimentacao/', include('balanco.urls.movimentacao_url')),
+
     path('banco/', include('balanco.urls.banco_url')),
+    path('bandeira/', include('balanco.urls.bandeira_url')),
+    path('balanco/configurar/', configurar, name='configurar'),
     path('conta/', include('balanco.urls.conta_url')),
+    path('categoria/', include('balanco.urls.categoria_url')),
+    path('movimentacao/', include('balanco.urls.movimentacao_url')),
+
     path('usuarios/', include('login.urls')),
     path('login/', logar_usuario, name='logar_usuario'),
     path('logout/', deslogar_usuario, name='deslogar_usuario'),

@@ -19,7 +19,7 @@ def cadastrar_conta(request):
                 tela_inicial=form_conta.cleaned_data['tela_inicial']
             )
             conta_service.cadastrar_conta(conta)
-            return redirect('listar_contas')
+            return redirect('configurar')
     else:
         form_conta = ContaForm()
     return render(request, 'conta/form_conta.html', {'form_conta': form_conta})
@@ -47,7 +47,7 @@ def editar_conta(request, id):
             tela_inicial=form_conta.cleaned_data['tela_inicial']
         )
         conta_service.editar_conta(conta_antiga, conta_nova)
-        return redirect('listar_contas')
+        return redirect('configurar')
     return render(request, 'conta/editar.html', {'form_conta': form_conta,
                                                  'conta_antiga': conta_antiga})
 
@@ -57,7 +57,7 @@ def remover_conta(request, id):
     form_exclusao = ExclusaoForm()
     if request.POST.get('confirmacao'):
         conta_service.remover_conta(conta)
-        return redirect('listar_contas')
+        return redirect('configurar')
     print(request.POST.get('confirmacao'))
     return render(request, 'conta/confirma_exclusao.html', {'form_exclusao': form_exclusao,
                                                      'conta': conta})

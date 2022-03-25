@@ -13,7 +13,7 @@ def cadastrar_categoria(request):
                                        cor=form_categoria.cleaned_data['cor'],
                                        icone=form_categoria.cleaned_data['icone'])
             categoria_service.cadastrar_categoria(categoria_nova)
-            return redirect('listar_categorias')
+            return redirect('configurar')
     else:
         form_categoria = CategoriaForm()
     return render(request, 'categoria/cadastrar.html',
@@ -46,7 +46,7 @@ def editar_categoria(request, id):
                                    icone=form_categoria.cleaned_data['icone'])
         categoria_service.editar_categoria(categoria_antiga, categoria_nova)
 
-        return redirect('listar_categorias')
+        return redirect('configurar')
     return render(request, 'categoria/editar.html', {'form_categoria': form_categoria,
                                                      'categoria_antiga': categoria_antiga})
 
@@ -55,5 +55,5 @@ def remover_categoria(request, id):
     categoria = categoria_service.listar_categoria_id(id)
     if request.method == 'POST':
         categoria_service.remover_categoria(categoria)
-        return redirect('listar_categorias')
+        return redirect('configurar')
     return render(request, 'categoria/confirma_exclusao.html', {'categoria': categoria})

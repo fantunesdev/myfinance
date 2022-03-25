@@ -16,7 +16,7 @@ def cadastrar_banco(request):
                 icone=form_banco.cleaned_data['icone']
             )
             banco_service.cadastrar_banco(banco)
-            return redirect('listar_bancos')
+            return redirect('configurar')
     else:
         form_banco = BancoForm()
     return render(request, 'banco/form_banco.html', {'form_banco': form_banco})
@@ -37,7 +37,7 @@ def editar_banco(request, id):
             icone=form_banco.cleaned_data['icone']
         )
         banco_service.editar_banco(banco_antigo, banco_novo)
-        return redirect('listar_bancos')
+        return redirect('configurar')
     return render(request, 'banco/editar.html', {'form_banco': form_banco,
                                                  'banco_antigo': banco_antigo})
 
@@ -47,6 +47,6 @@ def remover_banco(request, id):
     form_exclusao = ExclusaoForm()
     if request.POST.get('confirmacao'):
         banco_service.remover_banco(banco)
-        return redirect('listar_bancos')
+        return redirect('configurar')
     return render(request, 'banco/confirma_exclusao.html', {'banco': banco,
                                                             'form_exclusao': form_exclusao})

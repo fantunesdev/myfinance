@@ -15,7 +15,7 @@ def cadastrar_bandeira(request):
                 icone=form_bandeira.cleaned_data['icone']
             )
             bandeira_service.cadastrar_bandeira(bandeira)
-            return redirect('listar_bandeiras')
+            return redirect('configurar')
     else:
         form_bandeira = BandeiraForm()
     return render(request, 'bandeira/form_bandeira.html', {'form_bandeira': form_bandeira})
@@ -35,7 +35,7 @@ def editar_bandeira(request, id):
             icone=form_bandeira.cleaned_data['icone']
         )
         bandeira_service.editar_bandeira(bandeira_antiga, bandeira_nova)
-        return redirect('listar_bandeiras')
+        return redirect('configurar')
     return render(request, 'bandeira/editar.html', {'form_bandeira': form_bandeira,
                                                     'bandeira_antiga': bandeira_antiga})
 
@@ -44,7 +44,7 @@ def remover_bandeira(request, id):
     bandeira = bandeira_service.listar_bandeira_id(id)
     if request.method == 'POST':
         bandeira_service.remover_bandeira(bandeira)
-        return redirect('listar_bandeiras')
+        return redirect('configurar')
     form_exclusao = ExclusaoForm()
     return render(request, 'bandeira/confirma_exclusao.html', {'bandeira': bandeira,
                                                                'form_exclusao': form_exclusao})
