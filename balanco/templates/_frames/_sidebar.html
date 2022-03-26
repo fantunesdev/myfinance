@@ -1,33 +1,63 @@
         <aside>
             <ul>
-                <!-- INICIO EXEMPLO ÍTEM COM DROPDOWN -->
                 <li>
-                    <a id="categoria-submenu-button" onclick="toggleSubMenu('categoria-submenu')">
+                    <a href="{% url 'listar_movimentacoes' %}">
                         <div>
-                            <i class="bi bi-diagram-3-fill"></i>
+                            <i class="fa-solid fa-house"></i>
                         </div>
                         <div class="toggle">
-                            <span>Categoria </span>
-                        </div>
-                        <div class="align-right">
-                            <i class="fa-solid fa-angle-down inverse-toggle"></i>
+                            <span>Início</span>
                         </div>
                     </a>
                 </li>
-                    <ul id="categoria-submenu" class="toggled">
-                        <li>
-                            <a href="{% url 'cadastrar_categoria' %}">Cadastrar Categoria</a>
-                        </li>
-                        <li>
-                            <a href="{% url 'listar_categorias' %}">Listar Categorias</a>
-                        </li>
-                        <li>
-                            <a href="{% url 'listar_categorias_tipo' tipo='entrada' %}">Listar Categorias de Entradas</a>
-                        </li>
-                        <li>
-                            <a href="{% url 'listar_categorias_tipo' tipo='saida' %}">Listar Categorias de Saídas</a>
-                        </li>
-                    </ul>
+                <li>
+                    <a href="{% url 'cadastrar_movimentacao' 'saida' %}">
+                        <div>
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                        </div>
+                        <div class="toggle">
+                            <span>Cadastrar Saída </span>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'cadastrar_movimentacao' 'entrada' %}">
+                        <div>
+                            <i class="fa-solid fa-right-to-bracket"></i>
+                        </div>
+                        <div class="toggle">
+                            <span>Cadastrar Entrada </span>
+                        </div>
+                    </a>
+                </li>
+                <!-- INICIO EXEMPLO ÍTEM COM DROPDOWN -->
+<!--                <li>-->
+<!--                    <a id="categoria-submenu-button" onclick="toggleSubMenu('categoria-submenu')">-->
+<!--                        <div>-->
+<!--                            <i class="bi bi-diagram-3-fill"></i>-->
+<!--                        </div>-->
+<!--                        <div class="toggle">-->
+<!--                            <span>Categoria </span>-->
+<!--                        </div>-->
+<!--                        <div class="align-right">-->
+<!--                            <i class="fa-solid fa-angle-down inverse-toggle"></i>-->
+<!--                        </div>-->
+<!--                    </a>-->
+<!--                </li>-->
+<!--                    <ul id="categoria-submenu" class="toggled">-->
+<!--                        <li>-->
+<!--                            <a href="{% url 'cadastrar_categoria' %}">Cadastrar Categoria</a>-->
+<!--                        </li>-->
+<!--                        <li>-->
+<!--                            <a href="{% url 'listar_categorias' %}">Listar Categorias</a>-->
+<!--                        </li>-->
+<!--                        <li>-->
+<!--                            <a href="{% url 'listar_categorias_tipo' tipo='entrada' %}">Listar Categorias de Entradas</a>-->
+<!--                        </li>-->
+<!--                        <li>-->
+<!--                            <a href="{% url 'listar_categorias_tipo' tipo='saida' %}">Listar Categorias de Saídas</a>-->
+<!--                        </li>-->
+<!--                    </ul>-->
                 <!-- FIM EXEMPLO ÍTEM COM DROPDOWN -->
             </ul>
         </aside>

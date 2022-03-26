@@ -20,9 +20,9 @@
                     </thead>
                     <tbody>
                         {% for i in movimentacoes %}
-                        <tr>
+                        <tr style="border-left: solid 3px {{ i.categoria.cor }}">
                             <td>{{ i.data | date:"d/m"}}</td>
-                            <td>{{ i.categoria }}</td>
+                            <td><i class="{{ i.categoria.icone }}" style="padding-right:10px;"></i> {{ i.categoria }}</td>
                             <td>{{ i.descricao }}</td>
                             <td>{{ i.valor }}</td>
                             <td>

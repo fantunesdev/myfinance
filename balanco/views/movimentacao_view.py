@@ -5,6 +5,7 @@ from django.shortcuts import redirect, render
 from balanco.entidades.movimentacao import Movimentacao
 from balanco.forms.general_form import ExclusaoForm
 from balanco.forms.movimentacao_form import MovimentacaoSaidaForm, MovimentacaoEntradaForm
+from balanco.repositorios.movimentacao_repositorio import *
 from balanco.services import movimentacao_service, banco_service, bandeira_service, categoria_service, conta_service
 
 template_tags = {
@@ -14,6 +15,7 @@ template_tags = {
 
 
 def cadastrar_movimentacao(request, tipo):
+
     if tipo == 'entrada':
         tipo = 0
         form = lambda *args: MovimentacaoEntradaForm(*args)
@@ -39,11 +41,18 @@ def cadastrar_movimentacao(request, tipo):
                 tipo=tipo,
                 efetivado=form_movimentacao.cleaned_data['efetivado']
             )
-            movimentacao_service.cadastrar_movimentacao(movimentacao)
-            return redirect('listar_movimentacoes')
+
+            if tipo == 0:
+                validou = depositar(movimentacao)
+            else:
+                validou = sacar(movimentacao)
+
+            if validou:
+                return redirect('listar_movimentacoes')
     else:
         form_movimentacao = form()
     template_tags['form_movimentacao'] = form_movimentacao
+    template_tags['tipo'] = tipo
     return render(request, 'movimentacao/form_movimentacao.html', template_tags)
 
 
