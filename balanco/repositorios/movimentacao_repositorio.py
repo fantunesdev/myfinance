@@ -1,26 +1,19 @@
-from django.shortcuts import redirect
-
-from balanco.forms.movimentacao_form import MovimentacaoEntradaForm
-from balanco.services import conta_service, movimentacao_service
+from balanco.services import conta_service
 from balanco.utils.balance_error import BalanceError
 
 
-def sacar(movimentacao):
+def sacar(conta, valor):
     try:
-        conta_service.sacar(movimentacao.conta, movimentacao.valor)
-        movimentacao_service.cadastrar_movimentacao(movimentacao)
-        return True
+        conta_service.sacar(conta, valor)
     except BalanceError:
-        return False
+        raise BalanceError('Não há saldo')
 
 
-def depositar(movimentacao):
+def depositar(conta, valor):
     try:
-        conta_service.depositar(movimentacao.conta, movimentacao.valor)
-        movimentacao_service.cadastrar_movimentacao(movimentacao)
-        return True
+        conta_service.depositar(conta, valor)
     except:
-        return False
+        raise
 
 
 def transferir(conta_saida, conta_entrada, valor):

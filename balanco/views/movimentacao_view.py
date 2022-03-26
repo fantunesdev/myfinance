@@ -1,3 +1,4 @@
+import copy
 from datetime import date
 
 from django.shortcuts import redirect, render
@@ -41,12 +42,12 @@ def cadastrar_movimentacao(request, tipo):
             )
 
             if tipo == 'entrada':
-                validou = depositar(movimentacao)
+                depositar(movimentacao.conta, movimentacao.valor)
             else:
-                validou = sacar(movimentacao)
+                sacar(movimentacao.conta, movimentacao.valor)
 
-            if validou:
-                return redirect('listar_movimentacoes')
+            movimentacao_service.cadastrar_movimentacao(movimentacao)
+            return redirect('listar_movimentacoes')
         else:
             print(form_movimentacao.errors)
     else:
@@ -64,27 +65,43 @@ def listar_movimentacoes(request):
 
 def editar_movimentacao(request, id):
     movimentacao_antiga = movimentacao_service.listar_movimentacao_id(id)
-    if movimentacao_antiga.tipo == 0:
+    if movimentacao_antiga.tipo == 'entrada':
         form_movimentacao = MovimentacaoEntradaForm(request.POST or None, instance=movimentacao_antiga)
     else:
         form_movimentacao = MovimentacaoSaidaForm(request.POST or None, instance=movimentacao_antiga)
+    copia_movimentacao_antiga = copy.deepcopy(movimentacao_antiga)
     if form_movimentacao.is_valid():
         movimentacao_nova = Movimentacao(
-                data=form_movimentacao.cleaned_data['data'],
-                conta=form_movimentacao.cleaned_data['conta'],
-                categoria=form_movimentacao.cleaned_data['categoria'],
-                descricao=form_movimentacao.cleaned_data['descricao'],
-                valor=form_movimentacao.cleaned_data['valor'],
-                parcelas=form_movimentacao.cleaned_data['parcelas'],
-                pagas=form_movimentacao.cleaned_data['pagas'],
-                fixa=form_movimentacao.cleaned_data['fixa'],
-                moeda=form_movimentacao.cleaned_data['moeda'],
-                observacao=form_movimentacao.cleaned_data['observacao'],
-                lembrar=form_movimentacao.cleaned_data['lembrar'],
-                tipo=movimentacao_antiga.tipo,
-                efetivado=form_movimentacao.cleaned_data['efetivado'],
-                tela_inicial=form_movimentacao.cleaned_data['tela_inicial']
-            )
+            data=form_movimentacao.cleaned_data['data'],
+            conta=form_movimentacao.cleaned_data['conta'],
+            categoria=form_movimentacao.cleaned_data['categoria'],
+            descricao=form_movimentacao.cleaned_data['descricao'],
+            valor=form_movimentacao.cleaned_data['valor'],
+            parcelas=form_movimentacao.cleaned_data['parcelas'],
+            pagas=form_movimentacao.cleaned_data['pagas'],
+            fixa=form_movimentacao.cleaned_data['fixa'],
+            moeda=form_movimentacao.cleaned_data['moeda'],
+            observacao=form_movimentacao.cleaned_data['observacao'],
+            lembrar=form_movimentacao.cleaned_data['lembrar'],
+            tipo=movimentacao_antiga.tipo,
+            efetivado=form_movimentacao.cleaned_data['efetivado'],
+            tela_inicial=form_movimentacao.cleaned_data['tela_inicial']
+        )
+        if movimentacao_antiga.tipo == 'entrada':
+            sacar(copia_movimentacao_antiga.conta, copia_movimentacao_antiga.valor)
+
+            if copia_movimentacao_antiga.conta == movimentacao_nova.conta:
+                movimentacao_nova.conta.saldo = copia_movimentacao_antiga.conta.saldo
+
+            depositar(movimentacao_nova.conta, movimentacao_nova.valor)
+        else:
+            depositar(copia_movimentacao_antiga.conta, copia_movimentacao_antiga.valor)
+
+            if copia_movimentacao_antiga.conta == movimentacao_nova.conta:
+                movimentacao_nova.conta.saldo = copia_movimentacao_antiga.conta.saldo
+
+            sacar(movimentacao_nova.conta, movimentacao_nova.valor)
+
         movimentacao_service.editar_movimentacao(movimentacao_antiga, movimentacao_nova)
         return redirect('listar_movimentacoes')
     template_tags['form_movimentacao'] = form_movimentacao
@@ -96,8 +113,15 @@ def remover_movimentacao(request, id):
     movimentacao = movimentacao_service.listar_movimentacao_id(id)
     form_exclusao = ExclusaoForm()
     if request.POST.get('confirmacao'):
-        movimentacao_service.remover_movimentacao(movimentacao)
-        return redirect('listar_movimentacoes')
+        try:
+            movimentacao_service.remover_movimentacao(movimentacao)
+            if movimentacao.tipo == 'entrada':
+                sacar(movimentacao.conta, movimentacao.valor)
+            else:
+                depositar(movimentacao.conta, movimentacao.valor)
+            return redirect('listar_movimentacoes')
+        except:
+            return False
     template_tags['form_exclusao'] = form_exclusao
     template_tags['movimentacao'] = movimentacao
     return render(request, 'movimentacao/confirma_exclusao.html', template_tags)
