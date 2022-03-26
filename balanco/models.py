@@ -78,7 +78,6 @@ class Movimentacao(models.Model):
     categoria = models.ForeignKey(Categoria, on_delete=models.PROTECT)
     descricao = models.CharField(max_length=50,)
     valor = models.FloatField(default=0)
-    repetir = models.BooleanField(default=False,)
     parcelas = models.IntegerField(default=0)
     pagas = models.IntegerField(default=0)
     fixa = models.BooleanField(default=False,)

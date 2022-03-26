@@ -8,7 +8,6 @@ def cadastrar_movimentacao(movimentacao):
         categoria=movimentacao.categoria,
         descricao=movimentacao.descricao,
         valor=movimentacao.valor,
-        repetir=movimentacao.repetir,
         parcelas=movimentacao.parcelas,
         pagas=movimentacao.pagas,
         fixa=movimentacao.fixa,
@@ -35,7 +34,6 @@ def editar_movimentacao(movimentacao_antiga, movimentacao_nova):
     movimentacao_antiga.categoria = movimentacao_nova.categoria
     movimentacao_antiga.descricao = movimentacao_nova.descricao
     movimentacao_antiga.valor = movimentacao_nova.valor
-    movimentacao_antiga.repetir = movimentacao_nova.repetir
     movimentacao_antiga.parcelas = movimentacao_nova.parcelas
     movimentacao_antiga.pagas = movimentacao_nova.pagas
     movimentacao_antiga.fixa = movimentacao_nova.fixa
