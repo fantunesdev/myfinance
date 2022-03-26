@@ -1,0 +1,8 @@
+from django import template
+
+register = template.Library()
+
+
+@register.filter(name='converter_reais')
+def converter_reais(float):
+    return f'R$ {float:_.2f}'.replace('.', ',').replace('_', '.')
