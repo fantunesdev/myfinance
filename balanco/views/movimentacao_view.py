@@ -15,40 +15,41 @@ template_tags = {
 
 
 def cadastrar_movimentacao(request, tipo):
-
     if tipo == 'entrada':
-        tipo = 0
         form = lambda *args: MovimentacaoEntradaForm(*args)
     else:
-        tipo = 1
         form = lambda *args: MovimentacaoSaidaForm(*args)
 
     if request.method == 'POST':
         form_movimentacao = form(request.POST)
         if form_movimentacao.is_valid():
             movimentacao = Movimentacao(
-                valor=form_movimentacao.cleaned_data['valor'],
                 data=form_movimentacao.cleaned_data['data'],
+                conta=form_movimentacao.cleaned_data['conta'],
+                categoria=form_movimentacao.cleaned_data['categoria'],
+                descricao=form_movimentacao.cleaned_data['descricao'],
+                valor=form_movimentacao.cleaned_data['valor'],
                 repetir=form_movimentacao.cleaned_data['repetir'],
                 parcelas=form_movimentacao.cleaned_data['parcelas'],
-                descricao=form_movimentacao.cleaned_data['descricao'],
-                categoria=form_movimentacao.cleaned_data['categoria'],
-                conta=form_movimentacao.cleaned_data['conta'],
+                pagas=form_movimentacao.cleaned_data['pagas'],
                 fixa=form_movimentacao.cleaned_data['fixa'],
                 moeda=form_movimentacao.cleaned_data['moeda'],
                 observacao=form_movimentacao.cleaned_data['observacao'],
                 lembrar=form_movimentacao.cleaned_data['lembrar'],
                 tipo=tipo,
-                efetivado=form_movimentacao.cleaned_data['efetivado']
+                efetivado=form_movimentacao.cleaned_data['efetivado'],
+                tela_inicial=form_movimentacao.cleaned_data['tela_inicial']
             )
 
-            if tipo == 0:
+            if tipo == 'entrada':
                 validou = depositar(movimentacao)
             else:
                 validou = sacar(movimentacao)
 
             if validou:
                 return redirect('listar_movimentacoes')
+        else:
+            print(form_movimentacao.errors)
     else:
         form_movimentacao = form()
     template_tags['form_movimentacao'] = form_movimentacao
@@ -70,20 +71,22 @@ def editar_movimentacao(request, id):
         form_movimentacao = MovimentacaoSaidaForm(request.POST or None, instance=movimentacao_antiga)
     if form_movimentacao.is_valid():
         movimentacao_nova = Movimentacao(
-            valor=form_movimentacao.cleaned_data['valor'],
-            data=form_movimentacao.cleaned_data['data'],
-            repetir=form_movimentacao.cleaned_data['repetir'],
-            parcelas=form_movimentacao.cleaned_data['parcelas'],
-            descricao=form_movimentacao.cleaned_data['descricao'],
-            categoria=form_movimentacao.cleaned_data['categoria'],
-            conta=form_movimentacao.cleaned_data['conta'],
-            fixa=form_movimentacao.cleaned_data['fixa'],
-            moeda=form_movimentacao.cleaned_data['moeda'],
-            observacao=form_movimentacao.cleaned_data['observacao'],
-            lembrar=form_movimentacao.cleaned_data['lembrar'],
-            tipo=movimentacao_antiga.tipo,
-            efetivado=form_movimentacao.cleaned_data['efetivado']
-        )
+                data=form_movimentacao.cleaned_data['data'],
+                conta=form_movimentacao.cleaned_data['conta'],
+                categoria=form_movimentacao.cleaned_data['categoria'],
+                descricao=form_movimentacao.cleaned_data['descricao'],
+                valor=form_movimentacao.cleaned_data['valor'],
+                repetir=form_movimentacao.cleaned_data['repetir'],
+                parcelas=form_movimentacao.cleaned_data['parcelas'],
+                pagas=form_movimentacao.cleaned_data['pagas'],
+                fixa=form_movimentacao.cleaned_data['fixa'],
+                moeda=form_movimentacao.cleaned_data['moeda'],
+                observacao=form_movimentacao.cleaned_data['observacao'],
+                lembrar=form_movimentacao.cleaned_data['lembrar'],
+                tipo=movimentacao_antiga.tipo,
+                efetivado=form_movimentacao.cleaned_data['efetivado'],
+                tela_inicial=form_movimentacao.cleaned_data['tela_inicial']
+            )
         movimentacao_service.editar_movimentacao(movimentacao_antiga, movimentacao_nova)
         return redirect('listar_movimentacoes')
     template_tags['form_movimentacao'] = form_movimentacao

@@ -43,6 +43,10 @@
                         <label for="id_parcelas">Parcelas</label>
                         {{ form_movimentacao.parcelas }}
 
+                        {{ form_movimentacao.pagas.errors }}
+                        <label for="id_pagas">Pagas</label>
+                        {{ form_movimentacao.pagas }}
+
                         {{ form_movimentacao.fixa.errors }}
                         {{ form_movimentacao.fixa }}
                         <label for="id_fixa">Fixa</label><br><br>
@@ -62,6 +66,10 @@
                         {{ form_movimentacao.efetivado.errors }}
                         {{ form_movimentacao.efetivado }}
                         <label for="id_efetivado">Efetivado</label><br><br>
+
+                        {{ form_movimentacao.tela_inicial.errors }}
+                        {{ form_movimentacao.tela_inicial }}
+                        <label for="id_tela_inicial">Tela Inicial</label><br><br>
                 </div>
                 <div class="box-footer">
                     <input class="btn btn-primary" type="submit" name="Cadastrar">

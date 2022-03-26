@@ -6,8 +6,8 @@ class Categoria(models.Model):
         ('entrada', 'Entrada'),
         ('saida', 'Saída')
     )
-    tipo = models.CharField(max_length=7, choices=TIPO_CHOICES, blank=False, null=False, default='saída')
-    descricao = models.CharField(max_length=30, blank=False, null=False)
+    tipo = models.CharField(max_length=7, choices=TIPO_CHOICES, default='saída')
+    descricao = models.CharField(max_length=30,)
     cor = models.CharField(max_length=7, null=True, blank=True)
     icone = models.CharField(max_length=100, null=True, blank=True)
 
@@ -16,7 +16,7 @@ class Categoria(models.Model):
 
 
 class Banco(models.Model):
-    descricao = models.CharField(max_length=30, blank=False, null=False)
+    descricao = models.CharField(max_length=30,)
     codigo = models.CharField(max_length=10, blank=True, null=True)
     icone = models.ImageField(upload_to='imagens/', null=True, blank=True)
 
@@ -25,7 +25,7 @@ class Banco(models.Model):
 
 
 class ContaTipo(models.Model):
-    descricao = models.CharField(max_length=15, blank=False, null=False)
+    descricao = models.CharField(max_length=15,)
 
     def __str__(self):
         return self.descricao
@@ -35,53 +35,59 @@ class Conta(models.Model):
     banco = models.ForeignKey(Banco, on_delete=models.PROTECT)
     agencia = models.CharField(max_length=10, blank=True, null=True)
     numero = models.CharField(max_length=20, blank=True, null=True)
-    saldo = models.FloatField(default=0, blank=False, null=False)
-    limite = models.FloatField(default=0, blank=False, null=False)
+    saldo = models.FloatField(default=0,)
+    limite = models.FloatField(default=0,)
     tipo = models.ForeignKey(ContaTipo, on_delete=models.PROTECT)
-    tela_inicial = models.BooleanField(default=False, blank=False, null=False)
+    tela_inicial = models.BooleanField(default=False,)
 
     def __str__(self):
         return self.banco.descricao
 
 
 class Bandeira(models.Model):
-    descricao = models.CharField(max_length=20, blank=False, null=False)
+    descricao = models.CharField(max_length=20,)
     icone = models.ImageField(upload_to='imagens/', null=True, blank=True)
 
 
 class Cartao(models.Model):
-    descricao = models.CharField(max_length=30, blank=False, null=False)
-    limite = models.FloatField(default=0, blank=False, null=False)
+    descricao = models.CharField(max_length=30,)
+    limite = models.FloatField(default=0,)
     bandeira = models.ForeignKey(Bandeira, on_delete=models.PROTECT)
-    tela_inicial = models.BooleanField(default=False, blank=False, null=False)
+    tela_inicial = models.BooleanField(default=False,)
     conta = models.ForeignKey(Conta, on_delete=models.PROTECT)
     fechamento = models.IntegerField(blank=False, null=False)
     pagamento = models.IntegerField(blank=True, null=True)
 
 
 class Moeda(models.Model):
-    id = models.CharField(max_length=3, primary_key=True, blank=False, null=False)
-    descricao = models.CharField(max_length=20, blank=False, null=False)
-    simbolo = models.CharField(max_length=5, blank=False, null=False)
+    id = models.CharField(max_length=3, primary_key=True,)
+    descricao = models.CharField(max_length=20,)
+    simbolo = models.CharField(max_length=5,)
 
     def __str__(self):
         return self.descricao
 
 
 class Movimentacao(models.Model):
-    valor = models.FloatField(default=0, blank=False, null=False)
+    TIPO_CHOICES = (
+        ('entrada', 'Entrada'),
+        ('saida', 'Saída')
+    )
     data = models.DateField()
-    repetir = models.BooleanField(default=False, blank=False, null=False)
-    parcelas = models.IntegerField(default=0, blank=True, null=True)
-    descricao = models.CharField(max_length=50, blank=False, null=False)
-    categoria = models.ForeignKey(Categoria, on_delete=models.PROTECT)
     conta = models.ForeignKey(Conta, on_delete=models.PROTECT)
-    fixa = models.BooleanField(default=False, blank=False, null=False)
+    categoria = models.ForeignKey(Categoria, on_delete=models.PROTECT)
+    descricao = models.CharField(max_length=50,)
+    valor = models.FloatField(default=0)
+    repetir = models.BooleanField(default=False,)
+    parcelas = models.IntegerField(default=0)
+    pagas = models.IntegerField(default=0)
+    fixa = models.BooleanField(default=False,)
     moeda = models.ForeignKey(Moeda, on_delete=models.PROTECT, default='BRL')
     observacao = models.TextField(blank=True, null=True)
-    lembrar = models.BooleanField(default=False, blank=False, null=False)
-    tipo = models.BooleanField(blank=False, null=False)
-    efetivado = models.BooleanField(default=False, blank=False, null=False)
+    lembrar = models.BooleanField(default=False,)
+    tipo = models.CharField(max_length=7, choices=TIPO_CHOICES, default='saida')
+    efetivado = models.BooleanField(default=False)
+    tela_inicial = models.BooleanField(default=True)
 
     def __str__(self):
         return self.descricao

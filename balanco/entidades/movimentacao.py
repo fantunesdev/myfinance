@@ -1,16 +1,18 @@
 class Movimentacao():
-    def __init__(self, valor, data, repetir, parcelas, descricao, categoria, conta, fixa, moeda, observacao, lembrar,
-                 tipo, efetivado):
-        self.valor = valor
+    def __init__(self, data, conta, categoria, descricao, valor, repetir, parcelas, pagas, fixa, moeda, observacao,
+                 lembrar, tipo, efetivado, tela_inicial):
         self.data = data
+        self.conta = conta
+        self.categoria = categoria
+        self.descricao = descricao
+        self.valor = valor
         self.repetir = repetir
         self.parcelas = parcelas
-        self.descricao = descricao
-        self.categoria = categoria
-        self.conta = conta
+        self.pagas = pagas
         self.fixa = fixa
         self.moeda = moeda
         self.observacao = observacao
         self.lembrar = lembrar
         self.tipo = tipo
         self.efetivado = efetivado
+        self.tela_inicial = tela_inicial
