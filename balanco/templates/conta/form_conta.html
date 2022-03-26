@@ -31,6 +31,10 @@
                         <label for="id_limite">Limite</label>
                         {{ form_conta.limite }}
 
+                        {{ form_conta.tipo.errors }}
+                        <label for="id_tipo">Tipo</label>
+                        {{ form_conta.tipo }}
+
                         {{ form_conta.tela_inicial.errors }}
                         {{ form_conta.tela_inicial }}
                         <label for="id_tela_inicial">Tela Inicial</label>

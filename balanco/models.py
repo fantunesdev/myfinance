@@ -24,12 +24,20 @@ class Banco(models.Model):
         return self.descricao
 
 
+class ContaTipo(models.Model):
+    descricao = models.CharField(max_length=15, blank=False, null=False)
+
+    def __str__(self):
+        return self.descricao
+
+
 class Conta(models.Model):
     banco = models.ForeignKey(Banco, on_delete=models.PROTECT)
     agencia = models.CharField(max_length=10, blank=True, null=True)
     numero = models.CharField(max_length=20, blank=True, null=True)
     saldo = models.FloatField(default=0, blank=False, null=False)
     limite = models.FloatField(default=0, blank=False, null=False)
+    tipo = models.ForeignKey(ContaTipo, on_delete=models.PROTECT)
     tela_inicial = models.BooleanField(default=False, blank=False, null=False)
 
     def __str__(self):

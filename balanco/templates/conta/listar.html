@@ -26,8 +26,8 @@
                             <td>{{ i.banco }}</td>
                             <td>{{ i.agencia }}</td>
                             <td>{{ i.numero }}</td>
-                            <td>{{ i.saldo }}</td>
-                            <td>{{ i.limite }}</td>
+                            <td>{{ i.saldo | formatar_moeda:i.moeda.simbolo }}</td>
+                            <td>{{ i.limite | formatar_moeda:i.moeda.simbolo }}</td>
                             <td>{{ i.tela_inicial }}</td>
                             <td><a href="{% url 'editar_conta' i.id %}">Editar</a></td>
                         </tr>

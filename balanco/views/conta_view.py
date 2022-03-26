@@ -16,6 +16,7 @@ def cadastrar_conta(request):
                 numero=form_conta.cleaned_data['numero'],
                 saldo=form_conta.cleaned_data['saldo'],
                 limite=form_conta.cleaned_data['limite'],
+                tipo=form_conta.cleaned_data['tipo'],
                 tela_inicial=form_conta.cleaned_data['tela_inicial']
             )
             conta_service.cadastrar_conta(conta)
@@ -44,6 +45,7 @@ def editar_conta(request, id):
             numero=form_conta.cleaned_data['numero'],
             saldo=form_conta.cleaned_data['saldo'],
             limite=form_conta.cleaned_data['limite'],
+            tipo=form_conta.cleaned_data['tipo'],
             tela_inicial=form_conta.cleaned_data['tela_inicial']
         )
         conta_service.editar_conta(conta_antiga, conta_nova)

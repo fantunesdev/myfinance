@@ -27,6 +27,7 @@ def editar_conta(conta_antiga, conta_nova):
     conta_antiga.numero = conta_nova.numero
     conta_antiga.saldo = conta_nova.saldo
     conta_antiga.limite = conta_nova.limite
+    conta_antiga.tipo = conta_nova.tipo
     conta_antiga.tela_inicial = conta_nova.tela_inicial
     conta_antiga.save(force_update=True)
 

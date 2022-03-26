@@ -3,6 +3,9 @@ from django.utils import timezone
 
 from balanco.models import Movimentacao, Categoria
 
+attrs = {
+    'class': 'form-control'
+}
 hoje = timezone.localtime(timezone.now()).strftime('%Y-%m-%d')
 fields = ['valor', 'data', 'repetir', 'parcelas', 'descricao', 'categoria', 'conta', 'fixa', 'moeda',
           'observacao', 'lembrar', 'tipo', 'efetivado']

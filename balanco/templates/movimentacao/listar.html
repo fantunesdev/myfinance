@@ -27,7 +27,7 @@
                             <td><img src="{{ i.conta.banco.icone.url }}" alt="Logotipo do banco" style="max-height: 25px;""></td>
                             <td style="text-align: left; max-width: 150px; min-width:115px"><i class="{{ i.categoria.icone }}" style="padding:10px;"></i> {{ i.categoria }}</td>
                             <td style="text-align: left;">{{ i.descricao }}</td>
-                            <td style="text-align: right; max-width: 50px; min-width:30px;">{{ i.valor | converter_reais:i.moeda.simbolo }}</td>
+                            <td style="text-align: right; max-width: 50px; min-width:30px;">{{ i.valor | formatar_moeda:i.moeda.simbolo }}</td>
                             <td>
                                 <a href="{% url 'editar_conta' i.id %}"><i class="fa-solid fa-file-lines action-icon"></i></a>
                                 <a href="{% url 'editar_movimentacao' i.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
