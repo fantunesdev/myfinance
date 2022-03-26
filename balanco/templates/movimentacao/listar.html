@@ -13,9 +13,9 @@
                     <thead>
                         <tr>
                             <th>Data</th>
-                            <th>Categoria</th>
-                            <th>Descrição</th>
-                            <th>Valor</th>
+                            <th style="text-align: left; max-width: 50px;">Categoria</th>
+                            <th style="text-align: left;">Descrição</th>
+                            <th style="text-align: right; max-width: 25px;">Valor</th>
                             <th>Ações</th>
                         </tr>
                     </thead>
@@ -23,9 +23,9 @@
                         {% for i in movimentacoes %}
                         <tr style="border-left: solid 3px {{ i.categoria.cor }}">
                             <td>{{ i.data | date:"d/m"}}</td>
-                            <td><i class="{{ i.categoria.icone }}" style="padding-right:10px;"></i> {{ i.categoria }}</td>
-                            <td>{{ i.descricao }}</td>
-                            <td>{{ i.valor | converter_reais }}</td>
+                            <td style="text-align: left; max-width: 50px;"><i class="{{ i.categoria.icone }}" style="padding-right:10px;"></i> {{ i.categoria }}</td>
+                            <td style="text-align: left;">{{ i.descricao }}</td>
+                            <td style="text-align: right; max-width: 25px;">{{ i.valor | converter_reais:i.moeda.simbolo }}</td>
                             <td>
                                 <a href="{% url 'editar_conta' i.id %}"><i class="fa-solid fa-file-lines action-icon"></i></a>
                                 <a href="{% url 'editar_movimentacao' i.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
