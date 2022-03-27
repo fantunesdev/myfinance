@@ -6,6 +6,40 @@
     {% block content %}
         <div class="box box-primary">
             <div class="box-header">
+                <h3 class="box-title">Saldo</h3>
+            </div>
+            <div class="box-body">
+                <table>
+                    <thead>
+                        <tr>
+                            {% for conta in contas %}
+                            {% if conta.tela_inicial %}
+                            <th>{{ conta }}</th>
+                            {% endif %}
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            {% for conta in contas %}
+                            {% if conta.tela_inicial %}
+                            {% if saldo < 0 %}
+                            <td style="color: #960000">{{ conta.saldo }}</td>
+                            {% else %}
+                            <td style="color: #009600">{{ conta.saldo }}</td>
+                            {% endif %}
+                            {% endif %}
+                            {% endfor %}
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="box-footer">
+
+            </div>
+        </div>
+        <div class="box box-primary">
+            <div class="box-header">
                 <h3 class="box-title">Balanço</h3>
             </div>
             <div class="box-body">

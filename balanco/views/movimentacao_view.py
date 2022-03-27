@@ -58,8 +58,8 @@ def cadastrar_movimentacao(request, tipo):
 
 
 def listar_movimentacoes(request):
-    movimentacoes = movimentacao_service.listar_movimentacoes()
-    template_tags['movimentacoes'] = movimentacoes
+    template_tags['movimentacoes'] = movimentacao_service.listar_movimentacoes()
+    template_tags['contas'] = conta_service.listar_contas()
     return render(request, 'movimentacao/listar.html', template_tags)
 
 
