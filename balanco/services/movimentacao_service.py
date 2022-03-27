@@ -24,6 +24,10 @@ def listar_movimentacoes():
     return Movimentacao.objects.all()
 
 
+def listar_movimentacoes_conta_id(id):
+    return Movimentacao.objects.filter(conta=id)
+
+
 def listar_movimentacao_id(id):
     return Movimentacao.objects.get(id=id)
 

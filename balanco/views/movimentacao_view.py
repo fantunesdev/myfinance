@@ -11,7 +11,8 @@ from balanco.services import movimentacao_service, banco_service, bandeira_servi
 
 template_tags = {
     'ano_atual': date.today().year,
-    'mes_atual': date.today().month
+    'mes_atual': date.today().month,
+    'contas': conta_service.listar_contas()
 }
 
 
@@ -59,7 +60,11 @@ def cadastrar_movimentacao(request, tipo):
 
 def listar_movimentacoes(request):
     template_tags['movimentacoes'] = movimentacao_service.listar_movimentacoes()
-    template_tags['contas'] = conta_service.listar_contas()
+    return render(request, 'movimentacao/listar.html', template_tags)
+
+
+def listar_movimentacoes_conta_id(request, id):
+    template_tags['movimentacoes'] = movimentacao_service.listar_movimentacoes_conta_id(id)
     return render(request, 'movimentacao/listar.html', template_tags)
 
 
