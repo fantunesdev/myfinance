@@ -1,0 +1,5 @@
+{% extends "cartao/form_cartao.html" %}
+
+{% block excluir %}
+    <a href="{% url 'remover_cartao' cartao_antigo.id %}"><input type="button" value="Excluir" class="btn btn-danger"></a>
+{% endblock excluir %}

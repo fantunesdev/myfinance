@@ -5,6 +5,7 @@ def cadastrar_movimentacao(movimentacao):
     Movimentacao.objects.create(
         data=movimentacao.data,
         conta=movimentacao.conta,
+        cartao=movimentacao.cartao,
         categoria=movimentacao.categoria,
         descricao=movimentacao.descricao,
         valor=movimentacao.valor,
@@ -36,6 +37,7 @@ def listar_movimentacao_id(id, usuario):
 def editar_movimentacao(movimentacao_antiga, movimentacao_nova):
     movimentacao_antiga.data = movimentacao_nova.data
     movimentacao_antiga.conta = movimentacao_nova.conta
+    movimentacao_antiga.cartao = movimentacao_nova.cartao
     movimentacao_antiga.categoria = movimentacao_nova.categoria
     movimentacao_antiga.descricao = movimentacao_nova.descricao
     movimentacao_antiga.valor = movimentacao_nova.valor

@@ -63,7 +63,6 @@ def remover_conta(request, id):
     if request.POST.get('confirmacao'):
         conta_service.remover_conta(conta)
         return redirect('configurar')
-    print(request.POST.get('confirmacao'))
     template_tags['form_exclusao'] = form_exclusao
     template_tags['conta'] = conta
     template_tags['contas'] = conta_service.listar_contas(request.user)

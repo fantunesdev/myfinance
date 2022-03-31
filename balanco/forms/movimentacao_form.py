@@ -7,7 +7,7 @@ attrs = {
     'class': 'form-control'
 }
 hoje = timezone.localtime(timezone.now()).strftime('%Y-%m-%d')
-fields = ['data', 'conta', 'categoria', 'descricao', 'valor', 'parcelas', 'pagas', 'fixa', 'moeda',
+fields = ['data', 'conta', 'cartao', 'categoria', 'descricao', 'valor', 'parcelas', 'pagas', 'fixa', 'moeda',
           'observacao', 'lembrar', 'efetivado', 'tela_inicial']
 widgets = {
     'data': forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date',
@@ -18,6 +18,7 @@ widgets = {
     'pagas': forms.NumberInput(attrs={'class': 'form-control'}),
     'descricao': forms.TextInput(attrs={'class': 'form-control'}),
     'conta': forms.Select(attrs={'class': 'form-control'}),
+    'cartao': forms.Select(attrs={'class': 'form-control'}),
     'moeda': forms.Select(attrs={'class': 'form-control'}),
     'observacao': forms.NumberInput(attrs={'class': 'form-control'})
 }

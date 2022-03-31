@@ -1,35 +1,36 @@
 {% extends 'index.html' %}
 {% load static %}
-    {% block title %}Listar Contas{% endblock %}
+{% load meus_filtros %}
+    {% block title %}Listar Cartões{% endblock %}
 
     {% block content %}
         <div class="box box-primary">
             <div class="box-header">
-                <h3 class="box-title">Listar Contas</h3>
+                <h3 class="box-title">Listar Cartões</h3>
             </div>
             <div class="box-body">
                 <table class="table">
                     <thead>
                         <tr>
-                            <th>Banco</th>
-                            <th>Agência</th>
-                            <th>Número</th>
-                            <th>Saldo</th>
+                            <th>Descricao</th>
                             <th>Limite</th>
+                            <th>Bandeira</th>
                             <th>Tela Inicial</th>
+                            <th>Conta</th>
+                            <th>Fechamento</th>
                             <th>Ações</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for i in contas %}
+                        {% for i in cartoes %}
                         <tr>
-                            <td><img src="{{ i.banco.icone.url }}" alt="Logotipo do banco" style="max-height: 25px;"></td>
-                            <td>{{ i.agencia }}</td>
-                            <td>{{ i.numero }}</td>
-                            <td>{{ i.saldo }}</td>
-                            <td>{{ i.limite }}</td>
+                            <td>{{ i.descricao }}</td>
+                            <td>{{ i.limite | formatar_reais }}</td>
+                            <td>{{ i.bandeira }}</td>
                             <td>{{ i.tela_inicial }}</td>
-                            <td><a href="{% url 'editar_conta' i.id %}">Editar</a></td>
+                            <td>{{ i.conta }}</td>
+                            <td>{{ i.fechamento}}</td>
+                            <td><a href="{% url 'editar_cartao' i.id %}">Editar</a></td>
                         </tr>
                         {% endfor %}
                     </tbody>

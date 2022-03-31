@@ -7,7 +7,8 @@ from balanco.entidades.movimentacao import Movimentacao
 from balanco.forms.general_form import ExclusaoForm
 from balanco.forms.movimentacao_form import MovimentacaoSaidaForm, MovimentacaoEntradaForm
 from balanco.repositorios.movimentacao_repositorio import *
-from balanco.services import movimentacao_service, banco_service, bandeira_service, categoria_service, conta_service
+from balanco.services import movimentacao_service, banco_service, bandeira_service, categoria_service, conta_service, \
+    cartao_service
 
 template_tags = {
     'ano_atual': date.today().year,
@@ -27,6 +28,7 @@ def cadastrar_movimentacao(request, tipo):
             movimentacao = Movimentacao(
                 data=form_movimentacao.cleaned_data['data'],
                 conta=form_movimentacao.cleaned_data['conta'],
+                cartao=form_movimentacao.cleaned_data['cartao'],
                 categoria=form_movimentacao.cleaned_data['categoria'],
                 descricao=form_movimentacao.cleaned_data['descricao'],
                 valor=form_movimentacao.cleaned_data['valor'],
@@ -83,6 +85,7 @@ def editar_movimentacao(request, id):
         movimentacao_nova = Movimentacao(
             data=form_movimentacao.cleaned_data['data'],
             conta=form_movimentacao.cleaned_data['conta'],
+            cartao=form_movimentacao.cleaned_data['cartao'],
             categoria=form_movimentacao.cleaned_data['categoria'],
             descricao=form_movimentacao.cleaned_data['descricao'],
             valor=form_movimentacao.cleaned_data['valor'],
@@ -146,4 +149,5 @@ def configurar(request):
     template_tags['contas'] = conta_service.listar_contas(request.user)
     template_tags['movimentacoes'] = movimentacao_service.listar_movimentacoes(request.user)
     template_tags['contas'] = conta_service.listar_contas(request.user)
+    template_tags['cartoes'] = cartao_service.listar_cartoes(request.user)
     return render(request, 'general/settings.html', template_tags)
