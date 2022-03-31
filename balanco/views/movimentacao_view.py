@@ -157,4 +157,7 @@ def configurar(request):
     template_tags['movimentacoes'] = movimentacao_service.listar_movimentacoes(request.user)
     template_tags['contas'] = conta_service.listar_contas(request.user)
     template_tags['cartoes'] = cartao_service.listar_cartoes(request.user)
+
+    for i in template_tags['contas']:
+        print(f'"{i.tipo}","{i.descricao}","{i.cor}","{i.icone}"')
     return render(request, 'general/settings.html', template_tags)

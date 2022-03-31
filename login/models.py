@@ -1,6 +1,5 @@
 from django.contrib.auth.models import AbstractBaseUser
 from django.db import models
-from datetime import datetime
 from login.manager import UsuarioManager
 
 # Create your models here.

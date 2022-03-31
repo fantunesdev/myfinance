@@ -4,6 +4,7 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.shortcuts import render, redirect
 from .forms import usuario_form, login_form, perfil_form, senha_form
 from .entidades.usuario import Usuario
+from .repository import cadastrar_categorias
 from .services import usuario_service
 
 
@@ -20,6 +21,8 @@ def cadastrar_usuario(request):
                                    password=form_usuario.cleaned_data['password1'],
                                    foto=form_usuario.cleaned_data['foto'])
             usuario_service.cadastrar_usuario(usuario_novo)
+            usuario_db = usuario_service.listar_usuario(usuario_novo)
+            cadastrar_categorias(usuario_db)
             return redirect('logar_usuario')
     else:
         form_usuario = usuario_form.UsuarioForm()
@@ -33,7 +36,7 @@ def alterar_senha(request):
         if form_senha.is_valid():
             user = form_senha.save()
             update_session_auth_hash(request, user)
-            return redirect('perfil')
+            return redirect('listar_movimentacoes')
     else:
         form_senha = PasswordChangeForm(request.user)
     return render(request, 'login/alterar_senha.html', {'form_senha': form_senha})
@@ -46,7 +49,7 @@ def editar_perfil(request):
         if form_perfil.is_valid():
             form_perfil.foto = form_perfil.cleaned_data['foto']
             form_perfil.save()
-            return redirect('perfil')
+            return redirect('listar_movimentacoes')
     else:
         form_perfil = perfil_form.PerfilForm(instance=request.user)
     return render(request, 'login/form_perfil.html', {'form_perfil': form_perfil})
@@ -61,7 +64,7 @@ def logar_usuario(request):
             usuario = authenticate(request, username=username, password=password)
             if usuario is not None:
                 login(request, usuario)
-                return redirect('perfil')
+                return redirect('listar_movimentacoes')
             else:
                 form_login = login_form.LoginForm()
     else:
