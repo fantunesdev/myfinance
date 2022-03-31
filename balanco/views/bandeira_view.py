@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 
 from balanco.entidades.bandeira import Bandeira
@@ -6,6 +7,7 @@ from balanco.forms.general_form import ExclusaoForm
 from balanco.services import bandeira_service
 
 
+@login_required
 def cadastrar_bandeira(request):
     if request.method == 'POST':
         form_bandeira = BandeiraForm(request.POST, request.FILES)
@@ -21,11 +23,13 @@ def cadastrar_bandeira(request):
     return render(request, 'bandeira/form_bandeira.html', {'form_bandeira': form_bandeira})
 
 
+@login_required
 def listar_bandeiras(request):
     bandeiras = bandeira_service.listar_bandeiras()
     return render(request, 'bandeira/listar.html', {'bandeiras': bandeiras})
 
 
+@login_required
 def editar_bandeira(request, id):
     bandeira_antiga = bandeira_service.listar_bandeira_id(id)
     form_bandeira = BandeiraForm(request.POST or None, request.FILES or None, instance=bandeira_antiga)
@@ -40,6 +44,7 @@ def editar_bandeira(request, id):
                                                     'bandeira_antiga': bandeira_antiga})
 
 
+@login_required
 def remover_bandeira(request, id):
     bandeira = bandeira_service.listar_bandeira_id(id)
     if request.method == 'POST':

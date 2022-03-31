@@ -1,6 +1,7 @@
 import copy
 from datetime import date
 
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 
 from balanco.entidades.movimentacao import Movimentacao
@@ -16,6 +17,7 @@ template_tags = {
 }
 
 
+@login_required
 def cadastrar_movimentacao(request, tipo):
     if tipo == 'entrada':
         form = lambda *args: MovimentacaoEntradaForm(*args)
@@ -62,18 +64,21 @@ def cadastrar_movimentacao(request, tipo):
     return render(request, 'movimentacao/form_movimentacao.html', template_tags)
 
 
+@login_required
 def listar_movimentacoes(request):
     template_tags['movimentacoes'] = movimentacao_service.listar_movimentacoes(request.user)
     template_tags['contas'] = conta_service.listar_contas(request.user)
     return render(request, 'movimentacao/listar.html', template_tags)
 
 
+@login_required
 def listar_movimentacoes_conta_id(request, id):
     template_tags['movimentacoes'] = movimentacao_service.listar_movimentacoes_conta_id(id, request.user)
     template_tags['contas'] = conta_service.listar_contas(request.user)
     return render(request, 'movimentacao/listar.html', template_tags)
 
 
+@login_required
 def editar_movimentacao(request, id):
     movimentacao_antiga = movimentacao_service.listar_movimentacao_id(id, request.user)
     if movimentacao_antiga.tipo == 'entrada':
@@ -123,6 +128,7 @@ def editar_movimentacao(request, id):
     return render(request, 'movimentacao/editar.html', template_tags)
 
 
+@login_required
 def remover_movimentacao(request, id):
     movimentacao = movimentacao_service.listar_movimentacao_id(id, request.user)
     form_exclusao = ExclusaoForm()
@@ -142,6 +148,7 @@ def remover_movimentacao(request, id):
     return render(request, 'movimentacao/confirma_exclusao.html', template_tags)
 
 
+@login_required
 def configurar(request):
     template_tags['bancos'] = banco_service.listar_bancos()
     template_tags['bandeiras'] = bandeira_service.listar_bandeiras()

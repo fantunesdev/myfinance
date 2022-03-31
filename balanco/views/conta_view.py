@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 
 from balanco.views.movimentacao_view import template_tags
@@ -7,6 +8,7 @@ from balanco.forms.general_form import ExclusaoForm
 from balanco.services import conta_service
 
 
+@login_required
 def cadastrar_conta(request):
     if request.method == 'POST':
         form_conta = ContaForm(request.POST)
@@ -30,11 +32,13 @@ def cadastrar_conta(request):
     return render(request, 'conta/form_conta.html', template_tags)
 
 
+@login_required
 def listar_contas(request):
     template_tags['contas'] = conta_service.listar_contas(request.user)
     return render(request, 'conta/listar.html', template_tags)
 
 
+@login_required
 def editar_conta(request, id):
     conta_antiga = conta_service.listar_conta_id(id, request.user)
     form_conta = ContaForm(request.POST or None, instance=conta_antiga)
@@ -57,6 +61,7 @@ def editar_conta(request, id):
     return render(request, 'conta/editar.html', template_tags)
 
 
+@login_required
 def remover_conta(request, id):
     conta = conta_service.listar_conta_id(id, request.user)
     form_exclusao = ExclusaoForm()

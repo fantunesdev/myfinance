@@ -55,6 +55,10 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'financeiro.urls'
 
+LOGIN_URL = '/login/'
+
+LOGIN_REDIRECT_URL = '/movimentacao/'
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -132,8 +136,6 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
-
-STATIC_URL = '/static/'
 
 MEDIA_URL = '/media/'
 

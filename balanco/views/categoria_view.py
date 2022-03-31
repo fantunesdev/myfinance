@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 
 from balanco.views.movimentacao_view import template_tags
@@ -7,6 +8,7 @@ from ..forms.general_form import ExclusaoForm
 from ..entidades.categoria import Categoria
 
 
+@login_required
 def cadastrar_categoria(request):
     if request.method == 'POST':
         form_categoria = CategoriaForm(request.POST, request.FILES)
@@ -25,12 +27,14 @@ def cadastrar_categoria(request):
     return render(request, 'categoria/cadastrar.html', template_tags)
 
 
+@login_required
 def listar_categorias(request):
     template_tags['categorias'] = categoria_service.listar_categorias(request.user)
     template_tags['contas'] = conta_service.listar_contas(request.user)
     return render(request, 'categoria/listar.html', template_tags)
 
 
+@login_required
 def listar_categorias_tipo(request, tipo):
     template_tags['categorias'] = categoria_service.listar_categorias_tipo(tipo, request.user)
     template_tags['contas'] = conta_service.listar_contas(request.user)
@@ -38,12 +42,14 @@ def listar_categorias_tipo(request, tipo):
     return render(request, 'categoria/listar_tipo.html', template_tags)
 
 
+@login_required
 def listar_categoria_id(request, id):
     template_tags['categoria'] = categoria_service.listar_categoria_id(id, request.user)
     template_tags['contas'] = conta_service.listar_contas(request.user)
     return render(request, 'categorias/listar_id.html', template_tags)
 
 
+@login_required
 def editar_categoria(request, id):
     categoria_antiga = categoria_service.listar_categoria_id(id, request.user)
     form_categoria = CategoriaForm(request.POST or None, request.FILES or None, instance=categoria_antiga)
@@ -62,6 +68,7 @@ def editar_categoria(request, id):
     return render(request, 'categoria/editar.html', template_tags)
 
 
+@login_required
 def remover_categoria(request, id):
     categoria = categoria_service.listar_categoria_id(id, request.user)
     if request.method == 'POST':
