@@ -11,8 +11,7 @@ from balanco.services import movimentacao_service, banco_service, bandeira_servi
 
 template_tags = {
     'ano_atual': date.today().year,
-    'mes_atual': date.today().month,
-    'contas': conta_service.listar_contas()
+    'mes_atual': date.today().month
 }
 
 
@@ -39,13 +38,15 @@ def cadastrar_movimentacao(request, tipo):
                 lembrar=form_movimentacao.cleaned_data['lembrar'],
                 tipo=tipo,
                 efetivado=form_movimentacao.cleaned_data['efetivado'],
-                tela_inicial=form_movimentacao.cleaned_data['tela_inicial']
+                tela_inicial=form_movimentacao.cleaned_data['tela_inicial'],
+                usuario=request.user
             )
 
-            if tipo == 'entrada':
-                depositar(movimentacao.conta, movimentacao.valor)
-            else:
-                sacar(movimentacao.conta, movimentacao.valor)
+            if not movimentacao.conta:
+                if tipo == 'entrada':
+                    depositar(movimentacao.conta, movimentacao.valor)
+                else:
+                    sacar(movimentacao.conta, movimentacao.valor)
 
             movimentacao_service.cadastrar_movimentacao(movimentacao)
             return redirect('listar_movimentacoes')
@@ -55,21 +56,24 @@ def cadastrar_movimentacao(request, tipo):
         form_movimentacao = form()
     template_tags['form_movimentacao'] = form_movimentacao
     template_tags['tipo'] = tipo
+    template_tags['contas'] = conta_service.listar_contas(request.user)
     return render(request, 'movimentacao/form_movimentacao.html', template_tags)
 
 
 def listar_movimentacoes(request):
-    template_tags['movimentacoes'] = movimentacao_service.listar_movimentacoes()
+    template_tags['movimentacoes'] = movimentacao_service.listar_movimentacoes(request.user)
+    template_tags['contas'] = conta_service.listar_contas(request.user)
     return render(request, 'movimentacao/listar.html', template_tags)
 
 
 def listar_movimentacoes_conta_id(request, id):
-    template_tags['movimentacoes'] = movimentacao_service.listar_movimentacoes_conta_id(id)
+    template_tags['movimentacoes'] = movimentacao_service.listar_movimentacoes_conta_id(id, request.user)
+    template_tags['contas'] = conta_service.listar_contas(request.user)
     return render(request, 'movimentacao/listar.html', template_tags)
 
 
 def editar_movimentacao(request, id):
-    movimentacao_antiga = movimentacao_service.listar_movimentacao_id(id)
+    movimentacao_antiga = movimentacao_service.listar_movimentacao_id(id, request.user)
     if movimentacao_antiga.tipo == 'entrada':
         form_movimentacao = MovimentacaoEntradaForm(request.POST or None, instance=movimentacao_antiga)
     else:
@@ -90,7 +94,8 @@ def editar_movimentacao(request, id):
             lembrar=form_movimentacao.cleaned_data['lembrar'],
             tipo=movimentacao_antiga.tipo,
             efetivado=form_movimentacao.cleaned_data['efetivado'],
-            tela_inicial=form_movimentacao.cleaned_data['tela_inicial']
+            tela_inicial=form_movimentacao.cleaned_data['tela_inicial'],
+            usuario=request.user
         )
         if movimentacao_antiga.tipo == 'entrada':
             sacar(copia_movimentacao_antiga.conta, copia_movimentacao_antiga.valor)
@@ -111,11 +116,12 @@ def editar_movimentacao(request, id):
         return redirect('listar_movimentacoes')
     template_tags['form_movimentacao'] = form_movimentacao
     template_tags['movimentacao_antiga'] = movimentacao_antiga
+    template_tags['contas'] = conta_service.listar_contas(request.user)
     return render(request, 'movimentacao/editar.html', template_tags)
 
 
 def remover_movimentacao(request, id):
-    movimentacao = movimentacao_service.listar_movimentacao_id(id)
+    movimentacao = movimentacao_service.listar_movimentacao_id(id, request.user)
     form_exclusao = ExclusaoForm()
     if request.POST.get('confirmacao'):
         try:
@@ -129,13 +135,15 @@ def remover_movimentacao(request, id):
             return False
     template_tags['form_exclusao'] = form_exclusao
     template_tags['movimentacao'] = movimentacao
+    template_tags['contas'] = conta_service.listar_contas(request.user)
     return render(request, 'movimentacao/confirma_exclusao.html', template_tags)
 
 
 def configurar(request):
     template_tags['bancos'] = banco_service.listar_bancos()
     template_tags['bandeiras'] = bandeira_service.listar_bandeiras()
-    template_tags['categorias'] = categoria_service.listar_categorias()
-    template_tags['contas'] = conta_service.listar_contas()
-    template_tags['movimentacoes']= movimentacao_service.listar_movimentacoes()
+    template_tags['categorias'] = categoria_service.listar_categorias(request.user)
+    template_tags['contas'] = conta_service.listar_contas(request.user)
+    template_tags['movimentacoes'] = movimentacao_service.listar_movimentacoes(request.user)
+    template_tags['contas'] = conta_service.listar_contas(request.user)
     return render(request, 'general/settings.html', template_tags)

@@ -9,16 +9,18 @@ def cadastrar_conta(conta):
         numero=conta.numero,
         saldo=conta.saldo,
         limite=conta.limite,
-        tela_inicial=conta.tela_inicial
+        tipo=conta.tipo,
+        tela_inicial=conta.tela_inicial,
+        usuario=conta.usuario
     )
 
 
-def listar_contas():
-    return Conta.objects.all()
+def listar_contas(usuario):
+    return Conta.objects.filter(usuario=usuario)
 
 
-def listar_conta_id(id):
-    return Conta.objects.get(id=id)
+def listar_conta_id(id, usuario):
+    return Conta.objects.get(id=id, usuario=usuario)
 
 
 def editar_conta(conta_antiga, conta_nova):
@@ -29,6 +31,7 @@ def editar_conta(conta_antiga, conta_nova):
     conta_antiga.limite = conta_nova.limite
     conta_antiga.tipo = conta_nova.tipo
     conta_antiga.tela_inicial = conta_nova.tela_inicial
+    conta_antiga.usuario = conta_nova.usuario
     conta_antiga.save(force_update=True)
 
 

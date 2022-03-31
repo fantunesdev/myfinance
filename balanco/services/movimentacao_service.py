@@ -16,20 +16,21 @@ def cadastrar_movimentacao(movimentacao):
         lembrar=movimentacao.lembrar,
         tipo=movimentacao.tipo,
         efetivado=movimentacao.efetivado,
-        tela_inicial=movimentacao.tela_inicial
+        tela_inicial=movimentacao.tela_inicial,
+        usuario=movimentacao.usuario
     )
 
 
-def listar_movimentacoes():
-    return Movimentacao.objects.all()
+def listar_movimentacoes(usuario):
+    return Movimentacao.objects.filter(usuario=usuario)
 
 
-def listar_movimentacoes_conta_id(id):
-    return Movimentacao.objects.filter(conta=id)
+def listar_movimentacoes_conta_id(id, usuario):
+    return Movimentacao.objects.filter(conta=id, usuario=usuario)
 
 
-def listar_movimentacao_id(id):
-    return Movimentacao.objects.get(id=id)
+def listar_movimentacao_id(id, usuario):
+    return Movimentacao.objects.get(id=id, usuario=usuario)
 
 
 def editar_movimentacao(movimentacao_antiga, movimentacao_nova):
@@ -47,6 +48,7 @@ def editar_movimentacao(movimentacao_antiga, movimentacao_nova):
     movimentacao_antiga.tipo = movimentacao_nova.tipo
     movimentacao_antiga.efetivado = movimentacao_nova.efetivado
     movimentacao_antiga.tela_inicial = movimentacao_nova.tela_inicial
+    movimentacao_antiga.usuario = movimentacao_nova.usuario
     movimentacao_antiga.save(force_update=True)
 
 

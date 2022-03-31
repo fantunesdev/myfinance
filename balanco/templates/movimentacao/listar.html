@@ -14,7 +14,7 @@
                         <tr>
                             {% for conta in contas %}
                             {% if conta.tela_inicial %}
-                            <th>{{ conta }}</th>
+                            <th>{{ conta }} - {{ conta.tipo }}</th>
                             {% endif %}
                             {% endfor %}
                         </tr>
@@ -58,7 +58,11 @@
                         {% for i in movimentacoes %}
                         <tr style="border-left: solid 3px {{ i.categoria.cor }}">
                             <td>{{ i.data | date:"d/m"}}</td>
-                            <td><img src="{{ i.conta.banco.icone.url }}" alt="Logotipo do banco" style="max-height: 25px;""></td>
+                            {% if i.conta %}
+                            <td><img src="{{ i.conta.banco.icone.url }}" alt="Logotipo do banco" style="max-height: 25px;"></td>
+                            {% else %}
+                            <td></td>
+                            {% endif %}
                             <td style="text-align: left; max-width: 150px; min-width:115px"><i class="{{ i.categoria.icone }}" style="padding:10px;"></i> {{ i.categoria }}</td>
                             <td style="text-align: left;">{{ i.descricao }}</td>
                             <td style="text-align: right; max-width: 50px; min-width:30px;">{{ i.valor | formatar_moeda:i.moeda.simbolo }}</td>

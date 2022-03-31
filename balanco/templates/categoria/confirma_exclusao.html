@@ -1,18 +1,38 @@
 {% extends "index.html" %}
+
+    {% block title %}Exclusão da movimentação {{ movimentacao.descricao }}{% endblock title %}
+
     {% block content %}
-        <div class="card">
-            <div class="card-header btn btn-danger">
-                Tem certeza que deseja remover a categoria de entrada abaixo?
-            </div>
-            <div class="card-body">
-                <h5 class="card-title">Nome: {{ categoria.descricao }}</h5>
-                <form method="post">
-                    {% csrf_token %}
-                    {% form_exclusao %}
-                    <a href="{{request.META.HTTP_REFERER}}""><input type="button" value="Voltar" class="btn"></a>
-                    <input type="submit" value="Excluir" class="btn btn-danger">
-                </form>
-            </div>
+        <div class="box box-primary">
+            <form method="post">
+                <div class="box-title">
+                    <h3>
+                        Atenção! Você está prestes a movimentação {{ categoria.descricao }} do dia. Esta operação é irreversível.
+                    </h3>
+                </div>
+                <div class="box-body">
+                    <p>Tipo: <b>{{ categoria.tipo }}</b></p>
+                    <p>Descricao: <b>{{ categoria.descricao }}</b></p>
+                    <p>Cor: <i class="fa-solid fa-circle" style="color: {{ categoria.cor }};"></i></p>
+                    <p>Ícone: <i class="{{ categoria.icone }}"></i></p>
+                    <br>
+                    <div class="btn-danger">
+                        <p>
+                        {% csrf_token %}
+                        {{ form_exclusao }}
+                        Sim, desejo excluir e estou ciente de que esta operação é irreversível.
+                        </p>
+                    </div>
+                </div>
+                <div class="box-footer">
+                    <form method="post">
+                        {% csrf_token %}
+                        <a href="{{request.META.HTTP_REFERER}}"><input type="button" value="Voltar" class="btn btn-primary"></a>
+                        <input type="submit" value="Excluir" class="btn btn-danger">
+                    </form>
+                </div>
+            </form>
+
         </div>
 
     {% endblock content %}

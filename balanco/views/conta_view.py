@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 
+from balanco.views.movimentacao_view import template_tags
 from balanco.entidades.conta import Conta
 from balanco.forms.conta_form import ContaForm
 from balanco.forms.general_form import ExclusaoForm
@@ -17,26 +18,25 @@ def cadastrar_conta(request):
                 saldo=form_conta.cleaned_data['saldo'],
                 limite=form_conta.cleaned_data['limite'],
                 tipo=form_conta.cleaned_data['tipo'],
-                tela_inicial=form_conta.cleaned_data['tela_inicial']
+                tela_inicial=form_conta.cleaned_data['tela_inicial'],
+                usuario=request.user
             )
             conta_service.cadastrar_conta(conta)
             return redirect('configurar')
     else:
         form_conta = ContaForm()
-    return render(request, 'conta/form_conta.html', {'form_conta': form_conta})
+    template_tags['form_conta'] = form_conta
+    template_tags['contas'] = conta_service.listar_contas(request.user)
+    return render(request, 'conta/form_conta.html', template_tags)
 
 
 def listar_contas(request):
-    contas = conta_service.listar_contas()
-    return render(request, 'conta/listar.html', {'contas': contas})
-
-
-def listar_conta_id(request, id):
-    return render(request, 'conta/form_conta.html', {})
+    template_tags['contas'] = conta_service.listar_contas(request.user)
+    return render(request, 'conta/listar.html', template_tags)
 
 
 def editar_conta(request, id):
-    conta_antiga = conta_service.listar_conta_id(id)
+    conta_antiga = conta_service.listar_conta_id(id, request.user)
     form_conta = ContaForm(request.POST or None, instance=conta_antiga)
     if form_conta.is_valid():
         conta_nova = Conta(
@@ -46,20 +46,25 @@ def editar_conta(request, id):
             saldo=form_conta.cleaned_data['saldo'],
             limite=form_conta.cleaned_data['limite'],
             tipo=form_conta.cleaned_data['tipo'],
-            tela_inicial=form_conta.cleaned_data['tela_inicial']
+            tela_inicial=form_conta.cleaned_data['tela_inicial'],
+            usuario=request.user
         )
         conta_service.editar_conta(conta_antiga, conta_nova)
         return redirect('configurar')
-    return render(request, 'conta/editar.html', {'form_conta': form_conta,
-                                                 'conta_antiga': conta_antiga})
+    template_tags['form_conta'] = form_conta
+    template_tags['conta_antiga'] = conta_antiga
+    template_tags['contas'] = conta_service.listar_contas(request.user)
+    return render(request, 'conta/editar.html', template_tags)
 
 
 def remover_conta(request, id):
-    conta = conta_service.listar_conta_id(id)
+    conta = conta_service.listar_conta_id(id, request.user)
     form_exclusao = ExclusaoForm()
     if request.POST.get('confirmacao'):
         conta_service.remover_conta(conta)
         return redirect('configurar')
     print(request.POST.get('confirmacao'))
-    return render(request, 'conta/confirma_exclusao.html', {'form_exclusao': form_exclusao,
-                                                     'conta': conta})
+    template_tags['form_exclusao'] = form_exclusao
+    template_tags['conta'] = conta
+    template_tags['contas'] = conta_service.listar_contas(request.user)
+    return render(request, 'conta/confirma_exclusao.html', template_tags)
