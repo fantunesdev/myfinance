@@ -4,6 +4,11 @@
     {% block title %}Balanço{% endblock %}
 
     {% block content %}
+        {% for mes in meses %}
+        <a href="{% url 'listar_movimentacoes_ano_mes' mes|date:'Y' mes|date:'m' %}">
+            <input type="button" value="{{ mes | date:'M' }}" class="btn btn-primary" style="margin: 5px;">
+        </a>
+        {% endfor %}
         <div class="box box-primary">
             <div class="box-header">
                 <h3 class="box-title">Saldo</h3>

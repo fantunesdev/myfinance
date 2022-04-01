@@ -26,6 +26,14 @@ def listar_movimentacoes(usuario):
     return Movimentacao.objects.filter(usuario=usuario)
 
 
+def listar_movimentacoes_ano_mes(ano, mes, usuario):
+    return Movimentacao.objects.filter(data__year=ano, data__month=mes, usuario=usuario)
+
+
+def listar_anos_meses(usuario):
+    return Movimentacao.objects.filter(usuario=usuario).dates(field_name='data', kind='month', order='ASC')
+
+
 def listar_movimentacoes_conta_id(id, usuario):
     return Movimentacao.objects.filter(conta=id, usuario=usuario)
 
