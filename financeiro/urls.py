@@ -32,6 +32,7 @@ urlpatterns = [
     path('conta/', include('balanco.urls.conta_url')),
     path('cartao/', include('balanco.urls.cartao_url')),
     path('categoria/', include('balanco.urls.categoria_url')),
+    path('subcategoria/', include('balanco.urls.subcategoria_url')),
     path('movimentacao/', include('balanco.urls.movimentacao_url')),
 
     path('usuarios/', include('login.urls')),

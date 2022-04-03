@@ -47,8 +47,9 @@
                     <thead>
                         <tr>
                             <th>Data</th>
-                            <th>Banco</th>
+                            <th>Banco/Cartão</th>
                             <th style="text-align: left; max-width: 150px; min-width:115px">Categoria</th>
+                            <th style="text-align: left;">Sub-Categoria</th>
                             <th style="text-align: left;">Descrição</th>
                             <th style="text-align: right; max-width: 50px; min-width:30px;">Valor</th>
                             <th>Ações</th>
@@ -61,9 +62,10 @@
                             {% if i.conta %}
                             <td><img src="{{ i.conta.banco.icone.url }}" alt="Logotipo do banco" style="max-height: 25px;"></td>
                             {% else %}
-                            <td></td>
+                            <td><img src="{{ i.cartao.bandeira.icone.url }}" alt="Logotipo do banco" style="max-height: 25px;"></td>
                             {% endif %}
                             <td style="text-align: left; max-width: 150px; min-width:115px"><i class="{{ i.categoria.icone }}" style="padding:10px;"></i> {{ i.categoria }}</td>
+                            <td style="text-align: left;">{{ i.subcategoria }}</td>
                             <td style="text-align: left;">{{ i.descricao }}</td>
                             <td style="text-align: right; max-width: 50px; min-width:30px;">{{ i.valor | formatar_moeda:i.moeda.simbolo }}</td>
                             <td>
