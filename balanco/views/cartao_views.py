@@ -23,7 +23,7 @@ def cadastrar_cartao(request):
                 usuario=request.user
             )
             cartao_service.cadastrar_cartao(cartao)
-            return redirect('listar_movimentacoes')
+            return redirect('listar_mes_atual')
     else:
         form_cartao = CartaoForm()
     template_tags['form_cartao'] = form_cartao
@@ -53,7 +53,7 @@ def editar_cartao(request, id):
             usuario=request.user
         )
         cartao_service.editar_cartao(cartao_antigo, cartao_novo)
-        return redirect('listar_movimentacoes')
+        return redirect('listar_mes_atual')
     template_tags['cartao_antigo'] = cartao_antigo
     template_tags['form_cartao'] = form_cartao
     template_tags['contas'] = conta_service.listar_contas(request.user)
@@ -66,7 +66,7 @@ def remover_cartao(request, id):
     form_exclusao = ExclusaoForm()
     if request.POST.get('confirmacao'):
         cartao_service.remover_cartao(cartao)
-        return redirect('listar_movimentacoes')
+        return redirect('listar_mes_atual')
     template_tags['cartao'] = cartao
     template_tags['form_exclusao'] = form_exclusao
     template_tags['contas'] = conta_service.listar_contas(request.user)

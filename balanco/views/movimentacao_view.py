@@ -56,7 +56,7 @@ def cadastrar_movimentacao(request, tipo):
                     sacar(movimentacao.conta, movimentacao.valor)
 
             movimentacao_service.cadastrar_movimentacao(movimentacao)
-            return redirect('listar_movimentacoes')
+            return redirect('listar_mes_atual')
         else:
             print(form_movimentacao.errors)
     else:
@@ -70,6 +70,25 @@ def cadastrar_movimentacao(request, tipo):
 @login_required
 def listar_movimentacoes(request):
     template_tags['movimentacoes'] = movimentacao_service.listar_movimentacoes(request.user)
+    template_tags['meses'] = movimentacao_service.listar_anos_meses(request.user)
+    template_tags['contas'] = conta_service.listar_contas(request.user)
+    return render(request, 'movimentacao/listar.html', template_tags)
+
+
+@login_required
+def listar_mes_atual(request):
+    template_tags['movimentacoes'] = movimentacao_service.listar_movimentacoes_ano_mes(ano=date.today().year,
+                                                                                       mes=date.today().month,
+                                                                                       usuario=request.user)
+    template_tags['meses'] = movimentacao_service.listar_anos_meses(request.user)
+    template_tags['contas'] = conta_service.listar_contas(request.user)
+    return render(request, 'movimentacao/listar.html', template_tags)
+
+
+@login_required
+def listar_movimentacoes_ano_mes(request, ano, mes):
+    template_tags['movimentacoes'] = movimentacao_service.listar_movimentacoes_ano_mes(ano, mes, request.user)
+    template_tags['meses'] = movimentacao_service.listar_anos_meses(request.user)
     template_tags['contas'] = conta_service.listar_contas(request.user)
     return render(request, 'movimentacao/listar.html', template_tags)
 
@@ -127,7 +146,7 @@ def editar_movimentacao(request, id):
             sacar(movimentacao_nova.conta, movimentacao_nova.valor)
 
         movimentacao_service.editar_movimentacao(movimentacao_antiga, movimentacao_nova)
-        return redirect('listar_movimentacoes')
+        return redirect('listar_mes_atual')
     template_tags['form_movimentacao'] = form_movimentacao
     template_tags['movimentacao_antiga'] = movimentacao_antiga
     template_tags['contas'] = conta_service.listar_contas(request.user)
@@ -145,7 +164,7 @@ def remover_movimentacao(request, id):
                 sacar(movimentacao.conta, movimentacao.valor)
             else:
                 depositar(movimentacao.conta, movimentacao.valor)
-            return redirect('listar_movimentacoes')
+            return redirect('listar_mes_atual')
         except:
             return False
     template_tags['form_exclusao'] = form_exclusao
