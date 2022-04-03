@@ -179,7 +179,6 @@ def configurar(request):
     template_tags['bandeiras'] = bandeira_service.listar_bandeiras()
     template_tags['categorias'] = categoria_service.listar_categorias(request.user)
     template_tags['contas'] = conta_service.listar_contas(request.user)
-    template_tags['movimentacoes'] = movimentacao_service.listar_movimentacoes(request.user)
     template_tags['contas'] = conta_service.listar_contas(request.user)
     template_tags['cartoes'] = cartao_service.listar_cartoes(request.user)
     return render(request, 'general/settings.html', template_tags)

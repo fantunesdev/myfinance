@@ -17,12 +17,12 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 
-from balanco.views.movimentacao_view import listar_movimentacoes, configurar
+from balanco.views.movimentacao_view import listar_mes_atual, configurar
 from financeiro import settings
 from login.views import *
 
 urlpatterns = [
-    path('', listar_movimentacoes),
+    path('', listar_mes_atual),
 
     path('admin/', admin.site.urls),
 
