@@ -1,53 +1,24 @@
-{% extends "login/index.html" %}
+{% extends "index.html" %}
 {% load static %}
 {% load  i18n %}
 
 {% block title %}
-    Alterar Senha
+    Login
 {% endblock title %}
 
 {% block content %}
-    <div class="box box-primary">
-        <div class="box-header with-border">
-            <h3 class="box-title">Alterar perfil</h3>
-        </div>
-        <div class="box-body">
-            <form method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-                    {% if user.foto %}
-                        <img src="{{ user.foto.url }}" alt="Foto de Perfil"><br>
-                    {% endif %}
-                <div class="form-group">
-                    {{ form_perfil.foto.errors }}
-                    <label>Foto: </label>
-                    {{ form_perfil.foto }}
-                </div>
+    {% if user.foto %}
+    <img src="{{ user.foto.url }}" alt="Foto de Perfil"><br>
+    {% else %}
+    <img src="{% static 'img/default-profile.png' %}" alt="Foto de Perfil"><br>
+    {% endif %}
+    Id: {{ user.id }}<br>
+    Nome: {{ user.nome }}<br>
+    Último Login: {{ user.last_login }}<br>
+    E-mail: {{ user.email }}<br>
+    Username: {{ user.username }}<br>
+    Desde: {{ user.date_joined }}<br><br>
 
-                <div class="form-group">
-                    {{ form_perfil.nome.errors }}
-                    <label>Senha antiga: </label>
-                    {{ form_perfil.nome }}
-                </div>
-
-                <div class="form-group">
-                    {{ form_perfil.email.errors }}
-                    <label>Senha: </label>
-                    {{ form_perfil.email }}
-                </div>
-
-                <div class="form-group">
-                    {{ form_perfil.username.errors }}
-                    <label>Confirmação de Senha: </label>
-                    {{ form_perfil.username }}
-                </div>
-
-        <div class="box-footer">
-            <div class="form-group">
-                <div class="form-group">
-                    <input type="submit" value="Atualizar" class="btn btn-primary">
-                    <a href="{% url 'logar_usuario' %}" class="btn btn-primary">Voltar</a>
-                </div>
-            </form>
-        </div>
-    </div>
+    <a href="{% url 'editar_perfil' %}">Editar Perfil</a><br>
+    <a href="{% url 'alterar_senha' %}">Alterar Senha</a>
 {% endblock content %}

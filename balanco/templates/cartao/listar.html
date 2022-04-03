@@ -1,0 +1,43 @@
+{% extends 'index.html' %}
+{% load static %}
+{% load meus_filtros %}
+    {% block title %}Listar Cartões{% endblock %}
+
+    {% block content %}
+        <div class="box box-primary">
+            <div class="box-header">
+                <h3 class="box-title">Listar Cartões</h3>
+            </div>
+            <div class="box-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Descricao</th>
+                            <th>Limite</th>
+                            <th>Bandeira</th>
+                            <th>Tela Inicial</th>
+                            <th>Conta</th>
+                            <th>Fechamento</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i in cartoes %}
+                        <tr>
+                            <td>{{ i.descricao }}</td>
+                            <td>{{ i.limite | formatar_reais }}</td>
+                            <td>{{ i.bandeira }}</td>
+                            <td>{{ i.tela_inicial }}</td>
+                            <td>{{ i.conta }}</td>
+                            <td>{{ i.fechamento}}</td>
+                            <td><a href="{% url 'editar_cartao' i.id %}">Editar</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="box-footer">
+                <span>Total de ítens listados: {{ contas.count }}</span>
+            </div>
+        </div>
+    {% endblock content %}

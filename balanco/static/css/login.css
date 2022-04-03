@@ -1,0 +1,120 @@
+body {
+    font-family: Ubuntu;
+    background: #191919;
+    margin: 0;
+    color: #cccccc;
+    display: grid;
+}
+
+/* INÍCIO BOX */
+
+.box {
+    margin: 25px 10px 25px 10px;
+    background-color: #131313;
+    border-radius: 4px;
+    border: 1px solid #080808;
+}
+
+.box-primary {
+    border-top: 3px solid darkred;
+}
+
+.box-header {
+    box-shadow: border-box;
+}
+
+.box-title {
+    font-family: Ubuntu;
+    text-align: left;
+    margin:10px;
+}
+
+.box-body {
+    display: block;
+    padding: 20px 10px 20px 10px;
+    font-family: Ubuntu;
+    font-size: 13px;
+    border-top: 1px solid #212121;
+    text-align: left;
+}
+
+.box-footer {
+    padding: 15px;
+    border-radius: 0 0 4px 4px;
+    border-top: 1px solid #212121;
+    font-family: Ubuntu;
+    font-size: 13px;
+    text-align: left;
+}
+
+/* FIM BOX */
+
+.form-control{
+    display: block;
+    width: 99%;
+    height: 30px;
+    margin: 10px 10px 10px 0;
+    background: #303030;
+    border-radius: 3px;
+    border: 1px solid #404040;
+    color: #ccc;
+    font-family: Ubuntu;
+
+}
+
+.box-450px {
+    width: 450px;
+}
+
+.center-div {
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 300px;
+    margin-bottom: auto;
+}
+
+.btn {
+    font-family: Ubuntu;
+    font-size: 13px;
+    text-decoration: none;
+    padding: 10px 20px 10px 20px;
+    border-radius: 4px;
+    border: 1px solid #292929;
+    background-color: #262626;
+    color: azure;
+    box-shadow: none;
+    cursor: pointer;
+}
+
+.btn:hover {
+    border: 1px solid #292929;
+    background-color: #343434;
+    transition: all .45s linear;
+}
+
+.btn-primary {
+    border: 1px solid #2e0000;
+    background-color: #5e0000;
+}
+
+.btn-primary:hover {
+    border: 1px solid #5e0000;
+    background-color: darkred;
+    transition: all .45s linear;
+}
+
+.btn-danger {
+    border: 1px solid #5e0000;
+    background-color: darkred;
+}
+
+.btn-danger:hover {
+    border: 1px solid #5e0000;
+    background-color: darkred;
+    transition: all .45s linear;
+}
+
+a {
+    color: #ccc;
+    text-decoration: none;
+}

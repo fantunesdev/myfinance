@@ -1,29 +1,56 @@
-        <aside id="navegacao">
-            <div id="user-panel">
-                {% if user.foto %}
-                    <img src="{{ user.foto.url }}" id="aside-profile-photo" alt="Foto de Perfil"><br>
-                {% endif %}
-		<span id="aside-profile-name">{{ request.user.username }}</span>
-            </div>
-            <ul class="menu">
-                <li class="menu-item">
-                    <a class="menu-item-link" onclick="mostrar('categoria')">
-                        <i class="bi bi-diagram-3-fill icon"></i><span>Categorias</span>
+        <aside>
+            <ul>
+                <li>
+                    <a href="{% url 'listar_movimentacoes' %}">
+                        <div>
+                            <i class="fa-solid fa-house"></i>
+                        </div>
+                        <div class="toggle">
+                            <span>Início</span>
+                        </div>
                     </a>
                 </li>
-                    <ul class="sub-menu" id="categoria">
-                        <li class="sub-menu-item">
-                            <a href="{% url 'cadastrar_categoria' %}" class="sub-menu-item-link">Cadastrar Categoria</a>
+                <li>
+                    <a href="{% url 'cadastrar_movimentacao' 'saida' %}">
+                        <div>
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                        </div>
+                        <div class="toggle">
+                            <span>Saída </span>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'cadastrar_movimentacao' 'entrada' %}">
+                        <div>
+                            <i class="fa-solid fa-right-to-bracket"></i>
+                        </div>
+                        <div class="toggle">
+                            <span>Entrada </span>
+                        </div>
+                    </a>
+                </li>
+<!--                 INICIO EXEMPLO ÍTEM COM DROPDOWN-->
+                <li>
+                    <a id="conta-submenu-button" onclick="toggleSubMenu('conta-submenu')">
+                        <div>
+                            <i class="bi bi-diagram-3-fill"></i>
+                        </div>
+                        <div class="toggle">
+                            <span>Contas</span>
+                        </div>
+                        <div class="align-right">
+                            <i class="fa-solid fa-angle-down inverse-toggle"></i>
+                        </div>
+                    </a>
+                </li>
+                    <ul id="conta-submenu" class="toggled">
+                        {% for conta in contas %}
+                        <li>
+                            <a href="{% url 'listar_movimentacoes_conta_id' conta.id %}">{{ conta }}</a>
                         </li>
-                        <li class="sub-menu-item">
-                            <a href="{% url 'listar_categorias' %}" class="sub-menu-item-link">Listar Categorias</a>
-                        </li>
-                        <li class="sub-menu-item">
-                            <a href="{% url 'listar_categorias_tipo' tipo='entrada' %}" class="sub-menu-item-link">Listar Categorias de Entradas</a>
-                        </li>
-                        <li class="sub-menu-item">
-                            <a href="{% url 'listar_categorias_tipo' tipo='saida' %}" class="sub-menu-item-link">Listar Categorias de Saídas</a>
-                        </li>
+                        {% endfor %}
                     </ul>
+                <!-- FIM EXEMPLO ÍTEM COM DROPDOWN -->
             </ul>
         </aside>

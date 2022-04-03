@@ -1,0 +1,40 @@
+{% extends "index.html" %}
+
+    {% block title %}Exclusão da conta {{ conta.numero }}{% endblock title %}
+
+    {% block content %}
+        <div class="box box-primary">
+            <form method="post">
+                <div class="box-title">
+                    <h3>
+                        Atenção! Você está prestes a excluir a conta com {{ conta.numero }} do banco
+                        {{ conta.banco }}. Esta operação é irreversível.
+                    </h3>
+                </div>
+                <div class="box-body">
+                    <p>Banco: <b>{{ conta.banco }}</b></p>
+                    <p>Agência: <b>{{ conta.agencia }}</b></p>
+                    <p>Número: <b>{{ conta.numero }}</b></p>
+                    <p>Saldo: <b>{{ conta.saldo }}</b></p>
+                    <p>Limite: <b>{{ conta.limite }}</b></p>
+                    <br>
+                    <div class="btn-danger">
+                        <p>
+                        {% csrf_token %}
+                        {{ form_exclusao }}
+                        Sim, desejo excluir e estou ciente de que esta operação é irreversível.
+                        </p>
+                    </div>
+                </div>
+                <div class="box-footer">
+                    <form method="post">
+                        {% csrf_token %}
+                        <a href="{{request.META.HTTP_REFERER}}"><input type="button" value="Voltar" class="btn btn-primary"></a>
+                        <input type="submit" value="Excluir" class="btn btn-danger">
+                    </form>
+                </div>
+            </form>
+
+        </div>
+
+    {% endblock content %}
