@@ -15,7 +15,7 @@ def cadastrar_subcategoria(request):
                 categoria=form_subcategoria.cleaned_data['categoria']
             )
             subcategoria_service.cadastrar_subcategoria(subcategoria)
-            return redirect('listar_movimentacoes')
+            return redirect('listar_mes_atual')
     else:
         form_subcategoria = subcategoria_form.SubCategoriaForm()
     template_tags['form_subcategoria'] = form_subcategoria
@@ -38,7 +38,7 @@ def editar_subcategoria(request, id):
             categoria=form_subcategoria.cleaned_data['categoria']
         )
         subcategoria_service.editar_subcategoria(subcategoria_antiga, subcategoria_nova)
-        return redirect('listar_movimentacoes')
+        return redirect('listar_mes_atual')
     template_tags['subcategoria_antiga'] = subcategoria_antiga
     template_tags['form_subcategoria'] = form_subcategoria
     template_tags['contas'] = conta_service.listar_contas(request.user)
