@@ -4,14 +4,17 @@ from ..models import Movimentacao
 def cadastrar_movimentacao(movimentacao):
     Movimentacao.objects.create(
         data=movimentacao.data,
+        pagamento=movimentacao.pagamento,
         conta=movimentacao.conta,
         cartao=movimentacao.cartao,
         categoria=movimentacao.categoria,
+        subcategoria=movimentacao.subcategoria,
         descricao=movimentacao.descricao,
         valor=movimentacao.valor,
         parcelas=movimentacao.parcelas,
         pagas=movimentacao.pagas,
         fixa=movimentacao.fixa,
+        anual=movimentacao.anual,
         moeda=movimentacao.moeda,
         observacao=movimentacao.observacao,
         lembrar=movimentacao.lembrar,
@@ -36,14 +39,17 @@ def listar_movimentacao_id(id, usuario):
 
 def editar_movimentacao(movimentacao_antiga, movimentacao_nova):
     movimentacao_antiga.data = movimentacao_nova.data
+    movimentacao_antiga.pagamento = movimentacao_nova.pagamento
     movimentacao_antiga.conta = movimentacao_nova.conta
     movimentacao_antiga.cartao = movimentacao_nova.cartao
     movimentacao_antiga.categoria = movimentacao_nova.categoria
+    movimentacao_antiga.subcategoria = movimentacao_nova.subcategoria
     movimentacao_antiga.descricao = movimentacao_nova.descricao
     movimentacao_antiga.valor = movimentacao_nova.valor
     movimentacao_antiga.parcelas = movimentacao_nova.parcelas
     movimentacao_antiga.pagas = movimentacao_nova.pagas
     movimentacao_antiga.fixa = movimentacao_nova.fixa
+    movimentacao_antiga.anual = movimentacao_nova.anual
     movimentacao_antiga.moeda = movimentacao_nova.moeda
     movimentacao_antiga.observacao = movimentacao_nova.observacao
     movimentacao_antiga.lembrar = movimentacao_nova.lembrar

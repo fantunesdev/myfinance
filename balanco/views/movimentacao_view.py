@@ -29,14 +29,17 @@ def cadastrar_movimentacao(request, tipo):
         if form_movimentacao.is_valid():
             movimentacao = Movimentacao(
                 data=form_movimentacao.cleaned_data['data'],
+                pagamento=form_movimentacao.cleaned_data['pagamento'],
                 conta=form_movimentacao.cleaned_data['conta'],
                 cartao=form_movimentacao.cleaned_data['cartao'],
                 categoria=form_movimentacao.cleaned_data['categoria'],
+                subcategoria=form_movimentacao.cleaned_data['subcategoria'],
                 descricao=form_movimentacao.cleaned_data['descricao'],
                 valor=form_movimentacao.cleaned_data['valor'],
                 parcelas=form_movimentacao.cleaned_data['parcelas'],
                 pagas=form_movimentacao.cleaned_data['pagas'],
                 fixa=form_movimentacao.cleaned_data['fixa'],
+                anual=form_movimentacao.cleaned_data['anual'],
                 moeda=form_movimentacao.cleaned_data['moeda'],
                 observacao=form_movimentacao.cleaned_data['observacao'],
                 lembrar=form_movimentacao.cleaned_data['lembrar'],
@@ -46,7 +49,7 @@ def cadastrar_movimentacao(request, tipo):
                 usuario=request.user
             )
 
-            if not movimentacao.conta:
+            if movimentacao.conta:
                 if tipo == 'entrada':
                     depositar(movimentacao.conta, movimentacao.valor)
                 else:
@@ -89,14 +92,17 @@ def editar_movimentacao(request, id):
     if form_movimentacao.is_valid():
         movimentacao_nova = Movimentacao(
             data=form_movimentacao.cleaned_data['data'],
+            pagamento=form_movimentacao.cleaned_data['pagamento'],
             conta=form_movimentacao.cleaned_data['conta'],
             cartao=form_movimentacao.cleaned_data['cartao'],
             categoria=form_movimentacao.cleaned_data['categoria'],
+            subcategoria=form_movimentacao.cleaned_data['subcategoria'],
             descricao=form_movimentacao.cleaned_data['descricao'],
             valor=form_movimentacao.cleaned_data['valor'],
             parcelas=form_movimentacao.cleaned_data['parcelas'],
             pagas=form_movimentacao.cleaned_data['pagas'],
             fixa=form_movimentacao.cleaned_data['fixa'],
+            anual=form_movimentacao.cleaned_data['anual'],
             moeda=form_movimentacao.cleaned_data['moeda'],
             observacao=form_movimentacao.cleaned_data['observacao'],
             lembrar=form_movimentacao.cleaned_data['lembrar'],
@@ -157,7 +163,4 @@ def configurar(request):
     template_tags['movimentacoes'] = movimentacao_service.listar_movimentacoes(request.user)
     template_tags['contas'] = conta_service.listar_contas(request.user)
     template_tags['cartoes'] = cartao_service.listar_cartoes(request.user)
-
-    for i in template_tags['contas']:
-        print(f'"{i.tipo}","{i.descricao}","{i.cor}","{i.icone}"')
     return render(request, 'general/settings.html', template_tags)
