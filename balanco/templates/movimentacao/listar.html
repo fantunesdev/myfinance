@@ -6,7 +6,7 @@
     {% block content %}
         {% for mes in meses %}
         <a href="{% url 'listar_movimentacoes_ano_mes' mes|date:'Y' mes|date:'m' %}">
-            <input type="button" value="{{ mes | date:'M' }}" class="btn btn-primary" style="margin: 5px;">
+            <input type="button" value="{{ mes | date:'M-y' }}" class="btn btn-primary" style="margin: 5px;">
         </a>
         {% endfor %}
         <div class="box box-primary">
