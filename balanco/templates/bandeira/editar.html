@@ -1,5 +1,7 @@
 {% extends "bandeira/form_bandeira.html" %}
 
+{% block title %}Editar Bandeira{% endblock %}
+
 {% block excluir %}
     <a href="{% url 'remover_bandeira' bandeira_antiga.id %}"><input type="button" value="Excluir" class="btn btn-danger"></a>
 {% endblock excluir %}

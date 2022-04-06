@@ -1,7 +1,7 @@
 {% extends 'index.html' %}
 {% load static %}
 {% load meus_filtros %}
-    {% block title %}Balanço{% endblock %}
+    {% block title %}Extrato {{ ano_mes | date:'M' }} de {{ ano_mes | date:'y' }}{% endblock %}
 
     {% block content %}
         {% for mes in meses %}
@@ -45,7 +45,7 @@
         </div>
         <div class="box box-primary">
             <div class="box-header">
-                <h3 class="box-title">Balanço</h3>
+                <h3 class="box-title">Extrato {{ ano_mes | date:'F' }} de {{ ano_mes | date:'Y' }}</h3>
             </div>
             <div class="box-body">
                 <table class="table">

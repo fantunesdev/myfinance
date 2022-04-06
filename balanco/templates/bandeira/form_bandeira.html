@@ -5,7 +5,11 @@
     {% block content %}
         <div class="box box-primary">
             <div class="box-header">
-                <h3 class="box-title">Cadastrar Nova Bandeira</h3>
+                {% if bandeira_antiga %}
+                <h3 class="box-title">Editar Bandeira</h3>
+                {% else %}
+                <h3 class="box-title">Cadastrar Bandeira</h3>
+                {% endif %}
             </div>
             <form method="post" enctype="multipart/form-data">
                 <div class="box-body">

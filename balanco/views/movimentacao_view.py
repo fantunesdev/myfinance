@@ -1,4 +1,5 @@
 import copy
+import datetime
 from datetime import date
 
 from django.contrib.auth.decorators import login_required
@@ -13,7 +14,8 @@ from balanco.services import movimentacao_service, banco_service, bandeira_servi
 
 template_tags = {
     'ano_atual': date.today().year,
-    'mes_atual': date.today().month
+    'mes_atual': date.today().month,
+    'ano_mes': date.today()
 }
 
 
@@ -90,6 +92,7 @@ def listar_movimentacoes_ano_mes(request, ano, mes):
     template_tags['movimentacoes'] = movimentacao_service.listar_movimentacoes_ano_mes(ano, mes, request.user)
     template_tags['meses'] = movimentacao_service.listar_anos_meses(request.user)
     template_tags['contas'] = conta_service.listar_contas(request.user)
+    template_tags['ano_mes'] = datetime.date(ano, mes, 1)
     return render(request, 'movimentacao/listar.html', template_tags)
 
 
