@@ -24,7 +24,9 @@ def cadastrar_categoria(request):
         form_categoria = CategoriaForm()
     template_tags['contas'] = conta_service.listar_contas(request.user)
     template_tags['form_categoria'] = form_categoria
-    return render(request, 'categoria/cadastrar.html', template_tags)
+    if 'categoria_antiga' in template_tags.keys():
+        template_tags.pop('categoria_antiga')
+    return render(request, 'categoria/form_categoria.html', template_tags)
 
 
 @login_required
