@@ -133,21 +133,17 @@ def editar_movimentacao(request, id):
             tela_inicial=form_movimentacao.cleaned_data['tela_inicial'],
             usuario=request.user
         )
-        if movimentacao_antiga.tipo == 'entrada':
-            sacar(copia_movimentacao_antiga.conta, copia_movimentacao_antiga.valor)
-
-            if copia_movimentacao_antiga.conta == movimentacao_nova.conta:
-                movimentacao_nova.conta.saldo = copia_movimentacao_antiga.conta.saldo
-
-            depositar(movimentacao_nova.conta, movimentacao_nova.valor)
-        else:
-            depositar(copia_movimentacao_antiga.conta, copia_movimentacao_antiga.valor)
-
-            if copia_movimentacao_antiga.conta == movimentacao_nova.conta:
-                movimentacao_nova.conta.saldo = copia_movimentacao_antiga.conta.saldo
-
-            sacar(movimentacao_nova.conta, movimentacao_nova.valor)
-
+        if movimentacao_nova.conta:
+            if movimentacao_antiga.tipo == 'entrada':
+                sacar(copia_movimentacao_antiga.conta, copia_movimentacao_antiga.valor)
+                if copia_movimentacao_antiga.conta == movimentacao_nova.conta:
+                    movimentacao_nova.conta.saldo = copia_movimentacao_antiga.conta.saldo
+                depositar(movimentacao_nova.conta, movimentacao_nova.valor)
+            else:
+                depositar(copia_movimentacao_antiga.conta, copia_movimentacao_antiga.valor)
+                if copia_movimentacao_antiga.conta == movimentacao_nova.conta:
+                    movimentacao_nova.conta.saldo = copia_movimentacao_antiga.conta.saldo
+                sacar(movimentacao_nova.conta, movimentacao_nova.valor)
         movimentacao_service.editar_movimentacao(movimentacao_antiga, movimentacao_nova)
         return redirect('listar_mes_atual')
     template_tags['form_movimentacao'] = form_movimentacao
