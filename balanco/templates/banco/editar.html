@@ -1,5 +1,7 @@
 {% extends "banco/form_banco.html" %}
 
+{% block title %}Editar Banco{% endblock %}
+
 {% block excluir %}
     <a href="{% url 'remover_banco' banco_antigo.id %}"><input type="button" value="Excluir" class="btn btn-danger"></a>
 {% endblock excluir %}

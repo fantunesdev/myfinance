@@ -1,6 +1,6 @@
 {% extends 'index.html' %}
 
-    {% block title %}Cadastrar Conta{% endblock title %}
+    {% block title %}Cadastrar Cartão{% endblock title %}
 
     {% block content %}
         <div class="box box-primary">
@@ -8,7 +8,7 @@
                 {% if cartao_antigo %}
                 <h3 class="box-title">Editar Cartão</h3>
                 {% else %}
-                <h3 class="box-title">Cadastrar Novo Cartão</h3>
+                <h3 class="box-title">Cadastrar Cartão</h3>
                 {% endif %}
             </div>
             <form method="post" enctype="multipart/form-data">

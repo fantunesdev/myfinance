@@ -1,11 +1,15 @@
 {% extends 'index.html' %}
 
-    {% block title %}Cadastrar Bandeira{% endblock title %}
+{% block title %}Cadastrar Banco{% endblock %}
 
     {% block content %}
         <div class="box box-primary">
             <div class="box-header">
-                <h3 class="box-title">Cadastrar Nova Bandeira</h3>
+                {% if banco_antigo %}
+                <h3 class="box-title">Editar Banco</h3>
+                {% else %}
+                <h3 class="box-title">Cadastrar Banco</h3>
+                {% endif %}
             </div>
             <form method="post" enctype="multipart/form-data">
                 <div class="box-body">
