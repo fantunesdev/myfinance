@@ -31,7 +31,7 @@ def cadastrar_movimentacao(request, tipo):
         if form_movimentacao.is_valid():
             movimentacao = Movimentacao(
                 data=form_movimentacao.cleaned_data['data'],
-                pagamento=form_movimentacao.cleaned_data['pagamento'],
+                pagamento=form_movimentacao.cleaned_data['data'],
                 conta=form_movimentacao.cleaned_data['conta'],
                 cartao=form_movimentacao.cleaned_data['cartao'],
                 categoria=form_movimentacao.cleaned_data['categoria'],
@@ -57,7 +57,11 @@ def cadastrar_movimentacao(request, tipo):
                 else:
                     sacar(movimentacao.conta, movimentacao.valor)
 
-            movimentacao_service.cadastrar_movimentacao(movimentacao)
+            if movimentacao.parcelas > 0:
+                parcelar(movimentacao)
+            else:
+                movimentacao_service.cadastrar_movimentacao(movimentacao)
+
             return redirect('listar_mes_atual')
         else:
             print(form_movimentacao.errors)
