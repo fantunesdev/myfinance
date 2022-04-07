@@ -30,7 +30,7 @@ def listar_movimentacoes(usuario):
 
 
 def listar_movimentacoes_ano_mes(ano, mes, usuario):
-    return Movimentacao.objects.filter(data__year=ano, pagamento__month=mes, usuario=usuario).order_by('data')
+    return Movimentacao.objects.filter(pagamento__year=ano, pagamento__month=mes, usuario=usuario).order_by('data')
 
 
 def listar_anos_meses(usuario):

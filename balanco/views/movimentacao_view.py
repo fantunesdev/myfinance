@@ -70,6 +70,11 @@ def cadastrar_movimentacao(request, tipo):
     template_tags['form_movimentacao'] = form_movimentacao
     template_tags['tipo'] = tipo
     template_tags['contas'] = conta_service.listar_contas(request.user)
+    try:
+        if template_tags['movimentacao_antiga']:
+            template_tags.pop('movimentacao_antiga')
+    except KeyError:
+        pass
     return render(request, 'movimentacao/form_movimentacao.html', template_tags)
 
 

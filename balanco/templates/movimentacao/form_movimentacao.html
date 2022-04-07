@@ -5,9 +5,13 @@
     {% block content %}
         <div class="box box-primary">
             <div class="box-header">
-                {% if tipo == 'entrada' %}
+                {% if tipo == 'entrada' and movimentacao_antiga %}
+                <h3 class="box-title">Editar Entrada</h3>
+                {% elif tipo == 'saida' and movimentacao_antiga %}
+                <h3 class="box-title">Editar Saída</h3>
+                {% elif tipo == 'entrada' and not movimentacao_antiga %}
                 <h3 class="box-title">Cadastrar Entrada</h3>
-                {% else %}
+                {% elif tipo == 'saida' and not movimentacao_antiga %}
                 <h3 class="box-title">Cadastrar Saída</h3>
                 {% endif %}
             </div>
@@ -16,8 +20,14 @@
                         {% csrf_token %}
 
                         {{ form_movimentacao.data.errors }}
-                        <label for="id_data">Data</label>
+                        <label for="id_data">Data do Lançamento</label>
                         {{ form_movimentacao.data }}
+
+                        {% if movimentacao_antiga %}
+                        {{ form_movimentacao.pagamento.errors }}
+                        <label for="id_pagamento">Data de Efetivação</label>
+                        {{ form_movimentacao.pagamento }}
+                        {% endif %}
 
                         {{ form_movimentacao.conta.errors }}
                         <label for="id_conta">Conta</label>
