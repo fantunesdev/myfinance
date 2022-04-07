@@ -43,10 +43,17 @@ def somar_mes(movimentacao, repeticao):
     # Criar um campo fechamento no CRUD de cartões
     movimentacao_cartao_fechamento = 3
     if movimentacao.cartao:
-        movimentacao.data_efetivacao = date(movimentacao.data_lancamento.year, movimentacao.data_lancamento.month, movimentacao.cartao.vencimento)
+        movimentacao.data_efetivacao = date(movimentacao.data_lancamento.year,
+                                            movimentacao.data_lancamento.month,
+                                            movimentacao.cartao.vencimento)
         if movimentacao.data_lancamento.day >= movimentacao_cartao_fechamento:
             movimentacao.data_efetivacao += relativedelta(months=1)
         movimentacao.data_efetivacao += relativedelta(months=repeticao)
+    else:
+        if repeticao == 0:
+            movimentacao.data_efetivacao += relativedelta(months=0)
+        else:
+            movimentacao.data_efetivacao += relativedelta(months=1)
     return movimentacao.data_efetivacao
 
 
