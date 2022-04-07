@@ -35,9 +35,17 @@
                         <label for="id_vencimento">Vencimento</label>
                         {{ form_cartao.vencimento }}
 
+                        {{ form_cartao.fechamento.errors }}
+                        <label for="id_fechamento">Fechamento</label>
+                        {{ form_cartao.fechamento }}
+
                         {{ form_cartao.tela_inicial.errors }}
                         {{ form_cartao.tela_inicial }}
                         <label for="id_tela_inicial">Tela Inicial</label><br>
+
+                        {{ form_cartao.icone.errors }}
+                        <label for="id_icone">Ícone</label>
+                        {{ form_cartao.icone }}
                 </div>
                 <div class="box-footer">
                     <input class="btn btn-primary" type="submit" name="Cadastrar">

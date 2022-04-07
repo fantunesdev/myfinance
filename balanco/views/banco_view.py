@@ -33,7 +33,7 @@ def listar_bancos(request):
 @login_required
 def editar_banco(request, id):
     banco_antigo = banco_service.listar_banco(id)
-    form_banco = BancoForm(request.POST or None, instance=banco_antigo)
+    form_banco = BancoForm(request.POST or None, request.FILES or None, instance=banco_antigo)
     if form_banco.is_valid():
         banco_novo = Banco(
             descricao=form_banco.cleaned_data['descricao'],

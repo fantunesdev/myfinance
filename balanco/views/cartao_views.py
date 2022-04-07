@@ -11,14 +11,16 @@ from balanco.forms.cartao_form import CartaoForm
 @login_required
 def cadastrar_cartao(request):
     if request.method == 'POST':
-        form_cartao = CartaoForm(request.POST)
+        form_cartao = CartaoForm(request.POST, request.FILES)
         if form_cartao.is_valid():
             cartao = Cartao(
                 bandeira=form_cartao.cleaned_data['bandeira'],
+                icone=form_cartao.cleaned_data['icone'],
                 descricao=form_cartao.cleaned_data['descricao'],
                 limite=form_cartao.cleaned_data['limite'],
                 conta=form_cartao.cleaned_data['conta'],
                 vencimento=form_cartao.cleaned_data['vencimento'],
+                fechamento=form_cartao.cleaned_data['fechamento'],
                 tela_inicial=form_cartao.cleaned_data['tela_inicial'],
                 usuario=request.user
             )
@@ -41,17 +43,20 @@ def listar_cartoes(request):
 @login_required
 def editar_cartao(request, id):
     cartao_antigo = cartao_service.listar_cartao_id(id, request.user)
-    form_cartao = CartaoForm(request.POST or None, instance=cartao_antigo)
+    form_cartao = CartaoForm(request.POST or None, request.FILES or None, instance=cartao_antigo)
     if form_cartao.is_valid():
         cartao_novo = Cartao(
-            bandeira=form_cartao.cleaned_data['bandeira'],
-            descricao=form_cartao.cleaned_data['descricao'],
-            limite=form_cartao.cleaned_data['limite'],
-            conta=form_cartao.cleaned_data['conta'],
-            vencimento=form_cartao.cleaned_data['vencimento'],
-            tela_inicial=form_cartao.cleaned_data['tela_inicial'],
-            usuario=request.user
-        )
+                bandeira=form_cartao.cleaned_data['bandeira'],
+                icone=form_cartao.cleaned_data['icone'],
+                descricao=form_cartao.cleaned_data['descricao'],
+                limite=form_cartao.cleaned_data['limite'],
+                conta=form_cartao.cleaned_data['conta'],
+                vencimento=form_cartao.cleaned_data['vencimento'],
+                fechamento=form_cartao.cleaned_data['fechamento'],
+                tela_inicial=form_cartao.cleaned_data['tela_inicial'],
+                usuario=request.user
+            )
+        print(cartao_novo.icone)
         cartao_service.editar_cartao(cartao_antigo, cartao_novo)
         return redirect('listar_mes_atual')
     template_tags['cartao_antigo'] = cartao_antigo

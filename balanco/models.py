@@ -69,10 +69,12 @@ class Bandeira(models.Model):
 
 class Cartao(models.Model):
     bandeira = models.ForeignKey(Bandeira, on_delete=models.PROTECT)
+    icone = models.ImageField(upload_to='imagens/', null=True, blank=True)
     descricao = models.CharField(max_length=30)
     limite = models.FloatField(default=0)
     conta = models.ForeignKey(Conta, on_delete=models.PROTECT, null=True, blank=True)
     vencimento = models.IntegerField(blank=False, null=False)
+    fechamento = models.IntegerField(blank=False, null=False)
     tela_inicial = models.BooleanField(default=False,)
     usuario = models.ForeignKey(Usuario, on_delete=models.PROTECT)
 
