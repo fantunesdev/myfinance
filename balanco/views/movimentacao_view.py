@@ -31,7 +31,7 @@ def cadastrar_movimentacao(request, tipo):
         if form_movimentacao.is_valid():
             movimentacao = Movimentacao(
                 data=form_movimentacao.cleaned_data['data'],
-                pagamento=form_movimentacao.cleaned_data['pagamento'],
+                pagamento=form_movimentacao.cleaned_data['data'],
                 conta=form_movimentacao.cleaned_data['conta'],
                 cartao=form_movimentacao.cleaned_data['cartao'],
                 categoria=form_movimentacao.cleaned_data['categoria'],
@@ -57,7 +57,11 @@ def cadastrar_movimentacao(request, tipo):
                 else:
                     sacar(movimentacao.conta, movimentacao.valor)
 
-            movimentacao_service.cadastrar_movimentacao(movimentacao)
+            if movimentacao.parcelas > 0:
+                parcelar(movimentacao)
+            else:
+                movimentacao_service.cadastrar_movimentacao(movimentacao)
+
             return redirect('listar_mes_atual')
         else:
             print(form_movimentacao.errors)
@@ -84,6 +88,9 @@ def listar_mes_atual(request):
                                                                                        usuario=request.user)
     template_tags['meses'] = movimentacao_service.listar_anos_meses(request.user)
     template_tags['contas'] = conta_service.listar_contas(request.user)
+    template_tags['ano_mes'] = date.today()
+    template_tags['mes_proximo'] = template_tags['ano_mes'] + relativedelta(months=1)
+    template_tags['mes_anterior'] = template_tags['ano_mes'] - relativedelta(months=1)
     return render(request, 'movimentacao/listar.html', template_tags)
 
 
@@ -93,6 +100,8 @@ def listar_movimentacoes_ano_mes(request, ano, mes):
     template_tags['meses'] = movimentacao_service.listar_anos_meses(request.user)
     template_tags['contas'] = conta_service.listar_contas(request.user)
     template_tags['ano_mes'] = datetime.date(ano, mes, 1)
+    template_tags['mes_proximo'] = template_tags['ano_mes'] + relativedelta(months=1)
+    template_tags['mes_anterior'] = template_tags['ano_mes'] - relativedelta(months=1)
     return render(request, 'movimentacao/listar.html', template_tags)
 
 
