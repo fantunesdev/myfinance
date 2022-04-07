@@ -40,13 +40,11 @@ def parcelar(movimentacao):
 
 
 def somar_mes(movimentacao, repeticao):
-    # Criar um campo fechamento no CRUD de cartões
-    movimentacao_cartao_fechamento = 3
     if movimentacao.cartao:
         movimentacao.data_efetivacao = date(movimentacao.data_lancamento.year,
                                             movimentacao.data_lancamento.month,
                                             movimentacao.cartao.vencimento)
-        if movimentacao.data_lancamento.day >= movimentacao_cartao_fechamento:
+        if movimentacao.data_lancamento.day >= movimentacao.cartao.fechamento:
             movimentacao.data_efetivacao += relativedelta(months=1)
         movimentacao.data_efetivacao += relativedelta(months=repeticao)
     else:
