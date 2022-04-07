@@ -19,14 +19,14 @@
                 <div class="box-body">
                         {% csrf_token %}
 
-                        {{ form_movimentacao.data.errors }}
-                        <label for="id_data">Data do Lançamento</label>
-                        {{ form_movimentacao.data }}
+                        {{ form_movimentacao.data_lancamento.errors }}
+                        <label for="id_data_lancamento">Data do Lançamento</label>
+                        {{ form_movimentacao.data_lancamento }}
 
                         {% if movimentacao_antiga %}
-                        {{ form_movimentacao.pagamento.errors }}
-                        <label for="id_pagamento">Data de Efetivação</label>
-                        {{ form_movimentacao.pagamento }}
+                        {{ form_movimentacao.data_efetivacao.errors }}
+                        <label for="id_data_efetivacao">Data de Efetivação</label>
+                        {{ form_movimentacao.data_efetivacao }}
                         {% endif %}
 
                         {{ form_movimentacao.conta.errors }}
@@ -76,6 +76,12 @@
                         {{ form_movimentacao.observacao.errors }}
                         <label for="id_observacao">Observação</label>
                         {{ form_movimentacao.observacao }}
+
+                        {% if not movimentacao_antiga %}
+                        {{ form_movimentacao.data_efetivacao.errors }}
+                        <label for="id_data_efetivacao">Data de Efetivação</label>
+                        {{ form_movimentacao.data_efetivacao }}
+                        {% endif %}
 
                         {{ form_movimentacao.lembrar.errors }}
                         {{ form_movimentacao.lembrar }}

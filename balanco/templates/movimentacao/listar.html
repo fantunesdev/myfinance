@@ -67,7 +67,7 @@
                     <tbody>
                         {% for i in movimentacoes %}
                         <tr style="border-left: solid 3px {{ i.categoria.cor }}">
-                            <td>{{ i.data | date:"d/m"}}</td>
+                            <td>{{ i.data_lancamento | date:"d/m"}}</td>
                             {% if i.conta %}
                             <td><img src="{{ i.conta.banco.icone.url }}" alt="Logotipo do banco" style="max-height: 25px;"></td>
                             {% else %}

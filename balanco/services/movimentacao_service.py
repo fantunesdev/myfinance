@@ -3,8 +3,8 @@ from ..models import Movimentacao
 
 def cadastrar_movimentacao(movimentacao):
     Movimentacao.objects.create(
-        data=movimentacao.data,
-        pagamento=movimentacao.pagamento,
+        data_lancamento=movimentacao.data_lancamento,
+        data_efetivacao=movimentacao.data_efetivacao,
         conta=movimentacao.conta,
         cartao=movimentacao.cartao,
         categoria=movimentacao.categoria,
@@ -30,11 +30,11 @@ def listar_movimentacoes(usuario):
 
 
 def listar_movimentacoes_ano_mes(ano, mes, usuario):
-    return Movimentacao.objects.filter(pagamento__year=ano, pagamento__month=mes, usuario=usuario).order_by('data')
+    return Movimentacao.objects.filter(data_efetivacao__year=ano, data_efetivacao__month=mes, usuario=usuario).order_by('data_lancamento')
 
 
 def listar_anos_meses(usuario):
-    anos_meses = Movimentacao.objects.filter(usuario=usuario).dates(field_name='pagamento', kind='month', order='DESC')[:12]
+    anos_meses = Movimentacao.objects.filter(usuario=usuario).dates(field_name='data_efetivacao', kind='month', order='DESC')[:12]
     return reversed(anos_meses)
 
 
@@ -47,8 +47,8 @@ def listar_movimentacao_id(id, usuario):
 
 
 def editar_movimentacao(movimentacao_antiga, movimentacao_nova):
-    movimentacao_antiga.data = movimentacao_nova.data
-    movimentacao_antiga.pagamento = movimentacao_nova.pagamento
+    movimentacao_antiga.data_lancamento = movimentacao_nova.data_lancamento
+    movimentacao_antiga.data_efetivacao = movimentacao_nova.data_efetivacao
     movimentacao_antiga.conta = movimentacao_nova.conta
     movimentacao_antiga.cartao = movimentacao_nova.cartao
     movimentacao_antiga.categoria = movimentacao_nova.categoria

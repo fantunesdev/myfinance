@@ -91,8 +91,8 @@ class Movimentacao(models.Model):
         ('entrada', 'Entrada'),
         ('saida', 'Saída')
     )
-    data = models.DateField()
-    pagamento = models.DateField()
+    data_lancamento = models.DateField()
+    data_efetivacao = models.DateField()
     conta = models.ForeignKey(Conta, on_delete=models.PROTECT, null=True, blank=True)
     cartao = models.ForeignKey(Cartao, on_delete=models.PROTECT, null=True, blank=True)
     categoria = models.ForeignKey(Categoria, on_delete=models.PROTECT)

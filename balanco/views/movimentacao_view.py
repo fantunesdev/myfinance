@@ -30,8 +30,8 @@ def cadastrar_movimentacao(request, tipo):
         form_movimentacao = form(request.POST)
         if form_movimentacao.is_valid():
             movimentacao = Movimentacao(
-                data=form_movimentacao.cleaned_data['data'],
-                pagamento=form_movimentacao.cleaned_data['data'],
+                data_lancamento=form_movimentacao.cleaned_data['data_lancamento'],
+                data_efetivacao=form_movimentacao.cleaned_data['data_efetivacao'],
                 conta=form_movimentacao.cleaned_data['conta'],
                 cartao=form_movimentacao.cleaned_data['cartao'],
                 categoria=form_movimentacao.cleaned_data['categoria'],
@@ -127,8 +127,8 @@ def editar_movimentacao(request, id):
     copia_movimentacao_antiga = copy.deepcopy(movimentacao_antiga)
     if form_movimentacao.is_valid():
         movimentacao_nova = Movimentacao(
-            data=form_movimentacao.cleaned_data['data'],
-            pagamento=form_movimentacao.cleaned_data['pagamento'],
+            data_lancamento=form_movimentacao.cleaned_data['data_lancamento'],
+            data_efetivacao=form_movimentacao.cleaned_data['data_efetivacao'],
             conta=form_movimentacao.cleaned_data['conta'],
             cartao=form_movimentacao.cleaned_data['cartao'],
             categoria=form_movimentacao.cleaned_data['categoria'],

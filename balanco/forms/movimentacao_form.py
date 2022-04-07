@@ -7,15 +7,15 @@ attrs = {
     'class': 'form-control'
 }
 hoje = timezone.localtime(timezone.now()).strftime('%Y-%m-%d')
-fields = ['data', 'pagamento', 'conta', 'cartao', 'categoria', 'subcategoria', 'descricao', 'valor', 'parcelas',
-          'pagas', 'fixa', 'anual', 'moeda', 'observacao', 'lembrar', 'efetivado', 'tela_inicial']
+fields = ['data_lancamento', 'data_efetivacao', 'conta', 'cartao', 'categoria', 'subcategoria', 'descricao', 'valor',
+          'parcelas', 'pagas', 'fixa', 'anual', 'moeda', 'observacao', 'lembrar', 'efetivado', 'tela_inicial']
 widgets = {
-    'data': forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date',
-                                                      'value': hoje,
-                                                      'class': 'form-control'}),
-    'pagamento': forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date',
-                                                           'class': 'form-control',
-                                                           'required': False}),
+    'data_lancamento': forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date',
+                                                                 'value': hoje,
+                                                                 'class': 'form-control'}),
+    'data_efetivacao': forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date',
+                                                                 'class': 'form-control',
+                                                                 'value': hoje}),
     'valor': forms.NumberInput(attrs={'class': 'form-control'}),
     'parcelas': forms.NumberInput(attrs={'class': 'form-control'}),
     'pagas': forms.NumberInput(attrs={'class': 'form-control'}),
