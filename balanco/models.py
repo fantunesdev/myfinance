@@ -25,6 +25,9 @@ class SubCategoria(models.Model):
     def __str__(self):
         return self.descricao
 
+    class Meta:
+        ordering = ['descricao']
+
 
 class Banco(models.Model):
     descricao = models.CharField(max_length=30)
