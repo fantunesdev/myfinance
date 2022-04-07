@@ -88,6 +88,9 @@ def listar_mes_atual(request):
                                                                                        usuario=request.user)
     template_tags['meses'] = movimentacao_service.listar_anos_meses(request.user)
     template_tags['contas'] = conta_service.listar_contas(request.user)
+    template_tags['ano_mes'] = date.today()
+    template_tags['mes_proximo'] = template_tags['ano_mes'] + relativedelta(months=1)
+    template_tags['mes_anterior'] = template_tags['ano_mes'] - relativedelta(months=1)
     return render(request, 'movimentacao/listar.html', template_tags)
 
 
@@ -97,6 +100,8 @@ def listar_movimentacoes_ano_mes(request, ano, mes):
     template_tags['meses'] = movimentacao_service.listar_anos_meses(request.user)
     template_tags['contas'] = conta_service.listar_contas(request.user)
     template_tags['ano_mes'] = datetime.date(ano, mes, 1)
+    template_tags['mes_proximo'] = template_tags['ano_mes'] + relativedelta(months=1)
+    template_tags['mes_anterior'] = template_tags['ano_mes'] - relativedelta(months=1)
     return render(request, 'movimentacao/listar.html', template_tags)
 
 
