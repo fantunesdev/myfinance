@@ -53,3 +53,10 @@ def somar_mes(movimentacao, repeticao):
     else:
         mes += repeticao
     return date(ano, mes, dia)
+
+
+def criar_id_parcela():
+    id_parcela = ''
+    for i in range(8):
+        id_parcela += random.choice(string.ascii_letters + string.digits)
+    return id_parcela
