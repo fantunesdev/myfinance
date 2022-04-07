@@ -2,6 +2,7 @@ import random
 import string
 
 from datetime import date
+from dateutil.relativedelta import relativedelta
 
 from balanco.services import conta_service, movimentacao_service
 from balanco.utils.balance_error import BalanceError
@@ -39,20 +40,14 @@ def parcelar(movimentacao):
 
 
 def somar_mes(movimentacao, repeticao):
-    dia = movimentacao.data.day
-    mes = movimentacao.data.month
-    ano = movimentacao.data.year
     # Criar um campo fechamento no CRUD de cartões
     movimentacao_cartao_fechamento = 3
     if movimentacao.cartao:
-        dia = movimentacao.cartao.vencimento
+        movimentacao.pagamento = date(movimentacao.data.year, movimentacao.data.month, movimentacao.cartao.vencimento)
         if movimentacao.data.day >= movimentacao_cartao_fechamento:
-            mes += 1
-    if mes > 12:
-        mes = 1
-    else:
-        mes += repeticao
-    return date(ano, mes, dia)
+            movimentacao.pagamento += relativedelta(months=1)
+        movimentacao.pagamento += relativedelta(months=repeticao)
+    return movimentacao.pagamento
 
 
 def criar_id_parcela():
