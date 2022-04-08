@@ -38,7 +38,7 @@ def cadastrar_movimentacao(request, tipo):
                 subcategoria=form_movimentacao.cleaned_data['subcategoria'],
                 descricao=form_movimentacao.cleaned_data['descricao'],
                 valor=form_movimentacao.cleaned_data['valor'],
-                parcelas=form_movimentacao.cleaned_data['parcelas'],
+                numero_parcelas=form_movimentacao.cleaned_data['numero_parcelas'],
                 pagas=form_movimentacao.cleaned_data['pagas'],
                 fixa=form_movimentacao.cleaned_data['fixa'],
                 anual=form_movimentacao.cleaned_data['anual'],
@@ -57,8 +57,8 @@ def cadastrar_movimentacao(request, tipo):
                 else:
                     sacar(movimentacao.conta, movimentacao.valor)
 
-            if movimentacao.parcelas > 0:
-                parcelar(movimentacao)
+            if movimentacao.numero_parcelas > 0:
+                parcelas = parcelar(movimentacao)
             else:
                 movimentacao_service.cadastrar_movimentacao(movimentacao)
 
@@ -118,6 +118,16 @@ def listar_movimentacoes_conta_id(request, id):
 
 
 @login_required
+def detalhar_movimentacao(request, id):
+    template_tags['movimentacao'] = movimentacao_service.listar_movimentacao_id(id, request.user)
+    parcelamento = parcelamento_service.listar_parcelamento_id(2)
+    print(parcelamento)
+    template_tags['parcelamento'] = parcelamento
+    template_tags['contas'] = conta_service.listar_contas(request.user)
+    return render(request, 'movimentacao/detalhes.html', template_tags)
+
+
+@login_required
 def editar_movimentacao(request, id):
     movimentacao_antiga = movimentacao_service.listar_movimentacao_id(id, request.user)
     if movimentacao_antiga.tipo == 'entrada':
@@ -135,7 +145,7 @@ def editar_movimentacao(request, id):
             subcategoria=form_movimentacao.cleaned_data['subcategoria'],
             descricao=form_movimentacao.cleaned_data['descricao'],
             valor=form_movimentacao.cleaned_data['valor'],
-            parcelas=form_movimentacao.cleaned_data['parcelas'],
+            numero_parcelas=form_movimentacao.cleaned_data['numero_parcelas'],
             pagas=form_movimentacao.cleaned_data['pagas'],
             fixa=form_movimentacao.cleaned_data['fixa'],
             anual=form_movimentacao.cleaned_data['anual'],
