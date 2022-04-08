@@ -2,7 +2,7 @@ from ..models import Movimentacao
 
 
 def cadastrar_movimentacao(movimentacao):
-    Movimentacao.objects.create(
+    movimentacao = Movimentacao.objects.create(
         data_lancamento=movimentacao.data_lancamento,
         data_efetivacao=movimentacao.data_efetivacao,
         conta=movimentacao.conta,
@@ -11,7 +11,7 @@ def cadastrar_movimentacao(movimentacao):
         subcategoria=movimentacao.subcategoria,
         descricao=movimentacao.descricao,
         valor=movimentacao.valor,
-        parcelas=movimentacao.parcelas,
+        numero_parcelas=movimentacao.numero_parcelas,
         pagas=movimentacao.pagas,
         fixa=movimentacao.fixa,
         anual=movimentacao.anual,
@@ -23,6 +23,7 @@ def cadastrar_movimentacao(movimentacao):
         tela_inicial=movimentacao.tela_inicial,
         usuario=movimentacao.usuario
     )
+    return movimentacao
 
 
 def listar_movimentacoes(usuario):
@@ -55,7 +56,7 @@ def editar_movimentacao(movimentacao_antiga, movimentacao_nova):
     movimentacao_antiga.subcategoria = movimentacao_nova.subcategoria
     movimentacao_antiga.descricao = movimentacao_nova.descricao
     movimentacao_antiga.valor = movimentacao_nova.valor
-    movimentacao_antiga.parcelas = movimentacao_nova.parcelas
+    movimentacao_antiga.numero_parcelas = movimentacao_nova.numero_parcelas
     movimentacao_antiga.pagas = movimentacao_nova.pagas
     movimentacao_antiga.fixa = movimentacao_nova.fixa
     movimentacao_antiga.anual = movimentacao_nova.anual

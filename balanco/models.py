@@ -104,7 +104,7 @@ class Movimentacao(models.Model):
     subcategoria = models.ForeignKey(SubCategoria, on_delete=models.PROTECT)
     descricao = models.CharField(max_length=50,)
     valor = models.FloatField(default=0)
-    parcelas = models.IntegerField(default=0)
+    numero_parcelas = models.IntegerField(default=0)
     pagas = models.IntegerField(default=0)
     fixa = models.BooleanField(default=False)
     anual = models.BooleanField(default=False)

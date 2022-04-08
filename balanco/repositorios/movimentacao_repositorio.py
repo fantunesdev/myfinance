@@ -31,12 +31,15 @@ def transferir(conta_saida, conta_entrada, valor):
 
 
 def parcelar(movimentacao):
+    parcelas = []
     descricao = movimentacao.descricao
-    for i in range(0, movimentacao.parcelas):
+    for i in range(0, movimentacao.numero_parcelas):
         movimentacao.pagamento = somar_mes(movimentacao, i)
         movimentacao.pagas += 1
-        movimentacao.descricao = f'{descricao} ({movimentacao.pagas}/{movimentacao.parcelas})'
-        movimentacao_service.cadastrar_movimentacao(movimentacao)
+        movimentacao.descricao = f'{descricao} ({movimentacao.pagas}/{movimentacao.numero_parcelas})'
+        parcela = movimentacao_service.cadastrar_movimentacao(movimentacao)
+        parcelas.append(parcela)
+    return parcelas
 
 
 def somar_mes(movimentacao, repeticao):

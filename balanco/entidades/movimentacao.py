@@ -1,6 +1,7 @@
 class Movimentacao():
     def __init__(self, data_lancamento, data_efetivacao, conta, cartao, categoria, subcategoria, descricao, valor,
-                 parcelas, pagas, fixa, anual, moeda, observacao, lembrar, tipo, efetivado, tela_inicial, usuario):
+                 numero_parcelas, pagas, fixa, anual, moeda, observacao, lembrar, tipo, efetivado, tela_inicial,
+                 usuario):
         self.data_lancamento = data_lancamento
         self.data_efetivacao = data_efetivacao
         self.conta = conta
@@ -9,7 +10,7 @@ class Movimentacao():
         self.subcategoria = subcategoria
         self.descricao = descricao
         self.valor = valor
-        self.parcelas = parcelas
+        self.numero_parcelas = numero_parcelas
         self.pagas = pagas
         self.fixa = fixa
         self.anual = anual
