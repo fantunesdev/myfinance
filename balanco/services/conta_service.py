@@ -1,5 +1,4 @@
 from ..models import Conta
-from ..utils.balance_error import BalanceError
 
 
 def cadastrar_conta(conta):
@@ -36,11 +35,8 @@ def editar_conta(conta_antiga, conta_nova):
 
 
 def sacar(conta, valor):
-    if conta.saldo + conta.limite - valor >= 0:
-        conta.saldo -= valor
-        conta.save(force_update=True)
-    else:
-        raise BalanceError('Não há saldo disponível.')
+    conta.saldo -= valor
+    conta.save(force_update=True)
 
 
 def depositar(conta, valor):

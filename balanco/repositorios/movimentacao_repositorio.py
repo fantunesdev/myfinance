@@ -5,30 +5,70 @@ from datetime import date
 from dateutil.relativedelta import relativedelta
 
 from balanco.entidades.parcelamento import Parcelamento
+from balanco.forms.movimentacao_form import MovimentacaoSaidaForm, MovimentacaoEntradaForm
 from balanco.services import conta_service, movimentacao_service, parcelamento_service
-from balanco.utils.balance_error import BalanceError
+
+
+def validar_formulario_tipo(tipo, *args):
+    try:
+        request = args[0]
+        movimentacao_antiga = args[1]
+        if tipo == 'entrada':
+            return MovimentacaoEntradaForm(request.POST or None, instance=movimentacao_antiga)
+        else:
+            return MovimentacaoSaidaForm(request.POST or None, instance=movimentacao_antiga)
+    except IndexError:
+        if tipo == 'entrada':
+            return MovimentacaoEntradaForm(*args)
+        return MovimentacaoSaidaForm(*args)
+
+
+def validar_conta_parcelamento(movimentacao):
+    validar_saldo_conta(movimentacao)
+    validar_parcelamento(movimentacao)
+
+
+def validar_saldo_conta(movimentacao):
+    if movimentacao.conta:
+        if movimentacao.tipo == 'entrada':
+            depositar(movimentacao.conta, movimentacao.valor)
+        else:
+            sacar(movimentacao.conta, movimentacao.valor)
+
+
+def validar_saldo_conta_delete(movimentacao):
+    if movimentacao.conta:
+        if movimentacao.tipo == 'entrada':
+            sacar(movimentacao.conta, movimentacao.valor)
+        else:
+            depositar(movimentacao.conta, movimentacao.valor)
+
+
+def validar_saldo_conta_nova(movimentacao_antiga, movimentacao_nova, copia_movimentacao_antiga):
+    if movimentacao_nova.conta:
+        if movimentacao_antiga.tipo == 'entrada':
+            sacar(copia_movimentacao_antiga.conta, copia_movimentacao_antiga.valor)
+            if copia_movimentacao_antiga.conta == movimentacao_nova.conta:
+                movimentacao_nova.conta.saldo = copia_movimentacao_antiga.conta.saldo
+            depositar(movimentacao_nova.conta, movimentacao_nova.valor)
+        else:
+            depositar(copia_movimentacao_antiga.conta, copia_movimentacao_antiga.valor)
+            if copia_movimentacao_antiga.conta == movimentacao_nova.conta:
+                movimentacao_nova.conta.saldo = copia_movimentacao_antiga.conta.saldo
+            sacar(movimentacao_nova.conta, movimentacao_nova.valor)
 
 
 def sacar(conta, valor):
-    try:
-        conta_service.sacar(conta, valor)
-    except BalanceError:
-        raise BalanceError('Não há saldo')
+    conta_service.sacar(conta, valor)
 
 
 def depositar(conta, valor):
-    try:
-        conta_service.depositar(conta, valor)
-    except:
-        raise
+    conta_service.depositar(conta, valor)
 
 
 def transferir(conta_saida, conta_entrada, valor):
-    try:
-        conta_service.sacar(conta_saida, valor)
-        conta_service.depositar(conta_entrada, valor)
-    except BalanceError:
-        raise BalanceError('Não há saldo')
+    conta_service.sacar(conta_saida, valor)
+    conta_service.depositar(conta_entrada, valor)
 
 
 def validar_parcelamento(movimentacao):
@@ -40,13 +80,13 @@ def validar_parcelamento(movimentacao):
 
 def parcelar(movimentacao):
     descricao = movimentacao.descricao
-    parcela = Parcelamento(usuario=movimentacao.usuario)
-    parcela_db = parcela_service.cadastrar_parcela(parcela)
+    parcelamento = Parcelamento(usuario=movimentacao.usuario)
+    parcelamento_db = parcelamento_service.cadastrar_parcelamento(parcelamento)
     for i in range(0, movimentacao.numero_parcelas):
         movimentacao.pagamento = somar_mes(movimentacao, i)
         movimentacao.pagas += 1
         movimentacao.descricao = f'{descricao} ({movimentacao.pagas}/{movimentacao.numero_parcelas})'
-        movimentacao.parcela = parcela_db
+        movimentacao.parcela = parcelamento_db
         movimentacao_service.cadastrar_movimentacao(movimentacao)
 
 

@@ -32,10 +32,10 @@
                         <tr>
                             {% for conta in contas %}
                             {% if conta.tela_inicial %}
-                            {% if saldo < 0 %}
-                            <td style="color: #960000">{{ conta.saldo }}</td>
+                            {% if conta.saldo < 0 %}
+                            <td style="color: #960000; font-size: 16px"><b>{{ conta.saldo | formatar_reais }}</b></td>
                             {% else %}
-                            <td style="color: #009600">{{ conta.saldo }}</td>
+                            <td style="color: #009600; font-size: 16px"><b>{{ conta.saldo | formatar_reais }}</b></td>
                             {% endif %}
                             {% endif %}
                             {% endfor %}

@@ -7,7 +7,6 @@ from django.shortcuts import redirect, render
 
 from balanco.entidades.movimentacao import Movimentacao
 from balanco.forms.general_form import ExclusaoForm
-from balanco.forms.movimentacao_form import MovimentacaoSaidaForm, MovimentacaoEntradaForm
 from balanco.repositorios.movimentacao_repositorio import *
 from balanco.services import movimentacao_service, banco_service, bandeira_service, categoria_service, conta_service, \
     cartao_service
@@ -21,13 +20,8 @@ template_tags = {
 
 @login_required
 def cadastrar_movimentacao(request, tipo):
-    if tipo == 'entrada':
-        form = lambda *args: MovimentacaoEntradaForm(*args)
-    else:
-        form = lambda *args: MovimentacaoSaidaForm(*args)
-
     if request.method == 'POST':
-        form_movimentacao = form(request.POST)
+        form_movimentacao = validar_formulario_tipo(tipo, request.POST)
         if form_movimentacao.is_valid():
             movimentacao = Movimentacao(
                 data_lancamento=form_movimentacao.cleaned_data['data_lancamento'],
@@ -49,22 +43,12 @@ def cadastrar_movimentacao(request, tipo):
                 efetivado=form_movimentacao.cleaned_data['efetivado'],
                 tela_inicial=form_movimentacao.cleaned_data['tela_inicial'],
                 usuario=request.user,
-                parcela=None
+                parcelamento=None
             )
-
-            if movimentacao.conta:
-                if tipo == 'entrada':
-                    depositar(movimentacao.conta, movimentacao.valor)
-                else:
-                    sacar(movimentacao.conta, movimentacao.valor)
-
-            validar_parcelamento(movimentacao)
-
+            validar_conta_parcelamento(movimentacao)
             return redirect('listar_mes_atual')
-        else:
-            print(form_movimentacao.errors)
     else:
-        form_movimentacao = form()
+        form_movimentacao = validar_formulario_tipo(tipo)
     template_tags['form_movimentacao'] = form_movimentacao
     template_tags['tipo'] = tipo
     template_tags['contas'] = conta_service.listar_contas(request.user)
@@ -128,10 +112,7 @@ def detalhar_movimentacao(request, id):
 @login_required
 def editar_movimentacao(request, id):
     movimentacao_antiga = movimentacao_service.listar_movimentacao_id(id, request.user)
-    if movimentacao_antiga.tipo == 'entrada':
-        form_movimentacao = MovimentacaoEntradaForm(request.POST or None, instance=movimentacao_antiga)
-    else:
-        form_movimentacao = MovimentacaoSaidaForm(request.POST or None, instance=movimentacao_antiga)
+    form_movimentacao = validar_formulario_tipo(movimentacao_antiga.tipo, request, movimentacao_antiga)
     copia_movimentacao_antiga = copy.deepcopy(movimentacao_antiga)
     if form_movimentacao.is_valid():
         movimentacao_nova = Movimentacao(
@@ -154,19 +135,9 @@ def editar_movimentacao(request, id):
             efetivado=form_movimentacao.cleaned_data['efetivado'],
             tela_inicial=form_movimentacao.cleaned_data['tela_inicial'],
             usuario=request.user,
-            parcela=None
+            parcelamento=None
         )
-        if movimentacao_nova.conta:
-            if movimentacao_antiga.tipo == 'entrada':
-                sacar(copia_movimentacao_antiga.conta, copia_movimentacao_antiga.valor)
-                if copia_movimentacao_antiga.conta == movimentacao_nova.conta:
-                    movimentacao_nova.conta.saldo = copia_movimentacao_antiga.conta.saldo
-                depositar(movimentacao_nova.conta, movimentacao_nova.valor)
-            else:
-                depositar(copia_movimentacao_antiga.conta, copia_movimentacao_antiga.valor)
-                if copia_movimentacao_antiga.conta == movimentacao_nova.conta:
-                    movimentacao_nova.conta.saldo = copia_movimentacao_antiga.conta.saldo
-                sacar(movimentacao_nova.conta, movimentacao_nova.valor)
+        validar_saldo_conta_nova(movimentacao_antiga, movimentacao_nova, copia_movimentacao_antiga)
         movimentacao_service.editar_movimentacao(movimentacao_antiga, movimentacao_nova)
         return redirect('listar_mes_atual')
     template_tags['form_movimentacao'] = form_movimentacao
@@ -180,15 +151,9 @@ def remover_movimentacao(request, id):
     movimentacao = movimentacao_service.listar_movimentacao_id(id, request.user)
     form_exclusao = ExclusaoForm()
     if request.POST.get('confirmacao'):
-        try:
-            movimentacao_service.remover_movimentacao(movimentacao)
-            if movimentacao.tipo == 'entrada':
-                sacar(movimentacao.conta, movimentacao.valor)
-            else:
-                depositar(movimentacao.conta, movimentacao.valor)
-            return redirect('listar_mes_atual')
-        except:
-            return False
+        movimentacao_service.remover_movimentacao(movimentacao)
+        validar_saldo_conta_delete(movimentacao)
+        return redirect('listar_mes_atual')
     template_tags['form_exclusao'] = form_exclusao
     template_tags['movimentacao'] = movimentacao
     template_tags['contas'] = conta_service.listar_contas(request.user)
