@@ -24,13 +24,41 @@
                 <p style="font-size: 18px;">Descrição: <b>{{ movimentacao.descricao }}</b></p>
                 <p style="font-size: 18px;">Valor: <b>{{ movimentacao.valor }}</b></p>
                 <p style="font-size: 18px;">Moeda: <b>{{ movimentacao.moeda }}</b></p>
-                <p style="font-size: 18px;">Número de Parcelas: <b>{{ movimentacao.numero_parcelas }} (<a href="">Visualizar parcelas</a>)</b></p>
+                <p style="font-size: 18px;">Número de Parcelas: <b>{{ movimentacao.numero_parcelas }}</b></p>
                 <p style="font-size: 18px;">Fixo: <b>{{ movimentacao.fixa }}</b></p>
                 <p style="font-size: 18px;">Repetir: <b>{{ movimentacao.repetir }}</b></p>
                 <p style="font-size: 18px;">Observação: <b>{{ movimentacao.observacao }}</b></p>
                 <p style="font-size: 18px;">Lembrar: <b>{{ movimentacao.lembrar }}</b></p>
                 <p style="font-size: 18px;">Tipo: <b>{{ movimentacao.tipo }}</b></p>
                 <p style="font-size: 18px;">Efetivado: <b>{{ movimentacao.efetivado }}</b></p>
+                {% if movimentacao.numero_parcelas > 0 %}
+                <p style="font-size: 18px;">Parcelamento:</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Data de Lançamento</th>
+                            <th>Data de Efetivação</th>
+                            <th>Descricao</th>
+                            <th>Valor</th>
+                            <th>Editar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for i in parcelamento %}
+                    <tr>
+                        <td>{{ i.data_lancamento }}</td>
+                        <td>{{ i.data_efetivacao }}</td>
+                        <td>{{ i.descricao }}</td>
+                        <td>{{ i.valor }}</td>
+                        <td><a href="{% url 'editar_movimentacao' i.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                <br>
+                <input type="button" value="Editar Parcelamento" class="btn btn-primary">
+                <input type="button" value="Excluir Parcelamento" class="btn btn-danger">
+                {% endif %}
             </div>
             <div class="box-footer">
 

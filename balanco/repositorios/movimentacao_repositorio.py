@@ -4,7 +4,8 @@ import string
 from datetime import date
 from dateutil.relativedelta import relativedelta
 
-from balanco.services import conta_service, movimentacao_service
+from balanco.entidades.parcelamento import Parcelamento
+from balanco.services import conta_service, movimentacao_service, parcelamento_service
 from balanco.utils.balance_error import BalanceError
 
 
@@ -30,16 +31,23 @@ def transferir(conta_saida, conta_entrada, valor):
         raise BalanceError('Não há saldo')
 
 
+def validar_parcelamento(movimentacao):
+    if movimentacao.numero_parcelas > 0:
+        parcelar(movimentacao)
+    else:
+        movimentacao_service.cadastrar_movimentacao(movimentacao)
+
+
 def parcelar(movimentacao):
-    parcelas = []
     descricao = movimentacao.descricao
+    parcela = Parcelamento(usuario=movimentacao.usuario)
+    parcela_db = parcela_service.cadastrar_parcela(parcela)
     for i in range(0, movimentacao.numero_parcelas):
         movimentacao.pagamento = somar_mes(movimentacao, i)
         movimentacao.pagas += 1
         movimentacao.descricao = f'{descricao} ({movimentacao.pagas}/{movimentacao.numero_parcelas})'
-        parcela = movimentacao_service.cadastrar_movimentacao(movimentacao)
-        parcelas.append(parcela)
-    return parcelas
+        movimentacao.parcela = parcela_db
+        movimentacao_service.cadastrar_movimentacao(movimentacao)
 
 
 def somar_mes(movimentacao, repeticao):

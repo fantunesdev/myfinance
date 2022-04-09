@@ -91,6 +91,13 @@ class Moeda(models.Model):
         return self.descricao
 
 
+class Parcelamento(models.Model):
+    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.id} - {self.usuario}'
+
+
 class Movimentacao(models.Model):
     TIPO_CHOICES = (
         ('entrada', 'Entrada'),
@@ -115,6 +122,7 @@ class Movimentacao(models.Model):
     efetivado = models.BooleanField(default=False)
     tela_inicial = models.BooleanField(default=True)
     usuario = models.ForeignKey(Usuario, on_delete=models.PROTECT)
+    parcelamento = models.ForeignKey(Parcelamento, null=True, blank=True, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.descricao

@@ -21,7 +21,8 @@ def cadastrar_movimentacao(movimentacao):
         tipo=movimentacao.tipo,
         efetivado=movimentacao.efetivado,
         tela_inicial=movimentacao.tela_inicial,
-        usuario=movimentacao.usuario
+        usuario=movimentacao.usuario,
+        parcela=movimentacao.parcela
     )
     return movimentacao
 
@@ -41,6 +42,10 @@ def listar_anos_meses(usuario):
 
 def listar_movimentacoes_conta_id(id, usuario):
     return Movimentacao.objects.filter(conta=id, usuario=usuario)
+
+
+def listar_movimentacoes_parcelamento(movimentacao):
+    return Movimentacao.objects.filter(parcelamento=movimentacao.parcelamento, usuario=movimentacao.usuario)
 
 
 def listar_movimentacao_id(id, usuario):
@@ -67,6 +72,7 @@ def editar_movimentacao(movimentacao_antiga, movimentacao_nova):
     movimentacao_antiga.efetivado = movimentacao_nova.efetivado
     movimentacao_antiga.tela_inicial = movimentacao_nova.tela_inicial
     movimentacao_antiga.usuario = movimentacao_nova.usuario
+    movimentacao_antiga.parcela = movimentacao_nova.parcela
     movimentacao_antiga.save(force_update=True)
 
 

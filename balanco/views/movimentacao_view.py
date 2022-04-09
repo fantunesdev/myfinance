@@ -48,7 +48,8 @@ def cadastrar_movimentacao(request, tipo):
                 tipo=tipo,
                 efetivado=form_movimentacao.cleaned_data['efetivado'],
                 tela_inicial=form_movimentacao.cleaned_data['tela_inicial'],
-                usuario=request.user
+                usuario=request.user,
+                parcela=None
             )
 
             if movimentacao.conta:
@@ -57,10 +58,7 @@ def cadastrar_movimentacao(request, tipo):
                 else:
                     sacar(movimentacao.conta, movimentacao.valor)
 
-            if movimentacao.numero_parcelas > 0:
-                parcelas = parcelar(movimentacao)
-            else:
-                movimentacao_service.cadastrar_movimentacao(movimentacao)
+            validar_parcelamento(movimentacao)
 
             return redirect('listar_mes_atual')
         else:
@@ -119,9 +117,9 @@ def listar_movimentacoes_conta_id(request, id):
 
 @login_required
 def detalhar_movimentacao(request, id):
-    template_tags['movimentacao'] = movimentacao_service.listar_movimentacao_id(id, request.user)
-    parcelamento = parcelamento_service.listar_parcelamento_id(2)
-    print(parcelamento)
+    movimentacao = movimentacao_service.listar_movimentacao_id(id, request.user)
+    parcelamento = movimentacao_service.listar_movimentacoes_parcelamento(movimentacao)
+    template_tags['movimentacao'] = movimentacao
     template_tags['parcelamento'] = parcelamento
     template_tags['contas'] = conta_service.listar_contas(request.user)
     return render(request, 'movimentacao/detalhes.html', template_tags)
@@ -155,7 +153,8 @@ def editar_movimentacao(request, id):
             tipo=movimentacao_antiga.tipo,
             efetivado=form_movimentacao.cleaned_data['efetivado'],
             tela_inicial=form_movimentacao.cleaned_data['tela_inicial'],
-            usuario=request.user
+            usuario=request.user,
+            parcela=None
         )
         if movimentacao_nova.conta:
             if movimentacao_antiga.tipo == 'entrada':
