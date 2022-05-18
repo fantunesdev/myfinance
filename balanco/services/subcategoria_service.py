@@ -4,7 +4,8 @@ from ..models import SubCategoria
 def cadastrar_subcategoria(subcategoria):
     SubCategoria.objects.create(
         descricao=subcategoria.descricao,
-        categoria=subcategoria.categoria
+        categoria=subcategoria.categoria,
+        usuario=subcategoria.usuario,
     )
 
 

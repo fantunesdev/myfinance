@@ -12,12 +12,14 @@ def cadastrar_subcategoria(request):
         if form_subcategoria.is_valid():
             subcategoria = SubCategoria(
                 descricao=form_subcategoria.cleaned_data['descricao'],
-                categoria=form_subcategoria.cleaned_data['categoria']
+                categoria=form_subcategoria.cleaned_data['categoria'],
+                usuario=request.user
             )
             subcategoria_service.cadastrar_subcategoria(subcategoria)
             return redirect('listar_mes_atual')
     else:
         form_subcategoria = subcategoria_form.SubCategoriaForm()
+    template_tags['subcategoria_antiga'] = None
     template_tags['form_subcategoria'] = form_subcategoria
     template_tags['contas'] = conta_service.listar_contas(request.user)
     return render(request, 'subcategoria/form_subcategoria.html', template_tags)
@@ -31,11 +33,12 @@ def listar_subcategorias(request):
 
 def editar_subcategoria(request, id):
     subcategoria_antiga = subcategoria_service.listar_subcategoria_id(id, request.user)
-    form_subcategoria = subcategoria_form.SubCategoriaForm(request.POST or None)
+    form_subcategoria = subcategoria_form.SubCategoriaForm(request.POST or None, instance=subcategoria_antiga)
     if form_subcategoria.is_valid():
         subcategoria_nova = SubCategoria(
             descricao=form_subcategoria.cleaned_data['descricao'],
-            categoria=form_subcategoria.cleaned_data['categoria']
+            categoria=form_subcategoria.cleaned_data['categoria'],
+            usuario=request.user
         )
         subcategoria_service.editar_subcategoria(subcategoria_antiga, subcategoria_nova)
         return redirect('listar_mes_atual')

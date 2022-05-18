@@ -23,11 +23,9 @@
                         <label for="id_data_lancamento">Data do Lançamento</label>
                         {{ form_movimentacao.data_lancamento }}
 
-                        {% if movimentacao_antiga %}
                         {{ form_movimentacao.data_efetivacao.errors }}
                         <label for="id_data_efetivacao">Data de Efetivação</label>
                         {{ form_movimentacao.data_efetivacao }}
-                        {% endif %}
 
                         {{ form_movimentacao.conta.errors }}
                         <label for="id_conta">Conta</label>
@@ -76,12 +74,6 @@
                         {{ form_movimentacao.observacao.errors }}
                         <label for="id_observacao">Observação</label>
                         {{ form_movimentacao.observacao }}
-
-                        {% if not movimentacao_antiga %}
-                        {{ form_movimentacao.data_efetivacao.errors }}
-                        <label for="id_data_efetivacao">Data de Efetivação</label>
-                        {{ form_movimentacao.data_efetivacao }}
-                        {% endif %}
 
                         {{ form_movimentacao.lembrar.errors }}
                         {{ form_movimentacao.lembrar }}

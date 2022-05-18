@@ -1,6 +1,6 @@
 {% extends 'index.html' %}
 
-    {% block title %}Cadastrar Bandeira{% endblock title %}
+    {% block title %}Formulário Sub-Categoria{% endblock title %}
 
     {% block content %}
         <div class="box box-primary">
@@ -15,13 +15,13 @@
                 <div class="box-body">
                         {% csrf_token %}
 
-                        {{ form_bandeira.descricao.errors }}
+                        {{ form_subcategoria.descricao.errors }}
                         <label for="id_descricao">Descricao</label>
-                        {{ form_bandeira.descricao }}
+                        {{ form_subcategoria.descricao }}
 
-                        {{ form_bandeira.categoria.errors }}
+                        {{ form_subcategoria.categoria.errors }}
                         <label for="id_categoria">Categoria</label>
-                        {{ form_bandeira.categoria }}
+                        {{ form_subcategoria.categoria }}
                 </div>
                 <div class="box-footer">
                     <input class="btn btn-primary" type="submit" name="Cadastrar">

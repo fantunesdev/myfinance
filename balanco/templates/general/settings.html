@@ -145,6 +145,37 @@
 
         <div class="box box-primary">
             <div class="box-header">
+                <h3 class="box-title">Listar Sub-Categorias de Entrada</h3>
+            </div>
+            <div class="box-body">
+                <a href="{% url 'cadastrar_subcategoria' %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Descrição</th>
+                            <th>Categoria</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for subcategoria in subcategorias %}
+                        {% if subcategoria.categoria.tipo == 'entrada' %}
+                        <tr>
+                            <td>{{ subcategoria.descricao }}</td>
+                            <td>{{ subcategoria.categoria }}</td>
+                            <td><a href="{% url 'editar_subcategoria' subcategoria.id %}">Editar</a></td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="box-footer">
+                <span>Total de ítens listados: {{ subcategorias.count }}</span>
+            </div>
+        </div>
+        <div class="box box-primary">
+            <div class="box-header">
                 <h3 class="box-title">Listar Categorias de Saída</h3>
             </div>
             <div class="box-body">
@@ -174,6 +205,37 @@
             </div>
             <div class="box-footer">
                 <span>Total de ítens listados: {{ categorias.count }}</span>
+            </div>
+        </div>
+        <div class="box box-primary">
+            <div class="box-header">
+                <h3 class="box-title">Listar Sub-Categorias de Saída</h3>
+            </div>
+            <div class="box-body">
+                <a href="{% url 'cadastrar_subcategoria' %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Descrição</th>
+                            <th>Categoria</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for subcategoria in subcategorias %}
+                        {% if subcategoria.categoria.tipo == 'saida' %}
+                        <tr>
+                            <td>{{ subcategoria.descricao }}</td>
+                            <td>{{ subcategoria.categoria }}</td>
+                            <td><a href="{% url 'editar_subcategoria' subcategoria.id %}">Editar</a></td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="box-footer">
+                <span>Total de ítens listados: {{ subcategorias.count }}</span>
             </div>
         </div>
         <div class="box box-primary">

@@ -9,7 +9,7 @@ from balanco.entidades.movimentacao import Movimentacao
 from balanco.forms.general_form import ExclusaoForm
 from balanco.repositorios.movimentacao_repositorio import *
 from balanco.services import movimentacao_service, banco_service, bandeira_service, categoria_service, conta_service, \
-    cartao_service
+    cartao_service, subcategoria_service
 
 template_tags = {
     'ano_atual': date.today().year,
@@ -70,12 +70,13 @@ def listar_movimentacoes(request):
 
 @login_required
 def listar_mes_atual(request):
-    template_tags['movimentacoes'] = movimentacao_service.listar_movimentacoes_ano_mes(ano=date.today().year,
-                                                                                       mes=date.today().month,
+    mes_atual = date.today() if date.today().day < 10 else date.today() + relativedelta(months=1)
+    template_tags['movimentacoes'] = movimentacao_service.listar_movimentacoes_ano_mes(ano=mes_atual.year,
+                                                                                       mes=mes_atual.month,
                                                                                        usuario=request.user)
     template_tags['meses'] = movimentacao_service.listar_anos_meses(request.user)
     template_tags['contas'] = conta_service.listar_contas(request.user)
-    template_tags['ano_mes'] = date.today()
+    template_tags['ano_mes'] = mes_atual
     template_tags['mes_proximo'] = template_tags['ano_mes'] + relativedelta(months=1)
     template_tags['mes_anterior'] = template_tags['ano_mes'] - relativedelta(months=1)
     return render(request, 'movimentacao/listar.html', template_tags)
@@ -165,6 +166,7 @@ def configurar(request):
     template_tags['bancos'] = banco_service.listar_bancos()
     template_tags['bandeiras'] = bandeira_service.listar_bandeiras()
     template_tags['categorias'] = categoria_service.listar_categorias(request.user)
+    template_tags['subcategorias'] = subcategoria_service.listar_subcategorias(request.user)
     template_tags['contas'] = conta_service.listar_contas(request.user)
     template_tags['contas'] = conta_service.listar_contas(request.user)
     template_tags['cartoes'] = cartao_service.listar_cartoes(request.user)
