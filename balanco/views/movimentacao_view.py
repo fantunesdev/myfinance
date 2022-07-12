@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 
 from balanco.entidades.movimentacao import Movimentacao
-from balanco.forms.general_form import ExclusaoForm
+from balanco.forms.general_forms import *
 from balanco.repositorios.movimentacao_repositorio import *
 from balanco.services import movimentacao_service, banco_service, bandeira_service, categoria_service, conta_service, \
     cartao_service, subcategoria_service
@@ -49,6 +49,7 @@ def cadastrar_movimentacao(request, tipo):
             return redirect('listar_mes_atual')
     else:
         form_movimentacao = validar_formulario_tipo(tipo)
+    template_tags['form_meio_pagamento'] = MeioPagamentoForm()
     template_tags['form_movimentacao'] = form_movimentacao
     template_tags['tipo'] = tipo
     template_tags['contas'] = conta_service.listar_contas(request.user)

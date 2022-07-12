@@ -19,6 +19,8 @@
                 <div class="box-body">
                         {% csrf_token %}
 
+                        {{ form_meio_pagamento }}
+
                         {{ form_movimentacao.data_lancamento.errors }}
                         <label for="id_data_lancamento">Data do Lançamento</label>
                         {{ form_movimentacao.data_lancamento }}

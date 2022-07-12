@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 
 from balanco.entidades.cartao import Cartao
-from balanco.forms.general_form import ExclusaoForm
+from balanco.forms.general_forms import ExclusaoForm
 from balanco.services import cartao_service, conta_service
 from balanco.views.movimentacao_view import template_tags
 from balanco.forms.cartao_form import CartaoForm

@@ -2,7 +2,7 @@ from django.shortcuts import redirect, render
 
 from balanco.views.movimentacao_view import template_tags
 from balanco.entidades.subcategoria import Subcategoria
-from balanco.forms import subcategoria_form, general_form
+from balanco.forms import subcategoria_form, general_forms
 from balanco.services import subcategoria_service, conta_service
 
 

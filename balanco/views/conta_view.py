@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect
 from balanco.views.movimentacao_view import template_tags
 from balanco.entidades.conta import Conta
 from balanco.forms.conta_form import ContaForm
-from balanco.forms.general_form import ExclusaoForm
+from balanco.forms.general_forms import ExclusaoForm
 from balanco.services import conta_service
 
 

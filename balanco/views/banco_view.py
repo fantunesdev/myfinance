@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 
 from balanco.forms.banco_form import BancoForm
 from balanco.entidades.banco import Banco
-from balanco.forms.general_form import ExclusaoForm
+from balanco.forms.general_forms import ExclusaoForm
 from balanco.services import banco_service
 
 
