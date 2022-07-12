@@ -1,8 +1,8 @@
-from ..models import SubCategoria
+from ..models import Subcategoria
 
 
 def cadastrar_subcategoria(subcategoria):
-    SubCategoria.objects.create(
+    Subcategoria.objects.create(
         descricao=subcategoria.descricao,
         categoria=subcategoria.categoria,
         usuario=subcategoria.usuario,
@@ -10,11 +10,11 @@ def cadastrar_subcategoria(subcategoria):
 
 
 def listar_subcategorias(usuario):
-    return SubCategoria.objects.filter(usuario=usuario)
+    return Subcategoria.objects.filter(usuario=usuario)
 
 
 def listar_subcategoria_id(id, usuario):
-    return SubCategoria.objects.filter(id=id, usuario=usuario).first()
+    return Subcategoria.objects.filter(id=id, usuario=usuario).first()
 
 
 def editar_subcategoria(subcategoria_antiga, subcategoria_nova):

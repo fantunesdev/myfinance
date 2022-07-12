@@ -26,6 +26,8 @@ urlpatterns = [
 
     path('admin/', admin.site.urls),
 
+    path('api/', include('api.urls')),
+
     path('banco/', include('balanco.urls.banco_url')),
     path('bandeira/', include('balanco.urls.bandeira_url')),
     path('balanco/configurar/', configurar, name='configurar'),

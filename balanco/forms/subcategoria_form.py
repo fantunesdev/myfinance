@@ -1,11 +1,11 @@
 from django import forms
 
-from balanco.models import SubCategoria
+from balanco.models import Subcategoria
 
 
-class SubCategoriaForm(forms.ModelForm):
+class SubcategoriaForm(forms.ModelForm):
     class Meta:
-        model = SubCategoria
+        model = Subcategoria
         fields = ['descricao', 'categoria']
         widgets = {
             'descricao': forms.TextInput(attrs={'class': 'form-control'}),

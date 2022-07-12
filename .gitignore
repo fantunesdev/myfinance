@@ -1,4 +1,5 @@
 my_conf.py
-*/migrations/*
+balanco/migrations/*
+login/migrations/*
 /static/
 media/imagens/*

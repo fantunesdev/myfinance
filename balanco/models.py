@@ -8,7 +8,7 @@ class Categoria(models.Model):
         ('entrada', 'Entrada'),
         ('saida', 'Saída')
     )
-    tipo = models.CharField(max_length=7, choices=TIPO_CHOICES, default='saída')
+    tipo = models.CharField(max_length=7, choices=TIPO_CHOICES, default='saida')
     descricao = models.CharField(max_length=30)
     cor = models.CharField(max_length=7, null=True, blank=True)
     icone = models.CharField(max_length=100, null=True, blank=True)
@@ -18,7 +18,7 @@ class Categoria(models.Model):
         return self.descricao
 
 
-class SubCategoria(models.Model):
+class Subcategoria(models.Model):
     descricao = models.CharField(max_length=30)
     categoria = models.ForeignKey(Categoria, on_delete=models.PROTECT)
     usuario = models.ForeignKey(Usuario, on_delete=models.PROTECT)
@@ -109,7 +109,7 @@ class Movimentacao(models.Model):
     conta = models.ForeignKey(Conta, on_delete=models.PROTECT, null=True, blank=True)
     cartao = models.ForeignKey(Cartao, on_delete=models.PROTECT, null=True, blank=True)
     categoria = models.ForeignKey(Categoria, on_delete=models.PROTECT)
-    subcategoria = models.ForeignKey(SubCategoria, on_delete=models.PROTECT)
+    subcategoria = models.ForeignKey(Subcategoria, on_delete=models.PROTECT)
     descricao = models.CharField(max_length=50,)
     valor = models.FloatField(default=0)
     numero_parcelas = models.IntegerField(default=0)
