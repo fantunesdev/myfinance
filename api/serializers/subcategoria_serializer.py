@@ -1,6 +1,5 @@
 from rest_framework import serializers
 
-from api.serializers.categoria_serializer import CategoriaSerializer
 from balanco.models import Subcategoria
 
 
