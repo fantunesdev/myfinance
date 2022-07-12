@@ -80,8 +80,12 @@ def validar_parcelamento(movimentacao):
 
 def parcelar(movimentacao):
     descricao = movimentacao.descricao
-    parcelamento = Parcelamento(usuario=movimentacao.usuario)
+    parcelamento = Parcelamento(
+        data_lancamento=movimentacao.data_lancamento,
+        usuario=movimentacao.usuario
+    )
     parcelamento_db = parcelamento_service.cadastrar_parcelamento(parcelamento)
+    movimentacao.parcelamento = parcelamento_db
     for i in range(0, movimentacao.numero_parcelas):
         movimentacao.pagamento = somar_mes(movimentacao, i)
         movimentacao.pagas += 1
@@ -92,9 +96,11 @@ def parcelar(movimentacao):
 
 def somar_mes(movimentacao, repeticao):
     if movimentacao.cartao:
-        movimentacao.data_efetivacao = date(movimentacao.data_lancamento.year,
-                                            movimentacao.data_lancamento.month,
-                                            movimentacao.cartao.vencimento)
+        movimentacao.data_efetivacao = date(
+            movimentacao.data_lancamento.year,
+            movimentacao.data_lancamento.month,
+            movimentacao.cartao.vencimento
+        )
         if movimentacao.data_lancamento.day >= movimentacao.cartao.fechamento:
             movimentacao.data_efetivacao += relativedelta(months=1)
         movimentacao.data_efetivacao += relativedelta(months=repeticao)

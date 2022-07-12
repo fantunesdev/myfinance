@@ -92,8 +92,9 @@
                 <div class="box-footer">
                     <input class="btn btn-primary" type="submit" name="Cadastrar">
                     <a href="{{request.META.HTTP_REFERER}}" class="btn btn-info">Voltar</a>
-                    {% block excluir %}
-                    {% endblock excluir %}
+                    {% if 'editar' in request.path %}
+                    <a href="{% url 'remover_movimentacao' movimentacao_antiga.id %}"><input type="button" value="Excluir" class="btn btn-danger"></a>
+                    {% endif %}
                 </div>
             </form>
         </div>

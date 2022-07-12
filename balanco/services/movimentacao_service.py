@@ -44,8 +44,13 @@ def listar_movimentacoes_conta_id(id, usuario):
     return Movimentacao.objects.filter(conta=id, usuario=usuario)
 
 
-def listar_movimentacoes_parcelamento(movimentacao):
-    return Movimentacao.objects.filter(parcelamento=movimentacao.parcelamento, usuario=movimentacao.usuario)
+def listar_movimentacoes_parcelamento(parcelamento):
+    movimentacoes = Movimentacao.objects.filter(
+        parcelamento=parcelamento,
+        parcelamento__isnull=False,
+        usuario=parcelamento.usuario
+    )
+    return movimentacoes
 
 
 def listar_movimentacao_id(id, usuario):

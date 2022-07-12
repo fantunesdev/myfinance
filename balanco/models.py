@@ -93,6 +93,7 @@ class Moeda(models.Model):
 
 
 class Parcelamento(models.Model):
+    data_lancamento = models.DateField()
     usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
 
     def __str__(self):

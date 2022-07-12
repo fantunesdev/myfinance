@@ -104,11 +104,11 @@ def listar_movimentacoes_conta_id(request, id):
 @login_required
 def detalhar_movimentacao(request, id):
     movimentacao = movimentacao_service.listar_movimentacao_id(id, request.user)
-    parcelamento = movimentacao_service.listar_movimentacoes_parcelamento(movimentacao)
+    if movimentacao.parcelamento:
+        template_tags['movimentacoes'] = movimentacao_service.listar_movimentacoes_parcelamento(movimentacao.parcelamento)
     template_tags['movimentacao'] = movimentacao
-    template_tags['parcelamento'] = parcelamento
     template_tags['contas'] = conta_service.listar_contas(request.user)
-    return render(request, 'movimentacao/detalhes.html', template_tags)
+    return render(request, 'movimentacao/detalhar_movimentacao.html', template_tags)
 
 
 @login_required
@@ -145,7 +145,7 @@ def editar_movimentacao(request, id):
     template_tags['form_movimentacao'] = form_movimentacao
     template_tags['movimentacao_antiga'] = movimentacao_antiga
     template_tags['contas'] = conta_service.listar_contas(request.user)
-    return render(request, 'movimentacao/editar.html', template_tags)
+    return render(request, 'movimentacao/form_movimentacao.html', template_tags)
 
 
 @login_required
@@ -159,7 +159,7 @@ def remover_movimentacao(request, id):
     template_tags['form_exclusao'] = form_exclusao
     template_tags['movimentacao'] = movimentacao
     template_tags['contas'] = conta_service.listar_contas(request.user)
-    return render(request, 'movimentacao/confirma_exclusao.html', template_tags)
+    return render(request, 'movimentacao/detalhar_movimentacao.html', template_tags)
 
 
 @login_required

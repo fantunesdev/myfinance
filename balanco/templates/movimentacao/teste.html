@@ -31,7 +31,15 @@
                 <p style="font-size: 18px;">Lembrar: <b>{{ movimentacao.lembrar }}</b></p>
                 <p style="font-size: 18px;">Tipo: <b>{{ movimentacao.tipo }}</b></p>
                 <p style="font-size: 18px;">Efetivado: <b>{{ movimentacao.efetivado }}</b></p>
-                {% if movimentacao.numero_parcelas > 0 %}
+                <br>
+                <div class="btn-danger">
+                    <p>
+                    {% csrf_token %}
+                    {{ form_exclusao }}
+                    Sim, desejo excluir e estou ciente de que esta operação é irreversível.
+                    </p>
+                </div>
+                {% if parcelamento %}
                 <p style="font-size: 18px;">Parcelamento:</p>
                 <table>
                     <thead>
@@ -61,7 +69,11 @@
                 {% endif %}
             </div>
             <div class="box-footer">
-
+                <form method="post">
+                    {% csrf_token %}
+                    <a href="{{request.META.HTTP_REFERER}}"><input type="button" value="Voltar" class="btn btn-primary"></a>
+                    <input type="submit" value="Excluir" class="btn btn-danger">
+                </form>
             </div>
         </div>
 
