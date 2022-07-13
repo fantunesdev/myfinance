@@ -20,77 +20,101 @@
                 <div class="box-body">
                         {% csrf_token %}
 
-                        {{ form_meio_pagamento }}
+                        <label for="id_meio_de_pagamento">Meio de Pagamento</label>
+                        {{ form_movimentacao.meio_de_pagamento }}
 
                         <div id="conta-cartao">
-                            {{ form_movimentacao.conta.errors }}
                             <label for="id_conta">Conta</label>
                             {{ form_movimentacao.conta }}
-    
-                            {{ form_movimentacao.cartao.errors }}
+                            {{ form_movimentacao.conta.errors }}
+
                             <label for="id_cartao">Cartao</label>
                             {{ form_movimentacao.cartao }}
+                            {{ form_movimentacao.cartao.errors }}
                         </div>
 
-                        {{ form_movimentacao.data_lancamento.errors }}
+                        {% if 'editar' in request.path %}
+                        <label for="id_tipo">Tipo</label>
+                        {{ form_movimentacao.tipo }}
+                        {{ form_movimentacao.tipo.errors }}
+                        {% endif %}
+
                         <label for="id_data_lancamento">Data do Lançamento</label>
                         {{ form_movimentacao.data_lancamento }}
+                        {{ form_movimentacao.data_lancamento.errors }}
 
-                        {{ form_movimentacao.data_efetivacao.errors }}
                         <label for="id_data_efetivacao">Data de Efetivação</label>
                         {{ form_movimentacao.data_efetivacao }}
+                        {{ form_movimentacao.data_efetivacao.errors }}
 
-                        {{ form_movimentacao.categoria.errors }}
                         <label for="id_categoria">Categoria</label>
                         {{ form_movimentacao.categoria }}
+                        {{ form_movimentacao.categoria.errors }}
 
-                        {{ form_movimentacao.subcategoria.errors }}
                         <label for="id_subcategoria">Sub Categoria</label>
                         {{ form_movimentacao.subcategoria }}
+                        {{ form_movimentacao.subcategoria.errors }}
 
-                        {{ form_movimentacao.descricao.errors }}
                         <label for="id_descricao">Descrição</label>
                         {{ form_movimentacao.descricao }}
+                        {{ form_movimentacao.descricao.errors }}
 
-                        {{ form_movimentacao.valor.errors }}
                         <label for="id_valor">Valor</label>
                         {{ form_movimentacao.valor }}
+                        {{ form_movimentacao.valor.errors }}
+                        <br>
 
-                        {{ form_movimentacao.numero_parcelas.errors }}
-                        <label for="id_numero_parcelas">Número de Parcelas</label>
-                        {{ form_movimentacao.numero_parcelas }}
+                        {% if not 'editar' in request.path %}
+                        <h3 id="btn-installment" class="cursor-pointer">Parcelamento +</h3>
 
-                        {{ form_movimentacao.pagas.errors }}
-                        <label for="id_pagas">Pagas</label>
-                        {{ form_movimentacao.pagas }}
+                        <div id="div-installment" class="toggled">
+                            <br>
+                            <label for="id_numero_parcelas">Número de Parcelas</label>
+                            {{ form_movimentacao.numero_parcelas }}
+                            {{ form_movimentacao.numero_parcelas.errors }}
+    
+                            <label for="id_pagas">Pagas</label>
+                            {{ form_movimentacao.pagas }}
+                            {{ form_movimentacao.pagas.errors }}
+                            <br>
+                        </div>
+                        {% endif %}
 
-                        {{ form_movimentacao.fixa.errors }}
-                        {{ form_movimentacao.fixa }}
-                        <label for="id_fixa">Fixa</label><br><br>
+                        <h3 id="btn-other-options" class="cursor-pointer">Outras Opções +</h3>
 
-                        {{ form_movimentacao.anual.errors }}
-                        {{ form_movimentacao.anual }}
-                        <label for="id_anual">Anual</label><br><br>
+                        <div id="div-other-options" class="toggled">
+                            <br>
+                            {{ form_movimentacao.fixa }}
+                            <label for="id_fixa">Fixa</label><br><br>
+                            {{ form_movimentacao.fixa.errors }}
+    
+                            {{ form_movimentacao.anual }}
+                            <label for="id_anual">Anual</label><br><br>
+                            {{ form_movimentacao.anual.errors }}
+    
+                            <label for="id_moeda">Moeda</label>
+                            {{ form_movimentacao.moeda }}
+                            {{ form_movimentacao.moeda.errors }}
+    
+                            <label for="id_observacao">Observações</label>
+                            {{ form_movimentacao.observacao }}
+                            {{ form_movimentacao.observacao.errors }}
+    
+                            {{ form_movimentacao.lembrar }}
+                            <label for="id_lembrar">Lembrar</label><br><br>
+                            {{ form_movimentacao.lembrar.errors }}
+    
+                            {{ form_movimentacao.efetivado }}
+                            <label for="id_efetivado">Efetivado</label><br><br>
+                            {{ form_movimentacao.efetivado.errors }}
+    
+                            {{ form_movimentacao.tela_inicial }}
+                            <label for="id_tela_inicial">Tela Inicial</label><br><br>
+                            {{ form_movimentacao.tela_inicial.errors }}
+                            <br>
+                        </div>
 
-                        {{ form_movimentacao.moeda.errors }}
-                        <label for="id_moeda">Moeda</label>
-                        {{ form_movimentacao.moeda }}
 
-                        {{ form_movimentacao.observacao.errors }}
-                        <label for="id_observacao">Observação</label>
-                        {{ form_movimentacao.observacao }}
-
-                        {{ form_movimentacao.lembrar.errors }}
-                        {{ form_movimentacao.lembrar }}
-                        <label for="id_lembrar">Lembrar</label><br><br>
-
-                        {{ form_movimentacao.efetivado.errors }}
-                        {{ form_movimentacao.efetivado }}
-                        <label for="id_efetivado">Efetivado</label><br><br>
-
-                        {{ form_movimentacao.tela_inicial.errors }}
-                        {{ form_movimentacao.tela_inicial }}
-                        <label for="id_tela_inicial">Tela Inicial</label><br><br>
                 </div>
                 <div class="box-footer">
                     <input class="btn btn-primary" type="submit" name="Cadastrar">
@@ -104,5 +128,6 @@
     {% endblock %}
 
     {% block scripts %}
+    <script src="{% static 'js/layout/movements-form.js' %}" type="module"></script>
     <script src="{% static 'js/classes.js' %}" type="module"></script>
     {% endblock %}
