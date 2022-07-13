@@ -1,5 +1,3 @@
-import * as scripts from './scripts.js'
-
 function element(htmlId) {
     return document.querySelector(`#${htmlId}`)
 }

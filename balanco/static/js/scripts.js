@@ -125,7 +125,7 @@ sidebarButton.addEventListener('click', () => {
     }
 })();
 
-export function toggle(id) {
+function toggle(id) {
     let box = document.getElementById(id);
 
         if (hasToggled(box.classList)) {
