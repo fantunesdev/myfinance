@@ -21,8 +21,9 @@ class MovimentacaoForm(forms.ModelForm):
     ]
 
     tipo = forms.ChoiceField(
-        label="teste",
+        label="Tipo",
         choices=TIPO_CHOICES,
+        required=False,
         widget=forms.Select(attrs={'class': 'form-control'})
     )
 
