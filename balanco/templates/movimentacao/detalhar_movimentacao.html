@@ -57,9 +57,13 @@
                     {% endif %}
                 </div>
                 <div class="box-footer">
-                    {% csrf_token %}
                     <a href="{{request.META.HTTP_REFERER}}"><input type="button" value="Voltar" class="btn btn-primary"></a>
+                    {% if 'remover' in request.path %}
+                    {% csrf_token %}
                     <input type="submit" value="Excluir" class="btn btn-danger">
+                    {% else %}
+                    <a href="{% url 'editar_movimentacao' movimentacao.id %}" class="btn btn-primary">Editar</a>
+                    {% endif %}
                 </div>
             </form>
         </div>

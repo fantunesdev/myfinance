@@ -3,6 +3,7 @@ from django.urls import path
 from balanco.views.parcelamento_view import *
 
 urlpatterns = [
+    path('<int:id>/', detalhar_parcelamento, name='detalhar_parcelamento'),
     path('editar/<int:id>/', editar_parcelamento, name='editar_parcelamento'),
     path('remover/<int:id>/', remover_parcelamento, name='remover_parcelamento')
 ]

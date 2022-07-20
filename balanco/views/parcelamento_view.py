@@ -8,6 +8,14 @@ from balanco.services import parcelamento_service, movimentacao_service, conta_s
 from balanco.views.movimentacao_view import template_tags
 
 
+def detalhar_parcelamento(request, id):
+    parcelamento = parcelamento_service.listar_parcelamento_id(id, request.user)
+    template_tags['movimentacoes'] = movimentacao_service.listar_movimentacoes_parcelamento(parcelamento)
+    template_tags['contas'] = conta_service.listar_contas(request.user)
+    return render(request, 'parcelamento/detalhar_parcelamento.html', template_tags)
+
+
+
 def editar_parcelamento(request, id):
     parcelamento = parcelamento_service.listar_parcelamento_id(id, request.user)
     movimentacoes = movimentacao_service.listar_movimentacoes_parcelamento(parcelamento)

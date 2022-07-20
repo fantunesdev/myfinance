@@ -79,10 +79,11 @@
                             <td style="text-align: left;">{{ i|descricao_parcelas }}</td>
                             <td style="text-align: right; max-width: 50px; min-width:30px;">{{ i.valor | formatar_moeda:i.moeda.simbolo }}</td>
                             <td>
-                                <a href="{% url 'detalhar_movimentacao' i.id %}"><i class="fa-solid fa-file-lines action-icon"></i></a>
                                 {% if i.parcelamento %}
+                                <a href="{% url 'detalhar_parcelamento' i.parcelamento.id %}"><i class="fa-solid fa-file-lines action-icon"></i></a>
                                 <a href="{% url 'editar_parcelamento' i.parcelamento.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
                                 {% else %}
+                                <a href="{% url 'detalhar_movimentacao' i.id %}"><i class="fa-solid fa-file-lines action-icon"></i></a>
                                 <a href="{% url 'editar_movimentacao' i.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
                                 {% endif %}
                             </td>

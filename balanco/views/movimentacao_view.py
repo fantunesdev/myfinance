@@ -137,7 +137,7 @@ def editar_movimentacao(request, id):
             efetivado=form_movimentacao.cleaned_data['efetivado'],
             tela_inicial=form_movimentacao.cleaned_data['tela_inicial'],
             usuario=request.user,
-            parcelamento=None
+            parcelamento=movimentacao_antiga.parcelamento
         )
         validar_saldo_conta_nova(movimentacao_antiga, movimentacao_nova, copia_movimentacao_antiga)
         movimentacao_service.editar_movimentacao(movimentacao_antiga, movimentacao_nova)

@@ -5,6 +5,8 @@
     {% block title %}
     {% if 'remover' in request.path %}
     Excluir Movimentação
+    {% elif 'editar' in request.path %}
+    Editar Movimentação
     {% else %}
     Detalhar Movimentacao
     {% endif  %}
@@ -148,8 +150,10 @@
                     <a href="{{request.META.HTTP_REFERER}}"><input type="button" value="Voltar" class="btn btn-primary"></a>
                     {% if 'remover' in request.path %}
                     <input type="submit" value="Excluir Movimentações" class="btn btn-danger">
-                    {% else %}
+                    {% elif 'editar' in request.path %}
                     <input type="submit" value="Editar Movimentações" class="btn btn-primary">
+                    {% else %}
+                    <a href="{% url 'editar_parcelamento' movimentacoes.first.parcelamento.id %}" class="btn btn-primary">Editar</a>
                     {% endif %}
                 </div>
             </form>
