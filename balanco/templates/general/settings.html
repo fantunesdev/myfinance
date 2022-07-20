@@ -1,6 +1,8 @@
 {% extends 'index.html' %}
 {% load static %}
 {% load meus_filtros %}
+{% load l10n %}
+
     {% block title %}Configurações{% endblock %}
 
     {% block content %}
@@ -59,8 +61,8 @@
                             <td><img src="{{ i.banco.icone.url }}" alt="Logotipo do banco" style="max-height: 25px;"></td>
                             <td>{{ i.agencia }}</td>
                             <td>{{ i.numero }}</td>
-                            <td>{{ i.saldo }}</td>
-                            <td>{{ i.limite }}</td>
+                            <td>{{ i.saldo|floatformat:2 }}</td>
+                            <td>{{ i.limite|floatformat:2 }}</td>
                             <td>{{ i.tela_inicial }}</td>
                             <td><a href="{% url 'editar_conta' i.id %}">Editar</a></td>
                         </tr>

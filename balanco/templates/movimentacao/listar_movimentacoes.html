@@ -1,6 +1,7 @@
 {% extends 'index.html' %}
 {% load static %}
 {% load meus_filtros %}
+
     {% block title %}Extrato {{ ano_mes | date:'M' }} de {{ ano_mes | date:'y' }}{% endblock %}
 
     {% block content %}
@@ -75,11 +76,15 @@
                             {% endif %}
                             <td style="text-align: left; max-width: 150px; min-width:115px"><i class="{{ i.categoria.icone }}" style="padding:10px;"></i> {{ i.categoria }}</td>
                             <td style="text-align: left;">{{ i.subcategoria }}</td>
-                            <td style="text-align: left;">{{ i.descricao }}</td>
+                            <td style="text-align: left;">{{ i|descricao_parcelas }}</td>
                             <td style="text-align: right; max-width: 50px; min-width:30px;">{{ i.valor | formatar_moeda:i.moeda.simbolo }}</td>
                             <td>
                                 <a href="{% url 'detalhar_movimentacao' i.id %}"><i class="fa-solid fa-file-lines action-icon"></i></a>
+                                {% if i.parcelamento %}
+                                <a href="{% url 'editar_parcelamento' i.parcelamento.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
+                                {% else %}
                                 <a href="{% url 'editar_movimentacao' i.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
+                                {% endif %}
                             </td>
                         </tr>
                         {% endfor %}

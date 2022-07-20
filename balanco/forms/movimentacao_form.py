@@ -70,3 +70,14 @@ class MovimentacaoSaidaForm(MovimentacaoForm):
 class MovimentacaoEntradaForm(MovimentacaoForm):
     categoria = forms.ModelChoiceField(queryset=Categoria.objects.filter(tipo='entrada'),
                                        widget=forms.Select(attrs={'class': 'form-control'}))
+
+
+class EditarFormMovimentacao(MovimentacaoForm):
+    numero_parcelas = forms.IntegerField(
+        required=False,
+        widget=forms.NumberInput(attrs={'class': 'form-control'})
+    )
+    pagas = forms.IntegerField(
+        required=False,
+        widget=forms.NumberInput(attrs={'class': 'form-control'})
+    )

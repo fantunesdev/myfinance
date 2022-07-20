@@ -7,7 +7,7 @@ from django.shortcuts import redirect, render
 
 from balanco.entidades.movimentacao import Movimentacao
 from balanco.forms.general_forms import *
-from balanco.forms.movimentacao_form import MovimentacaoForm
+from balanco.forms.movimentacao_form import EditarFormMovimentacao
 from balanco.repositorios.movimentacao_repositorio import *
 from balanco.services import movimentacao_service, banco_service, bandeira_service, categoria_service, conta_service, \
     cartao_service, subcategoria_service
@@ -114,7 +114,7 @@ def detalhar_movimentacao(request, id):
 @login_required
 def editar_movimentacao(request, id):
     movimentacao_antiga = movimentacao_service.listar_movimentacao_id(id, request.user)
-    form_movimentacao = MovimentacaoForm(request.POST or None, instance=movimentacao_antiga)
+    form_movimentacao = EditarFormMovimentacao(request.POST or None, instance=movimentacao_antiga)
     copia_movimentacao_antiga = copy.deepcopy(movimentacao_antiga)
     if form_movimentacao.is_valid():
         movimentacao_nova = Movimentacao(
@@ -126,8 +126,8 @@ def editar_movimentacao(request, id):
             subcategoria=form_movimentacao.cleaned_data['subcategoria'],
             descricao=form_movimentacao.cleaned_data['descricao'],
             valor=form_movimentacao.cleaned_data['valor'],
-            numero_parcelas=form_movimentacao.cleaned_data['numero_parcelas'],
-            pagas=form_movimentacao.cleaned_data['pagas'],
+            numero_parcelas=movimentacao_antiga.numero_parcelas,
+            pagas=movimentacao_antiga.pagas,
             fixa=form_movimentacao.cleaned_data['fixa'],
             anual=form_movimentacao.cleaned_data['anual'],
             moeda=form_movimentacao.cleaned_data['moeda'],

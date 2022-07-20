@@ -55,34 +55,6 @@
                         </p>
                     </div>
                     {% endif %}
-                    {% if movimentacoes %}
-                    <p style="font-size: 18px;">Parcelamento:</p>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Data de Lançamento</th>
-                                <th>Data de Efetivação</th>
-                                <th>Descricao</th>
-                                <th>Valor</th>
-                                <th>Editar</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for i in movimentacoes %}
-                            <tr>
-                                <td>{{ i.data_lancamento }}</td>
-                                <td>{{ i.data_efetivacao }}</td>
-                                <td>{{ i.descricao }}</td>
-                                <td>{{ i.valor }}</td>
-                                <td><a href="{% url 'editar_movimentacao' i.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                    <br>
-                    <input type="button" value="Editar Parcelamento" class="btn btn-primary">
-                    <a href="{% url 'remover_parcelamento' movimentacoes.first.parcelamento_id %}"><input type="button" value="Excluir Parcelamento" class="btn btn-danger"></a>
-                    {% endif %}
                 </div>
                 <div class="box-footer">
                     {% csrf_token %}
