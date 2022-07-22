@@ -135,20 +135,8 @@ def editar_movimentacao(request, id):
             parcelamento=movimentacao_antiga.parcelamento
         )
         validar_saldo_conta_nova(movimentacao_antiga, movimentacao_nova, copia_movimentacao_antiga)
-
         if form_movimentacao.cleaned_data['parcelar'] == 'parcelar':
-            adicionar_parcelas = copia_movimentacao_antiga.numero_parcelas < movimentacao_nova.numero_parcelas
-            remover_parcelas = copia_movimentacao_antiga.numero_parcelas > movimentacao_nova.numero_parcelas
-            if adicionar_parcelas and not copia_movimentacao_antiga.parcelamento:
-                parcelamento = Parcelamento(date.today(), request.user)
-                parcelamento_db = parcelamento_service.cadastrar_parcelamento(parcelamento)
-                copia_movimentacao_antiga.parcelamento = parcelamento_db
-                parcelamento_repositorio.editar_parcelamento([copia_movimentacao_antiga], movimentacao_nova)
-            elif remover_parcelas:
-                movimentacoes = movimentacao_service.listar_movimentacoes_parcelamento(movimentacao_antiga.parcelamento)
-                parcelamento_repositorio.editar_parcelamento(movimentacoes, movimentacao_nova)
-            else:
-                movimentacao_service.editar_movimentacao(movimentacao_antiga, movimentacao_nova)
+            parcelamento_repositorio.validar_parcelamento(copia_movimentacao_antiga, movimentacao_nova)
             return redirect('listar_mes_atual')
         else:
             movimentacao_service.editar_movimentacao(movimentacao_antiga, movimentacao_nova)

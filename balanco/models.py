@@ -94,10 +94,11 @@ class Moeda(models.Model):
 
 class Parcelamento(models.Model):
     data_lancamento = models.DateField()
+    descricao = models.CharField(max_length=50)
     usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f'{self.id} - {self.usuario}'
+        return self.descricao
 
 
 class Movimentacao(models.Model):

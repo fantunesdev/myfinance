@@ -81,6 +81,7 @@ def validar_parcelamento(movimentacao):
 def parcelar(movimentacao):
     parcelamento = Parcelamento(
         data_lancamento=movimentacao.data_lancamento,
+        descricao=movimentacao.descricao,
         usuario=movimentacao.usuario
     )
     parcelamento_db = parcelamento_service.cadastrar_parcelamento(parcelamento)
