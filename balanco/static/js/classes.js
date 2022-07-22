@@ -10,28 +10,41 @@ const cartao = {
             dataEfetivacao = document.querySelector('#id_data_efetivacao'),
             cartao = await cartoesServices.getCartaoId(this.select.value);
 
-        let efetivacao = validarLancamento(dataLancamento.value, cartao.vencimento);
+        let efetivacao = validarLancamento(dataLancamento.value, cartao);
         dataEfetivacao.value = efetivacao;
     }
     
 }
 
-function validarLancamento(dataLancamento, diaVencimento) {
+const dataLancamento = {
+    select: document.querySelector('#id_data_lancamento'),
+    async changeForm() {
+        const cartaoSelect = document.querySelector('#id_cartao'),
+            dataEfetivacao = document.querySelector('#id_data_efetivacao'),
+            cartao = await cartoesServices.getCartaoId(cartaoSelect.value);
+
+        let efetivacao = validarLancamento(this.select.value, cartao);
+        dataEfetivacao.value = efetivacao;
+    }
+}
+
+dataLancamento.select.addEventListener('focusout', () => dataLancamento.changeForm());
+
+function validarLancamento(dataLancamento, cartao) {
     let [yearLancamento, monthLancamento, dayLancamento] = dataLancamento.split('-');
 
     let lancamento = parseInt(dayLancamento);
     
-    if (diaVencimento < lancamento) {
-        return somarMes(diaVencimento, monthLancamento, yearLancamento)
+    if (cartao.fechamento < lancamento) {
+        return somarMes(cartao.vencimento, monthLancamento, yearLancamento)
     } else {
-        return `${yearLancamento}-${monthLancamento}-${diaVencimento < 10 ? `0${diaVencimento}` : diaVencimento}`;
+        return `${yearLancamento}-${monthLancamento}-${cartao.vencimento.toString().padStart(2, '0')}`;
     }
 }
 
 function somarMes(dia, mesString, anoString) {
     var mes = parseInt(mesString),
-        ano = parseInt(anoString),
-        diaString;
+        ano = parseInt(anoString);
 
     mes = mes + 1;
     if (mes > 12) {
@@ -39,22 +52,10 @@ function somarMes(dia, mesString, anoString) {
         ano = ano + 1;
     }
 
-    if (dia < 10) {
-        diaString = `0${dia}`;
-    } else {
-        diaString = `${dia}`;
-    }
-
-    if (mes < 10) {
-        mesString = `0${mes}`;
-    } else {
-        mesString = `${mes}`;
-    }
-
-    return `${ano}-${mesString}-${diaString}`
+    return `${ano}-${mes.toString().padStart(2, '0')}-${dia.toString().padStart(2, '0')}`
 }
 
-cartao.select.addEventListener('change', () => cartao.changeForm());
+//cartao.select.addEventListener('change', () => cartao.changeForm());
 
 
 const categoria = {
