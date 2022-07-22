@@ -67,6 +67,10 @@
                         <h3 id="btn-installment" class="cursor-pointer">Parcelamento +</h3>
 
                         <div id="div-installment" class="toggled">
+                            {% if 'editar' in request.path %}
+                            <label for="id_parcelar">Você deseja:</label>
+                            {{ form_movimentacao.parcelar }}
+                            {% endif %}
                             <br>
                             <label for="id_numero_parcelas">Número de Parcelas</label>
                             {{ form_movimentacao.numero_parcelas }}

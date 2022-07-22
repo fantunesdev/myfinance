@@ -73,11 +73,11 @@ class MovimentacaoEntradaForm(MovimentacaoForm):
 
 
 class EditarFormMovimentacao(MovimentacaoForm):
-    numero_parcelas = forms.IntegerField(
-        required=False,
-        widget=forms.NumberInput(attrs={'class': 'form-control'})
+    PARCELAR_CHOICES = (
+        ('editar', 'Editar este registro sem alterar o número de parcelas'),
+        ('parcelar', 'Adicionar ou remover parcelas')
     )
-    pagas = forms.IntegerField(
-        required=False,
-        widget=forms.NumberInput(attrs={'class': 'form-control'})
+    parcelar = forms.ChoiceField(
+        choices=PARCELAR_CHOICES,
+        widget=forms.Select(attrs={'class': 'form-control'})
     )
