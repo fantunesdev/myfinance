@@ -79,7 +79,6 @@ def validar_parcelamento(movimentacao):
 
 
 def parcelar(movimentacao):
-    descricao = movimentacao.descricao
     parcelamento = Parcelamento(
         data_lancamento=movimentacao.data_lancamento,
         usuario=movimentacao.usuario
@@ -89,7 +88,6 @@ def parcelar(movimentacao):
     for i in range(0, movimentacao.numero_parcelas):
         movimentacao.pagamento = somar_mes(movimentacao, i)
         movimentacao.pagas += 1
-        movimentacao.descricao = f'{descricao} ({movimentacao.pagas}/{movimentacao.numero_parcelas})'
         movimentacao.parcela = parcelamento_db
         movimentacao_service.cadastrar_movimentacao(movimentacao)
 

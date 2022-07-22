@@ -67,8 +67,6 @@
                         <h3 id="btn-installment" class="cursor-pointer">Parcelamento +</h3>
 
                         <div id="div-installment" class="toggled">
-                        {% if not 'editar' in request.path %}
-
                             <br>
                             <label for="id_numero_parcelas">Número de Parcelas</label>
                             {{ form_movimentacao.numero_parcelas }}
@@ -78,9 +76,6 @@
                             {{ form_movimentacao.pagas }}
                             {{ form_movimentacao.pagas.errors }}
                             <br>
-                        {% else %}
-                            <input type="button" value="Editar Parcelamento" class="btn btn-primary">
-                        {% endif %}
                         </div>
 
                         <h3 id="btn-other-options" class="cursor-pointer">Outras Opções +</h3>

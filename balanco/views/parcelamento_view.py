@@ -15,7 +15,6 @@ def detalhar_parcelamento(request, id):
     return render(request, 'parcelamento/detalhar_parcelamento.html', template_tags)
 
 
-
 def editar_parcelamento(request, id):
     parcelamento = parcelamento_service.listar_parcelamento_id(id, request.user)
     movimentacoes = movimentacao_service.listar_movimentacoes_parcelamento(parcelamento)
@@ -63,3 +62,17 @@ def remover_parcelamento(request, id):
     template_tags['movimentacoes'] = movimentacoes
     template_tags['contas'] = conta_service.listar_contas(request.user)
     return render(request, 'parcelamento/detalhar_parcelamento.html', template_tags)
+
+
+def remover_parcela(request, id):
+    movimentacao = movimentacao_service.listar_movimentacao_id(id, request.user)
+    movimentacoes = movimentacao_service.listar_movimentacoes_parcelamento(movimentacao.parcelamento)
+    form_exclusao = ExclusaoForm()
+    if request.POST.get('confirmacao'):
+        movimentacao.numero_parcelas -= 1
+        parcelamento_repositorio.editar_parcelamento(movimentacoes, movimentacao)
+        return redirect('listar_mes_atual')
+    template_tags['form_exclusao'] = form_exclusao
+    template_tags['movimentacao'] = movimentacao
+    template_tags['contas'] = conta_service.listar_contas(request.user)
+    return render(request, 'movimentacao/detalhar_movimentacao.html', template_tags)

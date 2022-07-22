@@ -8,6 +8,7 @@ from django.shortcuts import redirect, render
 from balanco.entidades.movimentacao import Movimentacao
 from balanco.forms.general_forms import *
 from balanco.forms.movimentacao_form import EditarFormMovimentacao
+from balanco.repositorios import parcelamento_repositorio
 from balanco.repositorios.movimentacao_repositorio import *
 from balanco.services import movimentacao_service, banco_service, bandeira_service, categoria_service, conta_service, \
     cartao_service, subcategoria_service
@@ -19,7 +20,6 @@ template_tags = {
 }
 
 
-@login_required
 def cadastrar_movimentacao(request, tipo):
     if request.method == 'POST':
         form_movimentacao = validar_formulario_tipo(tipo, request.POST)
@@ -61,7 +61,6 @@ def cadastrar_movimentacao(request, tipo):
     return render(request, 'movimentacao/form_movimentacao.html', template_tags)
 
 
-@login_required
 def listar_movimentacoes(request):
     template_tags['movimentacoes'] = movimentacao_service.listar_movimentacoes(request.user)
     template_tags['meses'] = movimentacao_service.listar_anos_meses(request.user)
@@ -83,7 +82,6 @@ def listar_mes_atual(request):
     return render(request, 'movimentacao/listar_movimentacoes.html', template_tags)
 
 
-@login_required
 def listar_movimentacoes_ano_mes(request, ano, mes):
     template_tags['movimentacoes'] = movimentacao_service.listar_movimentacoes_ano_mes(ano, mes, request.user)
     template_tags['meses'] = movimentacao_service.listar_anos_meses(request.user)
@@ -94,14 +92,12 @@ def listar_movimentacoes_ano_mes(request, ano, mes):
     return render(request, 'movimentacao/listar_movimentacoes.html', template_tags)
 
 
-@login_required
 def listar_movimentacoes_conta_id(request, id):
     template_tags['movimentacoes'] = movimentacao_service.listar_movimentacoes_conta_id(id, request.user)
     template_tags['contas'] = conta_service.listar_contas(request.user)
     return render(request, 'movimentacao/listar_movimentacoes.html', template_tags)
 
 
-@login_required
 def detalhar_movimentacao(request, id):
     movimentacao = movimentacao_service.listar_movimentacao_id(id, request.user)
     if movimentacao.parcelamento:
@@ -111,7 +107,6 @@ def detalhar_movimentacao(request, id):
     return render(request, 'movimentacao/detalhar_movimentacao.html', template_tags)
 
 
-@login_required
 def editar_movimentacao(request, id):
     movimentacao_antiga = movimentacao_service.listar_movimentacao_id(id, request.user)
     form_movimentacao = EditarFormMovimentacao(request.POST or None, instance=movimentacao_antiga)
@@ -140,7 +135,19 @@ def editar_movimentacao(request, id):
             parcelamento=movimentacao_antiga.parcelamento
         )
         validar_saldo_conta_nova(movimentacao_antiga, movimentacao_nova, copia_movimentacao_antiga)
-        movimentacao_service.editar_movimentacao(movimentacao_antiga, movimentacao_nova)
+
+        adicionar_parcelas = copia_movimentacao_antiga.numero_parcelas < movimentacao_nova.numero_parcelas
+        remover_parcelas = copia_movimentacao_antiga.numero_parcelas > movimentacao_nova.numero_parcelas
+        if adicionar_parcelas and not copia_movimentacao_antiga.parcelamento:
+            parcelamento = Parcelamento(date.today(), request.user)
+            parcelamento_db = parcelamento_service.cadastrar_parcelamento(parcelamento)
+            copia_movimentacao_antiga.parcelamento = parcelamento_db
+            parcelamento_repositorio.editar_parcelamento([copia_movimentacao_antiga], movimentacao_nova)
+        elif remover_parcelas:
+            movimentacoes = movimentacao_service.listar_movimentacoes_parcelamento(movimentacao_antiga.parcelamento)
+            parcelamento_repositorio.editar_parcelamento(movimentacoes, movimentacao_nova)
+        else:
+            movimentacao_service.editar_movimentacao(movimentacao_antiga, movimentacao_nova)
         return redirect('listar_mes_atual')
     template_tags['form_movimentacao'] = form_movimentacao
     template_tags['movimentacao_antiga'] = movimentacao_antiga
@@ -148,7 +155,6 @@ def editar_movimentacao(request, id):
     return render(request, 'movimentacao/form_movimentacao.html', template_tags)
 
 
-@login_required
 def remover_movimentacao(request, id):
     movimentacao = movimentacao_service.listar_movimentacao_id(id, request.user)
     form_exclusao = ExclusaoForm()
@@ -162,7 +168,6 @@ def remover_movimentacao(request, id):
     return render(request, 'movimentacao/detalhar_movimentacao.html', template_tags)
 
 
-@login_required
 def configurar(request):
     template_tags['bancos'] = banco_service.listar_bancos()
     template_tags['bandeiras'] = bandeira_service.listar_bandeiras()

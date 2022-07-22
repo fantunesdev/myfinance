@@ -19,8 +19,10 @@
                     <h3>
                         {% if 'remover' in request.path %}
                         Atenção! Você está prestes a excluir as movimentações abaixo. Esta operação é irreversível.
-                        {% else %}
+                        {% elif 'editar' in request.path %}
                         Editando {{ movimentacoes.first.descricao }}
+                        {% else %}
+                        {{ movimentacoes.first.descricao }}
                         {% endif %}
                     </h3>
                 </div>
@@ -51,11 +53,15 @@
                                 <td>{{ i.data_efetivacao }}</td>
                                 <td>{{ i.descricao }}</td>
                                 <td>{{ i.moeda.simbolo }} {{ i.valor|floatformat:2 }}</td>
-                                <td><a href="{% url 'editar_movimentacao' i.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
+                                <td>
+                                    <a href="{% url 'editar_movimentacao' i.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
+                                    <a href="{% url 'remover_parcela' i.id %}"><i class="fa-solid fa-trash action-icon"></i></a>
+                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
+                    <br>
                     {% if 'editar' in request.path %}
                     {% csrf_token %}
                         <label for="id_data_lancamento">Data do Lançamento</label>
@@ -154,6 +160,7 @@
                     <input type="submit" value="Editar Movimentações" class="btn btn-primary">
                     {% else %}
                     <a href="{% url 'editar_parcelamento' movimentacoes.first.parcelamento.id %}" class="btn btn-primary">Editar</a>
+                    <a href="{% url 'remover_parcelamento' movimentacoes.first.parcelamento.id %}" class="btn btn-danger">Remover</a>
                     {% endif %}
                 </div>
             </form>
