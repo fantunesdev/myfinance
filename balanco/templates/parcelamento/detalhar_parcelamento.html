@@ -34,6 +34,13 @@
                     <p style="font-size: 18px;">Categoria: <b>{{ movimentacoes.first.categoria }}</b></p>
                     <p style="font-size: 18px;">Sub Categoria: <b>{{ movimentacoes.first.subcategoria }}</b></p>
                     <p style="font-size: 18px;">Tipo: <b>{{ movimentacoes.first.tipo }}.</b></p>
+                    {% if 'editar' in request.path %}
+                    {% elif 'remover' in request.path %}
+                    {% else %}
+                    <br>
+                    <a href="{% url 'adiantar_parcelas' parcelamento.id %}" class="btn btn-primary">Adiantar Parcelas</a>
+                    <br><br>
+                    {% endif %}
                     <table>
                         <thead>
                             <tr>
@@ -64,81 +71,86 @@
                     <br>
                     {% if 'editar' in request.path %}
                     {% csrf_token %}
-                        <label for="id_data_lancamento">Data do Lançamento</label>
-                        {{ form_parcelamento.data_lancamento }}
-                        {{ form_parcelamento.data_lancamento.errors }}
+                    <label for="id_data_lancamento">Data do Lançamento</label>
+                    {{ form_parcelamento.data_lancamento }}
+                    {{ form_parcelamento.data_lancamento.errors }}
 
-                        <label for="id_numero_parcelas">Número de Parcelas</label>
-                        {{ form_parcelamento.numero_parcelas }}
-                        {{ form_parcelamento.numero_parcelas.errors }}
+                    {% if form_parcelamento.reordenar_datas_lancamento %}
+                    <label for="">Reordenar as Datas de Lançamento</label>
+                    {{ form_parcelamento.reordenar_datas_lancamento }}
+                    {% endif %}
 
-                        <label for="id_categoria">Categoria</label>
-                        {{ form_parcelamento.categoria }}
-                        {{ form_parcelamento.categoria.errors }}
+                    <label for="id_numero_parcelas">Número de Parcelas</label>
+                    {{ form_parcelamento.numero_parcelas }}
+                    {{ form_parcelamento.numero_parcelas.errors }}
 
-                        <label for="id_subcategoria">Sub Categoria</label>
-                        {{ form_parcelamento.subcategoria }}
-                        {{ form_parcelamento.subcategoria.errors }}
+                    <label for="id_categoria">Categoria</label>
+                    {{ form_parcelamento.categoria }}
+                    {{ form_parcelamento.categoria.errors }}
 
-                        <label for="id_descricao">Descrição</label>
-                        {{ form_parcelamento.descricao }}
-                        {{ form_parcelamento.descricao.errors }}
+                    <label for="id_subcategoria">Sub Categoria</label>
+                    {{ form_parcelamento.subcategoria }}
+                    {{ form_parcelamento.subcategoria.errors }}
 
-                        <label for="id_valor">Valor</label>
-                        {{ form_parcelamento.valor }}
-                        {{ form_parcelamento.valor.errors }}
+                    <label for="id_descricao">Descrição</label>
+                    {{ form_parcelamento.descricao }}
+                    {{ form_parcelamento.descricao.errors }}
+
+                    <label for="id_valor">Valor</label>
+                    {{ form_parcelamento.valor }}
+                    {{ form_parcelamento.valor.errors }}
+                    <br>
+
+                    <h3 id="btn-other-options" class="cursor-pointer">Outras Opções +</h3>
+
+                    <div id="div-other-options" class="toggled">
                         <br>
+                         <label for="id_meio_de_pagamento">Meio de Pagamento</label>
+                    {{ form_parcelamento.meio_de_pagamento }}
 
-                        <h3 id="btn-other-options" class="cursor-pointer">Outras Opções +</h3>
+                    <div id="conta-cartao">
+                        <label for="id_conta">Conta</label>
+                        {{ form_parcelamento.conta }}
+                        {{ form_parcelamento.conta.errors }}
 
-                        <div id="div-other-options" class="toggled">
-                            <br>
-                             <label for="id_meio_de_pagamento">Meio de Pagamento</label>
-                        {{ form_parcelamento.meio_de_pagamento }}
+                        <label for="id_cartao">Cartao</label>
+                        {{ form_parcelamento.cartao }}
+                        {{ form_parcelamento.cartao.errors }}
+                    </div>
 
-                        <div id="conta-cartao">
-                            <label for="id_conta">Conta</label>
-                            {{ form_parcelamento.conta }}
-                            {{ form_parcelamento.conta.errors }}
+                    <label for="id_tipo">Tipo</label>
+                    {{ form_parcelamento.tipo }}
+                    {{ form_parcelamento.tipo.errors }}
 
-                            <label for="id_cartao">Cartao</label>
-                            {{ form_parcelamento.cartao }}
-                            {{ form_parcelamento.cartao.errors }}
-                        </div>
+                        {{ form_parcelamento.fixa }}
+                        <label for="id_fixa">Fixa</label><br><br>
+                        {{ form_parcelamento.fixa.errors }}
 
-                        <label for="id_tipo">Tipo</label>
-                        {{ form_parcelamento.tipo }}
-                        {{ form_parcelamento.tipo.errors }}
+                        {{ form_parcelamento.anual }}
+                        <label for="id_anual">Anual</label><br><br>
+                        {{ form_parcelamento.anual.errors }}
 
-                            {{ form_parcelamento.fixa }}
-                            <label for="id_fixa">Fixa</label><br><br>
-                            {{ form_parcelamento.fixa.errors }}
+                        <label for="id_moeda">Moeda</label>
+                        {{ form_parcelamento.moeda }}
+                        {{ form_parcelamento.moeda.errors }}
 
-                            {{ form_parcelamento.anual }}
-                            <label for="id_anual">Anual</label><br><br>
-                            {{ form_parcelamento.anual.errors }}
+                        <label for="id_observacao">Observações</label>
+                        {{ form_parcelamento.observacao }}
+                        {{ form_parcelamento.observacao.errors }}
 
-                            <label for="id_moeda">Moeda</label>
-                            {{ form_parcelamento.moeda }}
-                            {{ form_parcelamento.moeda.errors }}
+                        {{ form_parcelamento.lembrar }}
+                        <label for="id_lembrar">Lembrar</label><br><br>
+                        {{ form_parcelamento.lembrar.errors }}
 
-                            <label for="id_observacao">Observações</label>
-                            {{ form_parcelamento.observacao }}
-                            {{ form_parcelamento.observacao.errors }}
+                        {{ form_parcelamento.efetivado }}
+                        <label for="id_efetivado">Efetivado</label><br><br>
+                        {{ form_parcelamento.efetivado.errors }}
 
-                            {{ form_parcelamento.lembrar }}
-                            <label for="id_lembrar">Lembrar</label><br><br>
-                            {{ form_parcelamento.lembrar.errors }}
-
-                            {{ form_parcelamento.efetivado }}
-                            <label for="id_efetivado">Efetivado</label><br><br>
-                            {{ form_parcelamento.efetivado.errors }}
-
-                            {{ form_parcelamento.tela_inicial }}
-                            <label for="id_tela_inicial">Tela Inicial</label><br><br>
-                            {{ form_parcelamento.tela_inicial.errors }}
-                            <br>
-                        </div>
+                        {{ form_parcelamento.tela_inicial }}
+                        <label for="id_tela_inicial">Tela Inicial</label><br><br>
+                        {{ form_parcelamento.tela_inicial.errors }}
+                        <br>
+                    </div>
                     {% endif %}
                     {% if 'remover' in request.path %}
                     <br>

@@ -11,6 +11,7 @@ from balanco.views.movimentacao_view import template_tags
 def detalhar_parcelamento(request, id):
     parcelamento = parcelamento_service.listar_parcelamento_id(id, request.user)
     template_tags['movimentacoes'] = movimentacao_service.listar_movimentacoes_parcelamento(parcelamento)
+    template_tags['parcelamento'] = parcelamento
     template_tags['contas'] = conta_service.listar_contas(request.user)
     return render(request, 'parcelamento/detalhar_parcelamento.html', template_tags)
 
@@ -42,12 +43,32 @@ def editar_parcelamento(request, id):
             usuario=request.user,
             parcelamento=parcelamento
         )
-        parcelamento_repositorio.editar_parcelamento(movimentacoes, movimentacao_nova)
+        reordenar_datas_lancamento = form_parcelamento.cleaned_data['reordenar_datas_lancamento']
+        parcelamento_repositorio.editar_parcelamento(movimentacoes, movimentacao_nova, reordenar_datas_lancamento)
         return redirect('listar_mes_atual')
     template_tags['movimentacoes'] = movimentacoes
+    template_tags['parcelamento'] = parcelamento
     template_tags['contas'] = conta_service.listar_contas(request.user)
     template_tags['form_parcelamento'] = form_parcelamento
     return render(request, 'parcelamento/detalhar_parcelamento.html', template_tags)
+
+
+def adiantar_parcelas(request, id):
+    parcelamento = parcelamento_service.listar_parcelamento_id(id, request.user)
+    parcelas = movimentacao_service.listar_movimentacoes_parcelamento(parcelamento)
+    if request.method == 'POST':
+        form_parcelamento = parcelamento_form.AdiantarParcelaForm(request.POST)
+        if form_parcelamento.is_valid():
+            quantidade = form_parcelamento.cleaned_data['quantidade']
+            data_inicial = form_parcelamento.cleaned_data['data_inicial']
+            parcelamento_repositorio.adiantar_parcelas(quantidade, data_inicial, parcelas)
+            return redirect('listar_mes_atual')
+    else:
+        form_parcelamento = parcelamento_form.AdiantarParcelaForm()
+    template_tags['parcelas'] = parcelas
+    template_tags['parcelamento'] = parcelamento
+    template_tags['form_parcelamento'] = form_parcelamento
+    return render(request, 'parcelamento/adiantar_parcelas.html', template_tags)
 
 
 def remover_parcelamento(request, id):
@@ -59,6 +80,7 @@ def remover_parcelamento(request, id):
         return redirect('listar_mes_atual')
 
     template_tags['form_exclusao'] = form_exclusao
+    template_tags['parcelamento'] = parcelamento
     template_tags['movimentacoes'] = movimentacoes
     template_tags['contas'] = conta_service.listar_contas(request.user)
     return render(request, 'parcelamento/detalhar_parcelamento.html', template_tags)

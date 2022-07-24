@@ -10,19 +10,12 @@ hoje = timezone.localtime(timezone.now()).strftime('%Y-%m-%d')
 
 
 class MovimentacaoForm(forms.ModelForm):
-    TIPO_CHOICES = (
-        ('entrada', 'Entrada'),
-        ('saida', 'Saída')
-    )
-
-    MEIO_PAGAMENTO_CHOICES = [
-        (1, 'Cartão de Crédito'),
-        (2, 'Conta Corrente'),
-    ]
-
     tipo = forms.ChoiceField(
         label="Tipo",
-        choices=TIPO_CHOICES,
+        choices=(
+            ('entrada', 'Entrada'),
+            ('saida', 'Saída')
+        ),
         required=False,
         widget=forms.Select(attrs={'class': 'form-control'})
     )
@@ -30,7 +23,10 @@ class MovimentacaoForm(forms.ModelForm):
     meio_de_pagamento = forms.ChoiceField(
         required=False,
         widget=forms.Select(attrs={'class': 'form-control'}),
-        choices=MEIO_PAGAMENTO_CHOICES
+        choices=(
+            (1, 'Cartão de Crédito'),
+            (2, 'Conta Corrente'),
+        )
     )
 
     class Meta:
@@ -43,12 +39,14 @@ class MovimentacaoForm(forms.ModelForm):
         ]
 
         widgets = {
-            'data_lancamento': forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date',
-                                                                         'value': hoje,
-                                                                         'class': 'form-control'}),
-            'data_efetivacao': forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date',
-                                                                         'class': 'form-control',
-                                                                         'value': hoje}),
+            'data_lancamento': forms.DateInput(
+                format='%Y-%m-%d',
+                attrs={'type': 'date', 'value': hoje, 'class': 'form-control'}
+            ),
+            'data_efetivacao': forms.DateInput(
+                format='%Y-%m-%d',
+                attrs={'type': 'date', 'class': 'form-control', 'value': hoje}
+            ),
             'valor': forms.NumberInput(attrs={'class': 'form-control'}),
             'numero_parcelas': forms.NumberInput(attrs={'class': 'form-control'}),
             'pagas': forms.NumberInput(attrs={'class': 'form-control'}),

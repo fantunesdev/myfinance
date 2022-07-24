@@ -1,4 +1,6 @@
-from datetime import date
+from datetime import date, datetime
+
+from dateutil.relativedelta import relativedelta
 
 from balanco.entidades.parcelamento import Parcelamento
 from balanco.repositorios import movimentacao_repositorio
@@ -45,16 +47,17 @@ def remover_parcelas(movimentacoes, movimentacao_nova):
         parcelamento_service.editar_parcelamento(movimentacoes[0].parcelamento, movimentacao_nova.parcelamento)
 
 
-def editar_parcelas(movimentacoes, movimentacao_nova):
+def editar_parcelas(movimentacoes, movimentacao_nova, reordenar_datas_lancamento):
     movimentacao_nova.parcelamento.descricao = movimentacao_nova.descricao
     for index, movimentacao in enumerate(movimentacoes):
-        movimentacao_nova.data_efetivacao = movimentacao_repositorio.somar_mes(movimentacao, index)
+        if bool(reordenar_datas_lancamento):
+            movimentacao_nova.data_efetivacao = movimentacao_repositorio.somar_mes(movimentacao, index)
         movimentacao_nova.pagas = index + 1
         movimentacao_service.editar_movimentacao(movimentacao, movimentacao_nova)
         parcelamento_service.editar_parcelamento(movimentacoes[0].parcelamento, movimentacao_nova.parcelamento)
 
 
-def editar_parcelamento(movimentacoes, movimentacao_nova):
+def editar_parcelamento(movimentacoes, movimentacao_nova, *args):
     aumentar_numero_parcelas = movimentacoes[0].numero_parcelas < movimentacao_nova.numero_parcelas
     diminuir_numero_parcelas = movimentacoes[0].numero_parcelas > movimentacao_nova.numero_parcelas
 
@@ -63,7 +66,7 @@ def editar_parcelamento(movimentacoes, movimentacao_nova):
     elif diminuir_numero_parcelas:
         remover_parcelas(movimentacoes, movimentacao_nova)
     else:
-        editar_parcelas(movimentacoes, movimentacao_nova)
+        editar_parcelas(movimentacoes, movimentacao_nova, args)
 
 
 def validar_parcelamento(movimentacao_antiga, movimentacao_nova):
@@ -81,4 +84,31 @@ def validar_parcelamento(movimentacao_antiga, movimentacao_nova):
         editar_parcelamento(movimentacoes, movimentacao_nova)
     else:
         movimentacao_service.editar_movimentacao(movimentacao_antiga, movimentacao_nova)
+
+
+def adiantar_parcelas(quantidade, data_inicial, parcelas):
+    adiantadas = 0
+    nao_adiantadas = 0
+    if data_inicial > parcelas[0].data_lancamento:
+        proximo_vencimento = encontrar_proximo_vencimento_cartao(parcelas[0].cartao, data_inicial)
+    else:
+        proximo_vencimento = encontrar_proximo_vencimento_cartao(parcelas[0].cartao, parcelas[0].data_lancamento)
+    for index, parcela in enumerate(parcelas):
+        if parcela.data_efetivacao > data_inicial:
+            if adiantadas < quantidade:
+                parcela.data_efetivacao = proximo_vencimento
+                movimentacao_service.editar_movimentacao(parcela, parcela)
+                adiantadas += 1
+            else:
+                nao_adiantadas += 1
+                parcela.data_efetivacao = proximo_vencimento + relativedelta(months=nao_adiantadas)
+                movimentacao_service.editar_movimentacao(parcela, parcela)
+
+
+def encontrar_proximo_vencimento_cartao(cartao, data):
+    proximo_vencimento = date(data.year, data.month, cartao.vencimento)
+    proximo_fechamento = date(data.year, data.month, cartao.fechamento)
+    if data > proximo_fechamento:
+        proximo_vencimento += relativedelta(months=1)
+    return proximo_vencimento
 
