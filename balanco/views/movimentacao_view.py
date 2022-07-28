@@ -71,9 +71,17 @@ def listar_movimentacoes(request):
 @login_required
 def listar_mes_atual(request):
     mes_atual = date.today() if date.today().day < 10 else date.today() + relativedelta(months=1)
-    template_tags['movimentacoes'] = movimentacao_service.listar_movimentacoes_ano_mes(ano=mes_atual.year,
-                                                                                       mes=mes_atual.month,
-                                                                                       usuario=request.user)
+    movimentacoes = movimentacao_service.listar_movimentacoes_ano_mes(
+        ano=mes_atual.year,
+        mes=mes_atual.month,
+        usuario=request.user
+    )
+    entradas, saidas, cartoes, avista = calcular_total_entradas_saidas(movimentacoes)
+    template_tags['entradas'] = entradas
+    template_tags['saidas'] = saidas
+    template_tags['cartoes'] = cartoes
+    template_tags['avista'] = avista
+    template_tags['movimentacoes'] = movimentacoes
     template_tags['meses'] = movimentacao_service.listar_anos_meses(request.user)
     template_tags['contas'] = conta_service.listar_contas(request.user)
     template_tags['ano_mes'] = mes_atual
@@ -83,7 +91,13 @@ def listar_mes_atual(request):
 
 
 def listar_movimentacoes_ano_mes(request, ano, mes):
-    template_tags['movimentacoes'] = movimentacao_service.listar_movimentacoes_ano_mes(ano, mes, request.user)
+    movimentacoes = movimentacao_service.listar_movimentacoes_ano_mes(ano, mes, request.user)
+    entradas, saidas, cartoes, avista = calcular_total_entradas_saidas(movimentacoes)
+    template_tags['entradas'] = entradas
+    template_tags['saidas'] = saidas
+    template_tags['cartoes'] = cartoes
+    template_tags['avista'] = avista
+    template_tags['movimentacoes'] = movimentacoes
     template_tags['meses'] = movimentacao_service.listar_anos_meses(request.user)
     template_tags['contas'] = conta_service.listar_contas(request.user)
     template_tags['ano_mes'] = datetime.date(ano, mes, 1)
@@ -101,7 +115,8 @@ def listar_movimentacoes_conta_id(request, id):
 def detalhar_movimentacao(request, id):
     movimentacao = movimentacao_service.listar_movimentacao_id(id, request.user)
     if movimentacao.parcelamento:
-        template_tags['movimentacoes'] = movimentacao_service.listar_movimentacoes_parcelamento(movimentacao.parcelamento)
+        movimentacoes = movimentacao_service.listar_movimentacoes_parcelamento(movimentacao.parcelamento)
+        template_tags['movimentacoes'] = movimentacoes
     template_tags['movimentacao'] = movimentacao
     template_tags['contas'] = conta_service.listar_contas(request.user)
     return render(request, 'movimentacao/detalhar_movimentacao.html', template_tags)

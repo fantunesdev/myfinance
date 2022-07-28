@@ -22,6 +22,10 @@
                 <table>
                     <thead>
                         <tr>
+                            <th></th>
+                            <th>Total</th>
+                            <th>Cartões</th>
+                            <th>À vista</th>
                             {% for conta in contas %}
                             {% if conta.tela_inicial %}
                             <th>{{ conta }} - {{ conta.tipo }}</th>
@@ -31,6 +35,10 @@
                     </thead>
                     <tbody>
                         <tr>
+                            <td>Entradas</td>
+                            <td><b>{{ entradas | formatar_reais }}</b></td>
+                            <td></td>
+                            <td></td>
                             {% for conta in contas %}
                             {% if conta.tela_inicial %}
                             {% if conta.saldo < 0 %}
@@ -40,6 +48,16 @@
                             {% endif %}
                             {% endif %}
                             {% endfor %}
+                        </tr>
+                        <tr>
+                            <td>Saídas</td>
+                            {% if entradas < saidas %}
+                            <td style="color: #960000; font-size: 16px"><b>{{ saidas | formatar_reais }}</b></td>
+                            {% else %}
+                            <td style="color: #009600; font-size: 16px"><b>{{ saidas | formatar_reais }}</b></td>
+                            {% endif %}
+                            <td>{{ cartoes | formatar_reais }}</td>
+                            <td>{{ avista | formatar_reais }}</td>
                         </tr>
                     </tbody>
                 </table>

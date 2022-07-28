@@ -116,3 +116,21 @@ def criar_id_parcela():
     for i in range(8):
         id_parcela += random.choice(string.ascii_letters + string.digits)
     return id_parcela
+
+
+def calcular_total_entradas_saidas(movimentacoes):
+    entradas = 0
+    saidas = 0
+    cartoes = 0
+    contas = 0
+    for movimentacao in movimentacoes:
+        if movimentacao.tipo == 'saida':
+            if movimentacao.cartao:
+                cartoes += movimentacao.valor
+            else:
+                contas += movimentacao.valor
+            if movimentacao.categoria.id != 13:
+                saidas += movimentacao.valor
+        else:
+            entradas += movimentacao.valor
+    return entradas, saidas, cartoes, contas
