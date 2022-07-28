@@ -40,6 +40,15 @@ def listar_anos_meses(usuario):
     return reversed(anos_meses)
 
 
+def listar_fatura(cartao, ano, mes, usuario):
+    return Movimentacao.objects.filter(
+        cartao=cartao,
+        data_efetivacao__year=ano,
+        data_efetivacao__month=mes,
+        usuario=usuario
+    )
+
+
 def listar_movimentacoes_conta_id(id, usuario):
     return Movimentacao.objects.filter(conta=id, usuario=usuario)
 

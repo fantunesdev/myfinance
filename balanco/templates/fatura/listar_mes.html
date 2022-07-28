@@ -1,0 +1,112 @@
+{% extends 'index.html' %}
+{% load static %}
+{% load meus_filtros %}
+
+    {% block title %}Extrato {{ ano_mes | date:'M' }} de {{ ano_mes | date:'y' }}{% endblock %}
+
+    {% block content %}
+        <div class="box box-primary">
+            <div class="box-header">
+                <h3 class="box-title">Saldo</h3>
+            </div>
+            <div class="box-body">
+                <table>
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Total</th>
+                            <th>Cartões</th>
+                            <th>À vista</th>
+                            {% for conta in contas %}
+                            {% if conta.tela_inicial %}
+                            <th>{{ conta }} - {{ conta.tipo }}</th>
+                            {% endif %}
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Entradas</td>
+                            <td><b>{{ entradas | formatar_reais }}</b></td>
+                            <td></td>
+                            <td></td>
+                            {% for conta in contas %}
+                            {% if conta.tela_inicial %}
+                            {% if conta.saldo < 0 %}
+                            <td style="color: #960000; font-size: 16px"><b>{{ conta.saldo | formatar_reais }}</b></td>
+                            {% else %}
+                            <td style="color: #009600; font-size: 16px"><b>{{ conta.saldo | formatar_reais }}</b></td>
+                            {% endif %}
+                            {% endif %}
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td>Saídas</td>
+                            {% if entradas < saidas %}
+                            <td style="color: #960000; font-size: 16px"><b>{{ saidas | formatar_reais }}</b></td>
+                            {% else %}
+                            <td style="color: #009600; font-size: 16px"><b>{{ saidas | formatar_reais }}</b></td>
+                            {% endif %}
+                            <td>{{ cartoes | formatar_reais }}</td>
+                            <td>{{ avista | formatar_reais }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="box-footer">
+
+            </div>
+        </div>
+        <div class="box box-primary">
+            <div class="box-header">
+                <h3 class="box-title">Extrato {{ ano_mes | date:'F' }} de {{ ano_mes | date:'Y' }}</h3>
+            </div>
+            <div class="box-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Banco/Cartão</th>
+                            <th style="text-align: left; max-width: 150px; min-width:115px">Categoria</th>
+                            <th style="text-align: left;">Sub-Categoria</th>
+                            <th style="text-align: left;">Descrição</th>
+                            <th style="text-align: right; max-width: 50px; min-width:30px;">Valor</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i in movimentacoes %}
+                        <tr style="border-left: solid 3px {{ i.categoria.cor }}">
+                                <td>{{ i.data_lancamento | date:"d/m"}}</td>
+                            {% if i.conta %}
+                            <td><img src="{{ i.conta.banco.icone.url }}" alt="Logotipo do banco" style="max-height: 25px;"></td>
+                            {% else %}
+                            <td><img src="{{ i.cartao.bandeira.icone.url }}" alt="Logotipo do banco" style="max-height: 25px;"></td>
+                            {% endif %}
+                            <td style="text-align: left; max-width: 150px; min-width:115px"><i class="{{ i.categoria.icone }}" style="padding:10px;"></i> {{ i.categoria }}</td>
+                            <td style="text-align: left;">{{ i.subcategoria }}</td>
+                            <td style="text-align: left;">{{ i|descricao_parcelas }}</td>
+                            <td style="text-align: right; max-width: 50px; min-width:30px;">{{ i.valor | formatar_moeda:i.moeda.simbolo }}</td>
+                            <td>
+                                {% if i.parcelamento %}
+                                <a href="{% url 'detalhar_parcelamento' i.parcelamento.id %}"><i class="fa-solid fa-file-lines action-icon"></i></a>
+                                <a href="{% url 'editar_parcelamento' i.parcelamento.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
+                                <a href="{% url 'remover_parcelamento' i.parcelamento.id %}"><i class="fa-solid fa-trash action-icon"></i></a>
+                                {% else %}
+                                <a href="{% url 'detalhar_movimentacao' i.id %}"><i class="fa-solid fa-file-lines action-icon"></i></a>
+                                <a href="{% url 'editar_movimentacao' i.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
+                                <a href="{% url 'remover_movimentacao' i.id %}"><i class="fa-solid fa-trash action-icon"></i></a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="box-footer">
+                <span>Total de ítens listados: {{ movimentacoes.count }}</span>
+            </div>
+        </div>
+
+        </div>
+    {% endblock content %}

@@ -112,6 +112,18 @@ def listar_movimentacoes_conta_id(request, id):
     return render(request, 'movimentacao/listar_movimentacoes.html', template_tags)
 
 
+def listar_fatura(request, cartao_id, ano, mes):
+    cartao = cartao_service.listar_cartao_id(cartao_id, request.user)
+    movimentacoes = movimentacao_service.listar_fatura(cartao, ano, mes, request.user)
+    entradas, saidas, cartoes, avista = calcular_total_entradas_saidas(movimentacoes)
+    template_tags['entradas'] = entradas
+    template_tags['saidas'] = saidas
+    template_tags['cartoes'] = cartoes
+    template_tags['avista'] = avista
+    template_tags['movimentacoes'] = movimentacoes
+    return render(request, 'fatura/listar_mes.html', template_tags)
+
+
 def detalhar_movimentacao(request, id):
     movimentacao = movimentacao_service.listar_movimentacao_id(id, request.user)
     if movimentacao.parcelamento:
