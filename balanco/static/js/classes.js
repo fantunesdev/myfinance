@@ -20,25 +20,32 @@ const dataLancamento = {
     select: document.querySelector('#id_data_lancamento'),
     async changeForm() {
         const cartaoSelect = document.querySelector('#id_cartao'),
-            dataEfetivacao = document.querySelector('#id_data_efetivacao'),
-            cartao = await cartoesServices.getCartaoId(cartaoSelect.value);
-
-        let efetivacao = validarLancamento(this.select.value, cartao);
+            dataEfetivacao = document.querySelector('#id_data_efetivacao');
+        let cartaoDb, efetivacao;
+        
+        if (meioDePagamento.select.value === '1') {
+           cartaoDb = await cartoesServices.getCartaoId(cartaoSelect.value);
+        }
+        efetivacao = validarLancamento(this.select.value, cartaoDb);
         dataEfetivacao.value = efetivacao;
     }
 }
 
-dataLancamento.select.addEventListener('focusout', () => dataLancamento.changeForm());
+dataLancamento.select.addEventListener('change', () => dataLancamento.changeForm());
+cartao.select.addEventListener('change', () => dataLancamento.changeForm());
 
 function validarLancamento(dataLancamento, cartao) {
     let [yearLancamento, monthLancamento, dayLancamento] = dataLancamento.split('-');
 
     let lancamento = parseInt(dayLancamento);
-    
-    if (cartao.fechamento < lancamento) {
-        return somarMes(cartao.vencimento, monthLancamento, yearLancamento)
+    if (cartao) {
+        if (cartao.fechamento < lancamento) {
+            return somarMes(cartao.vencimento, monthLancamento, yearLancamento)
+        } else {
+            return `${yearLancamento}-${monthLancamento}-${cartao.vencimento.toString().padStart(2, '0')}`;
+        }
     } else {
-        return `${yearLancamento}-${monthLancamento}-${cartao.vencimento.toString().padStart(2, '0')}`;
+        return dataLancamento;
     }
 }
 
@@ -105,5 +112,10 @@ const meioDePagamento = {
 }
 
 meioDePagamento.changeForm();
-meioDePagamento.select.addEventListener('change', () => meioDePagamento.changeForm());
+meioDePagamento.select.addEventListener('change', () => {
+    meioDePagamento.changeForm()
+    if (meioDePagamento.select.value === '2') {
+        conta.select.addEventListener('change', () => dataLancamento.changeForm());
+    }
+});
 
