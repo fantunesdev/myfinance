@@ -51,13 +51,20 @@
                         </tr>
                         <tr>
                             <td>Saídas</td>
-                            {% if entradas < saidas %}
-                            <td style="color: #960000; font-size: 16px"><b>{{ saidas | formatar_reais }}</b></td>
-                            {% else %}
-                            <td style="color: #009600; font-size: 16px"><b>{{ saidas | formatar_reais }}</b></td>
-                            {% endif %}
+                            <td><b>{{ saidas | formatar_reais }}</b></td>
                             <td>{{ cartoes | formatar_reais }}</td>
                             <td>{{ avista | formatar_reais }}</td>
+                        </tr>
+                        <tr>
+                            <td>Total</td>
+                            {% if diferenca < 0 %}
+                            <td style="color: #960000; font-size: 16px"><b>{{ diferenca | formatar_reais }}</b></td>
+                            {% else %}
+                            <td style="color: #009600; font-size: 16px"><b>{{ diferenca | formatar_reais }}</b></td>
+                            {% endif %}
+                            <td></td>
+                            <td></td>
+                            <td></td>
                         </tr>
                     </tbody>
                 </table>
