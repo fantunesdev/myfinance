@@ -32,11 +32,15 @@ def listar_movimentacoes(usuario):
 
 
 def listar_movimentacoes_ano_mes(ano, mes, usuario):
-    return Movimentacao.objects.filter(data_efetivacao__year=ano, data_efetivacao__month=mes, usuario=usuario).order_by('data_lancamento')
+    return Movimentacao.objects\
+        .filter(data_efetivacao__year=ano, data_efetivacao__month=mes, usuario=usuario)\
+        .order_by('data_lancamento')
 
 
 def listar_anos_meses(usuario):
-    anos_meses = Movimentacao.objects.filter(usuario=usuario).dates(field_name='data_efetivacao', kind='month', order='DESC')[:12]
+    anos_meses = Movimentacao.objects\
+                     .filter(usuario=usuario)\
+                     .dates(field_name='data_efetivacao', kind='month', order='DESC')[:12]
     return reversed(anos_meses)
 
 
