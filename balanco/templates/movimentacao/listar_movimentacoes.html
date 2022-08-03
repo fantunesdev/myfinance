@@ -75,10 +75,32 @@
         </div>
         <div class="box box-primary">
             <div class="box-header">
-
+                <h3 class="box-title">Dashboard</h3>
             </div>
             <div class="box-body">
-                <canvas id="categories" width="400" height="150"></canvas>
+                <select name="bar-chart-select" id="bar-chart-select" class="form-control"></select>
+                <table>
+                    <tr>
+                        <td rowspan="2" width="800">
+                            <canvas id="expenses-bar-chart" width="40" height="15"></canvas>
+                        </td>
+                        <td width="80">
+                            <canvas id="amount-doughnut-chart"></canvas>
+                            <br>
+                            {% if diferenca < 0 %}
+                            <b style="color: #960000; font-size: 16px">{{ diferenca | formatar_reais }}</b>
+                            {% else %}
+                            <b style="color: #009600; font-size: 16px">{{ diferenca | formatar_reais }}</b>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td width="80">
+                            <canvas id="revenue-doughnut-chart"></canvas>
+                        </td>
+                    </tr>
+                </table>
+                <br><br><br>
             </div>
             <div class="box-footer">
 
