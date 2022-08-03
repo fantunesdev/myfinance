@@ -75,6 +75,17 @@
         </div>
         <div class="box box-primary">
             <div class="box-header">
+
+            </div>
+            <div class="box-body">
+                <canvas id="categories" width="400" height="150"></canvas>
+            </div>
+            <div class="box-footer">
+
+            </div>
+        </div>
+        <div class="box box-primary">
+            <div class="box-header">
                 <h3 class="box-title">Extrato {{ ano_mes | date:'F' }} de {{ ano_mes | date:'Y' }}</h3>
             </div>
             <div class="box-body">
@@ -123,6 +134,9 @@
                 <span>Total de ítens listados: {{ movimentacoes.count }}</span>
             </div>
         </div>
+    {% endblock %}
 
-        </div>
-    {% endblock content %}
+    {% block scripts %}
+    <script src="{% static 'js/layout/pages/list-movements.js' %}" type="module"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.0/dist/chart.min.js"></script>
+    {% endblock %}
