@@ -29,6 +29,10 @@ class MovimentacaoForm(forms.ModelForm):
         )
     )
 
+    tela_inicial = forms.BooleanField(
+        required=False
+    )
+
     class Meta:
         model = Movimentacao
 

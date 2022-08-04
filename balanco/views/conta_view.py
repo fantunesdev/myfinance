@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 
+from balanco.repositorios import conta_repository
 from balanco.views.movimentacao_view import template_tags
 from balanco.entidades.conta import Conta
 from balanco.forms.conta_form import ContaForm
@@ -53,6 +54,7 @@ def editar_conta(request, id):
             tela_inicial=form_conta.cleaned_data['tela_inicial'],
             usuario=request.user
         )
+        conta_repository.definir_tela_inicial(conta_antiga.id, conta_nova.tela_inicial, request.user)
         conta_service.editar_conta(conta_antiga, conta_nova)
         return redirect('configurar')
     template_tags['form_conta'] = form_conta

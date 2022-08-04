@@ -110,9 +110,11 @@
                             <label for="id_efetivado">Efetivado</label><br><br>
                             {{ form_movimentacao.efetivado.errors }}
 
+                            {% if 'editar' in request.path %}
                             {{ form_movimentacao.tela_inicial }}
                             <label for="id_tela_inicial">Tela Inicial</label><br><br>
                             {{ form_movimentacao.tela_inicial.errors }}
+                            {% endif %}
                             <br>
                         </div>
 

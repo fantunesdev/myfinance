@@ -46,6 +46,8 @@ def cadastrar_movimentacao(request, tipo):
                 usuario=request.user,
                 parcelamento=None
             )
+            tela_inicial = movimentacao.conta.tela_inicial if movimentacao.conta else movimentacao.cartao.tela_inicial
+            movimentacao.tela_inicial = tela_inicial
             validar_conta_parcelamento(movimentacao)
             return redirect('listar_mes_atual')
     else:

@@ -28,18 +28,18 @@ def cadastrar_movimentacao(movimentacao):
 
 
 def listar_movimentacoes(usuario):
-    return Movimentacao.objects.filter(usuario=usuario)
+    return Movimentacao.objects.filter(usuario=usuario, tela_inicial=True)
 
 
 def listar_movimentacoes_ano_mes(ano, mes, usuario):
     return Movimentacao.objects\
-        .filter(data_efetivacao__year=ano, data_efetivacao__month=mes, usuario=usuario)\
+        .filter(data_efetivacao__year=ano, data_efetivacao__month=mes, usuario=usuario, tela_inicial=True)\
         .order_by('data_lancamento')
 
 
 def listar_anos_meses(usuario):
     anos_meses = Movimentacao.objects\
-                     .filter(usuario=usuario)\
+                     .filter(usuario=usuario, tela_inicial=True)\
                      .dates(field_name='data_efetivacao', kind='month', order='DESC')[:12]
     return reversed(anos_meses)
 
@@ -92,6 +92,10 @@ def editar_movimentacao(movimentacao_antiga, movimentacao_nova):
     movimentacao_antiga.usuario = movimentacao_nova.usuario
     movimentacao_antiga.parcelamento = movimentacao_nova.parcelamento
     movimentacao_antiga.save(force_update=True)
+
+
+def editar_parcial_movimentacao(movimentacao):
+    movimentacao.save(force_update=True)
 
 
 def remover_movimentacao(movimentacao):
