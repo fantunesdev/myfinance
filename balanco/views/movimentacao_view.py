@@ -165,6 +165,8 @@ def editar_movimentacao(request, id):
             usuario=request.user,
             parcelamento=movimentacao_antiga.parcelamento
         )
+        tela_inicial = movimentacao_nova.conta.tela_inicial if movimentacao_nova.conta else movimentacao_nova.cartao.tela_inicial
+        movimentacao_nova.tela_inicial = tela_inicial
         validar_saldo_conta_nova(movimentacao_antiga, movimentacao_nova, copia_movimentacao_antiga)
         if form_movimentacao.cleaned_data['parcelar'] == 'parcelar':
             parcelamento_repositorio.validar_parcelamento(copia_movimentacao_antiga, movimentacao_nova)
