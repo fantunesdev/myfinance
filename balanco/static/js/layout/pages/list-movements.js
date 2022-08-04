@@ -9,38 +9,42 @@ const selector = document.getElementById('bar-chart-select');
 
 async function draw () {
     const year = data.getMonthYear().year,
-        month = data.getMonthYear().month;
-    
-    let report = await data.setCategoriesReport(year, month),
+        month = data.getMonthYear().month,
+        report = await data.setCategoriesReport(year, month),
         revenue = data.setCategoriesDataset(report.revenue, true),
         expenses = data.setCategoriesDataset(report.expenses),
         amount = data.setAmountDataset(report.amount),
         htmlId = 'bar-chart-select',
-        categories = await services.getView('categorias');
-    
-    const barChart = await graphics.drawBarChart(expenses, 'Gastos por Categoria');
-    graphics.drawDoughnutChart(revenue, 'revenue', 'Receitas');
-    graphics.drawDoughnutChart(amount, 'amount', 'Saídas/Entradas');
+        optionsCategory = data.setCategoriesOptions(report.expenses);
 
-    selects.renderOptions(htmlId, categories);
+    selects.renderOptions(htmlId, optionsCategory);
+
+    const barChart = graphics.drawBarChart(expenses, 'Despesas');
+    graphics.drawDoughnutChart(revenue, 'revenue', 'Receitas');
+    graphics.drawDoughnutChart(amount, 'amount', 'Receitas/Despesas');    
 
     return barChart;
 };
 
 
-async function drawSubcategories() {
+async function updateBarChart(barChart) {
     const  year = data.getMonthYear().year,
-        month = data.getMonthYear().month,
-        subcategories = await services.getRelatedView('categorias', 'subcategorias', selector.value),
-        expenses = await dataSubcategories.setSubcategoryExpenses(year, month, selector.value),
-        dataset = data.setCategoriesDataset(expenses);
-    barChart.destroy();
-    return graphics.drawBarChart(dataset, `Gastos por Subcategoria`);
+        month = data.getMonthYear().month;
+        
+    if (selector.value === '0') {
+        const report = await data.setCategoriesReport(year, month);
+        var expenses = report.expenses;
+    } else {
+        var expenses = await dataSubcategories.setSubcategoryDataset(year, month, selector.value);
+    }
+
+    const dataset = data.setCategoriesDataset(expenses);
+    graphics.updateChart(barChart, dataset);
 };
-
-
+    
+    
 selector.addEventListener('change', () => {
-    let barChart = drawSubcategories();
+    updateBarChart(barChart);
 });
 
 let barChart = await draw();

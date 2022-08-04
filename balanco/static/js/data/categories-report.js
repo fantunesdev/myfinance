@@ -95,6 +95,22 @@ export function setCategoriesDataset(report, revenue) {
 };
 
 
+export function setCategoriesOptions(report) {
+    let options = [],
+        object;
+
+    for (let i of report) {
+        object = {
+            id: i.id,
+            descricao: i.name,
+            amount: i.amount
+        }
+        options.push(object)
+    };
+    return options;
+}
+
+
 export function setAmountDataset(amount) {
     let names = ['Entradas', 'Saídas'],
         values = [amount.revenue, amount.expenses],

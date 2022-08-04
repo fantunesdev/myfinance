@@ -1,6 +1,6 @@
 import * as graphicsData from '../../data/categories-report.js';
 
-export async function drawBarChart(dataset, label) {
+export function drawBarChart(dataset, label) {
     const father = document.getElementById('expenses-bar-chart').getContext('2d');
     const data = {
         type: 'bar',
@@ -13,19 +13,32 @@ export async function drawBarChart(dataset, label) {
             }]
         },
         options: {
+            responsive: true,
             scales: {
                 y: {
                     beginZero: true
                 }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                title: {
+                    display: true,
+                    text: label,
+                    font: {
+                        size: 18
+                    }
+                }
             }
         }
-    }
+    };
     
     return new Chart(father, data);
 };
 
 
-export async function drawDoughnutChart(dataset, fatherHtmlId, label) {
+export function drawDoughnutChart(dataset, fatherHtmlId, label) {
     const father = document.getElementById(`${fatherHtmlId}-doughnut-chart`).getContext('2d');
     const data = {
         type: 'doughnut',
@@ -42,6 +55,7 @@ export async function drawDoughnutChart(dataset, fatherHtmlId, label) {
             }]
         },
         options: {
+            responsive: true,
             plugins: {
                 legend: {
                     display: false
@@ -55,7 +69,40 @@ export async function drawDoughnutChart(dataset, fatherHtmlId, label) {
                 }
             }
         }
-    }
+    };
 
     new Chart(father, data);
+};
+
+
+function addData(chart, label, data) {
+    chart.data.labels.push(label);
+    chart.data.datasets.forEach((dataset) => {
+        dataset.data.push(data);
+    });
+    chart.update();
+};
+
+
+function removeData(chart) {
+    chart.data.labels.pop();
+    chart.data.datasets.forEach((dataset) => {
+        dataset.data.pop();
+    });
+    chart.update();
+};
+
+
+export function updateChart(chart, dataset) {
+    let max = chart.data.labels.length,
+        i;
+
+    for (i = 0; i < max; i++) {
+        removeData(chart);
+    };
+
+    for (i = 0; i < dataset.names.length; i++) {
+        addData(chart, dataset.names[i], dataset.values[i]);
+    };
 }
+
