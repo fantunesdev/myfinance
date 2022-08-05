@@ -1,5 +1,6 @@
+from balanco.entidades.antecipation import Antecipation
 from balanco.entidades.categoria import Categoria
-from balanco.services import categoria_service
+from balanco.services import categoria_service, antecipation_service
 
 categorias = [
     ["saida", "Alimentação", "#960000", "fa-solid fa-utensils"],
@@ -27,3 +28,12 @@ def cadastrar_categorias(usuario):
             usuario=usuario
         )
         categoria_service.cadastrar_categoria(categoria)
+
+
+def create_antecipation(user):
+    antecipation = Antecipation(
+        day=1,
+        antecipate=False,
+        user=user
+    )
+    antecipation_service.create_antecipation(antecipation)

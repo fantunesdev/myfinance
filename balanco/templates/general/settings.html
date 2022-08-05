@@ -8,6 +8,35 @@
     {% block content %}
         <div class="box box-primary">
             <div class="box-header">
+                <h3 class="box-title">Data de antecipação</h3>
+            </div>
+            <div class="box-body">
+                <p>Você pode visualizar por padrão o próximo mês a partir de uma data específica. Selecione um dia para alterar a visualização padrão do sistema.</p>
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>Dia</th>
+                        <th>Ativo</th>
+                        <th>Editar</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <th>{{ antecipation.day }}</th>
+                        <th>{{ antecipation.active | bool_portuguese }}</th>
+                        <th>
+                            <a href="{% url 'update_antecipation' %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
+                        </th>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="box-footer">
+
+            </div>
+        </div>
+        <div class="box box-primary">
+            <div class="box-header">
                 <h3 class="box-title">Listar Bancos</h3>
             </div>
             <div class="box-body">

@@ -129,3 +129,9 @@ class Movimentacao(models.Model):
 
     def __str__(self):
         return self.descricao
+
+
+class Antecipation(models.Model):
+    day = models.IntegerField()
+    active = models.BooleanField(blank=True)
+    user = models.ForeignKey(Usuario, on_delete=models.PROTECT)

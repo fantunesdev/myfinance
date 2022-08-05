@@ -28,6 +28,7 @@ urlpatterns = [
 
     path('api/', include('api.urls')),
 
+    path('antecipation/', include('balanco.urls.antecipation_url')),
     path('banco/', include('balanco.urls.banco_url')),
     path('bandeira/', include('balanco.urls.bandeira_url')),
     path('balanco/configurar/', configurar, name='configurar'),

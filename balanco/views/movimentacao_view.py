@@ -8,10 +8,10 @@ from django.shortcuts import redirect, render
 from balanco.entidades.movimentacao import Movimentacao
 from balanco.forms.general_forms import *
 from balanco.forms.movimentacao_form import EditarFormMovimentacao
-from balanco.repositorios import parcelamento_repositorio
+from balanco.repositorios import parcelamento_repositorio, antecipation_repository
 from balanco.repositorios.movimentacao_repositorio import *
 from balanco.services import movimentacao_service, banco_service, bandeira_service, categoria_service, conta_service, \
-    cartao_service, subcategoria_service
+    cartao_service, subcategoria_service, antecipation_service
 
 template_tags = {
     'ano_atual': date.today().year,
@@ -72,7 +72,8 @@ def listar_movimentacoes(request):
 
 @login_required
 def listar_mes_atual(request):
-    mes_atual = date.today() if date.today().day < 10 else date.today() + relativedelta(months=1)
+    mes_atual = antecipation_repository.get_current_month(request.user)
+    print(mes_atual)
     movimentacoes = movimentacao_service.listar_movimentacoes_ano_mes(
         ano=mes_atual.year,
         mes=mes_atual.month,
@@ -194,11 +195,11 @@ def remover_movimentacao(request, id):
 
 
 def configurar(request):
+    template_tags['antecipation'] = antecipation_service.read_atecipation_user(request.user)
     template_tags['bancos'] = banco_service.listar_bancos()
     template_tags['bandeiras'] = bandeira_service.listar_bandeiras()
-    template_tags['categorias'] = categoria_service.listar_categorias(request.user)
-    template_tags['subcategorias'] = subcategoria_service.listar_subcategorias(request.user)
-    template_tags['contas'] = conta_service.listar_contas(request.user)
-    template_tags['contas'] = conta_service.listar_contas(request.user)
     template_tags['cartoes'] = cartao_service.listar_cartoes(request.user)
+    template_tags['categorias'] = categoria_service.listar_categorias(request.user)
+    template_tags['contas'] = conta_service.listar_contas(request.user)
+    template_tags['subcategorias'] = subcategoria_service.listar_subcategorias(request.user)
     return render(request, 'general/settings.html', template_tags)

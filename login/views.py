@@ -15,11 +15,13 @@ def cadastrar_usuario(request):
     if request.method == 'POST':
         form_usuario = usuario_form.UsuarioForm(request.POST, request.FILES)
         if form_usuario.is_valid():
-            usuario_novo = Usuario(nome=form_usuario.cleaned_data['nome'],
-                                   email=form_usuario.cleaned_data['email'],
-                                   username=form_usuario.cleaned_data['username'],
-                                   password=form_usuario.cleaned_data['password1'],
-                                   foto=form_usuario.cleaned_data['foto'])
+            usuario_novo = Usuario(
+                nome=form_usuario.cleaned_data['nome'],
+                email=form_usuario.cleaned_data['email'],
+                username=form_usuario.cleaned_data['username'],
+                password=form_usuario.cleaned_data['password1'],
+                foto=form_usuario.cleaned_data['foto']
+            )
             usuario_service.cadastrar_usuario(usuario_novo)
             usuario_db = usuario_service.listar_usuario(usuario_novo)
             cadastrar_categorias(usuario_db)

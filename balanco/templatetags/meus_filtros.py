@@ -28,3 +28,10 @@ def descricao_parcelas(movimentacao):
     else:
         return f'{movimentacao.descricao} ({movimentacao.pagas}/{movimentacao.numero_parcelas})'
 
+
+@register.filter(name='bool_portuguese')
+def bool_portuguese(boolean):
+    print(boolean)
+    if boolean:
+        return 'Sim'
+    return 'Não'
