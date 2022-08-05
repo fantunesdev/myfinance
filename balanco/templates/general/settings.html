@@ -21,11 +21,11 @@
                     </thead>
                     <tbody>
                     <tr>
-                        <th>{{ antecipation.day }}</th>
-                        <th>{{ antecipation.active | bool_portuguese }}</th>
-                        <th>
+                        <td>{{ antecipation.day }}</td>
+                        <td>{{ antecipation.active | bool_portuguese }}</td>
+                        <td>
                             <a href="{% url 'update_antecipation' %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
-                        </th>
+                        </td>
                     </tr>
                     </tbody>
                 </table>
@@ -55,7 +55,7 @@
                             <td><a href="#">{{ i.descricao }}</a></td>
                             <td>{{ i.codigo }}</td>
                             <td><img src="{{ i.icone.url }}" alt="Ícone {{ i.descricao }}" style="max-height: 25px;"></td>
-                            <td><a href="{% url 'editar_banco' i.id %}">Editar</a></td>
+                            <td><a href="{% url 'editar_banco' i.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -92,7 +92,7 @@
                             <td>{{ i.saldo|floatformat:2 }}</td>
                             <td>{{ i.limite|floatformat:2 }}</td>
                             <td>{{ i.tela_inicial }}</td>
-                            <td><a href="{% url 'editar_conta' i.id %}">Editar</a></td>
+                            <td><a href="{% url 'editar_conta' i.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -129,7 +129,7 @@
                             <td>{{ i.tela_inicial }}</td>
                             <td>{{ i.conta }}</td>
                             <td>{{ i.vencimento}}</td>
-                            <td><a href="{% url 'editar_cartao' i.id %}">Editar</a></td>
+                            <td><a href="{% url 'editar_cartao' i.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -161,7 +161,7 @@
                                     <td><a href="#">{{ i.descricao }}</a></td>
                                     <td><a href="#"><i class="fa-solid fa-circle" style="color: {{ i.cor }};"></i></a></td>
                                     <td><a href="#"><i class="{{ i.icone }}"></i></a></td>
-                                    <td><a href="{% url 'editar_categoria' i.id %}">Editar</a></td>
+                                    <td><a href="{% url 'editar_categoria' i.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
                                 </tr>
                             {% endif %}
                         {% endfor %}
@@ -193,7 +193,7 @@
                         <tr>
                             <td>{{ subcategoria.descricao }}</td>
                             <td>{{ subcategoria.categoria }}</td>
-                            <td><a href="{% url 'editar_subcategoria' subcategoria.id %}">Editar</a></td>
+                            <td><a href="{% url 'editar_subcategoria' subcategoria.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
                         </tr>
                         {% endif %}
                         {% endfor %}
@@ -226,7 +226,7 @@
                                     <td><a href="#">{{ i.descricao }}</a></td>
                                     <td><a href="#"><i class="fa-solid fa-circle" style="color: {{ i.cor }};"></i></a></td>
                                     <td><a href="#"><i class="{{ i.icone }}"></i></a></td>
-                                    <td><a href="{% url 'editar_categoria' i.id %}">Editar</a></td>
+                                    <td><a href="{% url 'editar_categoria' i.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
                                 </tr>
                             {% endif %}
                         {% endfor %}
@@ -257,7 +257,7 @@
                         <tr>
                             <td>{{ subcategoria.descricao }}</td>
                             <td>{{ subcategoria.categoria }}</td>
-                            <td><a href="{% url 'editar_subcategoria' subcategoria.id %}">Editar</a></td>
+                            <td><a href="{% url 'editar_subcategoria' subcategoria.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
                         </tr>
                         {% endif %}
                         {% endfor %}
@@ -287,7 +287,7 @@
                         <tr>
                             <td><a href="#">{{ i.descricao }}</a></td>
                             <td><img src="{{ i.icone.url }}" alt="Ícone {{ i.descricao }}" style="max-height: 35px;"></td>
-                            <td><a href="{% url 'editar_bandeira' i.id %}">Editar</a></td>
+                            <td><a href="{% url 'editar_bandeira' i.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
                         </tr>
                         {% endfor %}
                     </tbody>
