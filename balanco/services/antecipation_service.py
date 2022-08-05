@@ -1,14 +1,16 @@
+from django.core.exceptions import ObjectDoesNotExist
+
 from balanco.models import Antecipation
 
 
 def create_antecipation(antecipation):
-    antecipation_db = read_atecipation_user(antecipation.user)
-    if antecipation_db:
+    try:
+        antecipation_db = read_atecipation_user(antecipation.user)
         return antecipation_db
-    else:
+    except ObjectDoesNotExist:
         new_antecipation = Antecipation.objects.create(
             day=antecipation.day,
-            active=antecipation.antecipate,
+            active=antecipation.active,
             user=antecipation.user
         )
         return new_antecipation
