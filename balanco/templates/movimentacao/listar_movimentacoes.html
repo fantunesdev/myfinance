@@ -82,14 +82,16 @@
                     <tr>
                         <td rowspan="2" width="800">
                             <canvas id="expenses-bar-chart" width="40" height="15"></canvas>
+                            <br><br>
+                            <b class="font-16">Total de gastos fixos: {{ fixed | formatar_reais }}</b>
                         </td>
                         <td width="80">
                             <canvas id="amount-doughnut-chart"></canvas>
                             <br>
                             {% if diferenca < 0 %}
-                            <b style="color: #960000; font-size: 16px">{{ diferenca | formatar_reais }}</b>
+                            <b class="font-16 red">{{ diferenca | formatar_reais }}</b>
                             {% else %}
-                            <b style="color: #009600; font-size: 16px">{{ diferenca | formatar_reais }}</b>
+                            <b class="font-16 green">{{ diferenca | formatar_reais }}</b>
                             {% endif %}
                         </td>
                     </tr>
@@ -110,7 +112,7 @@
                 <h3 class="box-title">Extrato {{ ano_mes | date:'F' }} de {{ ano_mes | date:'Y' }}</h3>
             </div>
             <div class="box-body">
-                <table class="table">
+                <table class="table" id="movements-table">
                     <thead>
                         <tr>
                             <th>Data</th>

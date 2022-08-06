@@ -79,7 +79,8 @@ def listar_mes_atual(request):
         mes=mes_atual.month,
         usuario=request.user
     )
-    entradas, saidas, cartoes, avista = calcular_total_entradas_saidas(movimentacoes)
+    entradas, saidas, cartoes, avista, fixed = calcular_total_entradas_saidas(movimentacoes)
+    template_tags['fixed'] = fixed
     template_tags['entradas'] = entradas
     template_tags['saidas'] = saidas
     template_tags['diferenca'] = entradas - saidas
@@ -96,7 +97,8 @@ def listar_mes_atual(request):
 
 def listar_movimentacoes_ano_mes(request, ano, mes):
     movimentacoes = movimentacao_service.listar_movimentacoes_ano_mes(ano, mes, request.user)
-    entradas, saidas, cartoes, avista = calcular_total_entradas_saidas(movimentacoes)
+    entradas, saidas, cartoes, avista, fixed = calcular_total_entradas_saidas(movimentacoes)
+    template_tags['fixed'] = fixed
     template_tags['entradas'] = entradas
     template_tags['saidas'] = saidas
     template_tags['diferenca'] = entradas - saidas

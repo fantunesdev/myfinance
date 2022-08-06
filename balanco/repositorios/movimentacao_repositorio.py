@@ -123,6 +123,7 @@ def calcular_total_entradas_saidas(movimentacoes):
     saidas = 0
     cartoes = 0
     contas = 0
+    fixed = 0
     for movimentacao in movimentacoes:
         if movimentacao.tipo == 'saida':
             if movimentacao.cartao:
@@ -131,6 +132,8 @@ def calcular_total_entradas_saidas(movimentacoes):
                 contas += movimentacao.valor
             if movimentacao.categoria.id != 13:
                 saidas += movimentacao.valor
+            if movimentacao.fixa:
+                fixed += movimentacao.valor
         else:
             entradas += movimentacao.valor
-    return entradas, saidas, cartoes, contas
+    return entradas, saidas, cartoes, contas, fixed

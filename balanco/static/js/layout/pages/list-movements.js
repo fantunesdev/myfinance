@@ -27,8 +27,7 @@ async function draw () {
 
 
 async function updateBarChart(barChart) {
-    const  year = data.getMonthYear().year,
-        month = data.getMonthYear().month;
+    const [year, month] = await data.getMonthYear();
         
     if (selector.value === '0') {
         const report = await data.setCategoriesReport(year, month);
@@ -40,10 +39,21 @@ async function updateBarChart(barChart) {
     const dataset = data.setCategoriesDataset(expenses);
     graphics.updateChart(barChart, dataset);
 };
+
+async function updateTable() {
+    const originalTalbe = document.getElementById('movements-table');
+
+    if (selector.value === '0') {
+        originalTalbe.classList.remove('toggled');
+    } else {
+        originalTalbe.classList.add('toggled');
+    }
+}
     
     
 selector.addEventListener('change', () => {
     updateBarChart(barChart);
+    // updateTable();
 });
 
 let barChart = await draw();
