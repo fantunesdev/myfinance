@@ -1,15 +1,17 @@
 import * as services from "./services.js";
 
 
-export function getMonthYear() {
+export async function getMonthYear() {
     let url = window.location.pathname,
         currentMonth = url.indexOf('mes_atual') >= 0 ? true : false,
         root = url === '/' ? true : false,
         today = new Date(), 
         month, year;
+
+    const antecipation = await services.getView('antecipation')
     
     if (root || currentMonth) {
-        month = today.getDate() < 10 ? today.getMonth() + 1 : today.getMonth() + 2;
+        month = today.getDate() < antecipation.day ? today.getMonth() + 1 : today.getMonth() + 2;
         year = month <= 12 ? today.getFullYear() : today.getFullYear() + 1;
         month = month === 13 ? 1 : month;
     } else {
@@ -17,7 +19,7 @@ export function getMonthYear() {
         month = url.split('/')[3];
     };
 
-    return {year, month};
+    return [year, month];
 };
 
 

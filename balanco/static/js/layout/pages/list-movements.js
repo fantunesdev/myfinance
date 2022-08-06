@@ -8,8 +8,7 @@ import * as services from '../../data/services.js';
 const selector = document.getElementById('bar-chart-select');
 
 async function draw () {
-    const year = data.getMonthYear().year,
-        month = data.getMonthYear().month,
+    const [year, month] = await data.getMonthYear(),
         report = await data.setCategoriesReport(year, month),
         revenue = data.setCategoriesDataset(report.revenue, true),
         expenses = data.setCategoriesDataset(report.expenses),
