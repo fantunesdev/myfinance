@@ -14,6 +14,14 @@ export async function getView(view) {
 }
 
 
+export async function getViewDetail(view, id) {
+    const url = `/api/${view}/${id}/`,
+        response = await fetch(url);
+
+    return await response.json();
+}
+
+
 export async function getRelatedView(view, related, id) {
     const url = `/api/${view}/${id}/${related}`,
     response = await fetch(url);

@@ -76,8 +76,8 @@
                 <h3 class="box-title">Dashboard</h3>
             </div>
             <div class="box-body">
-                <label for="bar-chart-select">Categorias</label>
-                <select name="bar-chart-select" id="bar-chart-select" class="form-control"></select>
+                <label for="expenses-selector">Categorias</label>
+                <select name="expenses-selector" id="expenses-selector" class="form-control"></select>
                 <table>
                     <tr>
                         <td rowspan="2" width="800">
@@ -111,8 +111,8 @@
             <div class="box-header">
                 <h3 class="box-title">Extrato {{ ano_mes | date:'F' }} de {{ ano_mes | date:'Y' }}</h3>
             </div>
-            <div class="box-body">
-                <table class="table" id="movements-table">
+            <div class="box-body" id="statement-box">
+                <table class="table" id="statement-table">
                     <thead>
                         <tr>
                             <th>Data</th>

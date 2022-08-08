@@ -1,24 +1,21 @@
-function renderDefaultOption(htmlId) {
-    const father = document.getElementById(htmlId);
+function renderDefaultOption(select) {
     let option;
 
     option = document.createElement('option');
     option.value = 0;
     option.text = '---------';
-    father.add(option, father.options[0]);
+    select.add(option, select.options[0]);
 }
 
 
-export function renderOptions(htmlId, objectList) {
-    const father = document.getElementById(htmlId);
-    
-    father.length = 0;
-    renderDefaultOption(htmlId);
+export function renderOptions(select, objectList) {    
+    select.length = 0;
+    renderDefaultOption(select);
     
     for (let object of objectList) {
         const option = document.createElement('option');
         option.value = object.id;
         option.text = object.descricao;
-        father.add(option, father.options[object.id])
+        select.add(option, select.options[object.id])
     }
 }

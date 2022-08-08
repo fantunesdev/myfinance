@@ -23,9 +23,8 @@ export async function getMonthYear() {
 };
 
 
-export async function setCategoriesReport(year, month) {
-    let movements = await services.getMovementsYearMonth(year, month),
-        categories = await services.getView('categorias'),
+export async function setCategoriesReport(movements) {
+    let categories = await services.getView('categorias'),
         revenue = [],
         expenses = [],
         amount = {
@@ -83,14 +82,16 @@ export function setCategoriesDataset(report, revenue) {
         values = [],
         colors = [],
         category,
-        red = 139;
+        green = 139;
 
     for (category of report) {
         names.push(category.name);
         values.push(category.amount);
-        colors.push(`rgba(${red}, 0, 0, 1)`);
         if (revenue) {
-            red += 30;
+            colors.push(`rgba(0, ${green}, 0, 1)`);
+            green -= 30;
+        } else {
+            colors.push(`rgba(139, 0, 0, 1)`);
         }
     }
     return {names, values, colors};
