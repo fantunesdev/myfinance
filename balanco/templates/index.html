@@ -18,8 +18,9 @@
         <!-- ESTILIZAÇÃO LOCAL -->
         <link rel="stylesheet" href="{% static 'css/styles.css' %}">
         <link rel="icon" href="{% static 'img/favicon.png' %}">
+        {% block styles %} {% endblock %}
 
-        <title>Financeiro | {% block title %}  {% endblock %}</title>
+        <title>{% block title %}  {% endblock %} | MyFinance</title>
     </head>
     <body>
         <!-- INÍCIO FORMULÁRIO DE PESQUISA -->

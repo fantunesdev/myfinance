@@ -1,0 +1,51 @@
+.dashboard {
+    display: grid;
+    grid-template-columns: 69% 15% 15%;
+    grid-template-rows: auto auto auto;
+    grid-template-areas: 
+        "expenses revenue-expenses revenue"
+        "expenses revenue-expenses-number cash"
+        "expenses fixed card";
+}
+
+.expenses,
+.revenue-expenses,
+.revenue-expenses-number,
+.cash,
+.card,
+.fixed {
+    text-align: center;
+    color: #666666;
+}
+
+.expenses {
+    grid-area: expenses;
+}
+
+.revenue-expenses {
+    grid-area: revenue-expenses;
+}
+
+.revenue-expenses-number {
+    grid-area: revenue-expenses-number;
+}
+
+.revenue {
+    grid-area: revenue;
+}
+
+.statement {
+    grid-area: statement;
+}
+
+.cash {
+    grid-area: cash;
+}
+
+.card {
+    grid-area: card;
+}
+
+.fixed {
+    grid-area: fixed;
+}
