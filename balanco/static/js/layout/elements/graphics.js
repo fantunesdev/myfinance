@@ -27,8 +27,10 @@ export function drawBarChart(dataset, label) {
                     display: true,
                     text: label,
                     font: {
-                        size: 18
-                    }
+                        size: 18,
+                        family: 'Ubuntu'
+                    },
+                    color: 'rgba(204,204,204,1)'
                 }
             }
         }
@@ -64,8 +66,10 @@ export function drawDoughnutChart(dataset, fatherHtmlId, label) {
                     display: true,
                     text: label,
                     font: {
-                        size: 18
-                    }
+                        size: 18,
+                        family: 'Ubuntu'
+                    },
+                    color: 'rgba(204,204,204,1)'
                 }
             }
         }
