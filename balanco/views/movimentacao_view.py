@@ -73,7 +73,6 @@ def listar_movimentacoes(request):
 @login_required
 def listar_mes_atual(request):
     mes_atual = antecipation_repository.get_current_month(request.user)
-    print(mes_atual)
     movimentacoes = movimentacao_service.listar_movimentacoes_ano_mes(
         ano=mes_atual.year,
         mes=mes_atual.month,

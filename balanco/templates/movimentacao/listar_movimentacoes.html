@@ -25,6 +25,8 @@
                 <div class="dashboard">
                     <div class="expenses">
                         <canvas id="expenses-bar-chart" width="40" height="15"></canvas>
+                        <br>
+                        <b class="font-16">Total de gastos: {{ saidas | formatar_reais }}</b>
                     </div>
                     <div class="revenue-expenses">
                         <canvas id="amount-doughnut-chart"></canvas>
