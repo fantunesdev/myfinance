@@ -47,7 +47,7 @@
                     <ul id="conta-submenu" class="toggled">
                         {% for conta in contas %}
                         <li>
-                            <a href="{% url 'listar_movimentacoes_conta_id' conta.id %}">{{ conta }}</a>
+                            <a href="{% url 'listar_conta_mes_atual' conta.id %}">{{ conta }}</a>
                         </li>
                         {% endfor %}
                     </ul>

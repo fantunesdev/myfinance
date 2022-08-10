@@ -1,12 +1,16 @@
+from datetime import date
+
+from dateutil.relativedelta import relativedelta
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 
-from balanco.repositorios import conta_repository
+from balanco.repositorios import conta_repository, antecipation_repository
+from balanco.repositorios.movimentacao_repositorio import calcular_total_entradas_saidas
 from balanco.views.movimentacao_view import template_tags
 from balanco.entidades.conta import Conta
 from balanco.forms.conta_form import ContaForm
 from balanco.forms.general_forms import ExclusaoForm
-from balanco.services import conta_service
+from balanco.services import conta_service, cartao_service
 
 
 @login_required
@@ -74,3 +78,89 @@ def remover_conta(request, id):
     template_tags['conta'] = conta
     template_tags['contas'] = conta_service.listar_contas(request.user)
     return render(request, 'conta/confirma_exclusao.html', template_tags)
+
+
+def listar_conta_mes_atual(request, conta_id):
+    conta = conta_service.listar_conta_id(conta_id, request.user)
+    mes_atual = date.today()
+    movimentacoes = conta_service.listar_movimentacoes_conta_ano_mes(
+        conta_id,
+        mes_atual.year,
+        mes_atual.month,
+        request.user
+    )
+    entradas, saidas, cartoes, avista, fixed = calcular_total_entradas_saidas(movimentacoes)
+    template_tags['fixed'] = fixed
+    template_tags['entradas'] = entradas
+    template_tags['saidas'] = saidas
+    template_tags['diferenca'] = entradas - saidas
+    template_tags['cartoes'] = cartoes
+    template_tags['avista'] = avista
+    template_tags['movimentacoes'] = movimentacoes
+    template_tags['conta'] = conta
+    template_tags['contas'] = conta_service.listar_contas(request.user)
+    template_tags['faturas'] = cartao_service.listar_cartoes(request.user)
+    template_tags['ano_mes'] = mes_atual
+    template_tags['mes_proximo'] = template_tags['ano_mes'] + relativedelta(months=1)
+    template_tags['mes_anterior'] = template_tags['ano_mes'] - relativedelta(months=1)
+    return render(request, 'movimentacao/listar_movimentacoes.html', template_tags)
+
+
+def listar_movimentacoes_conta_ano_mes(request, conta_id, ano, mes):
+    conta = conta_service.listar_conta_id(conta_id, request.user)
+    movimentacoes = conta_service.listar_movimentacoes_conta_ano_mes(conta_id, ano, mes, request.user)
+    entradas, saidas, cartoes, avista, fixed = calcular_total_entradas_saidas(movimentacoes)
+    template_tags['fixed'] = fixed
+    template_tags['entradas'] = entradas
+    template_tags['saidas'] = saidas
+    template_tags['diferenca'] = entradas - saidas
+    template_tags['cartoes'] = cartoes
+    template_tags['avista'] = avista
+    template_tags['movimentacoes'] = movimentacoes
+    template_tags['conta'] = conta
+    template_tags['contas'] = conta_service.listar_contas(request.user)
+    template_tags['faturas'] = cartao_service.listar_cartoes(request.user)
+    template_tags['ano_mes'] = date(ano, mes, 1)
+    template_tags['mes_proximo'] = template_tags['ano_mes'] + relativedelta(months=1)
+    template_tags['mes_anterior'] = template_tags['ano_mes'] - relativedelta(months=1)
+    return render(request, 'movimentacao/listar_movimentacoes.html', template_tags)
+
+
+def listar_movimentacoes_conta(request, conta_id):
+    conta = conta_service.listar_conta_id(conta_id, request.user)
+    movimentacoes = conta_service.listar_movimentacoes_conta(conta, request.user)
+    entradas, saidas, cartoes, avista, fixed = calcular_total_entradas_saidas(movimentacoes)
+    template_tags['fixed'] = fixed
+    template_tags['entradas'] = entradas
+    template_tags['saidas'] = saidas
+    template_tags['diferenca'] = entradas - saidas
+    template_tags['cartoes'] = cartoes
+    template_tags['avista'] = avista
+    template_tags['movimentacoes'] = movimentacoes
+    template_tags['conta'] = conta
+    template_tags['contas'] = conta_service.listar_contas(request.user)
+    template_tags['faturas'] = cartao_service.listar_cartoes(request.user)
+    template_tags['ano_mes'] = date.today()
+    template_tags['mes_proximo'] = template_tags['ano_mes'] + relativedelta(months=1)
+    template_tags['mes_anterior'] = template_tags['ano_mes'] - relativedelta(months=1)
+    return render(request, 'movimentacao/listar_movimentacoes.html', template_tags)
+
+
+def listar_movimentacoes_conta_ano(request, conta_id, ano):
+    conta = conta_service.listar_conta_id(conta_id, request.user)
+    movimentacoes = conta_service.listar_movimentacoes_conta_ano(conta, ano, request.user)
+    entradas, saidas, cartoes, avista, fixed = calcular_total_entradas_saidas(movimentacoes)
+    template_tags['fixed'] = fixed
+    template_tags['entradas'] = entradas
+    template_tags['saidas'] = saidas
+    template_tags['diferenca'] = entradas - saidas
+    template_tags['cartoes'] = cartoes
+    template_tags['avista'] = avista
+    template_tags['movimentacoes'] = movimentacoes
+    template_tags['conta'] = conta
+    template_tags['contas'] = conta_service.listar_contas(request.user)
+    template_tags['faturas'] = cartao_service.listar_cartoes(request.user)
+    template_tags['ano_mes'] = date.today()
+    template_tags['mes_proximo'] = template_tags['ano_mes'] + relativedelta(months=1)
+    template_tags['mes_anterior'] = template_tags['ano_mes'] - relativedelta(months=1)
+    return render(request, 'movimentacao/listar_movimentacoes.html', template_tags)

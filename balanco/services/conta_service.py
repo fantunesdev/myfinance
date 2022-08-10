@@ -1,4 +1,4 @@
-from ..models import Conta
+from ..models import Conta, Movimentacao
 
 
 def cadastrar_conta(conta):
@@ -46,3 +46,19 @@ def depositar(conta, valor):
 
 def remover_conta(conta):
     conta.delete()
+
+
+def listar_movimentacoes_conta_ano_mes(conta, ano, mes, usuario):
+    return Movimentacao.objects \
+        .filter(data_efetivacao__year=ano, data_efetivacao__month=mes, conta=conta, usuario=usuario) \
+        .order_by('data_lancamento')
+
+
+def listar_movimentacoes_conta_ano(conta, ano, usuario):
+    return Movimentacao.objects \
+        .filter(data_efetivacao__year=ano, conta=conta, usuario=usuario) \
+        .order_by('data_lancamento')
+
+
+def listar_movimentacoes_conta(conta, usuario):
+    return Movimentacao.objects.filter(conta=conta, usuario=usuario).order_by('data_lancamento')
