@@ -7,58 +7,6 @@
     {% block content %}
         <div class="box box-primary">
             <div class="box-header">
-                <h3 class="box-title">Saldo</h3>
-            </div>
-            <div class="box-body">
-                <table>
-                    <thead>
-                        <tr>
-                            <th></th>
-                            <th>Total</th>
-                            <th>Cartões</th>
-                            <th>À vista</th>
-                            {% for conta in contas %}
-                            {% if conta.tela_inicial %}
-                            <th>{{ conta }} - {{ conta.tipo }}</th>
-                            {% endif %}
-                            {% endfor %}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Entradas</td>
-                            <td><b>{{ entradas | formatar_reais }}</b></td>
-                            <td></td>
-                            <td></td>
-                            {% for conta in contas %}
-                            {% if conta.tela_inicial %}
-                            {% if conta.saldo < 0 %}
-                            <td style="color: #960000; font-size: 16px"><b>{{ conta.saldo | formatar_reais }}</b></td>
-                            {% else %}
-                            <td style="color: #009600; font-size: 16px"><b>{{ conta.saldo | formatar_reais }}</b></td>
-                            {% endif %}
-                            {% endif %}
-                            {% endfor %}
-                        </tr>
-                        <tr>
-                            <td>Saídas</td>
-                            {% if entradas < saidas %}
-                            <td style="color: #960000; font-size: 16px"><b>{{ saidas | formatar_reais }}</b></td>
-                            {% else %}
-                            <td style="color: #009600; font-size: 16px"><b>{{ saidas | formatar_reais }}</b></td>
-                            {% endif %}
-                            <td>{{ cartoes | formatar_reais }}</td>
-                            <td>{{ avista | formatar_reais }}</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="box-footer">
-
-            </div>
-        </div>
-        <div class="box box-primary">
-            <div class="box-header">
                 <h3 class="box-title">Extrato {{ ano_mes | date:'F' }} de {{ ano_mes | date:'Y' }}</h3>
             </div>
             <div class="box-body">

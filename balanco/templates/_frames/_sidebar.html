@@ -34,7 +34,7 @@
                 <li>
                     <a id="conta-submenu-button" onclick="toggleSubMenu('conta-submenu')">
                         <div>
-                            <i class="bi bi-diagram-3-fill"></i>
+                            <i class="fa-solid fa-building-columns"></i>
                         </div>
                         <div class="toggle">
                             <span>Contas</span>
@@ -48,6 +48,26 @@
                         {% for conta in contas %}
                         <li>
                             <a href="{% url 'listar_movimentacoes_conta_id' conta.id %}">{{ conta }}</a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                <li>
+                    <a id="fatura-submenu-button" onclick="toggleSubMenu('fatura-submenu')">
+                        <div>
+                            <i class="fa-solid fa-credit-card"></i>
+                        </div>
+                        <div class="toggle">
+                            <span>Faturas</span>
+                        </div>
+                        <div class="align-right">
+                            <i class="fa-solid fa-angle-down inverse-toggle"></i>
+                        </div>
+                    </a>
+                </li>
+                    <ul id="fatura-submenu" class="toggled">
+                        {% for cartao in faturas %}
+                        <li>
+                            <a href="{% url 'listar_fatura_mes_atual' cartao.id %}">{{ cartao }}</a>
                         </li>
                         {% endfor %}
                     </ul>

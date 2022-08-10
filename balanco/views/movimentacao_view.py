@@ -88,6 +88,7 @@ def listar_mes_atual(request):
     template_tags['movimentacoes'] = movimentacoes
     template_tags['meses'] = movimentacao_service.listar_anos_meses(request.user)
     template_tags['contas'] = conta_service.listar_contas(request.user)
+    template_tags['faturas'] = cartao_service.listar_cartoes(request.user)
     template_tags['ano_mes'] = mes_atual
     template_tags['mes_proximo'] = template_tags['ano_mes'] + relativedelta(months=1)
     template_tags['mes_anterior'] = template_tags['ano_mes'] - relativedelta(months=1)
@@ -106,6 +107,7 @@ def listar_movimentacoes_ano_mes(request, ano, mes):
     template_tags['movimentacoes'] = movimentacoes
     template_tags['meses'] = movimentacao_service.listar_anos_meses(request.user)
     template_tags['contas'] = conta_service.listar_contas(request.user)
+    template_tags['faturas'] = cartao_service.listar_cartoes(request.user)
     template_tags['ano_mes'] = datetime.date(ano, mes, 1)
     template_tags['mes_proximo'] = template_tags['ano_mes'] + relativedelta(months=1)
     template_tags['mes_anterior'] = template_tags['ano_mes'] - relativedelta(months=1)
@@ -121,7 +123,7 @@ def listar_movimentacoes_conta_id(request, id):
 def listar_fatura(request, cartao_id, ano, mes):
     cartao = cartao_service.listar_cartao_id(cartao_id, request.user)
     movimentacoes = movimentacao_service.listar_fatura(cartao, ano, mes, request.user)
-    entradas, saidas, cartoes, avista = calcular_total_entradas_saidas(movimentacoes)
+    entradas, saidas, cartoes, avista, fixed = calcular_total_entradas_saidas(movimentacoes)
     template_tags['entradas'] = entradas
     template_tags['saidas'] = saidas
     template_tags['cartoes'] = cartoes
