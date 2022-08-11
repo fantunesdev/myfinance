@@ -1,21 +1,22 @@
 from django.urls import path
 
 from api.views.antecipation_views import *
-from api.views.cartao_views import *
-from api.views.categoria_views import *
-from api.views.movimentacao_view import *
-from api.views.subcategoria_views import *
+from api.views.card_views import *
+from api.views.category_views import *
+from api.views.transaction_views import *
+from api.views.subcategoy_views import *
 
 urlpatterns = [
-    path('antecipation/', AntecipationList.as_view(), name='antecipation-list'),
-    path('cartoes/', CartaoList.as_view(), name='cartao-view'),
-    path('cartoes/<int:cartao_id>/', CartaoDetails.as_view()),
-    path('categorias/', CategoriasList.as_view(), name='categorias-list'),
-    path('categorias/<int:categoria_id>/', CategoriasDetails.as_view(), name='categorias-details'),
-    path('categorias/<int:categoria_id>/subcategorias/', SubcategoriaCategoria.as_view(), name='categoria_subcategoria'),
-    path('categorias/tipo/<str:tipo>/', CategoriasTipo.as_view()),
+    path('antecipation/', Antecipation.as_view(), name='antecipation'),
+    path('cartoes/', CardList.as_view(), name='card-list'),
+    path('cartoes/<int:card_id>/', CardDetails.as_view(), name='card-details'),
+    path('categorias/', CategoryList.as_view(), name='categories-list'),
+    path('categorias/<int:category_id>/', CategoryDetails.as_view(), name='categories-details'),
+    path('categorias/<int:category_id>/subcategorias/', SubcategoriesCategory.as_view(), name='subcategories-category'),
+    path('categorias/tipo/<str:type>/', CategoryType.as_view(), name='category-type'),
 
-    path('movimentacoes/ano/<int:ano>/mes/<int:mes>/', MovimentacaoDetails.as_view(), name='movimentacao-details'),
+    path('movimentacoes/ano/<int:year>/mes/<int:month>/', TransactionYearMonth.as_view(), name='transaction-year-month'),
+    path('movimentacoes/ano/<int:year>/', TransactionYear.as_view(), name='transaction-year'),
 
-    path('subcategorias/', SubcategoriaList.as_view(), name='subcategoria-list'),
+    path('subcategorias/', SubcategoryList.as_view(), name='subcategory-list'),
 ]

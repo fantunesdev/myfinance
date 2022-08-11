@@ -20,7 +20,7 @@ def listar_cartoes(usuario):
 
 
 def listar_cartao_id(id, usuario):
-    return Cartao.objects.filter(id=id, usuario=usuario).first()
+    return Cartao.objects.get(id=id, usuario=usuario)
 
 
 def editar_cartao(cartao_antigo, cartao_novo):

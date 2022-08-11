@@ -31,6 +31,12 @@ def listar_movimentacoes(usuario):
     return Movimentacao.objects.filter(usuario=usuario, tela_inicial=True)
 
 
+def listar_movimentacoes_ano(ano, usuario):
+    return Movimentacao.objects\
+        .filter(data_efetivacao__year=ano, usuario=usuario, tela_inicial=True)\
+        .order_by('data_lancamento')
+
+
 def listar_movimentacoes_ano_mes(ano, mes, usuario):
     return Movimentacao.objects\
         .filter(data_efetivacao__year=ano, data_efetivacao__month=mes, usuario=usuario, tela_inicial=True)\
@@ -42,15 +48,6 @@ def listar_anos_meses(usuario):
                      .filter(usuario=usuario, tela_inicial=True)\
                      .dates(field_name='data_efetivacao', kind='month', order='DESC')[:12]
     return reversed(anos_meses)
-
-
-def listar_fatura(cartao, ano, mes, usuario):
-    return Movimentacao.objects.filter(
-        cartao=cartao,
-        data_efetivacao__year=ano,
-        data_efetivacao__month=mes,
-        usuario=usuario
-    )
 
 
 def listar_movimentacoes_conta_id(id, usuario):

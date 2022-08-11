@@ -1,5 +1,10 @@
-{% load meus_filtros %}
+    {% load meus_filtros %}
 
+        <div class="box box-primary">
+            <div class="box-header">
+                <h3 class="box-title">Dashboard</h3>
+            </div>
+            <div class="box-body">
                 <label for="expenses-selector">Categorias</label>
                 <select name="expenses-selector" id="expenses-selector" class="form-control"></select>
                 <div class="dashboard">
@@ -34,3 +39,8 @@
                         <b class="font-16">{{ cartoes | formatar_reais }}</b>
                     </div>
                 </div>
+            </div>
+            <div class="box-footer">
+
+            </div>
+        </div>

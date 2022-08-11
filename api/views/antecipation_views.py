@@ -6,7 +6,7 @@ from api.serializers import antecipation_serializer
 from balanco.services import antecipation_service
 
 
-class AntecipationList(APIView):
+class Antecipation(APIView):
     def get(self, request):
         antecipation = antecipation_service.read_atecipation_user(request.user)
         serializer = antecipation_serializer.AntecipationSerializer(antecipation)
