@@ -1,5 +1,6 @@
 my_conf.py
 balanco/migrations/*
 login/migrations/*
+statement/migrations/*
 /static/
 media/imagens/*
