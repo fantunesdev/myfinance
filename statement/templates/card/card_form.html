@@ -1,0 +1,71 @@
+{% extends 'index.html' %}
+
+    {% block title %}
+        {% spaceless %}
+            {% if 'cartoes/cadastrar/' in request.path %}
+                Cadastrar Cartão
+            {% else %}
+                Editar Cartão
+            {% endif %}
+        {% endspaceless %}
+    {% endblock title %}
+
+    {% block content %}
+        <div class="box box-primary">
+            <div class="box-header">
+                <h3 class="box-title">
+                    {% spaceless %}
+                        {% if 'cartoes/cadastrar/' in request.path %}
+                            Cadastrar Cartão
+                        {% else %}
+                            Editar Cartão
+                        {% endif %}
+                    {% endspaceless %}
+                </h3>
+            </div>
+            <form method="post" enctype="multipart/form-data">
+                <div class="box-body">
+                        {% csrf_token %}
+
+                        {{ card_form.flag.errors }}
+                        <label for="id_flag">Bandeira</label>
+                        {{ card_form.flag }}
+
+                        {{ card_form.description.errors }}
+                        <label for="id_description">Descrição</label>
+                        {{ card_form.description }}
+
+                        {{ card_form.limits.errors }}
+                        <label for="id_limits">Limite</label>
+                        {{ card_form.limits }}
+
+                        {{ card_form.account.errors }}
+                        <label for="id_account">Conta</label>
+                        {{ card_form.account }}
+
+                        {{ card_form.expiration_day.errors }}
+                        <label for="id_expiration_day">Vencimento</label>
+                        {{ card_form.expiration_day }}
+
+                        {{ card_form.closing_day.errors }}
+                        <label for="id_closing_day">Fechamento</label>
+                        {{ card_form.closing_day }}
+
+                        {{ card_form.home_screen.errors }}
+                        {{ card_form.home_screen }}
+                        <label for="id_home_screen">Tela Inicial</label><br>
+
+                        <label for="id_icon">Ícone</label>
+                        {{ card_form.icon }}
+                        {{ card_form.icon.errors }}
+                </div>
+                <div class="box-footer">
+                    <input class="btn btn-primary" type="submit" name="Cadastrar">
+                    <a href="{{request.META.HTTP_REFERER}}" class="btn btn-info">Voltar</a>
+                    {% if 'cartoes/editar' in request.path %}
+                    <a href="{% url 'delete_card' old_card.id %}"><input type="button" value="Excluir" class="btn btn-danger"></a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    {% endblock content %}

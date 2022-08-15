@@ -1,0 +1,302 @@
+{% extends 'index.html' %}
+{% load static %}
+{% load custom_filters %}
+{% load l10n %}
+
+    {% block title %}Configurações{% endblock %}
+
+    {% block content %}
+        <div class="box box-primary">
+            <div class="box-header">
+                <h3 class="box-title">Antecipar visualização do próximo mês</h3>
+            </div>
+            <div class="box-body">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>Dia</th>
+                        <th>Ativo</th>
+                        <th>Editar</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>{{ next_month_view.day }}</td>
+                        <td>{{ next_month_view.active | bool_to_portuguese }}</td>
+                        <td>
+                            <a href="{% url 'update_next_month_view' %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="box-footer">
+
+            </div>
+        </div>
+        <div class="box box-primary">
+            <div class="box-header">
+                <h3 class="box-title">Listar Bancos</h3>
+            </div>
+            <div class="box-body">
+                <a href="{% url 'create_bank' %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Descrição</th>
+                            <th>Código</th>
+                            <th>Ícone</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i in banks %}
+                        <tr>
+                            <td><a href="#">{{ i.description }}</a></td>
+                            <td>{{ i.code }}</td>
+                            <td><img src="{{ i.icon.url }}" alt="Ícone {{ i.descricao }}" style="max-height: 25px;"></td>
+                            <td><a href="{% url 'update_bank' i.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="box-footer">
+                <span>Total de ítens listados: {{ banks.count }}</span>
+            </div>
+        </div>
+        <div class="box box-primary">
+            <div class="box-header">
+                <h3 class="box-title">Listar Contas</h3>
+            </div>
+            <div class="box-body">
+                <a href="{% url 'create_account' %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Banco</th>
+                            <th>Agência</th>
+                            <th>Número</th>
+                            <th>Saldo</th>
+                            <th>Limite</th>
+                            <th>Tela Inicial</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i in accounts %}
+                        <tr>
+                            <td><img src="{{ i.bank.icon.url }}" alt="Logotipo do banco" style="max-height: 25px;"></td>
+                            <td>{{ i.bank }}</td>
+                            <td>{{ i.number }}</td>
+                            <td>{{ i.balance | to_reais }}</td>
+                            <td>{{ i.limits | to_reais }}</td>
+                            <td>{{ i.home_screen }}</td>
+                            <td><a href="{% url 'update_account' i.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="box-footer">
+                <span>Total de ítens listados: {{ accounts.count }}</span>
+            </div>
+        </div>
+        <div class="box box-primary">
+            <div class="box-header">
+                <h3 class="box-title">Listar Cartões</h3>
+            </div>
+            <div class="box-body">
+                <a href="{% url 'create_card' %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Ícone</th>
+                            <th>Limite</th>
+                            <th>Bandeira</th>
+                            <th>Tela Inicial</th>
+                            <th>Conta</th>
+                            <th>Dia de Fechamento</th>
+                            <th>Dia de Vencimento</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i in cards %}
+                        <tr>
+                            <td><img src="{{ i.icon.url }}" alt="Logotipo do Cartão" style="max-height: 25px;"></td>
+                            <td>{{ i.limits | to_reais }}</td>
+                            <td><img src="{{ i.flag.icon.url }}" alt="Logotipo do Cartão" style="max-height: 25px;"></td>
+                            <td>{{ i.home_screen }}</td>
+                            <td>{{ i.account }}</td>
+                            <td>{{ i.closing_day}}</td>
+                            <td>{{ i.expiration_day}}</td>
+                            <td><a href="{% url 'update_card' i.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="box-footer">
+                <span>Total de ítens listados: {{ cards.count }}</span>
+            </div>
+        </div>
+        <div class="box box-primary">
+            <div class="box-header">
+                <h3 class="box-title">Listar Categorias de Entrada</h3>
+            </div>
+            <div class="box-body">
+                <a href="{% url 'create_category' %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Descrição</th>
+                            <th>Cor</th>
+                            <th>Ícone</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i in categories %}
+                            {% if i.type == 'entrada' %}
+                                <tr>
+                                    <td><a href="#">{{ i.description }}</a></td>
+                                    <td><a href="#"><i class="fa-solid fa-circle" style="color: {{ i.color }};"></i></a></td>
+                                    <td><a href="#"><i class="{{ i.icon }}"></i></a></td>
+                                    <td><a href="{% url 'update_category' i.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="box-footer">
+                <span>Total de ítens listados: {{ categories.count }}</span>
+            </div>
+        </div>
+
+        <div class="box box-primary">
+            <div class="box-header">
+                <h3 class="box-title">Listar Sub-Categorias de Entrada</h3>
+            </div>
+            <div class="box-body">
+                <a href="{% url 'create_subcategory' %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Descrição</th>
+                            <th>Categoria</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i in subcategories %}
+                        {% if i.category.type == 'entrada' %}
+                        <tr>
+                            <td>{{ i.description }}</td>
+                            <td>{{ i.category }}</td>
+                            <td><a href="{% url 'update_subcategory' i.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="box-footer">
+                <span>Total de ítens listados: {{ subcategorias.count }}</span>
+            </div>
+        </div>
+        <div class="box box-primary">
+            <div class="box-header">
+                <h3 class="box-title">Listar Categorias de Saída</h3>
+            </div>
+            <div class="box-body">
+                <a href="{% url 'create_category' %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Descrição</th>
+                            <th>Cor</th>
+                            <th>Ícone</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i in categories %}
+                            {% if i.type == 'saida' %}
+                                <tr>
+                                    <td><a href="#">{{ i.description }}</a></td>
+                                    <td><a href="#"><i class="fa-solid fa-circle" style="color: {{ i.color }};"></i></a></td>
+                                    <td><a href="#"><i class="{{ i.icon }}"></i></a></td>
+                                    <td><a href="{% url 'update_category' i.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="box-footer">
+                <span>Total de ítens listados: {{ categorias.count }}</span>
+            </div>
+        </div>
+        <div class="box box-primary">
+            <div class="box-header">
+                <h3 class="box-title">Listar Sub-Categorias de Saída</h3>
+            </div>
+            <div class="box-body">
+                <a href="{% url 'create_subcategory' %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Descrição</th>
+                            <th>Categoria</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i in subcategories %}
+                        {% if i.category.type == 'saida' %}
+                        <tr>
+                            <td>{{ i.description }}</td>
+                            <td>{{ i.category }}</td>
+                            <td><a href="{% url 'update_subcategory' i.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="box-footer">
+                <span>Total de ítens listados: {{ subcategorias.count }}</span>
+            </div>
+        </div>
+        <div class="box box-primary">
+            <div class="box-header">
+                <h3 class="box-title">Listar Bandeiras</h3>
+            </div>
+            <div class="box-body">
+                <a href="{% url 'create_flag' %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Descrição</th>
+                            <th>Ícone</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i in flags %}
+                        <tr>
+                            <td><a href="#">{{ i.description }}</a></td>
+                            <td><img src="{{ i.icon.url }}" alt="Ícone {{ i.description }}" style="max-height: 35px;"></td>
+                            <td><a href="{% url 'update_flag' i.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="box-footer">
+                <span>Total de ítens listados: {{ bandeiras.count }}</span>
+            </div>
+        </div>
+    {% endblock %}

@@ -1,0 +1,10 @@
+
+        <a href="{% url 'get_extract_by_account_year_and_month' account.id previous_month|date:'Y' previous_month|date:'m' %}">
+            <input type="button" value="{{ previous_month | date:'M-y' }}" class="btn" style="margin: 5px;">
+        </a>
+        <a href="{% url 'get_extract_by_account_year_and_month' account.id year_month|date:'Y' year_month|date:'m' %}">
+            <input type="button" value="{{ year_month | date:'M-y' }}" class="btn" style="margin: 5px;">
+        </a>
+        <a href="{% url 'get_extract_by_account_year_and_month' account.id next_month|date:'Y' next_month|date:'m' %}">
+            <input type="button" value="{{ next_month | date:'M-y' }}" class="btn" style="margin: 5px;">
+        </a>

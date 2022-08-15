@@ -1,0 +1,187 @@
+{% extends "index.html" %}
+{% load static %}
+{% load custom_filters %}
+
+    {% block title %}
+    {% if 'remover' in request.path %}
+    Excluir Movimentação
+    {% elif 'editar' in request.path %}
+    Editar Movimentação
+    {% else %}
+    Detalhar Movimentacao
+    {% endif  %}
+    {% endblock title %}
+
+    {% block content %}
+        <div class="box box-primary">
+            <form method="post">
+                <div class="box-title">
+                    <h3>
+                        {% if 'remover' in request.path %}
+                        Atenção! Você está prestes a excluir as movimentações abaixo. Esta operação é irreversível.
+                        {% elif 'editar' in request.path %}
+                        Editando {{ transactions.first.description }}
+                        {% else %}
+                        {{ transactions.first.description }}
+                        {% endif %}
+                    </h3>
+                </div>
+                <div class="box-body">
+                    <p style="font-size: 18px;">Descrição: <b>{{ transactions.first.description }}.</b></p>
+                    <p style="font-size: 18px;">Valor Total: <b>{{ transactions | total_amount }}.</b></p>
+                    <p style="font-size: 18px;">Value da parcela: <b>{{ transactions.first.currency.symbol }} {{ transactions.first.value|floatformat:2 }}.</b></p>
+                    <p style="font-size: 18px;">Número de Parcelas: <b>{{ transactions.first.installments_number }}.</b></p>
+                    <p style="font-size: 18px;">Categoria: <b>{{ transactions.first.category }}</b></p>
+                    <p style="font-size: 18px;">Sub-Categoria: <b>{{ transactions.first.subcategory }}</b></p>
+                    <p style="font-size: 18px;">Tipo: <b>{{ transactions.first.type }}.</b></p>
+                    {% if 'editar' in request.path %}
+                    {% elif 'remover' in request.path %}
+                    {% else %}
+                    <br>
+                    <a href="{% url 'advance_installments' installment.id %}" class="btn btn-primary">Adiantar Parcelas</a>
+                    <br><br>
+                    {% endif %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Parcela</th>
+                                <th>Data de Lançamento</th>
+                                <th>Data de Efetivação</th>
+                                <th>Description</th>
+                                <th>Value</th>
+                                <th>Editar</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for i in transactions %}
+                            <tr>
+                                <td>{{ i.paid }}</td>
+                                <td>{{ i.release_date }}</td>
+                                <td>{{ i.payment_date }}</td>
+                                <td>{{ i.description }}</td>
+                                <td>{{ i.currency.symbol }} {{ i.value | floatformat:2 }}</td>
+                                <td>
+                                    <a href="{% url 'update_installment' i.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
+                                    <a href="{% url 'delete_parcel' i.id %}"><i class="fa-solid fa-trash action-icon"></i></a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <br>
+                    {% if 'editar' in request.path %}
+
+                    {% csrf_token %}
+                    <label for="id_release_date">Data do Lançamento</label>
+                    {{ installment_form.release_date }}
+                    {{ installment_form.release_date.errors }}
+
+                    {% if installment_form.reorder_release_dates %}
+                    <label for="id_reorder_release_dates">Reordenar as Datas de Lançamento</label>
+                    {{ installment_form.reorder_release_dates }}
+                    {% endif %}
+
+                    <label for="id_installments_number">Número de Parcelas</label>
+                    {{ installment_form.installments_number }}
+                    {{ installment_form.installments_number.errors }}
+
+                    <label for="id_category">Categoria</label>
+                    {{ installment_form.category }}
+                    {{ installment_form.category.errors }}
+
+                    <label for="id_subcategory">Sub-Categoria</label>
+                    {{ installment_form.subcategory }}
+                    {{ installment_form.subcategory.errors }}
+
+                    <label for="id_description">Descrição</label>
+                    {{ installment_form.description }}
+                    {{ installment_form.description.errors }}
+
+                    <label for="id_value">Valor</label>
+                    {{ installment_form.value }}
+                    {{ installment_form.value.errors }}
+                    <br>
+
+                    <h3 id="btn-other-options" class="cursor-pointer">Outras Opções +</h3>
+
+                    <div id="div-other-options" class="toggled">
+                        <br>
+                         <label for="id_payment_method">Meio de Pagamento</label>
+                    {{ installment_form.payment_method }}
+
+                    <div id="conta-cartao">
+                        <label for="id_accoun">Conta</label>
+                        {{ installment_form.account }}
+                        {{ installment_form.account.errors }}
+
+                        <label for="id_card">Card</label>
+                        {{ installment_form.card }}
+                        {{ installment_form.card.errors }}
+                    </div>
+
+                    <label for="id_type">Tipo</label>
+                    {{ installment_form.type }}
+                    {{ installment_form.type.errors }}
+
+                        {{ installment_form.fixed }}
+                        <label for="id_fixed">Fixa</label><br><br>
+                        {{ installment_form.fixed.errors }}
+
+                        {{ installment_form.annual }}
+                        <label for="id_annual">Anual</label><br><br>
+                        {{ installment_form.annual.errors }}
+
+                        <label for="id_currency">Moeda</label>
+                        {{ installment_form.currency }}
+                        {{ installment_form.currency.errors }}
+
+                        <label for="id_observation">Observações</label>
+                        {{ installment_form.observation }}
+                        {{ installment_form.observation.errors }}
+
+                        {{ installment_form.remember }}
+                        <label for="id_remember">Lembrar</label><br><br>
+                        {{ installment_form.remember.errors }}
+
+                        {{ installment_form.effected }}
+                        <label for="id_effected">Efetivado</label><br><br>
+                        {{ installment_form.effected.errors }}
+
+                        {{ installment_form.home_screen }}
+                        <label for="id_home_screen">Tela Inicial</label><br><br>
+                        {{ installment_form.home_screen.errors }}
+                        <br>
+                    </div>
+                    {% endif %}
+                    {% if 'remover' in request.path %}
+                    <br>
+                    <div class="btn-danger">
+                        <p>
+                        {% csrf_token %}
+                        {{ exclusion_form }}
+                        Sim, desejo excluir e estou ciente de que esta operação é irreversível.
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="box-footer">
+                    {% csrf_token %}
+                    <a href="{{request.META.HTTP_REFERER}}"><input type="button" value="Voltar" class="btn btn-primary"></a>
+                    {% if 'remover' in request.path %}
+                    <input type="submit" value="Excluir Movimentações" class="btn btn-danger">
+                    {% elif 'editar' in request.path %}
+                    <input type="submit" value="Editar Movimentações" class="btn btn-primary">
+                    {% else %}
+                    <a href="{% url 'update_installment' transactions.first.installment.id %}" class="btn btn-primary">Editar</a>
+                    <a href="{% url 'delete_installment' transactions.first.installment.id %}" class="btn btn-danger">Remover</a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+
+    {% endblock content %}
+
+    {% block scripts %}
+    <script src="{% static 'js/layout/movements-form.js' %}" type="module"></script>
+    <script src="{% static 'js/classes.js' %}" type="module"></script>
+    {% endblock %}

@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect
 from balanco.entidades.cartao import Cartao
 from balanco.forms.general_forms import ExclusaoForm
 from balanco.services import cartao_service, conta_service
-from balanco.views.movimentacao_view import template_tags
+from balanco.views.movimentacao_view import templatetags
 from balanco.forms.cartao_form import CartaoForm
 
 
@@ -28,16 +28,16 @@ def cadastrar_cartao(request):
             return redirect('listar_mes_atual')
     else:
         form_cartao = CartaoForm()
-    template_tags['form_cartao'] = form_cartao
-    template_tags['contas'] = conta_service.listar_contas(request.user)
-    return render(request, 'cartao/form_cartao.html', template_tags)
+    templatetags['form_cartao'] = form_cartao
+    templatetags['contas'] = conta_service.listar_contas(request.user)
+    return render(request, 'cartao/form_cartao.html', templatetags)
 
 
 @login_required
 def listar_cartoes(request):
-    template_tags['cartoes'] = cartao_service.listar_cartoes(request.user)
-    template_tags['contas'] = conta_service.listar_contas(request.user)
-    return render(request, 'cartao/listar.html', template_tags)
+    templatetags['cartoes'] = cartao_service.listar_cartoes(request.user)
+    templatetags['contas'] = conta_service.listar_contas(request.user)
+    return render(request, 'cartao/listar.html', templatetags)
 
 
 @login_required
@@ -59,10 +59,10 @@ def editar_cartao(request, id):
         print(cartao_novo.icone)
         cartao_service.editar_cartao(cartao_antigo, cartao_novo)
         return redirect('listar_mes_atual')
-    template_tags['cartao_antigo'] = cartao_antigo
-    template_tags['form_cartao'] = form_cartao
-    template_tags['contas'] = conta_service.listar_contas(request.user)
-    return render(request, 'cartao/editar.html', template_tags)
+    templatetags['cartao_antigo'] = cartao_antigo
+    templatetags['form_cartao'] = form_cartao
+    templatetags['contas'] = conta_service.listar_contas(request.user)
+    return render(request, 'cartao/editar.html', templatetags)
 
 
 @login_required
@@ -72,7 +72,7 @@ def remover_cartao(request, id):
     if request.POST.get('confirmacao'):
         cartao_service.remover_cartao(cartao)
         return redirect('listar_mes_atual')
-    template_tags['cartao'] = cartao
-    template_tags['form_exclusao'] = form_exclusao
-    template_tags['contas'] = conta_service.listar_contas(request.user)
-    return render(request, 'cartao/confirma_exclusao.html', template_tags)
+    templatetags['cartao'] = cartao
+    templatetags['form_exclusao'] = form_exclusao
+    templatetags['contas'] = conta_service.listar_contas(request.user)
+    return render(request, 'cartao/confirma_exclusao.html', templatetags)

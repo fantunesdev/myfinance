@@ -17,4 +17,4 @@ class Usuario(AbstractBaseUser):
     REQUIRED_FIELDS = ['nome', 'email', 'date_joined']
 
     def __str__(self):
-        return f'{self.nome}, {self.email}, {self.username}, {self.password}'
+        return self.username

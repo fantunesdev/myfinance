@@ -6,7 +6,7 @@ from balanco.entidades.banco import Banco
 from balanco.forms.general_forms import ExclusaoForm
 from balanco.services import banco_service
 
-from balanco.views.movimentacao_view import template_tags
+from balanco.views.movimentacao_view import templatetags
 
 
 @login_required
@@ -23,15 +23,15 @@ def cadastrar_banco(request):
             return redirect('configurar')
     else:
         form_banco = BancoForm()
-    template_tags['form_banco'] = form_banco
-    return render(request, 'banco/form_banco.html', template_tags)
+    templatetags['form_banco'] = form_banco
+    return render(request, 'banco/form_banco.html', templatetags)
 
 
 @login_required
 def listar_bancos(request):
     bancos = banco_service.listar_bancos()
-    template_tags['bancos'] = bancos
-    return render(request, 'banco/listar.html', template_tags)
+    templatetags['bancos'] = bancos
+    return render(request, 'banco/listar.html', templatetags)
 
 
 @login_required
@@ -46,9 +46,9 @@ def editar_banco(request, id):
         )
         banco_service.editar_banco(banco_antigo, banco_novo)
         return redirect('configurar')
-    template_tags['form_banco'] = form_banco
-    template_tags['banco_antigo'] = banco_antigo
-    return render(request, 'banco/editar.html', template_tags)
+    templatetags['form_banco'] = form_banco
+    templatetags['banco_antigo'] = banco_antigo
+    return render(request, 'banco/editar.html', templatetags)
 
 
 @login_required
@@ -58,6 +58,6 @@ def remover_banco(request, id):
     if request.POST.get('confirmacao'):
         banco_service.remover_banco(banco)
         return redirect('configurar')
-    template_tags['banco'] = banco
-    template_tags['form_exclusao'] = form_exclusao
-    return render(request, 'banco/confirma_exclusao.html', template_tags)
+    templatetags['banco'] = banco
+    templatetags['form_exclusao'] = form_exclusao
+    return render(request, 'banco/confirma_exclusao.html', templatetags)

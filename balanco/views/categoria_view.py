@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 
-from balanco.views.movimentacao_view import template_tags
+from balanco.views.movimentacao_view import templatetags
 from ..services import categoria_service, conta_service
 from ..forms.categoria_form import CategoriaForm
 from ..forms.general_forms import ExclusaoForm
@@ -22,33 +22,33 @@ def cadastrar_categoria(request):
             return redirect('configurar')
     else:
         form_categoria = CategoriaForm()
-    template_tags['contas'] = conta_service.listar_contas(request.user)
-    template_tags['form_categoria'] = form_categoria
-    if 'categoria_antiga' in template_tags.keys():
-        template_tags.pop('categoria_antiga')
-    return render(request, 'categoria/form_categoria.html', template_tags)
+    templatetags['contas'] = conta_service.listar_contas(request.user)
+    templatetags['form_categoria'] = form_categoria
+    if 'categoria_antiga' in templatetags.keys():
+        templatetags.pop('categoria_antiga')
+    return render(request, 'categoria/form_categoria.html', templatetags)
 
 
 @login_required
 def listar_categorias(request):
-    template_tags['categorias'] = categoria_service.listar_categorias(request.user)
-    template_tags['contas'] = conta_service.listar_contas(request.user)
-    return render(request, 'categoria/listar.html', template_tags)
+    templatetags['categorias'] = categoria_service.listar_categorias(request.user)
+    templatetags['contas'] = conta_service.listar_contas(request.user)
+    return render(request, 'categoria/listar.html', templatetags)
 
 
 @login_required
 def listar_categorias_tipo(request, tipo):
-    template_tags['categorias'] = categoria_service.listar_categorias_tipo(tipo, request.user)
-    template_tags['contas'] = conta_service.listar_contas(request.user)
-    template_tags['contas'] = tipo
-    return render(request, 'categoria/listar_tipo.html', template_tags)
+    templatetags['categorias'] = categoria_service.listar_categorias_tipo(tipo, request.user)
+    templatetags['contas'] = conta_service.listar_contas(request.user)
+    templatetags['contas'] = tipo
+    return render(request, 'categoria/listar_tipo.html', templatetags)
 
 
 @login_required
 def listar_categoria_id(request, id):
-    template_tags['categoria'] = categoria_service.listar_categoria_id(id, request.user)
-    template_tags['contas'] = conta_service.listar_contas(request.user)
-    return render(request, 'categorias/listar_id.html', template_tags)
+    templatetags['categoria'] = categoria_service.listar_categoria_id(id, request.user)
+    templatetags['contas'] = conta_service.listar_contas(request.user)
+    return render(request, 'categorias/listar_id.html', templatetags)
 
 
 @login_required
@@ -64,10 +64,10 @@ def editar_categoria(request, id):
         categoria_service.editar_categoria(categoria_antiga, categoria_nova)
 
         return redirect('configurar')
-    template_tags['form_categoria'] = form_categoria
-    template_tags['categoria_antiga'] = categoria_antiga
-    template_tags['contas'] = conta_service.listar_contas(request.user)
-    return render(request, 'categoria/editar.html', template_tags)
+    templatetags['form_categoria'] = form_categoria
+    templatetags['categoria_antiga'] = categoria_antiga
+    templatetags['contas'] = conta_service.listar_contas(request.user)
+    return render(request, 'categoria/editar.html', templatetags)
 
 
 @login_required
@@ -76,7 +76,7 @@ def remover_categoria(request, id):
     if request.method == 'POST':
         categoria_service.remover_categoria(categoria)
         return redirect('configurar')
-    template_tags['contas'] = conta_service.listar_contas(request.user)
-    template_tags['categoria'] = categoria
-    template_tags['form_exclusao'] = ExclusaoForm()
-    return render(request, 'categoria/confirma_exclusao.html', template_tags)
+    templatetags['contas'] = conta_service.listar_contas(request.user)
+    templatetags['categoria'] = categoria
+    templatetags['form_exclusao'] = ExclusaoForm()
+    return render(request, 'categoria/confirma_exclusao.html', templatetags)

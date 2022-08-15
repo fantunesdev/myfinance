@@ -1,0 +1,36 @@
+{% extends "index.html" %}
+
+    {% block title %}
+        {% spaceless %}
+            Excluir Sub-Categoria {{ subcategory.description }}
+        {% endspaceless %}
+    {% endblock %}
+
+    {% block content %}
+        <div class="box box-primary">
+            <form method="post">
+                <div class="box-title">
+                    Tem certeza que deseja remover a sub-categoria de entrada abaixo?
+                </div>
+                <div class="box-body">
+                    <p>Nome: <b>{{ subcategory.description }}</b></p>
+                    <p>Categoria: <b>{{ subcategory.category }}</b></p>
+                    <div class="btn-danger">
+                            <p>
+                            {% csrf_token %}
+                            {{ exclusion_form }}
+                            Sim, desejo excluir e estou ciente de que esta operação é irreversível.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="box-footer">
+                        <form method="post">
+                            {% csrf_token %}
+                            <a href="{{request.META.HTTP_REFERER}}"><input type="button" value="Voltar" class="btn btn-primary"></a>
+                            <input type="submit" value="Excluir" class="btn btn-danger">
+                        </form>
+                    </div>
+            </form>
+
+        </div>
+    {% endblock %}

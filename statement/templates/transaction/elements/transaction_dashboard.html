@@ -1,0 +1,46 @@
+    {% load custom_filters %}
+
+        <div class="box box-primary">
+            <div class="box-header">
+                <h3 class="box-title">Dashboard</h3>
+            </div>
+            <div class="box-body">
+                <label for="expenses-selector">Categorias</label>
+                <select name="expenses-selector" id="expenses-selector" class="form-control"></select>
+                <div class="dashboard">
+                    <div class="expenses">
+                        <canvas id="expenses-bar-chart" width="40" height="15"></canvas>
+                        <br>
+                        <b class="font-16">Total de gastos: {{ expenses | to_reais }}</b>
+                    </div>
+                    <div class="revenue-expenses">
+                        <canvas id="amount-doughnut-chart"></canvas>
+                    </div>
+                    <div class="revenue">
+                        <canvas id="revenue-doughnut-chart"></canvas>
+                    </div>
+                    <div class="revenue-expenses-number">
+                        {% if diferenca < 0 %}
+                        <b class="font-16 red">{{ difference | to_reais }}</b>
+                        {% else %}
+                        <b class="font-16 green">{{ difference | to_reais }}</b>
+                        {% endif %}
+                    </div>
+                    <div class="fixed">
+                        <h3>Gastos Fixos</h3>
+                        <b class="font-16">{{ fixed | to_reais }}</b>
+                    </div>
+                    <div class="cash">
+                        <h3>À vista</h3>
+                        <b class="font-16">{{ cash | to_reais }}</b>
+                    </div>
+                    <div class="card">
+                        <h3>Cartão</h3>
+                        <b class="font-16">{{ cards | to_reais }}</b>
+                    </div>
+                </div>
+            </div>
+            <div class="box-footer">
+
+            </div>
+        </div>

@@ -5,15 +5,15 @@ from balanco.forms import parcelamento_form
 from balanco.forms.general_forms import ExclusaoForm
 from balanco.repositorios import parcelamento_repositorio
 from balanco.services import parcelamento_service, movimentacao_service, conta_service
-from balanco.views.movimentacao_view import template_tags
+from balanco.views.movimentacao_view import templatetags
 
 
 def detalhar_parcelamento(request, id):
     parcelamento = parcelamento_service.listar_parcelamento_id(id, request.user)
-    template_tags['movimentacoes'] = movimentacao_service.listar_movimentacoes_parcelamento(parcelamento)
-    template_tags['parcelamento'] = parcelamento
-    template_tags['contas'] = conta_service.listar_contas(request.user)
-    return render(request, 'parcelamento/detalhar_parcelamento.html', template_tags)
+    templatetags['movimentacoes'] = movimentacao_service.listar_movimentacoes_parcelamento(parcelamento)
+    templatetags['parcelamento'] = parcelamento
+    templatetags['contas'] = conta_service.listar_contas(request.user)
+    return render(request, 'parcelamento/detalhar_parcelamento.html', templatetags)
 
 
 def editar_parcelamento(request, id):
@@ -46,11 +46,11 @@ def editar_parcelamento(request, id):
         reordenar_datas_lancamento = form_parcelamento.cleaned_data['reordenar_datas_lancamento']
         parcelamento_repositorio.editar_parcelamento(movimentacoes, movimentacao_nova, reordenar_datas_lancamento)
         return redirect('listar_mes_atual')
-    template_tags['movimentacoes'] = movimentacoes
-    template_tags['parcelamento'] = parcelamento
-    template_tags['contas'] = conta_service.listar_contas(request.user)
-    template_tags['form_parcelamento'] = form_parcelamento
-    return render(request, 'parcelamento/detalhar_parcelamento.html', template_tags)
+    templatetags['movimentacoes'] = movimentacoes
+    templatetags['parcelamento'] = parcelamento
+    templatetags['contas'] = conta_service.listar_contas(request.user)
+    templatetags['form_parcelamento'] = form_parcelamento
+    return render(request, 'parcelamento/detalhar_parcelamento.html', templatetags)
 
 
 def adiantar_parcelas(request, id):
@@ -65,10 +65,10 @@ def adiantar_parcelas(request, id):
             return redirect('listar_mes_atual')
     else:
         form_parcelamento = parcelamento_form.AdiantarParcelaForm()
-    template_tags['parcelas'] = parcelas
-    template_tags['parcelamento'] = parcelamento
-    template_tags['form_parcelamento'] = form_parcelamento
-    return render(request, 'parcelamento/adiantar_parcelas.html', template_tags)
+    templatetags['parcelas'] = parcelas
+    templatetags['parcelamento'] = parcelamento
+    templatetags['form_parcelamento'] = form_parcelamento
+    return render(request, 'parcelamento/adiantar_parcelas.html', templatetags)
 
 
 def remover_parcelamento(request, id):
@@ -79,11 +79,11 @@ def remover_parcelamento(request, id):
         parcelamento_service.remover_parcelamento(parcelamento)
         return redirect('listar_mes_atual')
 
-    template_tags['form_exclusao'] = form_exclusao
-    template_tags['parcelamento'] = parcelamento
-    template_tags['movimentacoes'] = movimentacoes
-    template_tags['contas'] = conta_service.listar_contas(request.user)
-    return render(request, 'parcelamento/detalhar_parcelamento.html', template_tags)
+    templatetags['form_exclusao'] = form_exclusao
+    templatetags['parcelamento'] = parcelamento
+    templatetags['movimentacoes'] = movimentacoes
+    templatetags['contas'] = conta_service.listar_contas(request.user)
+    return render(request, 'parcelamento/detalhar_parcelamento.html', templatetags)
 
 
 def remover_parcela(request, id):
@@ -94,7 +94,7 @@ def remover_parcela(request, id):
         movimentacao.numero_parcelas -= 1
         parcelamento_repositorio.editar_parcelamento(movimentacoes, movimentacao)
         return redirect('listar_mes_atual')
-    template_tags['form_exclusao'] = form_exclusao
-    template_tags['movimentacao'] = movimentacao
-    template_tags['contas'] = conta_service.listar_contas(request.user)
-    return render(request, 'movimentacao/detalhar_movimentacao.html', template_tags)
+    templatetags['form_exclusao'] = form_exclusao
+    templatetags['movimentacao'] = movimentacao
+    templatetags['contas'] = conta_service.listar_contas(request.user)
+    return render(request, 'movimentacao/detalhar_movimentacao.html', templatetags)

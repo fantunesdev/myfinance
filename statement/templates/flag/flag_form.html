@@ -1,0 +1,47 @@
+{% extends 'index.html' %}
+
+    {% block title %}
+        {% spaceless %}
+            {% if 'bandeiras/cadastrar/' in request.path %}
+                Cadastrar Bandeira
+            {% else %}
+                Editar Bandeira
+            {% endif %}
+        {% endspaceless %}
+    {% endblock title %}
+
+    {% block content %}
+        <div class="box box-primary">
+            <div class="box-header">
+                <h3 class="box-title">
+                    {% spaceless %}
+                        {% if 'bandeiras/cadastrar/' in request.path %}
+                            Cadastrar Bandeira
+                        {% else %}
+                            Editar Bandeira
+                        {% endif %}
+                    {% endspaceless %}
+                </h3>
+            </div>
+            <form method="post" enctype="multipart/form-data">
+                <div class="box-body">
+                        {% csrf_token %}
+
+                        {{ flag_form.description.errors }}
+                        <label for="id_description">Descricao</label>
+                        {{ flag_form.description }}
+
+                        {{ flag_form.icon.errors }}
+                        <label for="id_icon">Ícone</label>
+                        {{ flag_form.icon }}
+                </div>
+                <div class="box-footer">
+                    <input class="btn btn-primary" type="submit" name="Cadastrar">
+                    <a href="{{request.META.HTTP_REFERER}}" class="btn btn-info">Voltar</a>
+                    {% if 'bandeiras/editar/' in request.path %}
+                    <a href="{% url 'delete_flag' old_flag.id %}"><input type="button" value="Excluir" class="btn btn-danger"></a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    {% endblock content %}

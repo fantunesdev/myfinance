@@ -1,0 +1,87 @@
+{% extends 'index.html' %}
+{% load static %}
+{% load custom_filters %}
+
+    {% block styles %}<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">{% endblock %}
+
+    {% block title %}Extrato {{ year_month | date:'M' }} de {{ year_month | date:'y' }}{% endblock %}
+
+    {% block content %}
+        {% if 'extrato' in request.path %}
+            {% include 'transaction/elements/extract/extract_navigation.html' %}
+        {% elif 'fatura' in request.path %}
+            {% include 'transaction/elements/invoice/invoice_navigation.html' %}
+        {% else %}
+            {% include 'transaction/elements/transaction_navigation.html' %}
+        {% endif %}
+
+        {% if 'relatorio_financeiro/ano' in request.path %}
+        {% include 'transaction/elements//transaction_navigation_by_year.html' %}
+        {% endif %}
+
+        {% if request.path == '/' %}
+        {% include 'transaction/elements/transaction_dashboard.html' %}
+        {% elif 'extrato' in request.path %}
+
+        {% elif 'fatura' in request.path %}
+
+        {% else %}
+        {% include 'transaction/elements/transaction_dashboard.html' %}
+        {% endif %}
+
+        <div class="box box-primary">
+            <div class="box-header">
+                <h3 class="box-title">Extrato {{ year_month | date:'F' }} de {{ year_month | date:'Y' }}</h3>
+            </div>
+            <div class="box-body" id="statement-box">
+                <table class="table" id="statement-table">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Banco/Cartão</th>
+                            <th style="text-align: left; max-width: 150px; min-width:115px">Categoria</th>
+                            <th style="text-align: left;">Sub-Categoria</th>
+                            <th style="text-align: left;">Descrição</th>
+                            <th style="text-align: right; max-width: 50px; min-width:30px;">Valor</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i in transactions %}
+                        <tr style="border-left: solid 3px {{ i.category.color }}">
+                                <td>{{ i.release_date | date:"d/m"}}</td>
+                            {% if i.account %}
+                            <td><img src="{{ i.account.bank.icon.url }}" alt="Logotipo do banco" style="max-height: 25px;"></td>
+                            {% else %}
+                            <td><img src="{{ i.card.icon.url }}" alt="Logotipo do cartão" style="max-height: 25px;"></td>
+                            {% endif %}
+                            <td style="text-align: left; max-width: 150px; min-width:115px"><i class="{{ i.category.icon }}" style="padding:10px;"></i> {{ i.category }}</td>
+                            <td style="text-align: left;">{{ i.subcategory }}</td>
+                            <td style="text-align: left;">{{ i | paid_installments }}</td>
+                            <td style="text-align: right; max-width: 50px; min-width:30px;">{{ i.value | to_currency:i.currency.symbol }}</td>
+                            <td>
+                                {% if i.installment %}
+                                <a href="{% url 'detail_installment' i.installment.id %}"><i class="fa-solid fa-file-lines action-icon"></i></a>
+                                <a href="{% url 'update_installment' i.installment.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
+                                <a href="{% url 'delete_installment' i.installment.id %}"><i class="fa-solid fa-trash action-icon"></i></a>
+                                {% else %}
+                                <a href="{% url 'detail_transaction' i.id %}"><i class="fa-solid fa-file-lines action-icon"></i></a>
+                                <a href="{% url 'update_transaction' i.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
+                                <a href="{% url 'delete_transaction' i.id %}"><i class="fa-solid fa-trash action-icon"></i></a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="box-footer">
+                <span>Total de ítens listados: {{ transactions.count }}</span>
+            </div>
+        </div>
+    {% endblock %}
+
+    {% block scripts %}
+    <script src="{% static 'js/layout/pages/list-movements.js' %}" type="module"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.0/dist/chart.min.js"></script>
+    {% endblock %}

@@ -1,0 +1,11 @@
+<br><br>
+        <h3>Navegar por ano</h3>
+        <a href="{% url 'get_transactions_by_year' previous_year %}">
+            <input type="button" value="{{ previous_year }}" class="btn" style="margin: 5px;">
+        </a>
+        <a href="{% url 'get_transactions_by_year' current_year %}">
+            <input type="button" value="{{ current_year }}" class="btn" style="margin: 5px;">
+        </a>
+        <a href="{% url 'get_transactions_by_year' next_year %}">
+            <input type="button" value="{{ next_year }}" class="btn" style="margin: 5px;">
+        </a>

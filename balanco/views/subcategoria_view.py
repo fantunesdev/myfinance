@@ -1,6 +1,6 @@
 from django.shortcuts import redirect, render
 
-from balanco.views.movimentacao_view import template_tags
+from balanco.views.movimentacao_view import templatetags
 from balanco.entidades.subcategoria import Subcategoria
 from balanco.forms import subcategoria_form, general_forms
 from balanco.services import subcategoria_service, conta_service
@@ -19,16 +19,16 @@ def cadastrar_subcategoria(request):
             return redirect('listar_mes_atual')
     else:
         form_subcategoria = subcategoria_form.SubcategoriaForm()
-    template_tags['subcategoria_antiga'] = None
-    template_tags['form_subcategoria'] = form_subcategoria
-    template_tags['contas'] = conta_service.listar_contas(request.user)
-    return render(request, 'subcategoria/form_subcategoria.html', template_tags)
+    templatetags['subcategoria_antiga'] = None
+    templatetags['form_subcategoria'] = form_subcategoria
+    templatetags['contas'] = conta_service.listar_contas(request.user)
+    return render(request, 'subcategoria/form_subcategoria.html', templatetags)
 
 
 def listar_subcategorias(request):
-    template_tags['subcategorias'] = subcategoria_service.listar_subcategorias(request.user)
-    template_tags['contas'] = conta_service.listar_contas(request.user)
-    return render(request, 'subcategoria/listar.html', template_tags)
+    templatetags['subcategorias'] = subcategoria_service.listar_subcategorias(request.user)
+    templatetags['contas'] = conta_service.listar_contas(request.user)
+    return render(request, 'subcategoria/listar.html', templatetags)
 
 
 def editar_subcategoria(request, id):
@@ -42,10 +42,10 @@ def editar_subcategoria(request, id):
         )
         subcategoria_service.editar_subcategoria(subcategoria_antiga, subcategoria_nova)
         return redirect('listar_mes_atual')
-    template_tags['subcategoria_antiga'] = subcategoria_antiga
-    template_tags['form_subcategoria'] = form_subcategoria
-    template_tags['contas'] = conta_service.listar_contas(request.user)
-    return render(request, 'subcategoria/editar.html', template_tags)
+    templatetags['subcategoria_antiga'] = subcategoria_antiga
+    templatetags['form_subcategoria'] = form_subcategoria
+    templatetags['contas'] = conta_service.listar_contas(request.user)
+    return render(request, 'subcategoria/editar.html', templatetags)
 
 
 def remover_subcategoria(request, id):
@@ -54,7 +54,7 @@ def remover_subcategoria(request, id):
     if request.POST.get('confirmacao'):
         subcategoria_service.remover_subcategoria(subcategoria)
         return redirect('form_subcategoria')
-    template_tags['subcategoria'] = subcategoria
-    template_tags['form_exclusao'] = form_exclusao
-    template_tags['contas'] = conta_service.listar_contas(request.user)
-    return render(request, 'subcategoria/confirma_exclusao.html', template_tags)
+    templatetags['subcategoria'] = subcategoria
+    templatetags['form_exclusao'] = form_exclusao
+    templatetags['contas'] = conta_service.listar_contas(request.user)
+    return render(request, 'subcategoria/confirma_exclusao.html', templatetags)

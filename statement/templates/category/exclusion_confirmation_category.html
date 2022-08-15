@@ -1,0 +1,38 @@
+{% extends "index.html" %}
+
+    {% block title %}Exclusão da categoria {{ category.description }}{% endblock %}
+
+    {% block content %}
+        <div class="box box-primary">
+            <form method="post">
+                <div class="box-title">
+                    <h3>
+                        Atenção! Você está prestes a movimentação {{ categoria.descricao }} do dia. Esta operação é irreversível.
+                    </h3>
+                </div>
+                <div class="box-body">
+                    <p>Tipo: <b>{{ category.tipo }}</b></p>
+                    <p>Descricao: <b>{{ category.description }}</b></p>
+                    <p>Cor: <i class="fa-solid fa-circle" style="color: {{ category.color }};"></i></p>
+                    <p>Ícone: <i class="{{ category.icon }}"></i></p>
+                    <br>
+                    <div class="btn-danger">
+                        <p>
+                        {% csrf_token %}
+                        {{ exclusion_form }}
+                        Sim, desejo excluir e estou ciente de que esta operação é irreversível.
+                        </p>
+                    </div>
+                </div>
+                <div class="box-footer">
+                    <form method="post">
+                        {% csrf_token %}
+                        <a href="{{request.META.HTTP_REFERER}}"><input type="button" value="Voltar" class="btn btn-primary"></a>
+                        <input type="submit" value="Excluir" class="btn btn-danger">
+                    </form>
+                </div>
+            </form>
+
+        </div>
+
+    {% endblock %}

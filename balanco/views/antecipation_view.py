@@ -3,7 +3,7 @@ from django.shortcuts import redirect, render
 from balanco.entidades.antecipation import Antecipation
 from balanco.forms import antecipation_form
 from balanco.services import antecipation_service
-from balanco.views.movimentacao_view import template_tags
+from balanco.views.movimentacao_view import templatetags
 
 
 def create_antecipation(request):
@@ -21,8 +21,8 @@ def create_antecipation(request):
             print(form_antecipation.errors)
     else:
         form_antecipation = antecipation_form.AntecipationForm()
-    template_tags['form_antecipation'] = form_antecipation
-    return render(request, 'antecipation/form_antecipation.html', template_tags)
+    templatetags['form_antecipation'] = form_antecipation
+    return render(request, 'antecipation/form_antecipation.html', templatetags)
 
 
 def update_antecipation(request):
@@ -36,6 +36,6 @@ def update_antecipation(request):
         )
         antecipation_service.update_antecipation(old_antecipation, new_antecipation)
         return redirect('listar_mes_atual')
-    template_tags['old_antecipation'] = old_antecipation
-    template_tags['form_antecipation'] = form_antecipation
-    return render(request, 'antecipation/form_antecipation.html', template_tags)
+    templatetags['old_antecipation'] = old_antecipation
+    templatetags['form_antecipation'] = form_antecipation
+    return render(request, 'antecipation/form_antecipation.html', templatetags)

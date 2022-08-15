@@ -1,0 +1,42 @@
+{% extends "index.html" %}
+{% load custom_filters %}
+
+    {% block title %}Exclusão do Cartão {{ card.description }}{% endblock %}
+
+    {% block content %}
+        <div class="box box-primary">
+            <form method="post">
+                <div class="box-title">
+                    <h3>
+                        Atenção! Você está prestes a excluir o cartão {{ cartao.descricao }}. Esta operação é irreversível.
+                    </h3>
+                </div>
+                <div class="box-body">
+                    <p>Bandeira: <b>{{ card.flag }}</b></p>
+                    <p>Descricao: <b>{{ card.description }}</b></p>
+                    <p>Limite: <b>{{ card.limits | to_reais }}</b></p>
+                    <p>Conta: <b>{{ card.account }}</b></p>
+                    <p>Vencimento: <b>{{ card.expiration_day }}</b></p>
+                    <p>Ícone:</p>
+                    <img src="{{ card.icon.url }}" alt="Ícone do banco {{ card.description }}" style="max-height: 50px;">
+                    <br>
+                    <div class="btn-danger">
+                        <p>
+                        {% csrf_token %}
+                        {{ exclusion_form }}
+                        Sim, desejo excluir e estou ciente de que esta operação é irreversível.
+                        </p>
+                    </div>
+                </div>
+                <div class="box-footer">
+                    <form method="post">
+                        {% csrf_token %}
+                        <a href="{{request.META.HTTP_REFERER}}"><input type="button" value="Voltar" class="btn btn-primary"></a>
+                        <input type="submit" value="Excluir" class="btn btn-danger">
+                    </form>
+                </div>
+            </form>
+
+        </div>
+
+    {% endblock content %}

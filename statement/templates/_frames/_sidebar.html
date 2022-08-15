@@ -1,0 +1,76 @@
+        <aside>
+            <ul>
+                <li>
+                    <a href="{% url 'get_current_month_transactions' %}">
+                        <div>
+                            <i class="fa-solid fa-house"></i>
+                        </div>
+                        <div class="toggle">
+                            <span>Início</span>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'create_transaction' 'saida' %}">
+                        <div>
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                        </div>
+                        <div class="toggle">
+                            <span>Saída </span>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'create_transaction' 'entrada' %}">
+                        <div>
+                            <i class="fa-solid fa-right-to-bracket"></i>
+                        </div>
+                        <div class="toggle">
+                            <span>Entrada </span>
+                        </div>
+                    </a>
+                </li>
+<!--                 INICIO EXEMPLO ÍTEM COM DROPDOWN-->
+                <li>
+                    <a id="conta-submenu-button" onclick="toggleSubMenu('conta-submenu')">
+                        <div>
+                            <i class="fa-solid fa-building-columns"></i>
+                        </div>
+                        <div class="toggle">
+                            <span>Contas</span>
+                        </div>
+                        <div class="align-right">
+                            <i class="fa-solid fa-angle-down inverse-toggle"></i>
+                        </div>
+                    </a>
+                </li>
+                    <ul id="conta-submenu" class="toggled">
+                        {% for account in extracts %}
+                        <li>
+                            <a href="{% url 'get_current_month_extract_by_account' account.id %}">{{ account }}</a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                <li>
+                    <a id="fatura-submenu-button" onclick="toggleSubMenu('fatura-submenu')">
+                        <div>
+                            <i class="fa-solid fa-credit-card"></i>
+                        </div>
+                        <div class="toggle">
+                            <span>Faturas</span>
+                        </div>
+                        <div class="align-right">
+                            <i class="fa-solid fa-angle-down inverse-toggle"></i>
+                        </div>
+                    </a>
+                </li>
+                    <ul id="fatura-submenu" class="toggled">
+                        {% for card in invoices %}
+                        <li>
+                            <a href="{% url 'get_current_month_invoice_by_card' card.id %}">{{ card }}</a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                <!-- FIM EXEMPLO ÍTEM COM DROPDOWN -->
+            </ul>
+        </aside>

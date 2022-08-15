@@ -1,0 +1,131 @@
+{% extends 'index.html' %}
+{% load static %}
+
+    {% block title %}Cadastrar movimentacao{% endblock title %}
+
+    {% block content %}
+        <div class="box box-primary">
+            <div class="box-header">
+                {% if tipo == 'entrada' and movimentacao_antiga %}
+                <h3 class="box-title">Editar Entrada</h3>
+                {% elif tipo == 'saida' and movimentacao_antiga %}
+                <h3 class="box-title">Editar Saída</h3>
+                {% elif tipo == 'entrada' and not movimentacao_antiga %}
+                <h3 class="box-title">Cadastrar Entrada</h3>
+                {% elif tipo == 'saida' and not movimentacao_antiga %}
+                <h3 class="box-title">Cadastrar Saída</h3>
+                {% endif %}
+            </div>
+            <form method="post" enctype="multipart/form-data">
+                <div class="box-body">
+                        {% csrf_token %}
+
+                        <label for="id_payment_method">Meio de Pagamento</label>
+                        {{ transaction_form.payment_method }}
+
+                        <div id="conta-cartao">
+                            <label for="id_account">Conta</label>
+                            {{ transaction_form.account }}
+                            {{ transaction_form.account.errors }}
+
+                            <label for="id_card">Cartao</label>
+                            {{ transaction_form.card }}
+                            {{ transaction_form.card.errors }}
+                        </div>
+
+                        {% if 'editar' in request.path %}
+                        <label for="id_tipo">Tipo</label>
+                        {{ transaction_form.type }}
+                        {{ transaction_form.type.errors }}
+                        {% endif %}
+
+                        <label for="id_release_date">Data do Lançamento</label>
+                        {{ transaction_form.release_date }}
+                        {{ transaction_form.release_date.errors }}
+
+                        <label for="id_payment_date">Data de Efetivação</label>
+                        {{ transaction_form.payment_date }}
+                        {{ transaction_form.payment_date.errors }}
+
+                        <label for="id_category">Categoria</label>
+                        {{ transaction_form.category }}
+                        {{ transaction_form.category.errors }}
+
+                        <label for="id_subcategory">Sub Categoria</label>
+                        {{ transaction_form.subcategory }}
+                        {{ transaction_form.subcategory.errors }}
+
+                        <label for="id_description">Descrição</label>
+                        {{ transaction_form.description }}
+                        {{ transaction_form.description.errors }}
+
+                        <label for="id_value">Valor</label>
+                        {{ transaction_form.value }}
+                        {{ transaction_form.value.errors }}
+                        <br>
+
+                        <h3 id="btn-installment" class="cursor-pointer">Parcelamento +</h3>
+
+                        <div id="div-installment" class="toggled">
+                            {% if 'editar' in request.path %}
+                            <label for="id_installment_option">Você deseja:</label>
+                            {{ transaction_form.installment_option }}
+                            {% endif %}
+                            <br>
+                            <label for="id_numero_parcelas">Número de Parcelas</label>
+                            {{ transaction_form.installments_number }}
+                            {{ transaction_form.installments_number.errors }}
+
+                            <label for="id_pagas">Pagas</label>
+                            {{ transaction_form.paid }}
+                            {{ transaction_form.paid.errors }}
+                            <br>
+                        </div>
+
+                        <h3 id="btn-other-options" class="cursor-pointer">Outras Opções +</h3>
+
+                        <div id="div-other-options" class="toggled">
+                            <br>
+                            <label for="id_fixed">Fixa</label><br><br>
+                            {{ transaction_form.fixed }}
+                            {{ transaction_form.fixed.errors }}
+
+                            <label for="id_annual">Anual</label><br><br>
+                            {{ transaction_form.annual }}
+                            {{ transaction_form.annual.errors }}
+
+                            <label for="id_currency">Moeda</label>
+                            {{ transaction_form.currency }}
+                            {{ transaction_form.currency.errors }}
+
+                            <label for="id_observation">Observações</label>
+                            {{ transaction_form.observation }}
+                            {{ transaction_form.observation.errors }}
+
+                            {{ transaction_form.remember }}
+                            {{ transaction_form.remember.errors }}
+                            <label for="id_remember">Lembrar</label><br><br>
+
+                            {{ transaction_form.effected }}
+                            {{ transaction_form.effected.errors }}
+                            <label for="id_effected">Efetivado</label><br><br>
+                            <br>
+                        </div>
+
+
+                </div>
+                <div class="box-footer">
+                    <input class="btn btn-primary" type="submit" name="Cadastrar">
+                    <a href="{{request.META.HTTP_REFERER}}" class="btn btn-info">Voltar</a>
+                    {% if 'editar' in request.path %}
+                    <a href="{% url 'delete_transaction' old_transaction.id %}"><input type="button" value="Excluir" class="btn btn-danger"></a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    {% endblock %}
+
+    {% block scripts %}
+    <script src="{% static 'js/layout/movements-form.js' %}" type="module"></script>
+    <script src="{% static 'js/classes.js' %}" type="module"></script>
+    {% endblock %}
