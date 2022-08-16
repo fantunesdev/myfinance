@@ -25,99 +25,99 @@ def setup_settings(request):
 
 def importar_banco(request):
     user = request.user
-    # for i in Bandeira.objects.all():
-    #     Flag.objects.create(
-    #         id=i.id,
-    #         description=i.descricao,
-    #         icon=i.icone
-    #     )
-    #
-    # for i in Banco.objects.all():
-    #     Bank.objects.create(
-    #         id=i.id,
-    #         description=i.descricao,
-    #         code=i.codigo,
-    #         icon=i.icone
-    #     )
-    #
-    # for i in Parcelamento.objects.all():
-    #     Installment.objects.create(
-    #         id=i.id,
-    #         release_date=i.data_lancamento,
-    #         description=i.descricao,
-    #         user=request.user
-    #     )
-    #
-    # for i in Categoria.objects.all():
-    #     Category.objects.create(
-    #         id=i.id,
-    #         type=i.tipo,
-    #         description=i.descricao,
-    #         icon=i.icone,
-    #         color=i.cor,
-    #         ignore=False,
-    #         user=request.user
-    #     )
-    #
-    # for i in ContaTipo.objects.all():
-    #     AccountType.objects.create(
-    #         id=i.id,
-    #         description=i.descricao
-    #     )
-    #
-    # for i in Moeda.objects.all():
-    #     Currency.objects.create(
-    #         id=i.id,
-    #         description=i.descricao,
-    #         symbol=i.simbolo
-    #     )
-    #
-    # for i in Antecipation.objects.all():
-    #     NextMonthView.objects.create(
-    #         id=i.id,
-    #         day=i.day,
-    #         active=i.active,
-    #         user=user
-    #     )
-    #
-    # for i in Conta.objects.all():
-    #     bank = Bank.objects.get(id=i.banco.id)
-    #     type = AccountType.objects.get(id=1)
-    #     Account.objects.create(
-    #         id=i.id,
-    #         bank=bank,
-    #         branch=i.agencia,
-    #         number=i.numero,
-    #         balance=i.saldo,
-    #         limits=i.limite,
-    #         type=type,
-    #         home_screen=i.tela_inicial,
-    #         user=i.usuario
-    #     )
-    #
-    # for i in Cartao.objects.all():
-    #     flag = flag_services.get_flag_by_id(i.bandeira.id)
-    #     account_db = account_services.get_account_by_id(1, request.user)
-    #     Card.objects.create(
-    #         id=i.id,
-    #         flag=flag,
-    #         icon=i.icone,
-    #         description=i.descricao,
-    #         limits=i.limite,account=account_db,
-    #         expiration_day=i.vencimento,
-    #         closing_day=i.fechamento,
-    #         home_screen=i.tela_inicial,
-    #         user=request.user
-    #     )
-    #
-    # for i in Subcategoria.objects.all():
-    #     category = category_services.get_category_by_id(i.categoria.id, request.user)
-    #     Subcategory.objects.create(
-    #         id=i.id,
-    #         description=i.descricao,
-    #         category=category,
-    #         user=request.user
-    #     )
+    for i in Bandeira.objects.all():
+        Flag.objects.create(
+            id=i.id,
+            description=i.descricao,
+            icon=i.icone
+        )
+
+    for i in Banco.objects.all():
+        Bank.objects.create(
+            id=i.id,
+            description=i.descricao,
+            code=i.codigo,
+            icon=i.icone
+        )
+
+    for i in Parcelamento.objects.all():
+        Installment.objects.create(
+            id=i.id,
+            release_date=i.data_lancamento,
+            description=i.descricao,
+            user=request.user
+        )
+
+    for i in Categoria.objects.all():
+        Category.objects.create(
+            id=i.id,
+            type=i.tipo,
+            description=i.descricao,
+            icon=i.icone,
+            color=i.cor,
+            ignore=False,
+            user=request.user
+        )
+
+    for i in ContaTipo.objects.all():
+        AccountType.objects.create(
+            id=i.id,
+            description=i.descricao
+        )
+
+    for i in Moeda.objects.all():
+        Currency.objects.create(
+            id=i.id,
+            description=i.descricao,
+            symbol=i.simbolo
+        )
+
+    for i in Antecipation.objects.all():
+        NextMonthView.objects.create(
+            id=i.id,
+            day=i.day,
+            active=i.active,
+            user=user
+        )
+
+    for i in Conta.objects.all():
+        bank = Bank.objects.get(id=i.banco.id)
+        type = AccountType.objects.get(id=1)
+        Account.objects.create(
+            id=i.id,
+            bank=bank,
+            branch=i.agencia,
+            number=i.numero,
+            balance=i.saldo,
+            limits=i.limite,
+            type=type,
+            home_screen=i.tela_inicial,
+            user=i.usuario
+        )
+
+    for i in Cartao.objects.all():
+        flag = flag_services.get_flag_by_id(i.bandeira.id)
+        account_db = account_services.get_account_by_id(1, request.user)
+        Card.objects.create(
+            id=i.id,
+            flag=flag,
+            icon=i.icone,
+            description=i.descricao,
+            limits=i.limite,account=account_db,
+            expiration_day=i.vencimento,
+            closing_day=i.fechamento,
+            home_screen=i.tela_inicial,
+            user=request.user
+        )
+
+    for i in Subcategoria.objects.all():
+        category = category_services.get_category_by_id(i.categoria.id, request.user)
+        Subcategory.objects.create(
+            id=i.id,
+            description=i.descricao,
+            category=category,
+            user=request.user
+        )
 
     for i in Movimentacao.objects.all():
         try:
