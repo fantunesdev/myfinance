@@ -13,8 +13,8 @@ class SubcategoryList(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class SubcategoriesCategory(APIView):
+class SubcategoriesByCategory(APIView):
     def get(self, request, category_id):
-        subcategories = subcategory_services.get_subcategories_category(category_id, request.user)
+        subcategories = subcategory_services.get_subcategories_by_category(category_id, request.user)
         serializer = subcategory_serializer.SubcategorySerializer(subcategories, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

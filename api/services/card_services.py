@@ -1,17 +1,18 @@
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
 
-from balanco.services import cartao_service
+from statement.services import card_services
 
 
 def get_cards(user):
-    cards = cartao_service.listar_cartoes(user)
+    cards = card_services.get_cards(user)
     if cards:
         return cards
     raise Http404
 
 
-def get_card_id(card_id, user):
-    card = cartao_service.listar_cartao_id(card_id, user)
-    if card:
-        return card
-    raise Http404
+def get_card_by_id(card_id, user):
+    try:
+        return card_services.get_card_by_id(card_id, user)
+    except ObjectDoesNotExist:
+        raise Http404

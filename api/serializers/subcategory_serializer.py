@@ -1,9 +1,9 @@
 from rest_framework import serializers
 
-from balanco.models import Subcategoria
+from statement.models import Subcategory
 
 
 class SubcategorySerializer(serializers.ModelSerializer):
     class Meta:
-        model = Subcategoria
+        model = Subcategory
         fields = '__all__'

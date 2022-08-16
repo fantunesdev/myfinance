@@ -1,9 +1,9 @@
 from rest_framework import serializers
 
-from balanco.models import Movimentacao
+from statement.models import Transaction
 
 
 class TransactionSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Movimentacao
+        model = Transaction
         fields = '__all__'

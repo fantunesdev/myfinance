@@ -1,10 +1,10 @@
 from django.http import Http404
 
-from balanco.services import fatura_service
+from statement.services import invoice_services
 
 
-def get_invoice_year_month(year, month, card, user):
-    invoice = fatura_service.listar_fatura_ano_mes(year, month, card, user)
+def get_invoice_by_year_and_month(card, year, month, user):
+    invoice = invoice_services.get_invoice_by_card_year_and_month(card, year, month, user)
     if invoice:
         return invoice
     raise Http404

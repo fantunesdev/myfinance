@@ -1,9 +1,9 @@
 from rest_framework import serializers
 
-from balanco.models import Cartao
+from statement.models import Card
 
 
 class CardSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Cartao
+        model = Card
         fields = '__all__'

@@ -1,9 +1,9 @@
 from rest_framework import serializers
 
-from balanco.models import Categoria
+from statement.models import Category
 
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
-        model = Categoria
+        model = Category
         fields = '__all__'

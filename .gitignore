@@ -4,3 +4,4 @@ login/migrations/*
 statement/migrations/*
 /static/
 media/imagens/*
+media/img/*

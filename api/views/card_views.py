@@ -15,6 +15,6 @@ class CardList(APIView):
 
 class CardDetails(APIView):
     def get(self, request, card_id):
-        card = card_services.get_card_id(card_id, request.user)
+        card = card_services.get_card_by_id(card_id, request.user)
         serializer = card_serializer.CardSerializer(card)
         return Response(serializer.data, status=status.HTTP_200_OK)
