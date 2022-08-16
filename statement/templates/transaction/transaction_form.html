@@ -23,11 +23,12 @@
                         <label for="id_payment_method">Meio de Pagamento</label>
                         {{ transaction_form.payment_method }}
 
-                        <div id="conta-cartao">
+                        <div id="div-account">
                             <label for="id_account">Conta</label>
                             {{ transaction_form.account }}
                             {{ transaction_form.account.errors }}
-
+                        </div>
+                        <div id="div-card">
                             <label for="id_card">Cartao</label>
                             {{ transaction_form.card }}
                             {{ transaction_form.card.errors }}
@@ -126,6 +127,5 @@
     {% endblock %}
 
     {% block scripts %}
-    <script src="{% static 'js/layout/movements-form.js' %}" type="module"></script>
-    <script src="{% static 'js/classes.js' %}" type="module"></script>
+    <script src="{% static 'js/pages/transaction-form.js' %}" type="module"></script>
     {% endblock %}

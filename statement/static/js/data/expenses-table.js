@@ -43,14 +43,13 @@ export async function setData(transaction, subcategories, category, accounts, ca
 
             data.push(bank.icon);
         }
-    }
+    };
     data.push(category.description);
     for (let subcategory of subcategories) {
-        console.log(transaction)
         if (transaction.subcategory == subcategory.id) {
             data.push(`${subcategory.name}`);
         }
-    }
+    };
     data.push(transaction.description);
     data.push(transaction.value.toLocaleString('pt-br',{style: 'currency', currency: transaction.currency}));
     return data;
@@ -74,4 +73,4 @@ export function setURLs(transaction) {
         ]
     }    
     return urls;
-}
+};

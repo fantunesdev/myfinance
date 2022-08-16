@@ -1,11 +1,11 @@
-import * as categoryData from '../../data/categories-report.js';
-import * as subcategoryData from '../../data/subcategory-expenses.js';
-import * as dataTable from '../../data/expenses-table.js';
-import * as graphics from '../elements/graphics.js';
-import * as selects from '../elements/selects.js';
-import * as tables from '../elements/tables.js';
-import * as services from '../../data/services.js';
-import { expensesSelector, originalTable, statementBox } from '../elements/elements.js';
+import * as categoryData from '../data/categories-report.js';
+import * as subcategoryData from '../data/subcategory-expenses.js';
+import * as dataTable from '../data/expenses-table.js';
+import * as graphics from '../layout/elements/graphics.js';
+import * as selects from '../layout/elements/selects.js';
+import * as tables from '../layout/elements/tables.js';
+import * as services from '../data/services.js';
+import { expensesSelector, originalTable, statementBox } from '../layout/elements/get-transactions-elements.js';
 
 async function draw() {
     const [year, month] = await categoryData.getMonthYear(),

@@ -108,7 +108,7 @@ export function setCategoriesOptions(report) {
     for (let i of report) {
         object = {
             id: i.id,
-            descricao: i.name,
+            description: i.name,
             amount: i.amount
         }
         options.push(object)

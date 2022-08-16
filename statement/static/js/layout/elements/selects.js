@@ -15,7 +15,7 @@ export function renderOptions(select, objectList) {
     for (let object of objectList) {
         const option = document.createElement('option');
         option.value = object.id;
-        option.text = object.descricao;
+        option.text = object.description;
         select.add(option, select.options[object.id])
     }
 }
