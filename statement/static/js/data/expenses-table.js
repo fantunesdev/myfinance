@@ -1,3 +1,5 @@
+import * as services from '../data/services.js'
+
 export const columnTitles = ['Data', 'Banco/Cartão', 'Categoria', 'Sub-Categoria', 'Descrição', 'Valor', 'Ações'];
 
 
@@ -22,12 +24,14 @@ export function orderExpensesBySubcategory(transactions, categoryId, expenses) {
 };
 
 
-export function setData(transaction, subcategories, category, accounts, cards) {
+export async function setData(transaction, subcategories, category, accounts, cards) {
     let data = [],
         account,
-        card;
+        card,
+        bank;
 
     data.push(transaction.release_date.split('-').reverse().join('/'));
+
     for (card of cards) {
         if (transaction.card == card.id) {
             data.push(card.icon);
@@ -35,12 +39,14 @@ export function setData(transaction, subcategories, category, accounts, cards) {
     };
     for (account of accounts) {
         if (transaction.account == account.id) {
-            console.log(account)
-            data.push(account.icon);
+            bank = await services.getSpecificResource('banks', account.bank);
+
+            data.push(bank.icon);
         }
     }
     data.push(category.description);
     for (let subcategory of subcategories) {
+        console.log(transaction)
         if (transaction.subcategory == subcategory.id) {
             data.push(`${subcategory.name}`);
         }
