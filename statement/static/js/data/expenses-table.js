@@ -35,7 +35,8 @@ export function setData(transaction, subcategories, category, accounts, cards) {
     };
     for (account of accounts) {
         if (transaction.account == account.id) {
-            data.push('');
+            console.log(account)
+            data.push(account.icon);
         }
     }
     data.push(category.description);

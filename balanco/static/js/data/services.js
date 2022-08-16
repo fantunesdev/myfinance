@@ -22,7 +22,7 @@ export async function getSpecificResource(view, id) {
 }
 
 
-export async function getRelatedView(view, related, id) {
+export async function getRelatedResource(view, related, id) {
     const url = `/api/${view}/${id}/${related}`,
     response = await fetch(url);
 

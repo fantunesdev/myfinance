@@ -53,7 +53,7 @@ async function updateTable(transactions, expenses) {
         originalTable.classList.remove('toggled');
     } else {
         const category = await services.getSpecificResource('categories', expensesSelector.value),
-            accounts = [],
+            accounts = await services.getResource('accounts'),
             cards = await services.getResource('cards');
 
         originalTable.classList.add('toggled');

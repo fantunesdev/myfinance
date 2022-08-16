@@ -3,7 +3,7 @@ import * as services from './services.js';
 
 export async function setSubcategoryDataset(year, month, id) {
     const movements = await services.getMovementsYearMonth(year, month),
-        subcategories = await services.getRelatedView('categorias','subcategorias', id);
+        subcategories = await services.getRelatedResource('categorias','subcategorias', id);
 
     let expenses = [],
         subcategory, movement, object;
