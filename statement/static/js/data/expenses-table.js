@@ -1,57 +1,69 @@
-export const columnTitles = ['Data', 'Categoria', 'Sub-Categoria', 'Descricao', 'Valor', 'Ações'];
+export const columnTitles = ['Data', 'Banco/Cartão', 'Categoria', 'Sub-Categoria', 'Descrição', 'Valor', 'Ações'];
 
 
-export function orderExpensesBySubcategory(movements, categoryId, expenses) {
-    let newMovements = [];
+export function orderExpensesBySubcategory(transactions, categoryId, expenses) {
+    let newTransactions = [];
     for (let i = 0; i < expenses.length; i++) {
         expenses[i].order = i;
     };
 
-    for (let movement of movements) {
-        if (movement.categoria == categoryId) {
+    for (let transaction of transactions) {
+        if (transaction.category == categoryId) {
             for (let expense of expenses) {
-                if (movement.subcategoria == expense.id) {
-                    movement.order = expense.order;
+                if (transaction.subcategory == expense.id) {
+                    transaction.order = expense.order;
                 }
             }
-            newMovements.push(movement);
+            newTransactions.push(transaction);
         };
     };
 
-    return newMovements.sort((a, b) => a.order < b.order ? -1 : a.order > b.order ? 1 : 0);
+    return newTransactions.sort((a, b) => a.order < b.order ? -1 : a.order > b.order ? 1 : 0);
 };
 
 
-export function setData(movement, subcategories, category) {
-    let data = [];
+export function setData(transaction, subcategories, category, accounts, cards) {
+    let data = [],
+        account,
+        card;
 
-    data.push(movement.data_lancamento.split('-').reverse().join('/'));
-    data.push(category.descricao);
+    data.push(transaction.release_date.split('-').reverse().join('/'));
+    for (card of cards) {
+        if (transaction.card == card.id) {
+            data.push(card.icon);
+        };
+    };
+    for (account of accounts) {
+        if (transaction.account == account.id) {
+            data.push('');
+        }
+    }
+    data.push(category.description);
     for (let subcategory of subcategories) {
-        if (movement.subcategoria == subcategory.id) {
+        if (transaction.subcategory == subcategory.id) {
             data.push(`${subcategory.name}`);
         }
     }
-    data.push(movement.descricao);
-    data.push(movement.valor.toLocaleString('pt-br',{style: 'currency', currency: movement.moeda}));
+    data.push(transaction.description);
+    data.push(transaction.value.toLocaleString('pt-br',{style: 'currency', currency: transaction.currency}));
     return data;
 };
 
 
-export function setURLs(movement) {
+export function setURLs(transaction) {
     let urls = [];
     
-    if (movement.parcelamento) {
+    if (transaction.installment) {
         urls = [
-            `/parcelamento/${movement.parcelamento}/`,
-            `/parcelamento/editar/${movement.parcelamento}`,
-            `/parcelamento/remover/${movement.parcelamento}`
+            `/parcelamento/${transaction.installment}/`,
+            `/parcelamento/editar/${transaction.installment}`,
+            `/parcelamento/remover/${transaction.installment}`
         ]
     } else {
         urls = [
-            `/movimentacao/${movement.id}/`,
-            `/movimentacao/editar/${movement.id}`,
-            `/movimentacao/remover/${movement.id}`
+            `/movimentacao/${transaction.id}/`,
+            `/movimentacao/editar/${transaction.id}`,
+            `/movimentacao/remover/${transaction.id}`
         ]
     }    
     return urls;

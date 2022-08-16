@@ -8,7 +8,7 @@ export async function getMonthYear() {
         today = new Date(), 
         month, year;
 
-    const antecipation = await services.getView('antecipation')
+    const antecipation = await services.getResource('antecipation')
     
     if (root || currentMonth) {
         month = today.getDate() < antecipation.day ? today.getMonth() + 1 : today.getMonth() + 2;
@@ -24,7 +24,7 @@ export async function getMonthYear() {
 
 
 export async function setCategoriesReport(movements) {
-    let categories = await services.getView('categorias'),
+    let categories = await services.getResource('categorias'),
         revenue = [],
         expenses = [],
         amount = {

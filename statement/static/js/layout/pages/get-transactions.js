@@ -9,8 +9,8 @@ import { expensesSelector, originalTable, statementBox } from '../elements/eleme
 
 async function draw() {
     const [year, month] = await categoryData.getMonthYear(),
-        movements = await services.getMovementsYearMonth(year, month),
-        report = await categoryData.setCategoriesReport(movements),
+        transactions = await services.getTransactionsByYearAndMonth(year, month),
+        report = await categoryData.setCategoriesReport(transactions),
         revenue = categoryData.setCategoriesDataset(report.revenue, true),
         expenses = categoryData.setCategoriesDataset(report.expenses),
         amount = categoryData.setAmountDataset(report.amount),
@@ -28,10 +28,10 @@ async function draw() {
 
 async function updateBarChart(barChart) {
     const [year, month] = await categoryData.getMonthYear(),
-        movements = await services.getMovementsYearMonth(year, month);
+        transactions = await services.getTransactionsByYearAndMonth(year, month);
         
     if (expensesSelector.value === '0') {
-        const report = await categoryData.setCategoriesReport(movements);
+        const report = await categoryData.setCategoriesReport(transactions);
         var expenses = report.expenses;
     } else {
         var expenses = await subcategoryData.setSubcategoryDataset(year, month, expensesSelector.value);
@@ -40,10 +40,10 @@ async function updateBarChart(barChart) {
     const dataset = categoryData.setCategoriesDataset(expenses);
     graphics.updateChart(barChart, dataset);
 
-    updateTable(movements, expenses)
+    updateTable(transactions, expenses)
 };
 
-async function updateTable(movements, expenses) {
+async function updateTable(transactions, expenses) {
     let subcategoryTable = document.getElementById('subcategory-table');
 
     if (subcategoryTable) {
@@ -52,12 +52,14 @@ async function updateTable(movements, expenses) {
     if (expensesSelector.value === '0') {
         originalTable.classList.remove('toggled');
     } else {
-        const category = await services.getViewDetail('categorias', expensesSelector.value);
+        const category = await services.getSpecificResource('categories', expensesSelector.value),
+            accounts = [],
+            cards = await services.getResource('cards');
 
         originalTable.classList.add('toggled');
-        let filteredMovements = dataTable.orderExpensesBySubcategory(movements, expensesSelector.value, expenses);
+        let filteredTransactions = dataTable.orderExpensesBySubcategory(transactions, expensesSelector.value, expenses);
 
-        tables.renderTable(statementBox, filteredMovements, expenses, category);
+        tables.renderTable(statementBox, filteredTransactions, expenses, category, accounts, cards);
     }
 }
     

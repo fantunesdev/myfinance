@@ -1,7 +1,7 @@
 import * as tableData from '../../data/expenses-table.js';
 
 
-export function renderTable(father, movements, subcategories, category) {
+export function renderTable(father, transactions, subcategories, category, accounts, cards) {
     const table = document.createElement('table'),
         thead = document.createElement('thead'),
         tbody = document.createElement('tbody'),
@@ -9,13 +9,13 @@ export function renderTable(father, movements, subcategories, category) {
     
     table.id = 'subcategory-table';
 
-    let headRow = createRow(row, 'th', tableData.columnTitles);
+    let headRow = createTitleRow(row, tableData.columnTitles);
     thead.appendChild(headRow);
 
-    for (let movement of movements) {
+    for (let transaction of transactions) {
         let newRow = document.createElement('tr'),
-            data = tableData.setData(movement, subcategories, category),
-            urls = tableData.setURLs(movement),
+            data = tableData.setData(transaction, subcategories, category, accounts, cards),
+            urls = tableData.setURLs(transaction),
             anchors = createAnchors(urls);
         createRow(newRow, 'td', data, anchors);
         tbody.appendChild(newRow);
@@ -28,10 +28,24 @@ export function renderTable(father, movements, subcategories, category) {
 };
 
 
-function createRow(row, type, data, anchors) {
+function createTitleRow(row, data) {
     for (let i of data) {
-        let column = document.createElement(type);
+        let column = document.createElement('th');
         column.innerHTML = i;
+        row.appendChild(column);
+    }
+    return row;
+}
+
+
+function createRow(row, type, data, anchors) {
+    for (let i = 0; i < data.length; i++) {
+        let column = document.createElement(type);
+        if (i === 1) {
+            createImage(column, data[i]);
+        } else {
+            column.innerHTML = data[i];
+        }
         row.appendChild(column);
     };
     if (anchors) {
@@ -41,6 +55,16 @@ function createRow(row, type, data, anchors) {
     };
     return row;
 };
+
+
+function createImage(father, src) {
+    const img = document.createElement('img');
+
+    img.src = src;
+    img.alt = 'Logotipo';
+    img.style = 'max-height: 25px';
+    father.appendChild(img);
+}
 
 
 function createAnchors(urls) {    

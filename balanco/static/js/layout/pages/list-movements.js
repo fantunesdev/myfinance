@@ -53,7 +53,7 @@ async function updateTable(movements, expenses) {
     if (expensesSelector.value === '0') {
         originalTable.classList.remove('toggled');
     } else {
-        const category = await services.getViewDetail('categorias', expensesSelector.value);
+        const category = await services.getSpecificResource('categorias', expensesSelector.value);
 
         originalTable.classList.add('toggled');
         let filteredMovements = dataTable.orderExpensesBySubcategory(movements, expensesSelector.value, expenses);

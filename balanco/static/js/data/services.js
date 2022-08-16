@@ -6,7 +6,7 @@ export async function getMovementsYearMonth(year, month) {
 }
 
 
-export async function getView(view) {
+export async function getResource(view) {
     const url = `/api/${view}/`,
         response = await fetch(url);
 
@@ -14,10 +14,10 @@ export async function getView(view) {
 }
 
 
-export async function getViewDetail(view, id) {
+export async function getSpecificResource(view, id) {
     const url = `/api/${view}/${id}/`,
         response = await fetch(url);
-
+    console.log(url)
     return await response.json();
 }
 

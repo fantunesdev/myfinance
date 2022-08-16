@@ -2,27 +2,27 @@ import * as services from './services.js';
 
 
 export async function setSubcategoryDataset(year, month, id) {
-    const movements = await services.getMovementsYearMonth(year, month),
-        subcategories = await services.getRelatedView('categorias','subcategorias', id);
+    const transactions = await services.getTransactionsByYearAndMonth(year, month),
+        subcategories = await services.getRelatedView('categories','subcategories', id);
 
     let expenses = [],
-        subcategory, movement, object;
+        subcategory, transaction, object;
 
     for (subcategory of subcategories) {
         object = {
             id: subcategory.id,
-            name: subcategory.descricao,
+            name: subcategory.description,
             amount: 0
-        }
+        };
         expenses.push(object);
     };
 
-    for (movement of movements) {
+    for (transaction of transactions) {
         for (subcategory of expenses) {
-            if (subcategory.id === movement.subcategoria) {
-                subcategory.amount += movement.valor;
+            if (subcategory.id === transaction.subcategory) {
+                subcategory.amount += transaction.value;
             }
-        }
+        };
     };
 
     expenses.sort((a, b) => a.amount < b.amount ? 1 : a.amount > b.amount ? -1 : 0);

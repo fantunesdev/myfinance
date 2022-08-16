@@ -8,11 +8,10 @@ export async function getMonthYear() {
         today = new Date(), 
         month, year;
 
-    const nextMonthView = await services.getView('next_month_view');
+    const nextMonthView = await services.getResource('next_month_view');
     
     if (root || currentMonth) {
-        
-        month = today.getDate() < nextMonthView.day ? today.getMonth() + 1 : today.getMonth() + 2;
+        month = today.getDate() < nextMonthView.day && nextMonthView.active ? today.getMonth() + 1 : today.getMonth() + 2;
         year = month <= 12 ? today.getFullYear() : today.getFullYear() + 1;
         month = month === 13 ? 1 : month;
     } else {
@@ -24,8 +23,8 @@ export async function getMonthYear() {
 };
 
 
-export async function setCategoriesReport(movements) {
-    let categories = await services.getView('categorias'),
+export async function setCategoriesReport(transactions) {
+    let categories = await services.getResource('categories'),
         revenue = [],
         expenses = [],
         amount = {
@@ -37,37 +36,40 @@ export async function setCategoriesReport(movements) {
     for (category of categories) {
         let object = {
             id: category.id,
-            name: category.descricao,
+            name: category.description,
             amount: 0
-        }
-        if (category.tipo === 'entrada') {
+        };
+
+        if (category.type === 'entrada') {
             revenue.push(object);
         } else {
-            if (category.id !== 13) {
+            if (!category.ignore) {
                 expenses.push(object);
             }
         };
     };
 
-    for (let movement of movements) {
+    for (let transaction of transactions) {
 
         for (category of revenue) {
-            if (movement.categoria === category.id) {
-                category.amount += movement.valor;
+            if (transaction.category === category.id) {
+                category.amount += transaction.value;
             }
         };
         
         for (category of expenses) {
-            if (movement.categoria === category.id) {
-                category.amount += movement.valor;
+            if (transaction.category === category.id) {
+                category.amount += transaction.value;
             }
         };
         
-        if (movement.tipo === 'entrada') {
-            amount.revenue += movement.valor;            
+        if (transaction.type === 'entrada') {
+            amount.revenue += transaction.value;            
         } else {
-            if (movement.categoria !== 13) {
-                amount.expenses += movement.valor;
+            let transactionCategory = await services.getSpecificResource('categories', transaction.category);
+
+            if (!transactionCategory.ignore) {
+                amount.expenses += transaction.value;
             }
         }
     };
