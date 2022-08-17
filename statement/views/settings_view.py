@@ -166,7 +166,6 @@ def importar_banco(request):
             user=request.user,
             installment=installment
         )
-        transaction_services.create_transaction(new_transaction)
 
     templatetags = set_templatetags()
     templatetags['next_month_view'] = next_month_view_services.get_next_month_view_by_user(request.user)
