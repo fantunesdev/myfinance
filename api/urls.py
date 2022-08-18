@@ -1,7 +1,7 @@
 from django.urls import path
 
 from api.views.account_views import AccountsList
-from api.views.bank_views import BankDetails
+from api.views.bank_views import *
 from api.views.card_views import *
 from api.views.category_views import *
 from api.views.invoice_views import *
@@ -12,6 +12,8 @@ from api.views.subcategoy_views import *
 urlpatterns = [
     path('next_month_view/', NextMonthView.as_view(), name='next_month_view'),
     path('accounts/', AccountsList.as_view()),
+    path('banks/', BankList.as_view()),
+    # path('banks/accounts/<int:account_id>/', ),
     path('banks/<int:bank_id>/', BankDetails.as_view()),
     path('cards/', CardList.as_view(), name='card-list'),
     path('cards/<int:card_id>/', CardDetails.as_view(), name='card-details'),

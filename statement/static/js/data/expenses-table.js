@@ -24,34 +24,52 @@ export function orderExpensesBySubcategory(transactions, categoryId, expenses) {
 };
 
 
-export async function setData(transaction, subcategories, category, accounts, cards) {
+export function setData(transaction, transactionAttrs) {
     let data = [],
         account,
         card,
-        bank;
+        bank,
+        releaseDateFormated = transaction.release_date.split('-').reverse().join('/');
 
-    data.push(transaction.release_date.split('-').reverse().join('/'));
+    
+    // Column 1 - Release dates data
+    data.push(releaseDateFormated);
 
-    for (card of cards) {
+    // Column 2 - Cards/Accounts data
+    // If cards:
+    for (card of transactionAttrs.cards) {
         if (transaction.card == card.id) {
             data.push(card.icon);
         };
     };
-    for (account of accounts) {
-        if (transaction.account == account.id) {
-            bank = await services.getSpecificResource('banks', account.bank);
 
-            data.push(bank.icon);
-        }
+    // If accounts:
+    for (account of transactionAttrs.accounts) {
+        if (transaction.account == account.id) {
+            for (bank of transactionAttrs.banks) {
+                if (bank.id == account.bank) {
+                    data.push(bank.icon);
+                };
+            };
+        };
     };
-    data.push(category.description);
-    for (let subcategory of subcategories) {
+
+    // Column 3 - Category data
+    data.push(transactionAttrs.category.description);
+
+    // Column 4 - Subcategories data
+    for (let subcategory of transactionAttrs.subcategories) {
         if (transaction.subcategory == subcategory.id) {
             data.push(`${subcategory.name}`);
-        }
+        };
     };
+
+    // Column 5 - Description data
     data.push(transaction.description);
+
+    // Column 6 - Value data
     data.push(transaction.value.toLocaleString('pt-br',{style: 'currency', currency: transaction.currency}));
+    
     return data;
 };
 

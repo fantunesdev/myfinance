@@ -43,6 +43,7 @@ async function updateBarChart(barChart) {
     updateTable(transactions, expenses)
 };
 
+
 async function updateTable(transactions, expenses) {
     let subcategoryTable = document.getElementById('subcategory-table');
 
@@ -54,12 +55,21 @@ async function updateTable(transactions, expenses) {
     } else {
         const category = await services.getSpecificResource('categories', expensesSelector.value),
             accounts = await services.getResource('accounts'),
-            cards = await services.getResource('cards');
+            cards = await services.getResource('cards'),
+            banks = await services.getResource('banks'),
+            transactionAttrs = {
+                accounts: accounts,
+                cards: cards,
+                category: category,
+                subcategories: expenses,
+                banks: banks
+            };
+
 
         originalTable.classList.add('toggled');
         let filteredTransactions = dataTable.orderExpensesBySubcategory(transactions, expensesSelector.value, expenses);
 
-        tables.renderTable(statementBox, filteredTransactions, expenses, category, accounts, cards);
+        tables.renderTable(statementBox, filteredTransactions, transactionAttrs);
     }
 }
     

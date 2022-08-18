@@ -144,7 +144,7 @@ def importar_banco(request):
         category = category_services.get_category_by_id(i.categoria.id, request.user)
         subcategory = subcategory_services.get_subcategory_by_id(i.subcategoria.id, request.user)
 
-        new_transaction = Transaction.objects.create(
+        Transaction.objects.create(
             release_date=i.data_lancamento,
             payment_date=i.data_efetivacao,
             account=account,

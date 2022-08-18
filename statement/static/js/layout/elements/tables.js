@@ -1,7 +1,7 @@
 import * as tableData from '../../data/expenses-table.js';
 
 
-export async function renderTable(father, transactions, subcategories, category, accounts, cards) {
+export function renderTable(father, transactions, transactionAttrs) {
     const table = document.createElement('table'),
         thead = document.createElement('thead'),
         tbody = document.createElement('tbody'),
@@ -14,7 +14,7 @@ export async function renderTable(father, transactions, subcategories, category,
 
     for (let transaction of transactions) {
         let newRow = document.createElement('tr'),
-            data = await tableData.setData(transaction, subcategories, category, accounts, cards),
+            data = tableData.setData(transaction, transactionAttrs),
             urls = tableData.setURLs(transaction),
             anchors = createAnchors(urls);
         createRow(newRow, 'td', data, anchors);
