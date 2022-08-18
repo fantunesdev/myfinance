@@ -3,12 +3,15 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from api.serializers import bank_serializer
-from api.services import bank_services
+from api.services import bank_services, account_services
 
 
 class BankList(APIView):
     def get(self, request):
-        banks = bank_services.get_banks()
+        accounts = account_services.get_accounts(request.user)
+        banks = []
+        for account in accounts:
+            banks.append(bank_services.get_bank_by_id(account.bank.id))
         serializer = bank_serializer.BankSerializer(banks, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
