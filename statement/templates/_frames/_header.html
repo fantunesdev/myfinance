@@ -13,8 +13,8 @@
                 </li>
                 <li class="profile-button">
                     {% spaceless %}
-                    {% if user.foto %}
-                    <a onclick="toggleProfile('profile')"><img id="profile-photo-button" src="{{ user.foto.url }}" alt=""></a>
+                    {% if user.photo %}
+                    <a onclick="toggleProfile('profile')"><img id="profile-photo-button" src="{{ user.photo.url }}" alt=""></a>
                     {% else %}
                     <a onclick="toggleProfile('profile')"><img id="profile-photo-button" src="{% static 'img/default-profile.png' %}" alt=""></a>
                     {% endif %}
@@ -26,8 +26,8 @@
             <!-- INÍCIO PROFILE -->
             <section id="profile" class="toggled">
                 <div class="photo">
-                    {% if user.foto %}
-                    <img id="profile-photo" src="{{ user.foto.url }}" alt="Foto de Perfil"><br>
+                    {% if user.photo %}
+                    <img id="profile-photo" src="{{ user.photo.url }}" alt="Foto de Perfil"><br>
                     {% else %}
                     <img id="profile-photo" src="{% static 'img/default-profile.png' %}" alt="Foto de Perfil"><br>
                     {% endif %}

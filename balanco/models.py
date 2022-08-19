@@ -1,6 +1,6 @@
 from django.db import models
 
-from login.models import Usuario
+from login.models import User
 
 
 class Categoria(models.Model):
@@ -12,7 +12,7 @@ class Categoria(models.Model):
     descricao = models.CharField(max_length=30)
     cor = models.CharField(max_length=7, null=True, blank=True)
     icone = models.CharField(max_length=100, null=True, blank=True)
-    usuario = models.ForeignKey(Usuario, on_delete=models.PROTECT)
+    usuario = models.ForeignKey(User, on_delete=models.PROTECT)
 
     def __str__(self):
         return self.descricao
@@ -21,7 +21,7 @@ class Categoria(models.Model):
 class Subcategoria(models.Model):
     descricao = models.CharField(max_length=30)
     categoria = models.ForeignKey(Categoria, on_delete=models.PROTECT)
-    usuario = models.ForeignKey(Usuario, on_delete=models.PROTECT)
+    usuario = models.ForeignKey(User, on_delete=models.PROTECT)
 
     def __str__(self):
         return self.descricao
@@ -54,7 +54,7 @@ class Conta(models.Model):
     limite = models.FloatField(default=0)
     tipo = models.ForeignKey(ContaTipo, on_delete=models.PROTECT)
     tela_inicial = models.BooleanField(default=False,)
-    usuario = models.ForeignKey(Usuario, on_delete=models.PROTECT)
+    usuario = models.ForeignKey(User, on_delete=models.PROTECT)
 
     def __str__(self):
         return self.banco.descricao
@@ -77,7 +77,7 @@ class Cartao(models.Model):
     vencimento = models.IntegerField(blank=False, null=False)
     fechamento = models.IntegerField(blank=False, null=False)
     tela_inicial = models.BooleanField(default=False,)
-    usuario = models.ForeignKey(Usuario, on_delete=models.PROTECT)
+    usuario = models.ForeignKey(User, on_delete=models.PROTECT)
 
     def __str__(self):
         return self.descricao
@@ -95,7 +95,7 @@ class Moeda(models.Model):
 class Parcelamento(models.Model):
     data_lancamento = models.DateField()
     descricao = models.CharField(max_length=50)
-    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.descricao
@@ -124,7 +124,7 @@ class Movimentacao(models.Model):
     tipo = models.CharField(max_length=7, choices=TIPO_CHOICES, default='saida')
     efetivado = models.BooleanField(default=False)
     tela_inicial = models.BooleanField(default=True)
-    usuario = models.ForeignKey(Usuario, on_delete=models.PROTECT)
+    usuario = models.ForeignKey(User, on_delete=models.PROTECT)
     parcelamento = models.ForeignKey(Parcelamento, null=True, blank=True, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -134,4 +134,4 @@ class Movimentacao(models.Model):
 class Antecipation(models.Model):
     day = models.IntegerField()
     active = models.BooleanField(blank=True)
-    user = models.ForeignKey(Usuario, on_delete=models.PROTECT)
+    user = models.ForeignKey(User, on_delete=models.PROTECT)
