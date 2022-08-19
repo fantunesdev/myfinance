@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load  i18n %}
+
+{% block title %}
+    Login
+{% endblock %}
+
+{% block content %}
+    <div class="box box-primary">
+        <div class="header">
+            <h3 class="box-title">Cadastrar Usuário</h3>
+        </div>
+        <form method="post">
+            <div class="box-body">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    {{ login_form.username.errors }}
+                    <label>Usuário: </label>
+                    {{ login_form.username }}
+                </div>
+
+                <div class="form-group">
+                    {{ login_form.passwor1.errors }}
+                    <label>Senha: </label>
+                    {{ login_form.password }}
+                </div>
+            </div>
+            <div class="box-footer">
+                <input type="submit" value="Cadastrar" class="btn btn-primary">
+                <a href="{% url 'login_user' %}" class="btn btn-primary">Voltar</a>
+            </div>
+        </form>
+    </div>
+{% endblock %}

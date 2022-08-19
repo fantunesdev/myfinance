@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 
 from statement.entities.next_month_view import NextMonthView
@@ -6,6 +7,7 @@ from statement.repositories.templatetags_repository import set_templatetags, set
 from statement.services import next_month_view_services
 
 
+@login_required
 def update_next_month_view(request):
     old_next_month_view = next_month_view_services.get_next_month_view_by_user(request.user)
     form_next_month_view = next_month_view_form.NextMonthViewForm(request.POST or None, instance=old_next_month_view)

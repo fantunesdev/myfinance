@@ -1,6 +1,3 @@
-import random
-import string
-
 from datetime import date
 from dateutil.relativedelta import relativedelta
 
@@ -9,18 +6,10 @@ from statement.forms.transaction_forms import *
 from statement.services import account_services, transaction_services, installment_services
 
 
-def validate_form_by_type(type, *args):
-    try:
-        request = args[0]
-        old_transaction = args[1]
-        if type == 'entrada':
-            return TransactionRevenueForm(request.POST or None, instance=old_transaction)
-        else:
-            return TransactionExpenseForm(request.POST or None, instance=old_transaction)
-    except IndexError:
-        if type == 'entrada':
-            return TransactionRevenueForm(*args)
-        return TransactionExpenseForm(*args)
+def validate_form_by_type(type, user):
+    if type == 'entrada':
+        return TransactionRevenueForm()
+    return TransactionExpenseForm()
 
 
 def validate_account_balance(transaction):

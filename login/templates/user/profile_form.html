@@ -11,43 +11,43 @@
         <div class="box-header with-border">
             <h3 class="box-title">Alterar perfil</h3>
         </div>
-        <div class="box-body">
-            <form method="post" enctype="multipart/form-data">
+        <form method="post" enctype="multipart/form-data">
+            <div class="box-body">
                 {% csrf_token %}
                     {% if user.foto %}
                         <img src="{{ user.foto.url }}" alt="Foto de Perfil"><br>
                     {% endif %}
                 <div class="form-group">
-                    {{ form_perfil.foto.errors }}
                     <label>Foto: </label>
-                    {{ form_perfil.foto }}
+                    {{ profile_form.photo }}
+                    {{ profile_form.photo.errors }}
+                </div>
+                <br><br>
+
+                <div class="form-group">
+                    <label>Nome completo: </label>
+                    {{ profile_form.name }}
+                    {{ profile_form.name.errors }}
                 </div>
 
                 <div class="form-group">
-                    {{ form_perfil.nome.errors }}
-                    <label>Senha antiga: </label>
-                    {{ form_perfil.nome }}
-                </div>
-
-                <div class="form-group">
-                    {{ form_perfil.email.errors }}
                     <label>Senha: </label>
-                    {{ form_perfil.email }}
+                    {{ profile_form.email }}
+                    {{ profile_form.email.errors }}
                 </div>
 
                 <div class="form-group">
-                    {{ form_perfil.username.errors }}
-                    <label>Confirmação de Senha: </label>
-                    {{ form_perfil.username }}
+                    <label>Username: </label>
+                    {{ profile_form.username }}
+                    {{ profile_form.username.errors }}
                 </div>
 
-        <div class="box-footer">
-            <div class="form-group">
+            <div class="box-footer">
                 <div class="form-group">
-                    <input type="submit" value="Atualizar" class="btn btn-primary">
-                    <a href="{% url 'logar_usuario' %}" class="btn btn-primary">Voltar</a>
-                </div>
-            </form>
-        </div>
+                    <div class="form-group">
+                        <input type="submit" value="Atualizar" class="btn btn-primary">
+                    </div>
+            </div>
+        </form>
     </div>
 {% endblock content %}

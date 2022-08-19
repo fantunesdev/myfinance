@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
 from statement.repositories.templatetags_repository import *
@@ -5,6 +6,7 @@ from statement.repositories.transaction_repository import calculate_total_revenu
 from statement.services import extract_services, invoice_services
 
 
+@login_required
 def get_invoice_by_account(request, card_id):
     templatetags = set_templatetags()
     templatetags['transactions'] = invoice_services.get_extract_by_account(card_id, request.user)
@@ -12,6 +14,7 @@ def get_invoice_by_account(request, card_id):
     return render(request, 'transaction/get_transactions.html', templatetags)
 
 
+@login_required
 def get_invoice_by_account_and_year(request, card_id, year):
     transactions = extract_services.get_extract_by_account_and_year(card_id, year, request.user)
     revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(transactions)
@@ -23,6 +26,7 @@ def get_invoice_by_account_and_year(request, card_id, year):
     return render(request, 'transaction/get_transactions.html', templatetags)
 
 
+@login_required
 def get_current_month_invoice_by_card(request, card_id):
     current_month = date.today()
     transactions = invoice_services.get_invoice_by_card_year_and_month(card_id,
@@ -39,6 +43,7 @@ def get_current_month_invoice_by_card(request, card_id):
     return render(request, 'transaction/get_transactions.html', templatetags)
 
 
+@login_required
 def get_invoice_by_card_year_and_month(request, card_id, year, month):
     transactions = invoice_services.get_invoice_by_card_year_and_month(card_id, year, month, request.user)
     revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(transactions)

@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 
 from statement.forms.general_forms import ExclusionForm
@@ -9,6 +10,7 @@ from statement.repositories.transaction_repository import calculate_total_revenu
 from statement.services import installment_services, transaction_installment_services, transaction_services
 
 
+@login_required
 def detail_installment(request, id):
     installment = installment_services.get_installment_by_id(id, request.user)
     transactions = transaction_installment_services.get_transaction_by_installment(installment)
@@ -21,6 +23,7 @@ def detail_installment(request, id):
     return render(request, 'installment/detail_installment.html', templatetags)
 
 
+@login_required
 def update_installment(request, id):
     installment = installment_services.get_installment_by_id(id, request.user)
     transactions = transaction_installment_services.get_transaction_by_installment(installment)
@@ -61,6 +64,7 @@ def update_installment(request, id):
     return render(request, 'installment/detail_installment.html', templatetags)
 
 
+@login_required
 def advance_installments(request, id):
     installment = installment_services.get_installment_by_id(id, request.user)
     installments = transaction_installment_services.get_transaction_by_installment(installment)
@@ -83,6 +87,7 @@ def advance_installments(request, id):
     return render(request, 'installment/advance_installments.html', templatetags)
 
 
+@login_required
 def delete_installment(request, id):
     installment = installment_services.get_installment_by_id(id, request.user)
     transactions = transaction_installment_services.get_transaction_by_installment(installment)
@@ -98,6 +103,7 @@ def delete_installment(request, id):
     return render(request, 'installment/detail_installment.html', templatetags)
 
 
+@login_required
 def delete_parcel(request, id):
     transaction = transaction_services.get_transaction_by_id(id, request.user)
     transactions = transaction_installment_services.get_transaction_by_installment(transaction.installment)

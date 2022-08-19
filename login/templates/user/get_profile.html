@@ -1,0 +1,58 @@
+{% extends 'index.html' %}
+{% load static %}
+{% load  i18n %}
+
+{% block title %}
+    Login
+{% endblock title %}
+
+{% block content %}
+    <div class="box box-primary">
+        <div class="box-header">
+            <h3 class="box-title">Perfil</h3>
+        </div>
+        <div class="box-body">
+            <div class="centered-content">
+                {% if user.photo %}
+                <img src="{{ user.photo.url }}" alt="Foto de Perfil" class="profile-photo"><br>
+                {% else %}
+                <img src="{% static 'img/default-profile.png' %}" alt="Foto de Perfil" class="profile-photo"><br>
+                {% endif %}
+            </div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th colspan="2">Id: {{ user.id }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Nome</td>
+                        <td>{{ user.name }}</td>
+                    </tr>
+                    <tr>
+                        <td>Username</td>
+                        <td>{{ user.username }}</td>
+                    </tr>
+                    <tr>
+                        <td>E-mail</td>
+                        <td>{{ user.email }}</td>
+                    </tr>
+                    <tr>
+                        <td>Último login</td>
+                        <td>{{ user.last_login }}</td>
+                    </tr>
+                    <tr>
+                        <td>Desde</td>
+                        <td>{{ user.date_joined }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="box-footer">
+            <a href="{% url 'update_profile' %}"><input type="button" value="Editar Perfil" class="btn"></a>
+            <a href="{% url 'change_password' %}"><input type="button" value="Alterar Senha" class="btn"></a>
+        </div>
+    </div>
+
+{% endblock %}

@@ -13,8 +13,8 @@
                 </li>
                 <li class="profile-button">
                     {% spaceless %}
-                    <a onclick="toggleProfile('profile')"><img id="profile-photo-button" src="{{ user.foto.url }}" alt=""></a>
                     {% if user.foto %}
+                    <a onclick="toggleProfile('profile')"><img id="profile-photo-button" src="{{ user.foto.url }}" alt=""></a>
                     {% else %}
                     <a onclick="toggleProfile('profile')"><img id="profile-photo-button" src="{% static 'img/default-profile.png' %}" alt=""></a>
                     {% endif %}
@@ -40,10 +40,10 @@
                     <p class="italic font-14">Desde {{ request.user.date_joined }}</p>
                 </div>
                 <div class="profile">
-                    <a href="{% url 'editar_perfil' %}" class="btn">Profile</a>
+                    <a href="{% url 'get_profile' %}" class="btn">Profile</a>
                 </div>
                 <div class="logout">
-                    <a href="{% url 'deslogar_usuario' %}" class="btn">Logout</a>
+                    <a href="{% url 'logout_user' %}" class="btn">Logout</a>
                 </div>
             </section>
             <!-- FIM PROFILE -->

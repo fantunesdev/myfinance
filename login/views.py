@@ -1,84 +1,96 @@
+from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.shortcuts import render, redirect
-from .forms import usuario_form, login_form, perfil_form, senha_form
-from .entidades.usuario import Usuario
-from .repository import cadastrar_categorias
-from .services import usuario_service
+
+from .entities.user import User
+from .forms import user_forms
+from .forms.password_form import PasswordChangeCustomForm
+from .repository import *
+from .services import user_services
 
 
 # Create your views here.
 
-
-def cadastrar_usuario(request):
+def create_user(request):
     if request.method == 'POST':
-        form_usuario = usuario_form.UsuarioForm(request.POST, request.FILES)
-        if form_usuario.is_valid():
-            usuario_novo = Usuario(
-                nome=form_usuario.cleaned_data['nome'],
-                email=form_usuario.cleaned_data['email'],
-                username=form_usuario.cleaned_data['username'],
-                password=form_usuario.cleaned_data['password1'],
-                foto=form_usuario.cleaned_data['foto']
+        user_form = user_forms.UserForm(request.POST, request.FILES)
+        if user_form.is_valid():
+            new_user = User(
+                username=user_form.cleaned_data['username'],
+                password=user_form.cleaned_data['password1'],
+                name=user_form.cleaned_data['name'],
+                email=user_form.cleaned_data['email'],
+                is_superuser=False,
+                is_staff=False,
+                is_active=True,
+                date_joined=None,
+                photo=user_form.cleaned_data['photo']
             )
-            usuario_service.cadastrar_usuario(usuario_novo)
-            usuario_db = usuario_service.listar_usuario(usuario_novo)
-            cadastrar_categorias(usuario_db)
-            return redirect('logar_usuario')
+            db_user = user_services.create_user(new_user)
+            create_categories(db_user)
+            create_next_year_view(db_user)
+            return redirect('login_user')
+        else:
+            print(user_form.errors)
     else:
-        form_usuario = usuario_form.UsuarioForm()
-    return render(request, 'login/cadastro.html', {'form_usuario': form_usuario})
+        user_form = user_forms.UserForm()
+    return render(request, 'user/user_form.html', {'user_form': user_form})
 
 
-@login_required
-def alterar_senha(request):
+def login_user(request):
     if request.method == 'POST':
-        form_senha = senha_form.PasswordChangeCustomForm(request.user, request.POST)
-        if form_senha.is_valid():
-            user = form_senha.save()
-            update_session_auth_hash(request, user)
-            return redirect('listar_mes_atual')
-    else:
-        form_senha = PasswordChangeForm(request.user)
-    return render(request, 'login/alterar_senha.html', {'form_senha': form_senha})
-
-
-@login_required
-def editar_perfil(request):
-    if request.method == 'POST':
-        form_perfil = perfil_form.PerfilForm(request.POST, request.FILES, instance=request.user)
-        if form_perfil.is_valid():
-            form_perfil.foto = form_perfil.cleaned_data['foto']
-            form_perfil.save()
-            return redirect('listar_mes_atual')
-    else:
-        form_perfil = perfil_form.PerfilForm(instance=request.user)
-    return render(request, 'login/form_perfil.html', {'form_perfil': form_perfil})
-
-
-def logar_usuario(request):
-    if request.method == 'POST':
-        form_login = login_form.LoginForm(data=request.POST)
-        if form_login.is_valid():
-            username = form_login.cleaned_data["username"]
-            password = form_login.cleaned_data["password"]
-            usuario = authenticate(request, username=username, password=password)
-            if usuario is not None:
-                login(request, usuario)
-                return redirect('listar_mes_atual')
+        login_form = user_forms.LoginForm(data=request.POST)
+        if login_form.is_valid():
+            username = login_form.cleaned_data['username']
+            password = login_form.cleaned_data['password']
+            user = authenticate(request, username=username, password=password)
+            if user:
+                login(request, user)
+                return redirect('get_current_month_transactions')
             else:
-                form_login = login_form.LoginForm()
+                messages.error(request, 'As credenciais estão incorretas')
     else:
-        form_login = login_form.LoginForm()
-    return render(request, 'login/login.html', {'form_login': form_login})
-
-
-def deslogar_usuario(request):
-    logout(request)
-    return redirect('logar_usuario')
+        login_form = user_forms.LoginForm(data=request.POST)
+    return render(request, 'user/login.html', {'login_form': login_form})
 
 
 @login_required
-def perfil(request):
-    return render(request, 'login/perfil.html')
+def change_password(request):
+    if request.method == 'POST':
+        password_form = PasswordChangeCustomForm(request.user, request.POST)
+        if password_form.is_valid():
+            user = password_form.save()
+            update_session_auth_hash(request, user)
+            return redirect('get_profile')
+    else:
+        password_form = PasswordChangeForm(request.user)
+    return render(request, 'user/password_form.html', {'form_senha': password_form})
+
+
+@login_required
+def update_profile(request):
+    if request.method == 'POST':
+        profile_form = user_forms.ProfileForm(request.POST, request.FILES, instance=request.user)
+        if profile_form.is_valid():
+            profile_form.photo = profile_form.cleaned_data['photo']
+            print(profile_form.photo)
+            profile_form.save()
+            return redirect('get_profile')
+        else:
+            print(profile_form.errors)
+    else:
+        profile_form = user_forms.ProfileForm(instance=request.user)
+    return render(request, 'user/profile_form.html', {'profile_form': profile_form})
+
+
+@login_required
+def logout_user(request):
+    logout(request)
+    return redirect('login_user')
+
+
+@login_required
+def get_profile(request):
+    return render(request, 'user/get_profile.html')

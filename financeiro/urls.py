@@ -17,7 +17,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 
-from balanco.views.movimentacao_view import  configurar
+from balanco.views.movimentacao_view import configurar
 from financeiro import settings
 from login.views import *
 from statement.views.transaction_views import get_current_month_transactions
@@ -43,8 +43,8 @@ urlpatterns = [
     path('relatorio_financeiro/', include('statement.urls.statement_urls')),
 
     path('usuarios/', include('login.urls')),
-    path('login/', logar_usuario, name='logar_usuario'),
-    path('logout/', deslogar_usuario, name='deslogar_usuario'),
+    path('login/', login_user, name='login_user'),
+    path('logout/', logout_user, name='logout_user'),
 ]
 
 if settings.DEBUG:

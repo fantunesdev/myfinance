@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load  i18n %}
+
+{% block title %}
+    Cadastro de Usuário
+{% endblock %}
+
+{% block content %}
+    <div class="box box-primary">
+        <div class="header">
+            <h3 class="box-title">Cadastrar Usuário</h3>
+        </div>
+        <form method="post">
+            <div class="box-body">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    {{ user_form.photo.errors }}
+                    <label>Foto: </label><br>
+                    {{ user_form.photo }}
+                </div><br>
+
+                <div class="form-group">
+                    {{ user_form.name.errors }}
+                    <label>Nome completo: </label>
+                    {{ user_form.name }}
+                </div>
+
+                <div class="form-group">
+                    {{ user_form.email.errors }}
+                    <label>E-mail: </label>
+                    {{ user_form.email }}
+                </div>
+
+                <div class="form-group">
+                    {{ user_form.username.errors }}
+                    <label>Usuário: </label>
+                    {{ user_form.username }}
+                </div>
+
+                <div class="form-group">
+                    {{ user_form.password1.errors }}
+                    <label>Senha: </label>
+                    {{ user_form.password1 }}
+                </div>
+
+                <div class="form-group">
+                    {{ user_form.password2.errors }}
+                    <label>Confirmação de Senha: </label>
+                    {{ user_form.password2 }}
+                </div>
+            </div>
+            <div class="box-footer">
+                <input type="submit" value="Cadastrar" class="btn btn-primary">
+                <a href="{% url 'login_user' %}" class="btn btn-primary">Voltar</a>
+            </div>
+        
+        </form>
+    </div>
+{% endblock %}

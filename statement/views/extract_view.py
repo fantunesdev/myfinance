@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
 from statement.repositories.templatetags_repository import *
@@ -5,6 +6,7 @@ from statement.repositories.transaction_repository import calculate_total_revenu
 from statement.services import extract_services
 
 
+@login_required
 def get_extract_by_account(request, account_id):
     templatetags = set_templatetags()
     templatetags['transactions'] = extract_services.get_extract_by_account(account_id, request.user)
@@ -12,6 +14,7 @@ def get_extract_by_account(request, account_id):
     return render(request, 'transaction/get_transactions.html', templatetags)
 
 
+@login_required
 def get_extract_by_account_and_year(request, account_id, year):
     transactions = extract_services.get_extract_by_account_and_year(account_id, year, request.user)
     revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(transactions)
@@ -23,6 +26,7 @@ def get_extract_by_account_and_year(request, account_id, year):
     return render(request, 'transaction/get_transactions.html', templatetags)
 
 
+@login_required
 def get_current_month_extract_by_account(request, account_id):
     current_month = date.today()
     transactions = extract_services.get_extract_by_account_year_and_month(account_id,
@@ -39,6 +43,7 @@ def get_current_month_extract_by_account(request, account_id):
     return render(request, 'transaction/get_transactions.html', templatetags)
 
 
+@login_required
 def get_extract_by_account_year_and_month(request, account_id, year, month):
     transactions = extract_services.get_extract_by_account_year_and_month(account_id, year, month, request.user)
     revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(transactions)

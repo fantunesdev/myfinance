@@ -12,9 +12,10 @@ from statement.repositories.transaction_repository import *
 from statement.services import transaction_installment_services
 
 
+@login_required
 def create_transaction(request, type):
     if request.method == 'POST':
-        transaction_form = validate_form_by_type(type, request.POST)
+        transaction_form = validate_form_by_type(type, request.user)
         if transaction_form.is_valid():
             transaction = Transaction(
                 release_date=transaction_form.cleaned_data['release_date'],
@@ -47,7 +48,7 @@ def create_transaction(request, type):
             print(transaction_form.errors)
             return transaction_form.errors
     else:
-        transaction_form = validate_form_by_type(type)
+        transaction_form = validate_form_by_type(type, request.user)
     templatetags = set_templatetags()
     set_menu_templatetags(request.user, templatetags)
     templatetags['transaction_form'] = transaction_form
@@ -55,6 +56,7 @@ def create_transaction(request, type):
     return render(request, 'transaction/transaction_form.html', templatetags)
 
 
+@login_required
 def get_transactions(request):
     templatetags = set_templatetags()
     set_menu_templatetags(request.user, templatetags)
@@ -62,6 +64,7 @@ def get_transactions(request):
     return render(request, 'transaction/get_transactions.html', templatetags)
 
 
+@login_required
 def get_transactions_by_year(request, year):
     transactions = transaction_services.get_transactions_by_year(year, request.user)
     revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(transactions)
@@ -88,6 +91,7 @@ def get_current_month_transactions(request):
     return render(request, 'transaction/get_transactions.html', templatetags)
 
 
+@login_required
 def get_transactions_by_year_and_month(request, year, month):
     transactions = transaction_services.get_transactions_by_year_and_month(year, month, request.user)
     revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(transactions)
@@ -99,6 +103,7 @@ def get_transactions_by_year_and_month(request, year, month):
     return render(request, 'transaction/get_transactions.html', templatetags)
 
 
+@login_required
 def detail_transaction(request, id):
     transaction = transaction_services.get_transaction_by_id(id, request.user)
     templatetags = set_templatetags()
@@ -110,6 +115,7 @@ def detail_transaction(request, id):
     return render(request, 'transaction/detail_transaction.html', templatetags)
 
 
+@login_required
 def update_transaction(request, id):
     old_transaction = transaction_services.get_transaction_by_id(id, request.user)
     transaction_form = UpdateTransactionForm(request.POST or None, instance=old_transaction)
@@ -153,6 +159,7 @@ def update_transaction(request, id):
     return render(request, 'transaction/transaction_form.html', templatetags)
 
 
+@login_required
 def delete_transaction(request, id):
     transaction = transaction_services.get_transaction_by_id(id, request.user)
     exclusion_form = ExclusionForm()

@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render, redirect
 
@@ -10,6 +11,7 @@ from statement.services import next_month_view_services, bank_services, account_
     category_services, subcategory_services, flag_services, installment_services, transaction_services
 
 
+@login_required
 def setup_settings(request):
     templatetags = set_templatetags()
     set_menu_templatetags(request.user, templatetags)
@@ -23,6 +25,7 @@ def setup_settings(request):
     return render(request, 'general/setup_settings.html', templatetags)
 
 
+@login_required
 def importar_banco(request):
     user = request.user
     for i in Bandeira.objects.all():

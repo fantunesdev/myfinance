@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 
 from statement.entities.subcategory import Subcategory
@@ -7,6 +8,7 @@ from statement.repositories.templatetags_repository import set_templatetags
 from statement.services import subcategory_services, account_services, card_services
 
 
+@login_required
 def create_subcategory(request):
     if request.method == 'POST':
         subcategory_form = SubcategoryForm(request.POST)
@@ -28,6 +30,7 @@ def create_subcategory(request):
     return render(request, 'subcategory/subcategory_form.html', templatetags)
 
 
+@login_required
 def update_subcategory(request, id):
     old_subcategory = subcategory_services.get_subcategory_by_id(id, request.user)
     subcategory_form = SubcategoryForm(request.POST or None, instance=old_subcategory)
@@ -47,6 +50,7 @@ def update_subcategory(request, id):
     return render(request, 'subcategory/subcategory_form.html', templatetags)
 
 
+@login_required
 def delete_subcategory(request, id):
     subcategory = subcategory_services.get_subcategory_by_id(id, request.user)
     exclusion_form = ExclusionForm()

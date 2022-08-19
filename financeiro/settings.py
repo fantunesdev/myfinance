@@ -111,11 +111,11 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-AUTH_USER_MODEL = 'login.Usuario'
+AUTH_USER_MODEL = 'login.User'
 
 LOGIN_URL = '/login/'
 
-LOGIN_REDIRECT_URL = '/usuarios/logado/'
+LOGIN_REDIRECT_URL = ''
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/

@@ -131,10 +131,21 @@ header > ul > li > a:hover {
     position: relative;
 }
 
+.profile-photo {
+    max-height: 200px;
+    border-radius: 100px;
+    border: 5px solid #505050;
+}
+
 .search-button {
     margin-top: 30px;
     color: #cccccc;
     font-size: 25px;
+}
+
+.centered-content {
+    justify-content: center;
+    text-align: center;
 }
 
 #search-form {

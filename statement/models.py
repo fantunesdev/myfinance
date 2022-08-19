@@ -1,6 +1,6 @@
 from django.db import models
 
-from login.models import Usuario
+from login.models import Usuario, User
 
 
 class Category(models.Model):
@@ -13,7 +13,7 @@ class Category(models.Model):
     color = models.CharField(max_length=7, null=True, blank=True)
     icon = models.CharField(max_length=100, null=True, blank=True)
     ignore = models.BooleanField(blank=True)
-    user = models.ForeignKey(Usuario, on_delete=models.PROTECT)
+    user = models.ForeignKey(User, on_delete=models.PROTECT)
 
     def __str__(self):
         return self.description
@@ -22,7 +22,7 @@ class Category(models.Model):
 class Subcategory(models.Model):
     description = models.CharField(max_length=30)
     category = models.ForeignKey(Category, on_delete=models.PROTECT)
-    user = models.ForeignKey(Usuario, on_delete=models.PROTECT)
+    user = models.ForeignKey(User, on_delete=models.PROTECT)
 
     def __str__(self):
         return self.description
@@ -55,7 +55,7 @@ class Account(models.Model):
     limits = models.FloatField(default=0)
     type = models.ForeignKey(AccountType, on_delete=models.PROTECT)
     home_screen = models.BooleanField(default=False,)
-    user = models.ForeignKey(Usuario, on_delete=models.PROTECT)
+    user = models.ForeignKey(User, on_delete=models.PROTECT)
 
     def __str__(self):
         return self.bank.description
@@ -78,7 +78,7 @@ class Card(models.Model):
     expiration_day = models.IntegerField(blank=False, null=False)
     closing_day = models.IntegerField(blank=False, null=False)
     home_screen = models.BooleanField(default=False,)
-    user = models.ForeignKey(Usuario, on_delete=models.PROTECT)
+    user = models.ForeignKey(User, on_delete=models.PROTECT)
 
     def __str__(self):
         return self.description
@@ -96,7 +96,7 @@ class Currency(models.Model):
 class Installment(models.Model):
     release_date = models.DateField()
     description = models.CharField(max_length=50)
-    user = models.ForeignKey(Usuario, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.description
@@ -125,7 +125,7 @@ class Transaction(models.Model):
     type = models.CharField(max_length=7, choices=TYPE_CHOICES, default='saida')
     effected = models.BooleanField(default=False)
     home_screen = models.BooleanField(default=True)
-    user = models.ForeignKey(Usuario, on_delete=models.PROTECT)
+    user = models.ForeignKey(User, on_delete=models.PROTECT)
     installment = models.ForeignKey(Installment, null=True, blank=True, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -135,4 +135,4 @@ class Transaction(models.Model):
 class NextMonthView(models.Model):
     day = models.IntegerField()
     active = models.BooleanField(blank=True)
-    user = models.ForeignKey(Usuario, on_delete=models.PROTECT)
+    user = models.ForeignKey(User, on_delete=models.PROTECT)
