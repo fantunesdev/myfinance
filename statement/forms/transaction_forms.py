@@ -1,7 +1,7 @@
 from django import forms
 from django.utils import timezone
 
-from statement.models import Transaction, Category
+from statement.models import Transaction, Category, Subcategory
 
 attrs = {
     'class': 'form-control'
@@ -65,13 +65,17 @@ class TransactionForm(forms.ModelForm):
 
 
 class TransactionExpenseForm(TransactionForm):
-    category = forms.ModelChoiceField(queryset=Category.objects.filter(type='saida'),
-                                      widget=forms.Select(attrs={'class': 'form-control'}))
+    def __init__(self, user, *args, **kwargs):
+        super(TransactionExpenseForm, self).__init__(*args, **kwargs)
+        self.fields['category'].queryset = Category.objects.filter(user=user, type='saida')
+        self.fields['subcategory'].queryset = Subcategory.objects.filter(user=user)
 
 
 class TransactionRevenueForm(TransactionForm):
-    category = forms.ModelChoiceField(queryset=Category.objects.filter(type='entrada'),
-                                      widget=forms.Select(attrs={'class': 'form-control'}))
+    def __init__(self, user, *args, **kwargs):
+        super(TransactionRevenueForm, self).__init__(*args, **kwargs)
+        self.fields['category'].queryset = Category.objects.filter(user=user, type='entrada')
+        self.fields['subcategory'].queryset = Subcategory.objects.filter(user=user)
 
 
 class UpdateTransactionForm(TransactionForm):

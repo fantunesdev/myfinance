@@ -8,8 +8,8 @@ from statement.services import account_services, transaction_services, installme
 
 def validate_form_by_type(type, user):
     if type == 'entrada':
-        return TransactionRevenueForm()
-    return TransactionExpenseForm()
+        return TransactionRevenueForm(user)
+    return TransactionExpenseForm(user)
 
 
 def validate_account_balance(transaction):
