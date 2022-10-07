@@ -10,9 +10,12 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
-from pathlib import Path
-from my_conf import *
 import os
+
+from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,12 +25,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = SECRET_DJANGO
+SECRET_KEY = os.environ['SECRET_DJANGO']
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = HOSTS
+ALLOWED_HOSTS = eval(os.environ['HOSTS'])
 
 
 # Application definition
@@ -83,13 +86,14 @@ WSGI_APPLICATION = 'financeiro.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': BANCO_DE_DADOS,
-        'USER': USUARIO,
-        'PASSWORD': SENHA,
-        'HOST': SERVIDOR,
-        'PORT': PORTA
+        'NAME': os.environ['DATABASE'],
+        'USER': os.environ['MUSER'],
+        'PASSWORD': os.environ['MPASS'],
+        'HOST': os.environ['HOST'],
+        'PORT': os.environ['PORT']
     }
 }
+# print(os.environ['SECRET_DJANGO'])
 
 
 # Password validation
