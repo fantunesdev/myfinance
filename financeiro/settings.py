@@ -12,10 +12,15 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 
 import os
 
-from pathlib import Path
-from dotenv import load_dotenv
+import dotenv
 
-load_dotenv()
+from pathlib import Path
+
+from statement.repositories import vault_repository
+
+dotenv.load_dotenv()
+vault_repository.export_mysql_credentials()
+vault_repository.export_postgre_credentials()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -86,14 +91,13 @@ WSGI_APPLICATION = 'financeiro.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.environ['DATABASE'],
-        'USER': os.environ['MUSER'],
-        'PASSWORD': os.environ['MPASS'],
-        'HOST': os.environ['HOST'],
-        'PORT': os.environ['PORT']
+        'NAME': os.getenv('DATABASE'),
+        'USER': os.getenv('MYSQL_USER'),
+        'PASSWORD': os.getenv('MYSQL_PASSWORD'),
+        'HOST': os.getenv('HOST'),
+        'PORT': os.getenv('MYSQL_PORT')
     }
 }
-# print(os.environ['SECRET_DJANGO'])
 
 
 # Password validation
