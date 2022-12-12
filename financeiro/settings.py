@@ -96,6 +96,14 @@ DATABASES = {
         'PASSWORD': os.getenv('MYSQL_PASSWORD'),
         'HOST': os.getenv('HOST'),
         'PORT': os.getenv('MYSQL_PORT')
+    },
+    'postgresql': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': os.getenv('DATABASE'),
+        'USER': os.getenv('POSTGRESQL_USER'),
+        'PASSWORD': os.getenv('POSTGRESQL_PASSWORD'),
+        'HOST': os.getenv('HOST'),
+        'PORT': os.getenv('POSTGRESQL_PORT')
     }
 }
 
