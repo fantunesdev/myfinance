@@ -12,6 +12,4 @@ urlpatterns = [
     path('parcelamento/', include('statement.urls.installment_urls')),
     path('subcategorias/', include('statement.urls.subcategory_urls')),
     path('visualizacao_proximo_mes/', include('statement.urls.next_month_view_url')),
-
-    path('importarrr/', importar_banco, name='importar_banco'),
 ]

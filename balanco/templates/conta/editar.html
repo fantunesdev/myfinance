@@ -1,7 +1,0 @@
-{% extends "conta/form_conta.html" %}
-
-    {% block title %}Editar Conta{% endblock title %}
-
-{% block excluir %}
-    <a href="{% url 'remover_conta' conta_antiga.id %}"><input type="button" value="Excluir" class="btn btn-danger"></a>
-{% endblock excluir %}
