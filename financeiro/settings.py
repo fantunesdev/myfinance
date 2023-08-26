@@ -19,8 +19,8 @@ from pathlib import Path
 from statement.repositories import vault_repository
 
 dotenv.load_dotenv()
-vault_repository.export_mysql_credentials()
-vault_repository.export_postgre_credentials()
+# vault_repository.export_mysql_credentials()
+# vault_repository.export_postgre_credentials()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
