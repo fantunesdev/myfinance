@@ -15,7 +15,7 @@ from statement.services import transaction_installment_services
 @login_required
 def create_transaction(request, type):
     if request.method == 'POST':
-        transaction_form = validate_form_by_type(type, request.user)
+        transaction_form = TransactionForm(request.POST)
         if transaction_form.is_valid():
             transaction = Transaction(
                 release_date=transaction_form.cleaned_data['release_date'],
@@ -49,6 +49,7 @@ def create_transaction(request, type):
             return transaction_form.errors
     else:
         transaction_form = validate_form_by_type(type, request.user)
+        print(request)
     templatetags = set_templatetags()
     set_menu_templatetags(request.user, templatetags)
     templatetags['transaction_form'] = transaction_form

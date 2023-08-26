@@ -6,10 +6,10 @@ from statement.forms.transaction_forms import *
 from statement.services import account_services, transaction_services, installment_services
 
 
-def validate_form_by_type(type, user):
+def validate_form_by_type(type, *args):
     if type == 'entrada':
-        return TransactionRevenueForm(user)
-    return TransactionExpenseForm(user)
+        return TransactionRevenueForm(*args)
+    return TransactionExpenseForm(*args)
 
 
 def validate_account_balance(transaction):
