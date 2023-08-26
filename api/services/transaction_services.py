@@ -1,6 +1,5 @@
 from django.http import Http404
 
-from balanco.services import movimentacao_service
 from statement.services import transaction_services
 
 

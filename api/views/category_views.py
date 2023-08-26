@@ -4,7 +4,6 @@ from rest_framework.views import APIView
 
 from api.serializers import category_serializer
 from api.services import category_services
-from balanco.services import categoria_service
 
 
 class CategoryList(APIView):

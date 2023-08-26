@@ -17,7 +17,6 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 
-from balanco.views.movimentacao_view import configurar
 from financeiro import settings
 from login.views import *
 from statement.views.transaction_views import get_current_month_transactions
@@ -29,16 +28,16 @@ urlpatterns = [
 
     path('api/', include('api.urls')),
 
-    path('next_month_view/', include('balanco.urls.antecipation_url')),
-    path('banco/', include('balanco.urls.banco_url')),
-    path('bandeira/', include('balanco.urls.bandeira_url')),
-    path('balanco/configurar/', configurar, name='configurar'),
-    path('cartao/', include('balanco.urls.cartao_url')),
-    path('categoria/', include('balanco.urls.categoria_url')),
-    path('conta/', include('balanco.urls.conta_url')),
-    path('movimentacao/', include('balanco.urls.movimentacao_url')),
-    path('parcelamento/', include('balanco.urls.parcelamento_url')),
-    path('subcategoria/', include('balanco.urls.subcategoria_url')),
+    # path('next_month_view/', include('balanco.urls.antecipation_url')),
+    # path('banco/', include('balanco.urls.banco_url')),
+    # path('bandeira/', include('balanco.urls.bandeira_url')),
+    # path('balanco/configurar/', configurar, name='configurar'),
+    # path('cartao/', include('balanco.urls.cartao_url')),
+    # path('categoria/', include('balanco.urls.categoria_url')),
+    # path('conta/', include('balanco.urls.conta_url')),
+    # path('movimentacao/', include('balanco.urls.movimentacao_url')),
+    # path('parcelamento/', include('balanco.urls.parcelamento_url')),
+    # path('subcategoria/', include('balanco.urls.subcategoria_url')),
 
     path('relatorio_financeiro/', include('statement.urls.statement_urls')),
 
