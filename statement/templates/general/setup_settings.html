@@ -227,7 +227,7 @@
                 </table>
             </div>
             <div class="box-footer">
-                <span>Total de ítens listados: {{ subcategorias.count }}</span>
+                <span>Total de ítens listados: {{ subcategories.count }}</span>
             </div>
         </div>
         <div class="box box-primary">
@@ -247,7 +247,7 @@
                     </thead>
                     <tbody>
                         {% for category in categories %}
-                            {% if i.type == 'saida' %}
+                            {% if category.type == 'saida' %}
                                 <tr>
                                     <td><a href="#">{{ category.description }}</a></td>
                                     <td><a href="#"><i class="fa-solid fa-circle" style="color: {{ category.color }};"></i></a></td>
@@ -260,7 +260,7 @@
                 </table>
             </div>
             <div class="box-footer">
-                <span>Total de ítens listados: {{ categorias.count }}</span>
+                <span>Total de ítens listados: {{ categories.count }}</span>
             </div>
         </div>
         <div class="box box-primary">
@@ -291,7 +291,7 @@
                 </table>
             </div>
             <div class="box-footer">
-                <span>Total de ítens listados: {{ subcategorias.count }}</span>
+                <span>Total de ítens listados: {{ subcategories.count }}</span>
             </div>
         </div>
         <div class="box box-primary">
@@ -326,7 +326,7 @@
                 </table>
             </div>
             <div class="box-footer">
-                <span>Total de ítens listados: {{ bandeiras.count }}</span>
+                <span>Total de ítens listados: {{ flags.count }}</span>
             </div>
         </div>
     {% endblock %}
