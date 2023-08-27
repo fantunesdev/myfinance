@@ -50,12 +50,18 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for i in banks %}
+                        {% for bank in banks %}
                         <tr>
-                            <td><a href="#">{{ i.description }}</a></td>
-                            <td>{{ i.code }}</td>
-                            <td><img src="{{ i.icon.url }}" alt="Ícone {{ i.descricao }}" style="max-height: 25px;"></td>
-                            <td><a href="{% url 'update_bank' i.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
+                            <td><a href="#">{{ bank.description }}</a></td>
+                            <td>{{ bank.code }}</td>
+                            <td>
+                                {% if bank.icon %}
+                                <img src="{{ bank.icon.url }}" alt="Ícone do {{ bank.description }}" style="max-height: 25px;">
+                                {% else %}
+                                <img src="" alt="Ícone do {{ bank.description }}" style="max-height: 25px;">
+                                {% endif %}
+                            </td>
+                            <td><a href="{% url 'update_bank' bank.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -84,15 +90,21 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for i in accounts %}
+                        {% for account in accounts %}
                         <tr>
-                            <td><img src="{{ i.bank.icon.url }}" alt="Logotipo do banco" style="max-height: 25px;"></td>
-                            <td>{{ i.bank }}</td>
-                            <td>{{ i.number }}</td>
-                            <td>{{ i.balance | to_reais }}</td>
-                            <td>{{ i.limits | to_reais }}</td>
-                            <td>{{ i.home_screen }}</td>
-                            <td><a href="{% url 'update_account' i.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
+                            <td>
+                                {% if account.bank.icon %}
+                                <img src="{{ account.bank.icon.url }}" alt="Logotipo do banco {{account.bank.description}}" style="max-height: 25px;">
+                                {% else %}
+                                <img src="" alt="Logotipo do banco {{account.bank.description}}" style="max-height: 25px;">
+                                {% endif %}
+                            </td>
+                            <td>{{ account.bank }}</td>
+                            <td>{{ account.number }}</td>
+                            <td>{{ account.balance | to_reais }}</td>
+                            <td>{{ account.limits | to_reais }}</td>
+                            <td>{{ account.home_screen }}</td>
+                            <td><a href="{% url 'update_account' account.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -122,16 +134,28 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for i in cards %}
+                        {% for card in cards %}
                         <tr>
-                            <td><img src="{{ i.icon.url }}" alt="Logotipo do Cartão" style="max-height: 25px;"></td>
-                            <td>{{ i.limits | to_reais }}</td>
-                            <td><img src="{{ i.flag.icon.url }}" alt="Logotipo do Cartão" style="max-height: 25px;"></td>
-                            <td>{{ i.home_screen }}</td>
-                            <td>{{ i.account }}</td>
-                            <td>{{ i.closing_day}}</td>
-                            <td>{{ i.expiration_day}}</td>
-                            <td><a href="{% url 'update_card' i.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
+                            <td>
+                                {% if card.icon %}
+                                <img src="{{ card.icon.url }}" alt="Logotipo do Cartão {{ card.description }}" style="max-height: 25px;">
+                                {% else %}
+                                <img src="" alt="Logotipo do Cartão {{ card.description }}" style="max-height: 25px;">
+                                {% endif %}
+                            </td>
+                            <td>{{ card.limits | to_reais }}</td>
+                            <td>
+                                {% if card.icon %}
+                                <img src="{{ card.flag.icon.url }}" alt="Logotipo do Cartão {{ card.description }}" style="max-height: 25px;">
+                                {% else %}
+                                <img src="" alt="Logotipo do Cartão {{ card.description }}" style="max-height: 25px;">
+                                {% endif %}
+                            </td>
+                            <td>{{ card.home_screen }}</td>
+                            <td>{{ card.account }}</td>
+                            <td>{{ card.closing_day}}</td>
+                            <td>{{ card.expiration_day}}</td>
+                            <td><a href="{% url 'update_card' card.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -157,13 +181,13 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for i in categories %}
-                            {% if i.type == 'entrada' %}
+                        {% for category in categories %}
+                            {% if category.type == 'entrada' %}
                                 <tr>
-                                    <td><a href="#">{{ i.description }}</a></td>
-                                    <td><a href="#"><i class="fa-solid fa-circle" style="color: {{ i.color }};"></i></a></td>
-                                    <td><a href="#"><i class="{{ i.icon }}"></i></a></td>
-                                    <td><a href="{% url 'update_category' i.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
+                                    <td><a href="#">{{ category.description }}</a></td>
+                                    <td><a href="#"><i class="fa-solid fa-circle" style="color: {{ category.color }};"></i></a></td>
+                                    <td><a href="#"><i class="{{ category.icon }}"></i></a></td>
+                                    <td><a href="{% url 'update_category' category.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
                                 </tr>
                             {% endif %}
                         {% endfor %}
@@ -190,12 +214,12 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for i in subcategories %}
-                        {% if i.category.type == 'entrada' %}
+                        {% for subcategory in subcategories %}
+                        {% if subcategory.category.type == 'entrada' %}
                         <tr>
-                            <td>{{ i.description }}</td>
-                            <td>{{ i.category }}</td>
-                            <td><a href="{% url 'update_subcategory' i.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
+                            <td>{{ subcategory.description }}</td>
+                            <td>{{ subcategory.category }}</td>
+                            <td><a href="{% url 'update_subcategory' subcategory.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
                         </tr>
                         {% endif %}
                         {% endfor %}
@@ -222,13 +246,13 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for i in categories %}
+                        {% for category in categories %}
                             {% if i.type == 'saida' %}
                                 <tr>
-                                    <td><a href="#">{{ i.description }}</a></td>
-                                    <td><a href="#"><i class="fa-solid fa-circle" style="color: {{ i.color }};"></i></a></td>
-                                    <td><a href="#"><i class="{{ i.icon }}"></i></a></td>
-                                    <td><a href="{% url 'update_category' i.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
+                                    <td><a href="#">{{ category.description }}</a></td>
+                                    <td><a href="#"><i class="fa-solid fa-circle" style="color: {{ category.color }};"></i></a></td>
+                                    <td><a href="#"><i class="{{ category.icon }}"></i></a></td>
+                                    <td><a href="{% url 'update_category' category.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
                                 </tr>
                             {% endif %}
                         {% endfor %}
@@ -254,12 +278,12 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for i in subcategories %}
-                        {% if i.category.type == 'saida' %}
+                        {% for subcategory in subcategories %}
+                        {% if subcategory.category.type == 'saida' %}
                         <tr>
-                            <td>{{ i.description }}</td>
-                            <td>{{ i.category }}</td>
-                            <td><a href="{% url 'update_subcategory' i.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
+                            <td>{{ subcategory.description }}</td>
+                            <td>{{ subcategory.category }}</td>
+                            <td><a href="{% url 'update_subcategory' subcategory.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
                         </tr>
                         {% endif %}
                         {% endfor %}
@@ -285,11 +309,17 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for i in flags %}
+                        {% for flag in flags %}
                         <tr>
-                            <td><a href="#">{{ i.description }}</a></td>
-                            <td><img src="{{ i.icon.url }}" alt="Ícone {{ i.description }}" style="max-height: 35px;"></td>
-                            <td><a href="{% url 'update_flag' i.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
+                            <td><a href="#">{{ flag.description }}</a></td>
+                            <td>
+                                {% if flag.icon %}
+                                <img src="{{ flag.icon.url }}" alt="Ícone {{ flag.description }}" style="max-height: 35px;">
+                                {% else %}
+                                <img src="" alt="Ícone {{ flag.description }}" style="max-height: 35px;">
+                                {% endif %}
+                            </td>
+                            <td><a href="{% url 'update_flag' flag.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
                         </tr>
                         {% endfor %}
                     </tbody>

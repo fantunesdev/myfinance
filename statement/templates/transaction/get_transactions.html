@@ -47,27 +47,39 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for i in transactions %}
-                        <tr style="border-left: solid 3px {{ i.category.color }}">
-                                <td>{{ i.release_date | date:"d/m"}}</td>
-                            {% if i.account %}
-                            <td><img src="{{ i.account.bank.icon.url }}" alt="Logotipo do banco" style="max-height: 25px;"></td>
-                            {% else %}
-                            <td><img src="{{ i.card.icon.url }}" alt="Logotipo do cartão" style="max-height: 25px;"></td>
-                            {% endif %}
-                            <td style="text-align: left; max-width: 150px; min-width:115px"><i class="{{ i.category.icon }}" style="padding:10px;"></i> {{ i.category }}</td>
-                            <td style="text-align: left;">{{ i.subcategory }}</td>
-                            <td style="text-align: left;">{{ i | paid_installments }}</td>
-                            <td style="text-align: right; max-width: 50px; min-width:30px;">{{ i.value | to_currency:i.currency.symbol }}</td>
+                        {% for transaction in transactions %}
+                        <tr style="border-left: solid 3px {{ transaction.category.color }}">
+                                <td>{{ transaction.release_date | date:"d/m"}}</td>
+                            {% if transaction.account %}
                             <td>
-                                {% if i.installment %}
-                                <a href="{% url 'detail_installment' i.installment.id %}"><i class="fa-solid fa-file-lines action-icon"></i></a>
-                                <a href="{% url 'update_installment' i.installment.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
-                                <a href="{% url 'delete_installment' i.installment.id %}"><i class="fa-solid fa-trash action-icon"></i></a>
+                                {% if transaction.account.bank.icon %}
+                                <img src="{{ transaction.account.bank.icon.url }}" alt="Logotipo do banco {{ bank.description }}" style="max-height: 25px;">
                                 {% else %}
-                                <a href="{% url 'detail_transaction' i.id %}"><i class="fa-solid fa-file-lines action-icon"></i></a>
-                                <a href="{% url 'update_transaction' i.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
-                                <a href="{% url 'delete_transaction' i.id %}"><i class="fa-solid fa-trash action-icon"></i></a>
+                                <img src="" alt="Logotipo do banco {{ bank.description }}" style="max-height: 25px;">
+                                {% endif %}
+                            </td>
+                            {% else %}
+                            <td>
+                                {% if transaction.card.icon %}
+                                <img src="{{ transaction.card.icon.url }}" alt="Logotipo do cartão {{ transaction.card.description }}" style="max-height: 25px;">
+                                {% else %}
+                                <img src="" alt="Logotipo do cartão {{ transaction.card.description }}" style="max-height: 25px;">
+                                {% endif %}
+                            </td>
+                            {% endif %}
+                            <td style="text-align: left; max-width: 150px; min-width:115px"><i class="{{ transaction.category.icon }}" style="padding:10px;"></i> {{ transaction.category }}</td>
+                            <td style="text-align: left;">{{ transaction.subcategory }}</td>
+                            <td style="text-align: left;">{{ transaction | paid_installments }}</td>
+                            <td style="text-align: right; max-width: 50px; min-width:30px;">{{ transaction.value | to_currency:transaction.currency.symbol }}</td>
+                            <td>
+                                {% if transaction.installment %}
+                                <a href="{% url 'detail_installment' transaction.installment.id %}"><i class="fa-solid fa-file-lines action-icon"></i></a>
+                                <a href="{% url 'update_installment' transaction.installment.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
+                                <a href="{% url 'delete_installment' transaction.installment.id %}"><i class="fa-solid fa-trash action-icon"></i></a>
+                                {% else %}
+                                <a href="{% url 'detail_transaction' transaction.id %}"><i class="fa-solid fa-file-lines action-icon"></i></a>
+                                <a href="{% url 'update_transaction' transaction.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
+                                <a href="{% url 'delete_transaction' transaction.id %}"><i class="fa-solid fa-trash action-icon"></i></a>
                                 {% endif %}
                             </td>
                         </tr>
