@@ -458,6 +458,18 @@ td a:hover {
     text-align: left;
 }
 
+.box-description {
+    padding: 0 15px 25px 15px;
+}
+
+.box-observation {
+    background-color: #191919;
+    border: #080808 1px solid;
+    border-radius: 15px;
+    padding: 5px 25px;
+    font-size: 16px;
+}
+
 /* FIM BOX */
 
 

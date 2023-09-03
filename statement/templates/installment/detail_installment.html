@@ -27,13 +27,22 @@
                     </h3>
                 </div>
                 <div class="box-body">
-                    <p style="font-size: 18px;">Descrição: <b>{{ transactions.first.description }}.</b></p>
-                    <p style="font-size: 18px;">Valor Total: <b>{{ transactions | total_amount }}.</b></p>
-                    <p style="font-size: 18px;">Value da parcela: <b>{{ transactions.first.currency.symbol }} {{ transactions.first.value|floatformat:2 }}.</b></p>
-                    <p style="font-size: 18px;">Número de Parcelas: <b>{{ transactions.first.installments_number }}.</b></p>
-                    <p style="font-size: 18px;">Categoria: <b>{{ transactions.first.category }}</b></p>
-                    <p style="font-size: 18px;">Sub-Categoria: <b>{{ transactions.first.subcategory }}</b></p>
-                    <p style="font-size: 18px;">Tipo: <b>{{ transactions.first.type }}.</b></p>
+                    <div class="box-description">
+                        <p style="font-size: 18px;">Descrição: <b>{{ transactions.first.description }}.</b></p>
+                        <p style="font-size: 18px;">Valor Total: <b>{{ transactions | total_amount }}.</b></p>
+                        <p style="font-size: 18px;">Value da parcela: <b>{{ transactions.first.currency.symbol }} {{ transactions.first.value|floatformat:2 }}.</b></p>
+                        <p style="font-size: 18px;">Número de Parcelas: <b>{{ transactions.first.installments_number }}.</b></p>
+                        <p style="font-size: 18px;">Categoria: <b>{{ transactions.first.category }}</b></p>
+                        <p style="font-size: 18px;">Sub-Categoria: <b>{{ transactions.first.subcategory }}</b></p>
+                        <p style="font-size: 18px;">Tipo: <b>{{ transactions.first.type }}.</b></p>
+                        
+                        {% if transactions.first.observation %}
+                        <p style="font-size: 18px;">Observações:</p>
+                        <div class="box-observation">
+                            {{ transactions.first.observation | linebreaks }}
+                        </div>
+                        {% endif %}
+                    </div>
                     {% if 'editar' in request.path %}
                     {% elif 'remover' in request.path %}
                     {% else %}

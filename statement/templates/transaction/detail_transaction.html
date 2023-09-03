@@ -46,10 +46,16 @@
                     <p style="font-size: 18px;">Número de Parcelas: <b>{{ transaction.installments_number }}</b></p>
                     <p style="font-size: 18px;">Fixo: <b>{{ transaction.fixed }}</b></p>
                     <p style="font-size: 18px;">Anual: <b>{{ transaction.annual }}</b></p>
-                    <p style="font-size: 18px;">Observação: <b>{{ transaction.observation }}</b></p>
                     <p style="font-size: 18px;">Lembrar: <b>{{ transaction.remember }}</b></p>
                     <p style="font-size: 18px;">Tipo: <b>{{ transaction.type }}</b></p>
                     <p style="font-size: 18px;">Efetivado: <b>{{ transaction.effected }}</b></p>
+
+                    {% if transaction.observation %}
+                    <p style="font-size: 18px;">Observações:</p>
+                    <div class="box-observation">
+                        {{ transaction.observation | linebreaks }}
+                    </div>
+                    {% endif %}
                     <br>
                     {% if 'remover' in request.path %}
                     <div class="btn-danger">
