@@ -105,6 +105,18 @@ def get_transactions_by_year_and_month(request, year, month):
 
 
 @login_required
+def get_fixed_transactions_by_year_and_month(request, year, month):
+    transactions = transaction_services.get_fixed_transactions_by_year_and_month(year, month, request.user)
+    revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(transactions)
+    templatetags = set_templatetags()
+    set_dashboard_templatetags(templatetags, revenue, expenses, cards, cash, fixed)
+    set_transaction_navigation_templatetags(templatetags, year, month)
+    set_menu_templatetags(request.user, templatetags)
+    templatetags['transactions'] = transactions
+    return render(request, 'transaction/get_transactions.html', templatetags)
+
+
+@login_required
 def detail_transaction(request, id):
     transaction = transaction_services.get_transaction_by_id(id, request.user)
     templatetags = set_templatetags()

@@ -7,6 +7,7 @@ urlpatterns = [
     path('<str:type>/cadastrar/', create_transaction, name='create_transaction'),
     path('ano/<int:year>/', get_transactions_by_year, name='get_transactions_by_year'),
     path('<int:year>/<int:month>/', get_transactions_by_year_and_month, name='get_transactions_by_year_and_month'),
+    path('<int:year>/<int:month>/fixed', get_fixed_transactions_by_year_and_month, name='get_fixed_transactions_by_year_and_month'),
     path('<int:id>/', detail_transaction, name='detail_transaction'),
     path('mes_atual/', get_current_month_transactions, name='get_current_month_transactions'),
     path('editar/<int:id>/', update_transaction, name='update_transaction'),

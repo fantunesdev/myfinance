@@ -48,3 +48,7 @@
 .fixed {
     grid-area: fixed;
 }
+
+.dashboard a {
+    text-decoration: none;
+}

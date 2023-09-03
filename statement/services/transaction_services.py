@@ -42,6 +42,11 @@ def get_transactions_by_year_and_month(year, month, user):
         .filter(payment_date__year=year, payment_date__month=month, user=user, home_screen=True)\
         .order_by('release_date')
 
+def get_fixed_transactions_by_year_and_month(year, month, user):
+    return Transaction.objects\
+        .filter(payment_date__year=year, payment_date__month=month, user=user, home_screen=True, fixed=True)\
+        .order_by('release_date')
+
 
 def get_transaction_by_id(id, user):
     return Transaction.objects.get(id=id, user=user)
