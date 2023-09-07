@@ -20,7 +20,7 @@
                         <canvas id="revenue-doughnut-chart"></canvas>
                     </div>
                     <div class="revenue-expenses-number">
-                        {% if diferenca < 0 %}
+                        {% if difference < 0 %}
                         <b class="font-16 red">{{ difference | to_reais }}</b>
                         {% else %}
                         <b class="font-16 green">{{ difference | to_reais }}</b>
