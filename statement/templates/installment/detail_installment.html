@@ -70,7 +70,7 @@
                                 <td>{{ i.description }}</td>
                                 <td>{{ i.currency.symbol }} {{ i.value | floatformat:2 }}</td>
                                 <td>
-                                    <a href="{% url 'update_installment' i.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
+                                    <a href="{% url 'update_transaction' i.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
                                     <a href="{% url 'delete_parcel' i.id %}"><i class="fa-solid fa-trash action-icon"></i></a>
                                 </td>
                             </tr>
