@@ -16,7 +16,7 @@
         {% endif %}
 
         {% if 'relatorio_financeiro/ano' in request.path %}
-        {% include 'transaction/elements//transaction_navigation_by_year.html' %}
+        {% include 'transaction/elements/transaction_navigation_by_year.html' %}
         {% endif %}
 
         {% if request.path == '/' %}
@@ -24,7 +24,7 @@
         {% elif 'extrato' in request.path %}
 
         {% elif 'fatura' in request.path %}
-
+        
         {% else %}
         {% include 'transaction/elements/transaction_dashboard.html' %}
         {% endif %}
