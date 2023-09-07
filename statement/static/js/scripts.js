@@ -1,5 +1,3 @@
-// import * as Togglers from './togglers.js'
-
 function toggleSidebar() {
     toggle = document.getElementsByClassName('toggle');
 
@@ -140,19 +138,3 @@ function hasToggled(classList) {
 
     return list.includes('toggled');
 }
-
-// OBSSOLETO
-
-// searchButton.addEventListener('click', () => {
-//     toggleSearch();
-// });
-
-// function toggleSearch() {
-//     let form = document.getElementById('search-form');
-// 
-//     if (form.classList[2] === 'toggled') {
-//         form.classList.remove('toggled');
-//     } else {
-//         form.classList.add('toggled');
-//     }
-// }
