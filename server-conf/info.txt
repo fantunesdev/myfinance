@@ -1,2 +1,0 @@
-Copiar o arquivo nginx/finance.my-server.com para /etc/nginx/sites-avaliable.
-Copiar o arquivo supervisor/financeiro.conf para /etc/supervisor/conf.d/financeiro.conf
