@@ -1,0 +1,21 @@
+.dashboard {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    grid-template-areas: 
+        "expenses"
+        "expenses"
+        "expenses";
+}
+
+.expenses {
+    text-align: center;
+}
+
+.expenses {
+    grid-area: expenses;
+}
+
+.dashboard a {
+    text-decoration: none;
+}
