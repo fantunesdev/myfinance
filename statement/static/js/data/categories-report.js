@@ -15,8 +15,13 @@ export async function getMonthYear() {
         year = month <= 12 ? today.getFullYear() : today.getFullYear() + 1;
         month = month === 13 ? 1 : month;
     } else {
-        year = url.split('/')[2];
-        month = url.split('/')[3];
+        if (url.includes('contas') || url.includes('cartoes')) {
+            year = url.split('/')[6];
+            month = url.split('/')[7]
+        } else {
+            year = url.split('/')[2];
+            month = url.split('/')[3];
+        }
     };
 
     return [year, month];

@@ -2,8 +2,6 @@
 {% load static %}
 {% load custom_filters %}
 
-    {% block styles %}<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">{% endblock %}
-
     {% block title %}Extrato {{ year_month | date:'M' }} de {{ year_month | date:'y' }}{% endblock %}
 
     {% block content %}
@@ -20,15 +18,14 @@
         {% endif %}
 
         {% if request.path == '/' %}
-        {% include 'transaction/elements/transaction_dashboard.html' %}
+            {% include 'transaction/elements/transaction_dashboard.html' %}
         {% elif 'extrato' in request.path %}
-
+            {% include 'transaction/elements/extract/extract_dashboard.html' %}
         {% elif 'fatura' in request.path %}
-        
+            {% include 'transaction/elements/invoice/invoice_dashboard.html' %}
         {% else %}
-        {% include 'transaction/elements/transaction_dashboard.html' %}
+            {% include 'transaction/elements/transaction_dashboard.html' %}
         {% endif %}
-
         <div class="box box-primary">
             <div class="box-header">
                 <h3 class="box-title">Extrato {{ year_month | date:'F' }} de {{ year_month | date:'Y' }}</h3>

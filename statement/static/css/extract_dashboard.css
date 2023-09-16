@@ -1,0 +1,39 @@
+.dashboard {
+    display: grid;
+    grid-template-columns: 69% 15% 15%;
+    grid-template-rows: 2fr;
+    grid-template-areas: 
+        "expenses revenue-expenses revenue"
+        "expenses fixed card";
+}
+
+.expenses,
+.revenue-expenses,
+.revenue-expenses-number,
+.fixed {
+    text-align: center;
+}
+
+.expenses {
+    grid-area: expenses;
+}
+
+.revenue-expenses {
+    grid-area: revenue-expenses;
+}
+
+.revenue-expenses-number {
+    grid-area: revenue-expenses-number;
+}
+
+.revenue {
+    grid-area: revenue;
+}
+
+.fixed {
+    grid-area: fixed;
+}
+
+.dashboard a {
+    text-decoration: none;
+}
