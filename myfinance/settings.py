@@ -17,7 +17,6 @@ from pathlib import Path
 from statement.repositories import vault_repository
 
 
-
 dotenv.load_dotenv()
 # vault_repository.export_mysql_credentials()
 # vault_repository.export_postgre_credentials()
@@ -36,6 +35,8 @@ SECRET_KEY = os.environ['SECRET_KEY']
 DEBUG = os.environ['DEBUG']
 
 ALLOWED_HOSTS = eval(os.environ['HOSTS'])
+CORS_ALLOWED_ORIGINS = eval(os.getenv('CORS_ALLOWED_ORIGINS'))
+CSRF_TRUSTED_ORIGINS = eval(os.getenv('CSRF_TRUSTED_ORIGINS'))
 
 
 # Application definition
