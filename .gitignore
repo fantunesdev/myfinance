@@ -1,6 +1,8 @@
 balanco/migrations/*
 login/migrations/*
 statement/migrations/*
+/statement/static/admin/
+/statement/static/rest_framework/
 /static/
 /media/
 
