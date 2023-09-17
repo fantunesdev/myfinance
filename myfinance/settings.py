@@ -94,7 +94,7 @@ DATABASES = {
         'NAME': os.getenv('DATABASE'),
         'USER': os.getenv('MYSQL_USER'),
         'PASSWORD': os.getenv('MYSQL_PASSWORD'),
-        'HOST': os.getenv('HOST'),
+        'HOST': os.getenv('MYSQL_HOST'),
         'PORT': os.getenv('MYSQL_PORT')
     },
     'postgresql': {
@@ -102,7 +102,7 @@ DATABASES = {
         'NAME': os.getenv('DATABASE'),
         'USER': os.getenv('POSTGRESQL_USER'),
         'PASSWORD': os.getenv('POSTGRESQL_PASSWORD'),
-        'HOST': os.getenv('HOST'),
+        'HOST': os.getenv('POSTGRESQL_HOST'),
         'PORT': os.getenv('POSTGRESQL_PORT')
     }
 }
