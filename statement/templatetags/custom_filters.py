@@ -13,6 +13,21 @@ def to_reais(float):
     return f'R$ {float:_.2f}'.replace('.', ',').replace('_', '.')
 
 
+@register.filter(name='handle_boolean')
+def handle_boolean(value):
+    return 'Sim' if value else 'Não'
+
+
+@register.filter(name='handle_none')
+def handle_none(value):
+    return value if value else ''
+
+
+@register.filter(name='handle_image')
+def handle_image(value):
+    return value.url if value else ''
+
+
 @register.filter(name='total_amount')
 def total_amount(transaction):
     total = 0

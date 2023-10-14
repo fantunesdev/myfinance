@@ -2,7 +2,7 @@
 {% load static %}
 {% load custom_filters %}
 
-    {% block title %}Extrato {{ year_month | date:'M' }} de {{ year_month | date:'y' }}{% endblock %}
+    {% block title %}Extrato {{ year_month | date:'F' }} {{ year_month | date:'Y' }}{% endblock %}
 
     {% block content %}
         {% if 'extrato' in request.path %}
@@ -49,19 +49,11 @@
                                 <td>{{ transaction.release_date | date:"d/m"}}</td>
                             {% if transaction.account %}
                             <td>
-                                {% if transaction.account.bank.icon %}
-                                <img src="{{ transaction.account.bank.icon.url }}" alt="Logotipo do banco {{ bank.description }}" style="max-height: 25px;">
-                                {% else %}
-                                <img src="" alt="Logotipo do banco {{ bank.description }}" style="max-height: 25px;">
-                                {% endif %}
+                                <img src="{{ transaction.account.bank.icon | handle_image }}" alt="Logotipo do banco {{ bank.description }}" style="max-height: 25px;">
                             </td>
                             {% else %}
                             <td>
-                                {% if transaction.card.icon %}
-                                <img src="{{ transaction.card.icon.url }}" alt="Logotipo do cartão {{ transaction.card.description }}" style="max-height: 25px;">
-                                {% else %}
-                                <img src="" alt="Logotipo do cartão {{ transaction.card.description }}" style="max-height: 25px;">
-                                {% endif %}
+                                <img src="{{ transaction.card.icon | handle_image }}" alt="Logotipo do cartão {{ transaction.card.description }}" style="max-height: 25px;">
                             </td>
                             {% endif %}
                             <td style="text-align: left; max-width: 150px; min-width:115px"><i class="{{ transaction.category.icon }}" style="padding:10px;"></i> {{ transaction.category }}</td>
