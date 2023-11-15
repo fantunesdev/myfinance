@@ -52,7 +52,7 @@ def login_user(request):
             else:
                 messages.error(request, 'As credenciais estão incorretas')
     else:
-        login_form = user_forms.LoginForm(data=request.POST)
+        login_form = user_forms.LoginForm()
     return render(request, 'user/login.html', {'login_form': login_form})
 
 

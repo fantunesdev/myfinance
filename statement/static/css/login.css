@@ -62,15 +62,15 @@ body {
 
 }
 
-.box-450px {
-    width: 450px;
+.box-500 {
+    width: 500px;
 }
 
 .center-div {
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 300px;
-    margin-bottom: auto;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
 .btn {
