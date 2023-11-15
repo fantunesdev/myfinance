@@ -138,3 +138,9 @@ function hasToggled(classList) {
 
     return list.includes('toggled');
 }
+
+function hasClass(classList, verifiedClass) {
+    const list = Array.from(classList);
+
+    return list.includes(verifiedClass);
+}
