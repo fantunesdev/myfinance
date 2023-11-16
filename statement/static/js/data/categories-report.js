@@ -2,25 +2,31 @@ import * as services from "./services.js";
 
 
 export async function getMonthYear() {
-    let url = window.location.pathname,
-        currentMonth = url.indexOf('mes_atual') >= 0 ? true : false,
-        root = url === '/' ? true : false,
+    let path = window.location.pathname,
+        currentMonth = path.indexOf('mes_atual') >= 0 ? true : false,
+        root = path === '/' ? true : false,
         today = new Date(), 
-        month, year;
+        month,
+        year;
 
     const nextMonthView = await services.getResource('next_month_view');
     
     if (root || currentMonth) {
-        month = today.getDate() < nextMonthView.day && nextMonthView.active ? today.getMonth() + 1 : today.getMonth() + 2;
-        year = month <= 12 ? today.getFullYear() : today.getFullYear() + 1;
-        month = month === 13 ? 1 : month;
-    } else {
-        if (url.includes('contas') || url.includes('cartoes')) {
-            year = url.split('/')[6];
-            month = url.split('/')[7]
+        if (path.includes('contas')) {
+            month = today.getMonth();
+            year = today.getFullYear();
         } else {
-            year = url.split('/')[2];
-            month = url.split('/')[3];
+            month = today.getDate() < nextMonthView.day && nextMonthView.active ? today.getMonth() + 1 : today.getMonth() + 2;
+            year = month <= 12 ? today.getFullYear() : today.getFullYear() + 1;
+            month = month === 13 ? 1 : month;
+        }
+    } else {
+        if (path.includes('contas') || path.includes('cartoes')) {
+            year = path.split('/')[5];
+            month = path.split('/')[6]
+        } else {
+            year = path.split('/')[2];
+            month = path.split('/')[3];
         }
     };
 

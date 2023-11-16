@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 
 from statement.views.transaction_views import *
 
@@ -11,5 +11,8 @@ urlpatterns = [
     path('<int:id>/', detail_transaction, name='detail_transaction'),
     path('mes_atual/', get_current_month_transactions, name='get_current_month_transactions'),
     path('editar/<int:id>/', update_transaction, name='update_transaction'),
-    path('remover/<int:id>', delete_transaction, name='delete_transaction')
+    path('remover/<int:id>', delete_transaction, name='delete_transaction'),
+
+    path('contas/<int:account_id>/extrato/', include('statement.urls.extract_urls')),
+    path('cartoes/<int:card_id>/fatura/', include('statement.urls.invoice_urls'))
 ]
