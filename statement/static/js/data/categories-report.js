@@ -13,7 +13,7 @@ export async function getMonthYear() {
     
     if (root || currentMonth) {
         if (path.includes('contas')) {
-            month = today.getMonth();
+            month = today.getMonth() + 1;
             year = today.getFullYear();
         } else {
             month = today.getDate() < nextMonthView.day && nextMonthView.active ? today.getMonth() + 1 : today.getMonth() + 2;
