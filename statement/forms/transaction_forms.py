@@ -45,11 +45,11 @@ class TransactionForm(forms.ModelForm):
         widgets = {
             'release_date': forms.DateInput(
                 format='%Y-%m-%d',
-                attrs={'type': 'date', 'value': today, 'class': 'form-control'}
+                attrs={'type': 'date', 'value': today, 'class': 'form-control date-input'}
             ),
             'payment_date': forms.DateInput(
                 format='%Y-%m-%d',
-                attrs={'type': 'date', 'class': 'form-control', 'value': today}
+                attrs={'type': 'date', 'class': 'form-control date-input', 'value': today}
             ),
             'account': forms.Select(attrs={'class': 'form-control'}),
             'card': forms.Select(attrs={'class': 'form-control'}),

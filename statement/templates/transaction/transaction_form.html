@@ -19,97 +19,132 @@
             <form method="post" enctype="multipart/form-data">
                 <div class="box-body">
                         {% csrf_token %}
-
-                        <label for="id_payment_method">Meio de Pagamento</label>
-                        {{ transaction_form.payment_method }}
-
-                        <div id="div-account">
-                            <label for="id_account">Conta</label>
-                            {{ transaction_form.account }}
-                            {{ transaction_form.account.errors }}
+                        <div class="form-input">
+                            <label for="id_payment_method">Meio de Pagamento</label>
+                            {{ transaction_form.payment_method }}
                         </div>
-                        <div id="div-card">
-                            <label for="id_card">Cartao</label>
-                            {{ transaction_form.card }}
-                            {{ transaction_form.card.errors }}
+
+                        <div class="form-input">
+                            <div id="div-account">
+                                <label for="id_account">Conta</label>
+                                {{ transaction_form.account }}
+                                {{ transaction_form.account.errors }}
+                            </div>
+                            <div id="div-card">
+                                <label for="id_card">Cartao</label>
+                                {{ transaction_form.card }}
+                                {{ transaction_form.card.errors }}
+                            </div>
                         </div>
 
                         {% if 'editar' in request.path %}
-                        <label for="id_type">Tipo</label>
-                        {{ transaction_form.type }}
-                        {{ transaction_form.type.errors }}
+                        <div class="form-input">
+                            <label for="id_type">Tipo</label>
+                            {{ transaction_form.type }}
+                            {{ transaction_form.type.errors }}
+                        </div>
                         {% endif %}
 
-                        <label for="id_release_date">Data do Lançamento</label>
-                        {{ transaction_form.release_date }}
-                        {{ transaction_form.release_date.errors }}
+                        <div class="form-input">
+                            <label for="id_release_date">Data do Lançamento</label>
+                            {{ transaction_form.release_date }}
+                            {{ transaction_form.release_date.errors }}
+                        </div>
 
-                        <label for="id_payment_date">Data de Efetivação</label>
-                        {{ transaction_form.payment_date }}
-                        {{ transaction_form.payment_date.errors }}
+                        <div class="form-input">
+                            <label for="id_payment_date">Data de Efetivação</label>
+                            {{ transaction_form.payment_date }}
+                            {{ transaction_form.payment_date.errors }}
+                        </div>
 
-                        <label for="id_category">Categoria</label>
-                        {{ transaction_form.category }}
-                        {{ transaction_form.category.errors }}
+                        <div class="form-input">
+                            <label for="id_category">Categoria</label>
+                            {{ transaction_form.category }}
+                            {{ transaction_form.category.errors }}
+                        </div>
 
-                        <label for="id_subcategory">Sub Categoria</label>
-                        {{ transaction_form.subcategory }}
-                        {{ transaction_form.subcategory.errors }}
+                        <div class="form-input">
+                            <label for="id_subcategory">Sub Categoria</label>
+                            {{ transaction_form.subcategory }}
+                            {{ transaction_form.subcategory.errors }}
+                        </div>
 
-                        <label for="id_description">Descrição</label>
-                        {{ transaction_form.description }}
-                        {{ transaction_form.description.errors }}
+                        <div class="form-input">
+                            <label for="id_description">Descrição</label>
+                            {{ transaction_form.description }}
+                            {{ transaction_form.description.errors }}
+                        </div>
 
-                        <label for="id_value">Valor</label>
-                        {{ transaction_form.value }}
-                        {{ transaction_form.value.errors }}
+                        <div class="form-input">
+                            <label for="id_value">Valor</label>
+                            {{ transaction_form.value }}
+                            {{ transaction_form.value.errors }}
+                        </div>
                         <br>
 
                         <h3 id="btn-installment" class="cursor-pointer">Parcelamento +</h3>
 
                         <div id="div-installment" class="toggled">
                             {% if 'editar' in request.path %}
-                            <label for="id_installment_option">Você deseja:</label>
-                            {{ transaction_form.installment_option }}
+                            <div class="form-input">
+                                <label for="id_installment_option">Você deseja:</label>
+                                {{ transaction_form.installment_option }}
+                            </div>
                             {% endif %}
                             <br>
-                            <label for="id_numero_parcelas">Número de Parcelas</label>
-                            {{ transaction_form.installments_number }}
-                            {{ transaction_form.installments_number.errors }}
+                            <div class="form-input">
+                                <label for="id_numero_parcelas">Número de Parcelas</label>
+                                {{ transaction_form.installments_number }}
+                                {{ transaction_form.installments_number.errors }}
+                            </div>
 
-                            <label for="id_pagas">Pagas</label>
-                            {{ transaction_form.paid }}
-                            {{ transaction_form.paid.errors }}
+                            <div class="form-input">
+                                <label for="id_pagas">Pagas</label>
+                                {{ transaction_form.paid }}
+                                {{ transaction_form.paid.errors }}
+                            </div>
                             <br>
                         </div>
 
                         <h3 id="btn-other-options" class="cursor-pointer">Outras Opções +</h3>
 
                         <div id="div-other-options" class="toggled">
-                            <br>    
-                            {{ transaction_form.fixed }}
-                            <label for="id_fixed">Fixa</label><br><br>
-                            {{ transaction_form.fixed.errors }}
+                            <br>
+                            <div class="form-input">
+                                {{ transaction_form.fixed }}
+                                <label for="id_fixed">Fixa</label>
+                                {{ transaction_form.fixed.errors }}
+                            </div>
 
-                            {{ transaction_form.annual }}
-                            <label for="id_annual">Anual</label><br><br>
-                            {{ transaction_form.annual.errors }}
+                            <div class="form-input">
+                                {{ transaction_form.annual }}
+                                <label for="id_annual">Anual</label>
+                                {{ transaction_form.annual.errors }}
+                            </div>
 
-                            <label for="id_currency">Moeda</label>
-                            {{ transaction_form.currency }}
-                            {{ transaction_form.currency.errors }}
+                            <div class="form-input">
+                                <label for="id_currency">Moeda</label>
+                                {{ transaction_form.currency }}
+                                {{ transaction_form.currency.errors }}
+                            </div>
 
-                            <label for="id_observation">Observações</label>
-                            {{ transaction_form.observation }}
-                            {{ transaction_form.observation.errors }}
+                            <div class="form-input">
+                                <label for="id_observation">Observações</label>
+                                {{ transaction_form.observation }}
+                                {{ transaction_form.observation.errors }}
+                            </div>
 
-                            {{ transaction_form.remember }}
-                            {{ transaction_form.remember.errors }}
-                            <label for="id_remember">Lembrar</label><br><br>
+                            <div class="form-input">
+                                {{ transaction_form.remember }}
+                                {{ transaction_form.remember.errors }}
+                                <label for="id_remember">Lembrar</label>
+                            </div>
 
-                            {{ transaction_form.effected }}
-                            {{ transaction_form.effected.errors }}
-                            <label for="id_effected">Efetivado</label><br><br>
+                            <div class="form-input">
+                                {{ transaction_form.effected }}
+                                {{ transaction_form.effected.errors }}
+                                <label for="id_effected">Efetivado</label>
+                            </div>
                             <br>
                         </div>
 
