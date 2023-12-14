@@ -1,6 +1,9 @@
+let chart;
+
 export function drawBarChart(dataset, label) {
     const father = document.getElementById('expenses-bar-chart').getContext('2d');
-    const data = {
+
+    chart = new Chart(father, {
         type: 'bar',
         data: {
             labels: dataset.names,
@@ -30,12 +33,28 @@ export function drawBarChart(dataset, label) {
                     },
                     color: 'rgba(204,204,204,1)'
                 }
-            }
+            },
+            onClick: handleBarClick,
+            onHover: handleBarHover,
         }
-    };
-    
-    return new Chart(father, data);
-};
+    });
+
+    return chart;
+}
+
+function handleBarClick(event, elements) {
+    if (chart && elements.length > 0) {
+        const clickedIndex = elements[0].index;
+        const labelClicked = chart.data.labels[clickedIndex];
+        console.log('Barra clicada: ' + labelClicked);
+    }
+}
+
+function handleBarHover(event, elements) {
+    if (chart) {
+        chart.canvas.style.cursor = elements && elements.length > 0 ? 'pointer' : 'default';
+    }
+}
 
 
 export function drawDoughnutChart(dataset, fatherHtmlId, label) {
