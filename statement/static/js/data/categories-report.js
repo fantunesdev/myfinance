@@ -41,12 +41,11 @@ export async function getMonthYear() {
 /**
  * Monta um relatório que classifica os lançamentos em receitas e despesas calculando o montante total de ambas.
  * @param {Array} transactions - Uma lista de instâncias da classe Transactions.
+ * @param {Array} categories - Uma lista de instâncias da classe Transactions.
  * @returns {Object} - Um objeto literal contendo a lista classificada de receitas, despesas e o valor da soma total de recitas e despesas.
  */
-export async function setCategoriesReport(transactions) {
-    // Busca na API todas as categorias.
-    let categories = await services.getResource('categories'),
-        revenue = [],
+export function setCategoriesReport(transactions, categories) {
+    let revenue = [],
         expenses = [],
         amount = {
             revenue: 0, 

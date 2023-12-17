@@ -1,11 +1,16 @@
     {% load custom_filters %}
     {% load static %}
 
-        {% block styles %}<link rel="stylesheet" href="{% static 'css/invoice_dashboard.css' %}">{% endblock %}
+        {% block styles %}<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">{% endblock %}
 
         <div class="box box-primary box-max-width-2000 v-center-div">
             <div class="box-header">
-                <h3 class="box-title">Dashboard</h3>
+                <div>
+                    <h3 class="box-title">Dashboard</h3>
+                </div>
+                <div class="flex-v-center pr-10" id="reset-dashboard-button">
+                    <i class="fa-solid fa-rotate-left"></i>
+                </div>
             </div>
             <div class="box-body">
                 <label for="expenses-selector">Categorias</label>
@@ -16,6 +21,25 @@
                         <br>
                         <b class="font-16">Total de gastos: {{ expenses | to_reais }}</b>
                     </div>
+                    <div class="revenue-expenses">
+                        <canvas id="amount-doughnut-chart"></canvas>
+                    </div>
+                    <div class="revenue">
+                        <canvas id="revenue-doughnut-chart"></canvas>
+                    </div>
+                    <div class="revenue-expenses-number">
+                        {% if difference < 0 %}
+                        <b class="font-16 red">{{ difference | to_reais }}</b>
+                        {% else %}
+                        <b class="font-16 green">{{ difference | to_reais }}</b>
+                        {% endif %}
+                    </div>
+                    <a href="{% url 'get_fixed_transactions_by_year_and_month' year_month|date:'Y' year_month|date:'m' %}">
+                        <div class="fixed">
+                            <h3>Gastos Fixos</h3>
+                            <b class="font-16">{{ fixed | to_reais }}</b>
+                        </div>
+                    </a>
                 </div>
             </div>
             <div class="box-footer">

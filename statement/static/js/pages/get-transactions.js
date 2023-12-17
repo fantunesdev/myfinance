@@ -16,7 +16,8 @@ async function draw() {
     // busca todas as informações, classifica e faz os cálculos para montar os gráficos.
     const [year, month] = await categoryData.getMonthYear(),
         transactions = await services.getTransactionsByYearAndMonth(year, month),
-        report = await categoryData.setCategoriesReport(transactions),
+        categories = await services.getResource('categories'),
+        report = categoryData.setCategoriesReport(transactions, categories),
         revenue = categoryData.setCategoriesDataset(report.revenue, true),
         expenses = categoryData.setCategoriesDataset(report.expenses),
         amount = categoryData.setAmountDataset(report.amount),
@@ -32,12 +33,17 @@ async function draw() {
 };
 
 
+/**
+ * Atualiza o gráfico de barras conforme a categoria selecionada.
+ * @param {Object} barChart - A instância original do gráfico de barras
+ */
 async function updateBarChart(barChart) {
-    const [year, month] = await categoryData.getMonthYear(),
-        transactions = await services.getTransactionsByYearAndMonth(year, month);
+    const [year, month] = sessionStorage.getItem('year-month').split(','),
+        transactions = JSON.parse(sessionStorage.getItem('transactions'));
         
     if (expensesSelector.value === '0') {
-        const report = await categoryData.setCategoriesReport(transactions);
+        const categories = JSON.parse(sessionStorage.getItem('categories')),
+            report = categoryData.setCategoriesReport(transactions, categories);
         var expenses = report.expenses;
     } else {
         var expenses = await subcategoryData.setSubcategoryDataset(year, month, expensesSelector.value);
@@ -50,6 +56,11 @@ async function updateBarChart(barChart) {
 };
 
 
+/**
+ * Atualiza a tabela com os registros de 
+ * @param {Array} transactions - Uma lista de lançamentos.
+ * @param {Array} expenses - Uma lista de subcategorias do tipo despesas.
+ */
 async function updateTable(transactions, expenses) {
     let subcategoryTable = document.getElementById('subcategory-table');
 
@@ -59,26 +70,39 @@ async function updateTable(transactions, expenses) {
     if (expensesSelector.value === '0') {
         originalTable.classList.remove('toggled');
     } else {
-        const category = await services.getSpecificResource('categories', expensesSelector.value),
+        let categories = JSON.parse(sessionStorage.getItem('categories')),
+            accounts = JSON.parse(sessionStorage.getItem('accounts')),
+            cards = JSON.parse(sessionStorage.getItem('cards')),
+            banks = JSON.parse(sessionStorage.getItem('banks'));
+
+        if (!accounts) {
             accounts = await services.getResource('accounts'),
             cards = await services.getResource('cards'),
-            banks = await services.getResource('banks'),
-            transactionAttrs = {
-                accounts: accounts,
-                cards: cards,
-                category: category,
-                subcategories: expenses,
-                banks: banks
-            };
+            banks = await services.getResource('banks');
+        }
 
-
-        originalTable.classList.add('toggled');
-        let filteredTransactions = dataTable.orderExpensesBySubcategory(transactions, expensesSelector.value, expenses);
-
-        tables.renderTable(statementBox, filteredTransactions, transactionAttrs);
+        for (let category of categories) {
+            if (category.id == expensesSelector.value) {
+                const transactionAttrs = {
+                        accounts: accounts,
+                        cards: cards,
+                        category: category,
+                        subcategories: expenses,
+                        banks: banks
+                    };
+                    originalTable.classList.add('toggled');
+                    let filteredTransactions = dataTable.orderExpensesBySubcategory(transactions, expensesSelector.value, expenses);
+            
+                    tables.renderTable(statementBox, filteredTransactions, transactionAttrs);
+            }
+        }
     }
 }
-    
+
+const resetDashboardButton = document.querySelector('#reset-dashboard-button');
+resetDashboardButton.addEventListener('click', () => {
+    updateBarChart(barChart);
+});
     
 expensesSelector.addEventListener('change', () => {
     updateBarChart(barChart);

@@ -57,7 +57,7 @@ export async function getSpecificResource(model, id) {
         data = await response.json(),
         sessionStorageData = JSON.stringify(data);
 
-    sessionStorage.setItem(`${model}-${id}`, sessionStorageData);
+    // sessionStorage.setItem(`${model}-${id}`, sessionStorageData);
     return data;
 }
 

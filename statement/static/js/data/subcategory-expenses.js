@@ -2,7 +2,7 @@ import * as services from './services.js';
 
 
 export async function setSubcategoryDataset(year, month, id) {
-    const transactions = await services.getTransactionsByYearAndMonth(year, month),
+    const transactions = JSON.parse(sessionStorage.getItem('transactions')),
         subcategories = await services.getRelatedResource('categories','subcategories', id);
 
     let expenses = [],
