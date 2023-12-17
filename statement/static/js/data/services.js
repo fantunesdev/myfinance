@@ -1,3 +1,9 @@
+/**
+ * Consulta na API os lançamentos do mês/ano desejado.
+ * @param {string} year - O ano da pesquisa.
+ * @param {string} month - O mês da pesquisa.
+ * @returns Uma lista de obsjetos literais contendo todos os lançamentos do mês/ano.
+ */
 export async function getTransactionsByYearAndMonth(year, month) {
     const path = window.location.pathname;
     let accountId,
@@ -14,30 +20,61 @@ export async function getTransactionsByYearAndMonth(year, month) {
         url = `/api/transactions/year/${year}/month/${month}/`;
     }
 
-    const response = await fetch(url);
-    return await response.json();
+    const response = await fetch(url),
+        data = await response.json(),
+        sessionStorageData = JSON.stringify(data);
+
+    sessionStorage.setItem('transactions', sessionStorageData);
+    return data;
 }
 
 
-export async function getResource(view) {
-    const url = `/api/${view}/`,
-        response = await fetch(url);
+/**
+ * Consulta na API um recurso específico. Geralmente as instâncias de um modelo.
+ * @param {string} model - O modelo do recurso. Ex: Categorias, Subcategorias, Bancos, etc.
+ * @returns - Uma lista de objetos literais contendo todas as instância do modelo com todas as suas informações específicas.
+ */
+export async function getResource(model) {
+    const url = `/api/${model}/`,
+        response = await fetch(url),
+        data = await response.json(),
+        sessionStorageData = JSON.stringify(data);
 
-    return await response.json();
+    sessionStorage.setItem(`${model}`, sessionStorageData);
+    return data;
 }
 
 
-export async function getSpecificResource(view, id) {
-    const url = `/api/${view}/${id}/`,
-        response = await fetch(url);
+/**
+ * Consulta na API uma instância específica do modelo com base no ID.
+ * @param {string} model - O nome do modelo.
+ * @param {string} id - O ID da instância.
+ * @returns - Um objeto literal com todas as informações da instância.
+ */
+export async function getSpecificResource(model, id) {
+    const url = `/api/${model}/${id}/`,
+        response = await fetch(url),
+        data = await response.json(),
+        sessionStorageData = JSON.stringify(data);
 
-    return await response.json();
+    sessionStorage.setItem(`${model}-${id}`, sessionStorageData);
+    return data;
 }
 
 
-export async function getRelatedResource(view, related, id) {
-    const url = `/api/${view}/${id}/${related}`,
-    response = await fetch(url);
+/**
+ * Consulta na API uma instância específica de um modelo relacionado a outro modelo com base no ID. Por exemplo, a subcategoria de uma categoria.
+ * @param {string} model - O nome do modelo.
+ * @param {string} related - O nome do modelo relacionado ao primeiro modelo.
+ * @param {string} id - O ID da instância.
+ * @returns - Um objeto literal com todas as informações da instância.
+ */
+export async function getRelatedResource(model, related, id) {
+    const url = `/api/${model}/${id}/${related}`,
+    response = await fetch(url),
+    data = await response.json(),
+    sessionStorageData = JSON.stringify(data);
 
-    return await response.json();
+    sessionStorage.setItem(`${model}-${id}-${related}`, sessionStorageData);
+    return data;
 }

@@ -7,7 +7,13 @@ import * as tables from '../layout/elements/tables.js';
 import * as services from '../data/services.js';
 import { expensesSelector, originalTable, statementBox } from '../layout/elements/get-transactions-elements.js';
 
+
+/**
+ * Busca todas as informações para desenhar os gráficos de barras e de donuts.
+ * @returns - Um gráfico de barras.
+ */
 async function draw() {
+    // busca todas as informações, classifica e faz os cálculos para montar os gráficos.
     const [year, month] = await categoryData.getMonthYear(),
         transactions = await services.getTransactionsByYearAndMonth(year, month),
         report = await categoryData.setCategoriesReport(transactions),
