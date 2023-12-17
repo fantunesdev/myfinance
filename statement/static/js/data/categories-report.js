@@ -87,12 +87,9 @@ export function setCategoriesReport(transactions, categories) {
         
         if (transaction.type === 'entrada') {
             amount.revenue += transaction.value;            
-        } else {            
-            for (let category of categories) {
-                if (!category.ignore) {
-                    amount.expenses += transaction.value;
-                }
-
+        } else {
+            if (!category.ignore) {
+                amount.expenses += transaction.value;
             }
         }
     };
