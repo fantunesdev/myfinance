@@ -1,0 +1,1 @@
+export const teste = 'isto é um teste';

@@ -37,16 +37,25 @@ async function draw() {
  * Atualiza o gráfico de barras conforme a categoria selecionada.
  * @param {Object} barChart - A instância original do gráfico de barras
  */
-async function updateBarChart(barChart) {
+export async function updateBarChart(barChart) {
     const [year, month] = sessionStorage.getItem('year-month').split(','),
-        transactions = JSON.parse(sessionStorage.getItem('transactions'));
-        
-    if (expensesSelector.value === '0') {
+        transactions = JSON.parse(sessionStorage.getItem('transactions')),
+        categories = JSON.parse(sessionStorage.getItem('categories'));
+
+    let barLabelClicked = sessionStorage.getItem('bar_label_clicked')
+
+    if (barLabelClicked) {
+        for (let category of categories) {
+            if (category.description == barLabelClicked) {
+                const selectedCategory = category;
+                var expenses = await subcategoryData.setSubcategoryDataset(selectedCategory.id);
+            }
+        }
+        sessionStorage.removeItem('bar_label_clicked');
+    } else {
         const categories = JSON.parse(sessionStorage.getItem('categories')),
             report = categoryData.setCategoriesReport(transactions, categories);
         var expenses = report.expenses;
-    } else {
-        var expenses = await subcategoryData.setSubcategoryDataset(year, month, expensesSelector.value);
     }
 
     const dataset = categoryData.setCategoriesDataset(expenses);
@@ -104,8 +113,9 @@ resetDashboardButton.addEventListener('click', () => {
     updateBarChart(barChart);
 });
     
-expensesSelector.addEventListener('change', () => {
-    updateBarChart(barChart);
-});
+// expensesSelector.addEventListener('change', () => {
+//     updateBarChart(barChart);
+// });
 
 let barChart = await draw();
+sessionStorage.setItem('bar_chart_level', 'categories');

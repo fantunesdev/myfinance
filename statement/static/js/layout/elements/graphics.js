@@ -1,3 +1,6 @@
+import { updateBarChart } from '../../pages/get-transactions.js';
+
+
 let chart;
 
 export function drawBarChart(dataset, label) {
@@ -34,6 +37,9 @@ export function drawBarChart(dataset, label) {
                     color: 'rgba(204,204,204,1)'
                 }
             },
+            animation: {
+                duration: 200,
+            },
             onClick: handleBarClick,
             onHover: handleBarHover,
         }
@@ -44,15 +50,28 @@ export function drawBarChart(dataset, label) {
 
 function handleBarClick(event, elements) {
     if (chart && elements.length > 0) {
-        const clickedIndex = elements[0].index;
-        const labelClicked = chart.data.labels[clickedIndex];
-        console.log('Barra clicada: ' + labelClicked);
+        const clickedIndex = elements[0].index,
+            labelClicked = chart.data.labels[clickedIndex],
+            barChartLevel = sessionStorage.getItem('bar_chart_level');
+
+        sessionStorage.setItem('bar_label_clicked', labelClicked);
+
+        if (barChartLevel == 'categories') {
+            updateBarChart(chart);
+        }
+        sessionStorage.setItem('bar_chart_level', 'subcategories');
+    } else {
+        updateBarChart(chart);
+        sessionStorage.setItem('bar_chart_level', 'categories');
     }
 }
 
 function handleBarHover(event, elements) {
-    if (chart) {
-        chart.canvas.style.cursor = elements && elements.length > 0 ? 'pointer' : 'default';
+    const barChartLevel = sessionStorage.getItem('bar_chart_level');
+    if (barChartLevel == 'categories') {
+        if (chart) {
+            chart.canvas.style.cursor = elements && elements.length > 0 ? 'pointer' : 'default';
+        }
     }
 }
 

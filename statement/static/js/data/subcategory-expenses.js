@@ -1,7 +1,7 @@
 import * as services from './services.js';
 
 
-export async function setSubcategoryDataset(year, month, id) {
+export async function setSubcategoryDataset(id) {
     const transactions = JSON.parse(sessionStorage.getItem('transactions')),
         subcategories = await services.getRelatedResource('categories','subcategories', id);
 
