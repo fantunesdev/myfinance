@@ -23,8 +23,6 @@ async function draw() {
         amount = categoryData.setAmountDataset(report.amount),
         optionsCategory = categoryData.setCategoriesOptions(report.expenses);
 
-    selects.renderOptions(expensesSelector, optionsCategory);
-
     const barChart = graphics.drawBarChart(expenses, 'Despesas');
     graphics.drawDoughnutChart(revenue, 'revenue', 'Receitas');
     graphics.drawDoughnutChart(amount, 'amount', 'Receitas/Despesas');    
@@ -47,20 +45,18 @@ export async function updateBarChart(barChart) {
     if (barLabelClicked) {
         for (let category of categories) {
             if (category.description == barLabelClicked) {
-                const selectedCategory = category;
-                var expenses = await subcategoryData.setSubcategoryDataset(selectedCategory.id);
+                var expenses = await subcategoryData.setSubcategoryDataset(category.id);
             }
         }
-        sessionStorage.removeItem('bar_label_clicked');
     } else {
         const categories = JSON.parse(sessionStorage.getItem('categories')),
             report = categoryData.setCategoriesReport(transactions, categories);
         var expenses = report.expenses;
     }
-
+    
     const dataset = categoryData.setCategoriesDataset(expenses);
     graphics.updateChart(barChart, dataset);
-
+    
     updateTable(transactions, expenses)
 };
 
@@ -69,48 +65,60 @@ export async function updateBarChart(barChart) {
  * Atualiza a tabela com os registros de 
  * @param {Array} transactions - Uma lista de lançamentos.
  * @param {Array} expenses - Uma lista de subcategorias do tipo despesas.
- */
+*/
 async function updateTable(transactions, expenses) {
-    let subcategoryTable = document.getElementById('subcategory-table');
+    let subcategoryTable = document.getElementById('subcategory-table'),
+        barLabelClicked = sessionStorage.getItem('bar_label_clicked');
 
-    if (subcategoryTable) {
-        subcategoryTable.parentNode.removeChild(subcategoryTable);
-    }
-    if (expensesSelector.value === '0') {
-        originalTable.classList.remove('toggled');
-    } else {
+        
+        if (subcategoryTable) {
+            subcategoryTable.parentNode.removeChild(subcategoryTable);
+        }
+        
+    if (barLabelClicked) {
         let categories = JSON.parse(sessionStorage.getItem('categories')),
+            selectedCategory,
             accounts = JSON.parse(sessionStorage.getItem('accounts')),
             cards = JSON.parse(sessionStorage.getItem('cards')),
             banks = JSON.parse(sessionStorage.getItem('banks'));
 
+        for (let category of categories) {
+            if (category.description == barLabelClicked) {
+                selectedCategory = category;
+            }
+        }
+        
         if (!accounts) {
             accounts = await services.getResource('accounts'),
             cards = await services.getResource('cards'),
             banks = await services.getResource('banks');
         }
-
+        
         for (let category of categories) {
-            if (category.id == expensesSelector.value) {
+            if (category.id == selectedCategory.id) {
                 const transactionAttrs = {
-                        accounts: accounts,
+                    accounts: accounts,
                         cards: cards,
                         category: category,
                         subcategories: expenses,
                         banks: banks
                     };
                     originalTable.classList.add('toggled');
-                    let filteredTransactions = dataTable.orderExpensesBySubcategory(transactions, expensesSelector.value, expenses);
-            
+                    let filteredTransactions = dataTable.orderExpensesBySubcategory(transactions, selectedCategory.id, expenses);
+                    
                     tables.renderTable(statementBox, filteredTransactions, transactionAttrs);
+                }
+                sessionStorage.removeItem('bar_label_clicked');
             }
+        } else {
+            originalTable.classList.remove('toggled');
         }
     }
-}
-
+    
 const resetDashboardButton = document.querySelector('#reset-dashboard-button');
 resetDashboardButton.addEventListener('click', () => {
     updateBarChart(barChart);
+    sessionStorage.setItem('bar_chart_level', 'categories');
 });
     
 // expensesSelector.addEventListener('change', () => {

@@ -1,8 +1,13 @@
 import { updateBarChart } from '../../pages/get-transactions.js';
 
-
 let chart;
 
+/**
+ * Monta o gráfico de barras.
+ * @param {Object} dataset - Objeto com as informações que serão usadas para montar o gráfico de barras.
+ * @param {Array} label - Array de labels para as barras do gráfico.
+ * @returns {Object} - O gráfico de barras.
+ */
 export function drawBarChart(dataset, label) {
     const father = document.getElementById('expenses-bar-chart').getContext('2d');
 
@@ -48,6 +53,11 @@ export function drawBarChart(dataset, label) {
     return chart;
 }
 
+/**
+ * Trata o evento do click. Se o evento é em uma das barras, atualiza o gráfico com as subcategorias. Se é fora das barras, volta ao gráfico inicial.
+ * @param {Object} event - Recebe as informações passadas automaticamente pelo Char.js na função onClick.
+ * @param {Array} elements - Recebe as propriedades específicas que são passadas automaticamente pelo Chart.js na função onClick
+ */
 function handleBarClick(event, elements) {
     if (chart && elements.length > 0) {
         const clickedIndex = elements[0].index,
@@ -66,12 +76,14 @@ function handleBarClick(event, elements) {
     }
 }
 
+/**
+ * Trata o evento do hover fazendo com que o cursor se torne pointer quando passa por uma das barras.
+ * @param {Object} event - Recebe as informações passadas automaticamente pelo Char.js na função onClick.
+ * @param {Array} elements - Recebe as propriedades específicas que são passadas automaticamente pelo Chart.js na função onClick
+ */
 function handleBarHover(event, elements) {
-    const barChartLevel = sessionStorage.getItem('bar_chart_level');
-    if (barChartLevel == 'categories') {
-        if (chart) {
-            chart.canvas.style.cursor = elements && elements.length > 0 ? 'pointer' : 'default';
-        }
+    if (chart) {
+        chart.canvas.style.cursor = elements && elements.length > 0 ? 'pointer' : 'default';
     }
 }
 
