@@ -21,5 +21,6 @@ export const selects = {
     releaseDate: getElement('id_release_date'),
     paymentDate: getElement('id_payment_date'),
     category: getElement('id_category'),
-    subcategory: getElement('id_subcategory')
+    subcategory: getElement('id_subcategory'),
+    value: getElement('id_value'),
 };

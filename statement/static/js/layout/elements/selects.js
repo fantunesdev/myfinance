@@ -1,3 +1,8 @@
+/**
+ * Renderiza a opção do select vazio.
+ * 
+ * @param {object} select - Um input html.
+ */
 function renderDefaultOption(select) {
     let option;
 
@@ -8,7 +13,14 @@ function renderDefaultOption(select) {
 }
 
 
-export function renderOptions(select, objectList) {    
+/**
+ * Renderiza options a partir de uma lista de objetos literais.
+ * 
+ * @param {object} select - Um input html.
+ * @param {Array} objectList - Um array de objetos literais. 
+ */
+export function renderOptions(select, objectList) {
+    console.log(objectList);
     select.length = 0;
     renderDefaultOption(select);
     
