@@ -2,6 +2,7 @@ import { showHide } from './index.js';
 import { buttons, divs, selects } from '../layout/elements/transaction-form-elements.js';
 import * as data from '../data/transaction-form-data.js';
 import * as services from '../data/services.js';
+import * as selectInput from '../layout/elements/selects.js';
 
 
 function selectPaymentMethod() {
@@ -39,6 +40,8 @@ async function changePaymentDateInput() {
 
 async function changeSubcategoriesInput(categoryId) {
     const subcategories = await services.getRelatedResource('categories', 'subcategories', categoryId);
+
+    selectInput.renderOptions(selects.subcategory, subcategories);
 }
 
 

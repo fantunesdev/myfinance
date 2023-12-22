@@ -71,10 +71,7 @@ export async function getSpecificResource(model, id) {
  */
 export async function getRelatedResource(model, related, id) {
     const url = `/api/${model}/${id}/${related}`,
-    response = await fetch(url),
-    data = await response.json(),
-    sessionStorageData = JSON.stringify(data);
-
-    sessionStorage.setItem(`${model}-${id}-${related}`, sessionStorageData);
-    return data;
+    response = await fetch(url);
+    
+    return await response.json();
 }
