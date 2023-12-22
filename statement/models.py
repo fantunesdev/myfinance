@@ -136,3 +136,7 @@ class NextMonthView(models.Model):
     day = models.IntegerField()
     active = models.BooleanField(blank=True)
     user = models.ForeignKey(User, on_delete=models.PROTECT)
+
+
+class Version(models.Model):
+    version = models.CharField(max_length=30)
