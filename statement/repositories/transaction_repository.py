@@ -1,3 +1,4 @@
+import pprint
 from datetime import date
 from dateutil.relativedelta import relativedelta
 
@@ -36,6 +37,9 @@ def validate_new_account_balance(old_transaction, new_transaction, old_transacti
                 new_transaction.account.balance = old_transaction_copy.account.balance
             deposit(new_transaction.account, new_transaction.value)
         else:
+            if old_transaction_copy.card:
+                account = account_services.get_account_by_id(new_transaction.account.id, new_transaction.user)
+                old_transaction_copy.account = account
             deposit(old_transaction_copy.account, old_transaction_copy.value)
             if old_transaction_copy.account == new_transaction.account:
                 new_transaction.account.balance = old_transaction_copy.account.balance
