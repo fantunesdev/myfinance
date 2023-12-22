@@ -20,7 +20,7 @@ function addMonth(day, monthString, anoString) {
 
     month = month + 1;
     if (month > 12) {
-        month = 12;
+        month = 1;
         year = year + 1;
     };
 
