@@ -28,6 +28,14 @@ async function changePaymentDateInput() {
     selects.paymentDate.value = paymentDate;
 };
 
+(function autoHandlePaymentMethod() {
+    const accountValue = selects.account.value;
+
+    if (accountValue > 0) {
+        selects.paymentMethod.value = 2;
+    }
+})()
+
 
 async function changeSubcategoriesInput(categoryId) {
     const subcategories = await services.getRelatedResource('categories', 'subcategories', categoryId);
@@ -48,3 +56,4 @@ selects.releaseDate.addEventListener('change', () => changePaymentDateInput());
 selects.category.addEventListener('change', () => changeSubcategoriesInput(selects.category.value));
 
 selectPaymentMethod();
+
