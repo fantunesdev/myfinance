@@ -103,7 +103,7 @@ async function updateTable(transactions, expenses) {
                         subcategories: expenses,
                         banks: banks
                     };
-                    originalTable.classList.add('toggled');
+                    originalTable.classList.add('hide');
                     let filteredTransactions = dataTable.orderExpensesBySubcategory(transactions, selectedCategory.id, expenses);
                     
                     tables.renderTable(statementBox, filteredTransactions, transactionAttrs);
@@ -111,7 +111,7 @@ async function updateTable(transactions, expenses) {
                 sessionStorage.removeItem('bar_label_clicked');
             }
         } else {
-            originalTable.classList.remove('toggled');
+            originalTable.classList.remove('hide');
         }
     }
     
