@@ -26,7 +26,8 @@
         {% elif 'extrato' in request.path %}
             {% include 'transaction/elements/extract/extract_dashboard.html' %}
         {% elif 'fatura' in request.path %}
-            {% include 'transaction/elements/invoice/invoice_dashboard.html' %}
+        {% include 'transaction/elements/invoice/invoice_dashboard.html' %}
+        {% elif 'pesquisa' in request.path %}
         {% else %}
             {% include 'transaction/elements/transaction_dashboard.html' %}
         {% endif %}
@@ -54,7 +55,11 @@
                     <tbody>
                         {% for transaction in transactions %}
                         <tr style="border-left: solid 3px {{ transaction.category.color }}">
+                                {% if 'pesquisa' in request.path %}
+                                <td>{{ transaction.release_date | date:"d/m/Y"}}</td>
+                                {% else %}
                                 <td>{{ transaction.release_date | date:"d/m"}}</td>
+                                {% endif %}
                             {% if transaction.account %}
                             <td>
                                 <img src="{{ transaction.account.bank.icon | handle_image }}" alt="Logotipo do banco {{ bank.description }}" style="max-height: 25px;">

@@ -59,13 +59,18 @@ function toggleSubMenu(id) {
     }
 }
 
-function toggleProfile(id) {
+function toggleBox(id) {
     let element = document.querySelector(`#${id}`);
 
     if (hasToggled(element.classList)) {
         element.classList.remove('active');
     } else {
         element.classList.add('active');
+    }
+
+    if (id == 'search') {
+        const search = document.querySelector('#id_search_description');
+        search.focus();
     }
 }
 
@@ -149,3 +154,9 @@ const asides = document.getElementsByTagName('aside')[0];
 asides.addEventListener('mouseover', () => {
     expandSidebar();
 });
+
+function searchByDescription() {
+    const description = document.getElementById('id_search_description'),
+        url = `/relatorio_financeiro/pesquisa/descricao/${description.value}`;
+    window.location.href = url;
+}

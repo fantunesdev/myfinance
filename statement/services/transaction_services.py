@@ -48,6 +48,10 @@ def get_fixed_transactions_by_year_and_month(year, month, user):
         .order_by('release_date')
 
 
+def get_transactions_by_description(description, user):
+    return Transaction.objects.filter(description__icontains=description, user=user)
+
+
 def get_transaction_by_id(id, user):
     return Transaction.objects.get(id=id, user=user)
 

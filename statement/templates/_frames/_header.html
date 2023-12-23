@@ -6,7 +6,7 @@
                     <a id="sidebar-button"><i class="fa-solid fa-bars"></i></a>
                 </li>
                 <li class="align-right">
-                    <a onclick="toggleProfile('search')" class="btn-search"><i class="fa-solid fa-magnifying-glass"></i></a>
+                    <a onclick="toggleBox('search')" class="btn-search"><i class="fa-solid fa-magnifying-glass"></i></a>
                 </li>
                 <li>
                     <a href="{% url 'setup_settings' %}"><i class="fa-solid fa-gear"></i></a>
@@ -14,9 +14,9 @@
                 <li class="profile-button">
                     {% spaceless %}
                     {% if user.photo %}
-                    <a onclick="toggleProfile('profile')"><img id="profile-photo-button" src="{{ user.photo.url }}" alt=""></a>
+                    <a onclick="toggleBox('profile')"><img id="profile-photo-button" src="{{ user.photo.url }}" alt=""></a>
                     {% else %}
-                    <a onclick="toggleProfile('profile')"><img id="profile-photo-button" src="{% static 'img/default-profile.png' %}" alt=""></a>
+                    <a onclick="toggleBox('profile')"><img id="profile-photo-button" src="{% static 'img/default-profile.png' %}" alt=""></a>
                     {% endif %}
                     {% endspaceless %}
                 </li>
@@ -31,13 +31,13 @@
                         <div>
                             <input type="search" name="search-description" id="id_search_description">
                         </div>
-                        <div>
+                        {% comment %} <div>
                             <select name="search-type" id="id_search_type">
                                 <option value="0">Todos</option>
                                 <option value="1">Contas</option>
                                 <option value="2">Cartões</option>
                             </select>
-                        </div>
+                        </div> {% endcomment %}
                     </div>
                 </div>
                 <div class="dados">
@@ -45,7 +45,7 @@
                 <div class="profile">
                 </div>
                 <div class="logout">
-                    <a class="btn">Buscar</a>
+                    <a class="btn" onclick="searchByDescription()">Buscar</a>
                 </div>
             </section>
             <!-- FIM BUSCA -->

@@ -2,6 +2,7 @@ import copy
 
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
+from datetime import datetime
 
 from statement.entities.transaction import Transaction
 from statement.forms.general_forms import ExclusionForm
@@ -62,6 +63,20 @@ def get_transactions(request):
     templatetags = set_templatetags()
     set_menu_templatetags(request.user, templatetags)
     templatetags['transactions'] = transaction_services.get_transactions(request.user)
+    return render(request, 'transaction/get_transactions.html', templatetags)
+
+
+@login_required
+def get_transactions_by_description(request, description):
+    year = datetime.today().year
+    month = datetime.today().month
+    transactions = transaction_services.get_transactions_by_description(description, request.user)
+    revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(transactions)
+    templatetags = set_templatetags()
+    set_dashboard_templatetags(templatetags, revenue, expenses, cards, cash, fixed)
+    set_transaction_navigation_templatetags(templatetags, year, month)
+    set_menu_templatetags(request.user, templatetags)
+    templatetags['transactions'] = transactions
     return render(request, 'transaction/get_transactions.html', templatetags)
 
 
