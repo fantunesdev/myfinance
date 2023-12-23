@@ -50,7 +50,11 @@ async function changePaymentDateInput() {
  * Seta o valor inicial do input Valor como '0,00'.
  */
 (function setInitialValueInput() {
-    selects.value.value = '0.00';
+    if (selects.value.value) {
+        selects.value.value;
+    } else {
+        selects.value.value = '0.00';
+    }
 })();
 
 
