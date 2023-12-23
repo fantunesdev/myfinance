@@ -6,7 +6,7 @@
                     <a id="sidebar-button"><i class="fa-solid fa-bars"></i></a>
                 </li>
                 <li class="align-right">
-                    <a href="" class="btn-search"><i class="fa-solid fa-magnifying-glass"></i></a>
+                    <a onclick="toggleProfile('search')" class="btn-search"><i class="fa-solid fa-magnifying-glass"></i></a>
                 </li>
                 <li>
                     <a href="{% url 'setup_settings' %}"><i class="fa-solid fa-gear"></i></a>
@@ -22,6 +22,33 @@
                 </li>
             </ul>
             <!-- FIM BOTÕES BARRA SUPERIOR -->
+
+            <!-- INÍCIO BUSCA -->
+            <section id="search" class="toggled">
+                <div class="photo">
+                    <div class="search-form">
+                        <label for="id_search_description">Busca</label>
+                        <div>
+                            <input type="search" name="search-description" id="id_search_description">
+                        </div>
+                        <div>
+                            <select name="search-type" id="id_search_type">
+                                <option value="0">Todos</option>
+                                <option value="1">Contas</option>
+                                <option value="2">Cartões</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="dados">
+                </div>
+                <div class="profile">
+                </div>
+                <div class="logout">
+                    <a class="btn">Buscar</a>
+                </div>
+            </section>
+            <!-- FIM BUSCA -->
 
             <!-- INÍCIO PROFILE -->
             <section id="profile" class="toggled">
