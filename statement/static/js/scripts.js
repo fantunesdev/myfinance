@@ -51,10 +51,10 @@ function toggleSubMenu(id) {
         subMenuButton = document.querySelector(`#${id}-button`);
 
     if (hasToggled(subMenu.classList)) {
-        subMenu.classList.remove('toggled');
+        subMenu.classList.remove('active');
         subMenuButton.lastElementChild.lastElementChild.outerHTML = "<i class='fa-solid fa-angle-up'></i>";
     } else {
-        subMenu.classList.add('toggled');
+        subMenu.classList.add('active');
         subMenuButton.lastElementChild.lastElementChild.outerHTML = "<i class='fa-solid fa-angle-down'></i>";
     }
 }
@@ -63,9 +63,9 @@ function toggleProfile(id) {
     let element = document.querySelector(`#${id}`);
 
     if (hasToggled(element.classList)) {
-        element.classList.remove('toggled');
+        element.classList.remove('active');
     } else {
-        element.classList.add('toggled');
+        element.classList.add('active');
     }
 }
 
@@ -136,7 +136,7 @@ function toggle(id) {
 function hasToggled(classList) {
     let list = Array.from(classList);
 
-    return list.includes('toggled');
+    return list.includes('active');
 }
 
 function hasClass(classList, verifiedClass) {
@@ -144,3 +144,8 @@ function hasClass(classList, verifiedClass) {
 
     return list.includes(verifiedClass);
 }
+
+const asides = document.getElementsByTagName('aside')[0];
+asides.addEventListener('mouseover', () => {
+    expandSidebar();
+});

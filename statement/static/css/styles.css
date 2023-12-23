@@ -66,10 +66,16 @@ footer {
 }
 
 .toggled {
-    display: none;
-    width: 0;
-    height: 0;
-    transition-delay: 0.25s;
+    opacity: 0; /* Comece com opacidade zero */
+    max-height: 0; /* Comece com altura zero para esconder o conteúdo */
+    overflow: hidden;
+    transition: opacity 0.3s ease, max-height 0.3s ease; /* Adicione uma transição suave */
+}
+
+/* Adicione regras para mostrar o submenu quando estiver 'toggled' */
+.toggled.active {
+    opacity: 1;
+    max-height: 500px; /* Ajuste conforme necessário para a altura máxima do submenu */
 }
 
 /* FIM GRID LAYOUT */
