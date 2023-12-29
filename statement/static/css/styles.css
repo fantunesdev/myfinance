@@ -657,6 +657,46 @@ td a:hover {
     padding-right: 10px;
 }
 
+.ml-5 {
+    margin-left: 5px;
+}
+
+.mr-5 {
+    margin-right: 5px;
+}
+
+.ml-10 {
+    margin-left: 10px;
+}
+
+.mr-10 {
+    margin-right: 10px;
+}
+
+.ml-15 {
+    margin-left: 15px;
+}
+
+.mr-15 {
+    margin-right: 15px;
+}
+
+.ml-20 {
+    margin-left: 20px;
+}
+
+.mr-20 {
+    margin-right: 20px;
+}
+
+.ml-25 {
+    margin-left: 25px;
+}
+
+.mr-25 {
+    margin-right: 25px;
+}
+
 /* FIM ALINHAMENTOS HORIZONTAIS E VERTICAIS */
 
 
@@ -740,7 +780,38 @@ label{
 
 option {
     background: #202020;
+    color: #ccc;
     font-size: 15px;
+}
+
+.navigation-form {
+    background-color: transparent;
+    color: #ccc;
+    font-size: 20px;
+    border: none;
+    outline: none;
+    appearance: none;
+    text-align: center;
+}
+
+.navigation-form > select option {
+    outline: none;
+    border: none;
+}
+
+.navigation-div {
+    justify-content: center;
+}
+
+.nav-btn {
+    font-family: Ubuntu;
+    font-size: 13px;
+    text-decoration: none;
+    padding: 10px 20px 10px 20px;
+    border-radius: 4px;
+    color: azure;
+    box-shadow: none;
+    cursor: pointer;
 }
 
 /* INÍCIO FORMULÁRIOS */

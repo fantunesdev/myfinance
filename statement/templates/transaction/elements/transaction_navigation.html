@@ -1,10 +1,11 @@
 
-        <a href="{% url 'get_transactions_by_year_and_month' previous_month|date:'Y' previous_month|date:'m' %}">
-            <input type="button" value="{{ previous_month | date:'M-y' }}" class="btn" style="margin: 5px;">
-        </a>
-        <a href="{% url 'get_transactions_by_year_and_month' year_month|date:'Y' year_month|date:'m' %}">
-            <input type="button" value="{{ year_month|date:'M-y' }}" class="btn" style="margin: 5px;">
-        </a>
-        <a href="{% url 'get_transactions_by_year_and_month' next_month|date:'Y' next_month|date:'m' %}">
-            <input type="button" value="{{ next_month|date:'M-y' }}" class="btn" style="margin: 5px;">
-        </a>
+        <div class="navigation-div">
+            <a href="{% url 'get_transactions_by_year_and_month' previous_month|date:'Y' previous_month|date:'m' %}"><i class="fa-solid fa-backward-step"></i></a>
+                <a class="nav-btn">
+                    {{ navigation_form.month }}
+                </a>
+                <a class="nav-btn mr-5">
+                    {{ navigation_form.year }} 
+                </a>
+            <a class="nav-btn" href="{% url 'get_transactions_by_year_and_month' next_month|date:'Y' next_month|date:'m'  %}"><i class="fa-solid fa-forward-step"></i></a>
+        </div>

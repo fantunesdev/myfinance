@@ -5,7 +5,7 @@ from django.shortcuts import redirect, render
 from datetime import datetime
 
 from statement.entities.transaction import Transaction
-from statement.forms.general_forms import ExclusionForm
+from statement.forms.general_forms import ExclusionForm, NavigationForm
 from statement.repositories import next_month_view_repository, installment_repository
 from statement.repositories.templatetags_repository import set_menu_templatetags, set_dashboard_templatetags, \
     set_templatetags, set_transaction_navigation_templatetags
@@ -95,15 +95,18 @@ def get_transactions_by_year(request, year):
 @login_required
 def get_current_month_transactions(request):
     current_month = next_month_view_repository.get_current_month(request.user)
-    transactions = transaction_services.get_transactions_by_year_and_month(year=current_month.year,
-                                                                           month=current_month.month,
-                                                                           user=request.user)
+    transactions = transaction_services.get_transactions_by_year_and_month(
+        year=current_month.year,
+        month=current_month.month,
+        user=request.user
+    )
     revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(transactions)
     templatetags = set_templatetags()
     set_dashboard_templatetags(templatetags, revenue, expenses, cards, cash, fixed)
     set_transaction_navigation_templatetags(templatetags, current_month)
     set_menu_templatetags(request.user, templatetags)
     templatetags['transactions'] = transactions
+    templatetags['navigation_form'] = NavigationForm(initial={'year': current_month.year, 'month': current_month.month})
     return render(request, 'transaction/get_transactions.html', templatetags)
 
 
@@ -116,6 +119,7 @@ def get_transactions_by_year_and_month(request, year, month):
     set_transaction_navigation_templatetags(templatetags, year, month)
     set_menu_templatetags(request.user, templatetags)
     templatetags['transactions'] = transactions
+    templatetags['navigation_form'] = NavigationForm(initial={'year': year, 'month': month})
     return render(request, 'transaction/get_transactions.html', templatetags)
 
 

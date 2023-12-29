@@ -1,3 +1,21 @@
+// DEFINIÇÃO DE CONSTANTES
+
+const pathName = window.location.pathname,
+    yearNavigation = document.getElementById('id_year'),
+    monthNavigation = document.getElementById('id_month'),
+    search = document.querySelector('#id_search_description'),
+    asides = document.getElementsByTagName('aside')[0],
+    sidebarButton = document.querySelector('#sidebar-button'),
+    searchButton = document.querySelector('#search-button'),
+    body = document.getElementsByTagName('body')[0];
+
+
+// FUNÇÕES ESTÉTICAS
+
+
+/**
+ * Encolhe e estica a barra lateral.
+ */
 function toggleSidebar() {
     toggle = document.getElementsByClassName('toggle');
 
@@ -8,6 +26,10 @@ function toggleSidebar() {
     }
 }
 
+
+/**
+ * Recolhe a barra do menu lateral e colapsa os itens que irão desaparecer.
+ */
 function recallSidebar() {
     let body = document.getElementsByTagName('body')[0],
         logo = document.getElementsByTagName('body')[0].children[1].children[0],
@@ -27,6 +49,10 @@ function recallSidebar() {
         }
 }
 
+
+/**
+ * Expande a barra do menu lateral e mostra os itens que estavam escondidos.
+ */
 function expandSidebar() {
     let body = document.getElementsByTagName('body')[0],
         logo = document.getElementsByTagName('body')[0].children[1].children[0],
@@ -46,6 +72,12 @@ function expandSidebar() {
         }
 }
 
+
+/**
+ * Retrai e expande os submenus.
+ * 
+ * @param {string} id - Uma string com o id html do submenu a ser retraído/expandido.
+ */
 function toggleSubMenu(id) {
     let subMenu = document.querySelector(`#${id}`),
         subMenuButton = document.querySelector(`#${id}-button`);
@@ -59,6 +91,11 @@ function toggleSubMenu(id) {
     }
 }
 
+/**
+ * Colapsa e revela caixas.
+ * 
+ * @param {string} id - Uma string com o ID HTML da caixa a ser colapsada/revelada.
+ */
 function toggleBox(id) {
     let element = document.querySelector(`#${id}`);
 
@@ -68,43 +105,14 @@ function toggleBox(id) {
         element.classList.add('active');
     }
 
-    if (id == 'search') {
-        const search = document.querySelector('#id_search_description');
+    if (id == 'search') {;
         search.focus();
     }
 }
 
-function toggleNavegacao(id) {
-    let navegacao = document.querySelector(`#${id}`),
-        navegacaoButton = document.querySelector(`#${id}-button`),
-        i,
-        j;
-
-    if (hasToggled(navegacao.classList)) {
-        navegacao.classList.remove('toggled');
-        navegacaoButton.children[0].outerHTML = '<i class="fa-solid fa-angles-up" onclick="toggleNavegacao(\'navegacao\')"></i>';
-        for (i = 0; i < navegacao.children.length; i++) {
-            navegacao.children[i].classList.remove('toggled');
-        }
-    } else {
-        navegacao.classList.add('toggled');
-        navegacaoButton.children[0].outerHTML = '<i class="fa-solid fa-angles-down" onclick="toggleNavegacao(\'navegacao\')"></i>';
-        for (i = 0; i < navegacao.children.length; i++) {
-            navegacao.children[i].classList.add('toggled');
-        }
-    }
-}
-
-let sidebarButton = document.querySelector('#sidebar-button'),
-    searchButton = document.querySelector('#search-button'),
-    body = document.getElementsByTagName('body')[0];
-
-
-sidebarButton.addEventListener('click', () => {
-    toggleSidebar();
-});
-
-
+/**
+ * Função anônima que encolhe e amplia o menu lateral de acordo com o tamanho da tela disponível.
+ */
 (window.onresize = () => {
     let boxes = [
         document.getElementById('tempo-area'),
@@ -128,6 +136,11 @@ sidebarButton.addEventListener('click', () => {
     }
 })();
 
+/**
+ * Adiciona a classe CSS toggled para colapçar/mostrar elementos.
+ * 
+ * @param {string} id - Uma string com o ID HTML do elemento que será colapsado/mostrado.
+ */
 function toggle(id) {
     let box = document.getElementById(id);
 
@@ -138,25 +151,68 @@ function toggle(id) {
         }
 }
 
+/**
+ * Verifica e inclui a classe CSS active na lista de classes de um elemento html.
+ * 
+ * @param {Array} classList - Um array com as classes CSS de um elemento.
+ * @returns - O array com as classes CSS com a classe active adicionada.
+ */
 function hasToggled(classList) {
     let list = Array.from(classList);
 
     return list.includes('active');
 }
 
+/**
+ * Verifica e inclui uma classe CSS na lista de classe de um elemento html.
+ * 
+ * @param {Array} classList - Um array com as classes CSS de um elemento.
+ * @param {string} verifiedClass - Uma string da classe CSS a ser verificada.
+ * @returns - O array com a classe adicionada.
+ */
 function hasClass(classList, verifiedClass) {
     const list = Array.from(classList);
 
     return list.includes(verifiedClass);
 }
 
-const asides = document.getElementsByTagName('aside')[0];
-asides.addEventListener('mouseover', () => {
-    expandSidebar();
-});
-
+/**
+ * Redireciona para a página de pesquisa passando a string do item a ser pesquisado.
+ */
 function searchByDescription() {
     const description = document.getElementById('id_search_description'),
         url = `/relatorio_financeiro/pesquisa/descricao/${description.value}`;
     window.location.href = url;
 }
+
+
+// EVENT LISTENERS
+
+// Evento do icone hamburger para encolher/expandir o menu lateral.
+sidebarButton.addEventListener('click', () => {
+    toggleSidebar();
+});
+
+// Expandir o menu lateral quando o mouse passar por cima.
+asides.addEventListener('mouseover', () => {
+    expandSidebar();
+});
+
+// Chama a função que pesquisa ao apertar enter no formulário.
+search.addEventListener('keydown', event => {
+    if (event.key === 'Enter') {
+        searchByDescription();
+    }
+});
+
+// Redireciona para a página do ano selecionado.
+yearNavigation.addEventListener('change', () => {
+    let url = `/relatorio_financeiro/${yearNavigation.value}/${monthNavigation.value}`;
+    window.location.href = url;
+});
+
+// Redireciona para a página do mês selecionado.
+monthNavigation.addEventListener('change', () => {
+    let url = `/relatorio_financeiro/${yearNavigation.value}/${monthNavigation.value}`;
+    window.location.href = url;
+});
