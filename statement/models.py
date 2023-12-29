@@ -140,3 +140,6 @@ class NextMonthView(models.Model):
 
 class Version(models.Model):
     version = models.CharField(max_length=30)
+
+    class Meta:
+        ordering = ['version']

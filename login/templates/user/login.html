@@ -26,10 +26,14 @@
                     <label>Senha: </label>
                     {{ login_form.password }}
                 </div>
+                <div class="center-text pt-15">
+                    <span>Versão: </span><span id="version"></span>
+                </div>
             </div>
             <div class="box-footer">
                 <input type="submit" value="Logar" class="btn btn-primary">
                 <a href="{% url 'login_user' %}" class="btn btn-primary">Voltar</a>
+                <a href="/usuarios/cadastrar">Cadastrar novo usuároi</a>
             </div>
         </form>
     </div>

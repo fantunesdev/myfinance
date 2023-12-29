@@ -4,6 +4,7 @@ from api.views.account_views import AccountsList
 from api.views.bank_views import *
 from api.views.card_views import *
 from api.views.category_views import *
+from api.views.default_views import *
 from api.views.extract_views import *
 from api.views.invoice_views import *
 from api.views.next_month_view_view import NextMonthView
@@ -33,4 +34,6 @@ urlpatterns = [
     path('transactions/card/<int:card_id>/year/<int:year>/month/<int:month>/', InvoiceByCardYearAndMonth.as_view()),
 
     path('subcategories/', SubcategoryList.as_view(), name='subcategory-list'),
+
+    path('defaults/', Defaults.as_view(), name='defaults'),
 ]

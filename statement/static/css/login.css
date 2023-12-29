@@ -73,6 +73,18 @@ body {
     transform: translate(-50%, -50%);
 }
 
+.center-text {
+    text-align: center;
+}
+
+.pt-10 {
+    padding-top: 10px;
+}
+
+.pt-15 {
+    padding-top: 15px;
+}
+
 .btn {
     font-family: Ubuntu;
     font-size: 13px;
