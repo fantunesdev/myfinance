@@ -77,6 +77,7 @@ def get_transactions_by_description(request, description):
     set_transaction_navigation_templatetags(templatetags, year, month)
     set_menu_templatetags(request.user, templatetags)
     templatetags['transactions'] = transactions
+    templatetags['navigation_form'] = NavigationForm(initial={'year': year, 'month': month})
     return render(request, 'transaction/get_transactions.html', templatetags)
 
 

@@ -1,3 +1,5 @@
+import datetime
+
 from django import forms
 
 
@@ -10,7 +12,7 @@ class NavigationForm(forms.Form):
     year = forms.ChoiceField(
         label='',
         choices=(
-            (y, y) for y in range (2015, 2025)
+            (y, y) for y in range (2010, datetime.datetime.today().year + 3)
         ),
         widget=forms.Select(attrs={'class': 'navigation-form'}),
     )
