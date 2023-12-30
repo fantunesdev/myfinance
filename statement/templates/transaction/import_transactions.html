@@ -22,6 +22,18 @@
                 </div>
 
                 <div class="form-group">
+                    {{ upload_file_form.account.errors }}
+                    <label>Contas: </label><br>
+                    {{ upload_file_form.account }}
+                </div>
+
+                <div class="form-group">
+                    {{ upload_file_form.card.errors }}
+                    <label>Cartões: </label><br>
+                    {{ upload_file_form.card }}
+                </div>
+
+                <div class="form-group">
                     <input type="submit" value="Atualizar" class="btn btn-primary">
                 </div>
         

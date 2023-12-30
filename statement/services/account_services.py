@@ -23,6 +23,10 @@ def get_account_by_id(id, user):
     return Account.objects.get(id=id, user=user)
 
 
+def get_account_by_account_number(account_number, user):
+    return Account.objects.get(number=account_number, user=user)
+
+
 def update_account(old_account, new_account):
     old_account.bank = new_account.bank
     old_account.branch = new_account.branch

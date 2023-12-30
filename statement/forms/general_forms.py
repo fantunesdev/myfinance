@@ -2,6 +2,8 @@ import datetime
 
 from django import forms
 
+from statement.models import Account, Card
+
 
 class ExclusionForm(forms.Form):
     confirmation = forms.BooleanField(label='', required=True)
@@ -37,4 +39,9 @@ class NavigationForm(forms.Form):
 
 
 class UploadFileForm(forms.Form):
+    def __init__(self, user, *args, **kwargs):
+        super(UploadFileForm, self).__init__(*args, **kwargs)
+        self.fields['account'] = forms.ModelChoiceField(queryset=Account.objects.filter(user=user))
+        self.fields['card'] = forms.ModelChoiceField(queryset=Card.objects.filter(user=user))
+
     file = forms.FileField()

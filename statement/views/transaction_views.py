@@ -65,11 +65,15 @@ def import_transactions(request):
         upload_file_form = UploadFileForm(request.POST, request.FILES)
         if upload_file_form.is_valid():
             file = request.FILES['file']
-            file_handling.FileHandling(file=file)
+            account = upload_file_form.cleaned_data['account']
+            card = upload_file_form.cleaned_data['card']
+            file_handled = file_handling.FileHandling(file=file,user=request.user)
+            for transaction in file_handled.transactions:
+                print(transaction)
         else:
             print(upload_file_form.errors)
     else:
-        upload_file_form = UploadFileForm()
+        upload_file_form = UploadFileForm(request.user)
     templatetags = set_templatetags()
     set_menu_templatetags(request.user, templatetags)
     templatetags['upload_file_form'] = upload_file_form

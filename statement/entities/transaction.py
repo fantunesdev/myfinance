@@ -22,3 +22,28 @@ class Transaction:
         self.home_screen = home_screen
         self.user = user
         self.installment = installment
+
+    def __str__(self) -> str:
+        return f"""
+        Transaction:
+            release_date: {self.release_date}
+            payment_date: {self.payment_date}
+            account: {self.account} 
+            card: {self.card}
+            category: {self.category}
+            subcategory: {self.subcategory}
+            description: {self.description}
+            value: {self.value}
+            installments_number: {self.installments_number}
+            paid: {self.paid}
+            fixed: {self.fixed}
+            annual: {self.annual}
+            currency: {self.currency}
+            observation: {self.observation}
+            remember: {self.remember}
+            type: {self.type}
+            effected: {self.effected}
+            home_screen: {self.home_screen}
+            user: {self.user}
+            installment: {self.installment}
+        """
