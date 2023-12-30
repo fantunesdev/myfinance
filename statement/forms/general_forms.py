@@ -34,3 +34,7 @@ class NavigationForm(forms.Form):
         ),
         widget=forms.Select(attrs={'class': 'navigation-form'}),
     )
+
+
+class UploadFileForm(forms.Form):
+    file = forms.FileField()

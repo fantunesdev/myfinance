@@ -5,11 +5,12 @@ from django.shortcuts import redirect, render
 from datetime import datetime
 
 from statement.entities.transaction import Transaction
-from statement.forms.general_forms import ExclusionForm, NavigationForm
+from statement.forms.general_forms import ExclusionForm, NavigationForm, UploadFileForm
 from statement.repositories import next_month_view_repository, installment_repository
 from statement.repositories.templatetags_repository import set_menu_templatetags, set_dashboard_templatetags, \
     set_templatetags, set_transaction_navigation_templatetags
 from statement.repositories.transaction_repository import *
+from statement.services import file_handling
 from statement.services import transaction_installment_services
 
 
@@ -56,6 +57,23 @@ def create_transaction(request, type):
     templatetags['transaction_form'] = transaction_form
     templatetags['type'] = type
     return render(request, 'transaction/transaction_form.html', templatetags)
+
+
+@login_required
+def import_transactions(request):
+    if request.method == 'POST':
+        upload_file_form = UploadFileForm(request.POST, request.FILES)
+        if upload_file_form.is_valid():
+            file = request.FILES['file']
+            file_handling.FileHandling(file=file)
+        else:
+            print(upload_file_form.errors)
+    else:
+        upload_file_form = UploadFileForm()
+    templatetags = set_templatetags()
+    set_menu_templatetags(request.user, templatetags)
+    templatetags['upload_file_form'] = upload_file_form
+    return render(request, 'transaction/import_transactions.html', templatetags)
 
 
 @login_required
