@@ -7,7 +7,9 @@ import * as tables from '../layout/elements/tables.js';
 import * as services from '../data/services.js';
 import { expensesSelector, originalTable, statementBox } from '../layout/elements/get-transactions-elements.js';
 
-
+const yearNavigation = document.getElementById('id_year'),
+    monthNavigation = document.getElementById('id_month');
+    
 /**
  * Busca todas as informações para desenhar os gráficos de barras e de donuts.
  * @returns - Um gráfico de barras.
@@ -97,7 +99,7 @@ async function updateTable(transactions, expenses) {
         for (let category of categories) {
             if (category.id == selectedCategory.id) {
                 const transactionAttrs = {
-                    accounts: accounts,
+                        accounts: accounts,
                         cards: cards,
                         category: category,
                         subcategories: expenses,
@@ -127,3 +129,16 @@ resetDashboardButton.addEventListener('click', () => {
 
 let barChart = await draw();
 sessionStorage.setItem('bar_chart_level', 'categories');
+
+
+// Redireciona para a página do ano selecionado.
+yearNavigation.addEventListener('change', () => {
+    let url = `/relatorio_financeiro/${yearNavigation.value}/${monthNavigation.value}`;
+    window.location.href = url;
+});
+
+// Redireciona para a página do mês selecionado.
+monthNavigation.addEventListener('change', () => {
+    let url = `/relatorio_financeiro/${yearNavigation.value}/${monthNavigation.value}`;
+    window.location.href = url;
+});

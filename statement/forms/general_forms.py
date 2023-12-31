@@ -41,7 +41,23 @@ class NavigationForm(forms.Form):
 class UploadFileForm(forms.Form):
     def __init__(self, user, *args, **kwargs):
         super(UploadFileForm, self).__init__(*args, **kwargs)
-        self.fields['account'] = forms.ModelChoiceField(queryset=Account.objects.filter(user=user))
-        self.fields['card'] = forms.ModelChoiceField(queryset=Card.objects.filter(user=user))
+        self.fields['account'] = forms.ModelChoiceField(
+            required=False,
+            queryset=Account.objects.filter(user=user),
+            widget=forms.Select(attrs={'class': 'form-control'})
+            )
+        self.fields['card'] = forms.ModelChoiceField(
+            required=False,
+            queryset=Card.objects.filter(user=user),
+            widget=forms.Select(attrs={'class': 'form-control'})
+            )
 
     file = forms.FileField()
+    payment_method = forms.ChoiceField(
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        choices=(
+            (1, 'Cartão de Crédito'),
+            (2, 'Conta Corrente'),
+        )
+    )

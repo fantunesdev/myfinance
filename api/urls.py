@@ -11,6 +11,8 @@ from api.views.next_month_view_view import NextMonthView
 from api.views.transaction_views import *
 from api.views.subcategoy_views import *
 
+from django.views.decorators.csrf import csrf_exempt
+
 urlpatterns = [
     path('next_month_view/', NextMonthView.as_view(), name='next_month_view'),
 
@@ -32,6 +34,7 @@ urlpatterns = [
     path('transactions/year/<int:year>/month/<int:month>/', TransactionByYearAndMonth.as_view()),
     path('transactions/accounts/<int:account_id>/year/<int:year>/month/<int:month>/', ExtractByAccountYearAndMonth.as_view()),
     path('transactions/card/<int:card_id>/year/<int:year>/month/<int:month>/', InvoiceByCardYearAndMonth.as_view()),
+    path('transactions/import/', csrf_exempt(ImportTransactions.as_view())),
 
     path('subcategories/', SubcategoryList.as_view(), name='subcategory-list'),
 

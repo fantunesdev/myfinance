@@ -1,3 +1,5 @@
+import json
+
 class Transaction:
     def __init__(self, release_date, payment_date, account, card, category, subcategory, description, value,
                  installments_number, paid, fixed, annual, currency, observation, remember, type, effected, home_screen,
@@ -47,3 +49,6 @@ class Transaction:
             user: {self.user}
             installment: {self.installment}
         """
+    
+    def to_dict(self):
+        return self.__dict__

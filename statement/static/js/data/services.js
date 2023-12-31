@@ -75,3 +75,21 @@ export async function getRelatedResource(model, related, id) {
     
     return await response.json();
 }
+
+
+export async function importTransactions(formData, csrf) {
+    const url = `/api/transactions/import/`,
+        requestOptions = {
+        method: "POST",
+        headers: {
+            'Accept': 'application/json',
+            "X-CSRFToken": csrf
+        },
+        body: formData,
+        };
+    const response = await fetch(url, requestOptions),
+        transactions = await response.json(),
+        sessionStorageData = JSON.stringify(transactions);
+    sessionStorage.setItem('imported-transactions', sessionStorageData);
+    return transactions;
+}
