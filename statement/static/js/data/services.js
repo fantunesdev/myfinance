@@ -78,7 +78,7 @@ export async function getRelatedResource(model, related, id) {
 
 
 /**
- * Faz upload do arquivo dos lançamentos, o backend lê e retorna um json com os dados para renderização.
+ * Faz upload do arquivo dos lançamentos, o backend lê e retorna um JSON com os dados para renderização.
  * 
  * @param {array} formData - um objeto que contém os dados do formulário
  * @param {string} csrf - O CSRF Token

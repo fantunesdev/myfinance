@@ -47,6 +47,10 @@
                         <label for="id_limits">Limite</label>
                         {{ account_form.limits }}
 
+                        {{ account_form.file_handler_conf.errors }}
+                        <label for="id_type">Configurações do arquivivo de carga</label>
+                        {{ account_form.file_handler_conf }}
+
                         {{ account_form.type.errors }}
                         <label for="id_type">Tipo</label>
                         {{ account_form.type }}
