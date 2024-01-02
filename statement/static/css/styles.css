@@ -665,12 +665,20 @@ td a:hover {
     margin-right: 5px;
 }
 
+.mt-10 {
+    margin-top: 10px;
+}
+
 .ml-10 {
     margin-left: 10px;
 }
 
 .mr-10 {
     margin-right: 10px;
+}
+
+.mt-15 {
+    margin-top: 15px;
 }
 
 .ml-15 {

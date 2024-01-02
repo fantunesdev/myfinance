@@ -26,6 +26,9 @@ class Transaction:
         self.installment = installment
 
     def __str__(self) -> str:
+        return self.description
+
+    def __repr__(self) -> str:
         return f"""
         Transaction:
             release_date: {self.release_date}

@@ -9,3 +9,6 @@ class Card:
         self.closing_day = closing_day
         self.home_screen = home_screen
         self.user = user
+
+    def __str__(self) -> str:
+        return self.description

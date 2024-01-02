@@ -6,7 +6,8 @@ const fileInput = document.querySelector('#id_file'),
     importBtn = document.querySelector('#import-btn'),
     boxTransactions = document.querySelector('#box-transactions'),
     divImportTransactions = document.querySelector('#div-import-transactions'),
-    transactionRows = document.querySelector('#transaction-rows');
+    transactionRows = document.querySelector('#transaction-rows'),
+    checkboxCheckAll = document.querySelector('#checkall');
 
 selects.paymentMethod.value = 2;
 divs.card.classList.add('toggled');
@@ -86,5 +87,11 @@ function renderBox() {
 importBtn.addEventListener('click', () => sendFile());
 
 selects.paymentMethod.addEventListener('change', () => selectPaymentMethod());
+
+checkboxCheckAll.addEventListener('change', function() {
+    for (const row of transactionRows.children) {
+        row.children[0].children[0].checked = this.checked;
+    }
+});
 
 

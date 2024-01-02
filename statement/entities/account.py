@@ -10,6 +10,9 @@ class Account:
         self.user = user
 
     def __str__(self) -> str:
+        return f'Banco: {self.bank} - Agência: {self.branch} - Número: {self.number}'
+
+    def __repr__(self) -> str:
         return f"""
         Account:
             bank: {self.bank}

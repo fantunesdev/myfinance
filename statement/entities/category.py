@@ -6,3 +6,6 @@ class Category:
         self.icon = icon
         self.ignore = ignore
         self.user = user
+
+    def __str__(self) -> str:
+        return self.description
