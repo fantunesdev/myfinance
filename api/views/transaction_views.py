@@ -1,10 +1,12 @@
 import json
 
+from django.core.exceptions import ObjectDoesNotExist
+from django.utils.translation import gettext as _
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from api.serializers import transaction_serializer
+from api.serializers import transaction_serializer, file_handler_serializer
 from api.services import file_handler_services, transaction_services
 
 
@@ -24,14 +26,16 @@ class TransactionYear(APIView):
 
 class ImportTransactions(APIView):
     def post(self, request):
-        file_handler = file_handler_services.FileHandler(
-            file=request.FILES.get('file'),
-            account=request.data['account'],
-            card=request.data['card'],
-            user=request.user
-        )     
-        return Response(file_handler.transactions, status=status.HTTP_200_OK)
+        serializer = file_handler_serializer.FileHandlerSerializer(request)
         if serializer.is_valid():
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            try:
+                file_handler = file_handler_services.FileHandler(request)
+                return Response(file_handler.transactions, status=status.HTTP_200_OK)
+            except ObjectDoesNotExist:
+                if request.data['account'] and not request.data['card']:
+                    error_message = f'Não existe uma conta com o id {request.data["account"]}.'
+                elif request.data['card'] and not request.data['account']:
+                    error_message = f'Não existe um cartão com o id {request.data["card"]}.'
+                return Response({'errors': _(error_message)}, status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response({'status': 'error', 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'errors': serializer.error_message}, status=status.HTTP_400_BAD_REQUEST)

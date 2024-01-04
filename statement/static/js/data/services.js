@@ -94,9 +94,14 @@ export async function importTransactions(formData, csrf) {
         },
         body: formData,
         };
-    const response = await fetch(url, requestOptions),
-        transactions = await response.json(),
-        sessionStorageData = JSON.stringify(transactions);
-    sessionStorage.setItem('imported-transactions', sessionStorageData);
-    return transactions;
+
+    try {
+        const response = await fetch(url, requestOptions),
+            transactions = await response.json(),
+            sessionStorageData = JSON.stringify(transactions);
+        sessionStorage.setItem('imported-transactions', sessionStorageData);
+        return transactions;
+    } catch (error) {
+        return error;
+    }
 }

@@ -42,14 +42,20 @@ async function sendFile() {
         alert('Selecione um arquivo para continuar.');
         return;
     }
-
     if (selects.paymentMethod.value == 1 && !selects.card.value) {
         alert('Selecione um cartão para continuar.');
     } else if (selects.paymentMethod.value == 2 && !selects.account.value) {
         alert('Selecione uma conta para continuar.');
     } else {
-        await importTransactions(formData, csrf);
-        renderBox()
+        const transaction = await importTransactions(formData, csrf),
+            importError = document.querySelector('#import-error');
+        if (transaction.errors) {
+            importError.classList.remove('toggled');
+            importError.textContent = transaction.errors;
+        } else {
+            importError.classList.add('toggled');
+            renderBox()
+        }
     }
 }
 

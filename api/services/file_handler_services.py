@@ -1,22 +1,86 @@
 import csv
+import json
 import os
 
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 
 from statement.entities.transaction import Transaction
-from statement.services import account_services
+from statement.services import account_services, card_services
 
 
 class FileHandler():
-    def __init__(self, file, account, card, user) -> None:
-        self.file = file
-        self.account = account
-        self.card = card
-        self.user = user
-        self.extention = file.name.split('.')[-1].lower()
-        self.path = os.path.join(settings.MEDIA_ROOT, 'uploads', file.name)
-        self.transactions = []
+    def __init__(self, request) -> None:
+        self.__file = request.FILES.get('file')
+        self.__account = self.__set_account(request)
+        self.__card = self.__set_card(request)
+        self.__user = request.user
+        self.__extention = self.__set_extension(request)
+        self.__path = self.__set_path(request)
+        self.__transactions = []
+        self.__error_message = ''
+        self.__file_conf = None
         self.__handle_file()
+
+    @property
+    def file(self):
+        return self.__file
+
+    @property
+    def error_message(self):
+        return self.__error_message
+
+    @property
+    def account(self):
+        return self.__account
+
+    @property
+    def card(self):
+        return self.__card
+
+    @property
+    def extention(self):
+        return self.__extention
+
+    @property
+    def path(self):
+        return self.__path
+
+    @property
+    def user(self):
+        return self.__user
+
+    @property
+    def file_conf(self):
+        return self.__file_conf
+
+    @property
+    def transactions(self):
+        return self.__transactions
+
+    def __set_account(self, request):
+        try:
+            account = request.data['account']
+            user = request.user
+            return account_services.get_account_by_id(account, user)
+        except ValueError:
+            return None
+
+    def __set_card(self, request):
+        try:
+            card = request.data['card']
+            user = request.user
+            return card_services.get_card_by_id(card, user)
+        except ValueError:
+            return None
+        
+    def __set_extension(self, request):
+        file = request.FILES.get('file')
+        return file.name.split('.')[-1].lower()
+        
+    def __set_path(self, request):
+        file = request.FILES.get('file')
+        return os.path.join(settings.MEDIA_ROOT, 'uploads', file.name)
 
     def __handle_file(self):
         self.__save_file()
@@ -26,7 +90,7 @@ class FileHandler():
 
     def __save_file(self):
         with open(self.path, 'wb+') as destination:
-            for chunk in self.file.chunks():
+            for chunk in self.__file.chunks():
                 destination.write(chunk)
 
     def __read_file(self):
@@ -36,32 +100,31 @@ class FileHandler():
                     content = file.read()
                 return content
             case 'csv':
-                return self.__read_inter_csv()
+                return self.__read_csv()
         
     
     def __remove_file(self):
-        try:
-            os.remove(self.path)
-        except FileNotFoundError:
-            print(f'Arquivo {self.file.name} não encontrado.')
+        os.remove(self.path)
 
-    def __read_inter_csv(self):
+    def __read_csv(self):
         with open(self.path, 'r', newline='', encoding='utf-8') as csv_file:
             reader = csv.reader(csv_file, delimiter=';')
+
+            self.file_conf = json.loads(self.account.file_handler_conf)
 
             ignore = True
             
             for id, row in enumerate(reader):
                 try:
-                    if row == self.inter_header:
+                    if row == self.file_conf['header']:
                         ignore = False
 
                     if not ignore:
                         transaction = {
                             'id': id,
                             'date': self.__handle_date(row[0]),
-                            'account': self.account,
-                            'card': self.card,
+                            'account': self.account.id if self.account else None,
+                            'card': self.card.id if self.card else None,
                             'category': self.__handle_category(row[1]),
                             'subcategory': self.__handle_subcategory(row[1]),
                             'type': self.__handle_type(row[2]),
@@ -85,20 +148,21 @@ class FileHandler():
         return f'{year}-{month}-{day}'
     
     def __handle_category(self, file_description):
-        description = file_description.split('-')[0].rstrip()
-        if 'PROV' in file_description:
-            description = 'Provento'
-        elif 'PAGAMENTO' in file_description:
-            description = 'Pagamento de Título'
-        elif 'VENCIMENTO' or 'RESGATE' in file_description:
-            description = 'Resgate'
-        return description
+        for category in self.file_conf['categories']:
+            if category['word'] in file_description:
+                return category['id']
+        return file_description.split('-')[0].rstrip()
     
     def __handle_subcategory(self, file_description):
-        description = file_description.split('-')[0].rstrip()
-        if 'PAGAMENTO' in file_description:
-            description = 'PAGAMENTO DE TÍTULO'
-        return description.title()
+        for subcategory in self.file_conf['subcategories']:
+            if subcategory['word'] in file_description:
+                return subcategory['id']
+        return file_description.split('-')[0].rstrip()
+
+    def __handle_type(self, value):
+        if value[0] == '-':
+            return 'saida'
+        return 'entrada'
 
     def __handle_description(self, description):
         words = description.split()
@@ -111,16 +175,8 @@ class FileHandler():
         elif 'PAGAMENTO' in description:
             description = 'Boleto'
         return description
-
-    def __handle_type(self, value):
-        if value[0] == '-':
-            return 'saida'
-        return 'entrada'
     
     def __handle_value(self, value):
         if value[0] == '-':
             return value[1:]
         return value
-                
-
-    inter_header = ['Data Lançamento', 'Descrição', 'Valor', 'Saldo']

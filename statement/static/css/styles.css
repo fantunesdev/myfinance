@@ -782,6 +782,13 @@ td a:hover {
     height: 200px;
 }
 
+.danger {
+    padding: 20px;
+    font-weight: 900;
+    background: darkred;
+    border-radius: 4px;
+}
+
 label{
     font-weight: bolder;
 }
