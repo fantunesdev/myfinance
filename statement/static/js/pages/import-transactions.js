@@ -1,5 +1,5 @@
 import { divs, selects } from '../layout/elements/transaction-form-elements.js';
-import { importTransactions } from '../data/services.js';
+import * as services from '../data/services.js';
 // import * as tables from '../layout/elements/tables.js';
 
 const fileInput = document.querySelector('#id_file'),
@@ -47,7 +47,7 @@ async function sendFile() {
     } else if (selects.paymentMethod.value == 2 && !selects.account.value) {
         alert('Selecione uma conta para continuar.');
     } else {
-        const transaction = await importTransactions(formData, csrf),
+        const transaction = await services.importTransactions(formData, csrf),
             importError = document.querySelector('#import-error');
         if (transaction.errors) {
             importError.classList.remove('toggled');
@@ -59,10 +59,18 @@ async function sendFile() {
     }
 }
 
-function renderBox() {
+async function renderBox() {
     const transactions = JSON.parse(sessionStorage.getItem('imported-transactions')),
-        accounts = JSON.parse(sessionStorage.getItem('accounts')),
-        cards = JSON.parse(sessionStorage.getItem('cards'));
+        accounts = await services.getResource('accounts'),
+        cards = await services.getResource('cards'),
+        subcategories = await services.getResource('subcategories');
+
+    for (let account of accounts) {
+        if (transactions[0].account == account.id) {
+            let bank = await services.getSpecificResource('banks', transactions[0].account);
+            var accountDescription = bank.description;
+        }
+    }
 
     boxTransactions.classList.remove('toggled');
     while (transactionRows.firstChild) {
@@ -82,7 +90,25 @@ function renderBox() {
 
         for (let i = 1; i < keys.length; i++) {
             let newCell = newRow.insertCell();
-            newCell.textContent = transaction[keys[i]];
+            if (keys[i] == 'category') {
+                const categories = JSON.parse(sessionStorage.getItem('categories'));
+                for (let category of categories) {
+                    if (category.id == transaction[keys[i]]) {
+                        newCell.textContent = category.description;
+                    }
+                }
+            } else if (keys[i] == 'account') {
+                newCell.textContent = accountDescription;
+            } else if (keys[i] == 'subcategory') {
+                for (let subcategory of subcategories) {
+                    if (subcategory.id == transaction[keys[i]]) {
+                        newCell.textContent = subcategory.description;
+                    }
+                }
+            }
+            else {
+                newCell.textContent = transaction[keys[i]];
+            }
         }
 
         transactionRows.appendChild(newRow);

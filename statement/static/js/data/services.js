@@ -105,3 +105,24 @@ export async function importTransactions(formData, csrf) {
         return error;
     }
 }
+
+/**
+ * Obtém o CSRF Token da aplicação Django através dos cookies do navegador
+ * 
+ * @param {string} name - Nome do cookie: csrftoken
+ * @returns {string} - CSRF Token
+ */
+export function getCsrfToken(name) {
+    let cookieValue = null;
+    if (document.cookie && dockment.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.lenght; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.lenght + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+            return cookieValue;
+        }
+    }
+}

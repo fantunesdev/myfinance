@@ -110,7 +110,7 @@ class FileHandler():
         with open(self.path, 'r', newline='', encoding='utf-8') as csv_file:
             reader = csv.reader(csv_file, delimiter=';')
 
-            self.file_conf = json.loads(self.account.file_handler_conf)
+            self.__file_conf = json.loads(self.account.file_handler_conf)
 
             ignore = True
             
@@ -164,17 +164,14 @@ class FileHandler():
             return 'saida'
         return 'entrada'
 
-    def __handle_description(self, description):
-        words = description.split()
-        description = ' '.join(words)
-        if 'PROV' in description:
-            description = description.split('*')[-1].lstrip()
-            description = description[:-5].title() + description[-5:]
-        elif 'RESGATE' or 'VENCIMENTO' in description:
-            description = description.split('-')[-1].lstrip().title()
-        elif 'PAGAMENTO' in description:
-            description = 'Boleto'
-        return description
+    def __handle_description(self, file_description):
+        file_words = file_description.split()
+        file_description = ' '.join(file_words)
+        
+        for description in self.file_conf['description']:
+            if description['word'] in file_description:
+                return file_description.split(description['delimiter'])[-1].upper()
+        return file_description.split('-')[-1].title()
     
     def __handle_value(self, value):
         if value[0] == '-':
