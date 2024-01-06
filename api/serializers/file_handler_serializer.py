@@ -27,6 +27,17 @@ class FileHandlerSerializer:
         return self.__error_message
     
     def is_valid(self):
+        """
+        Valida o formulário recebido e lança mensagens de erro.
+
+        Parameters:
+        - request (django.http.HttpRequest) - Uma instância que contém 
+        informações sobre a solicitação, como parâmetros de consulta, 
+        cabeçalhos, método HTTP, dados do corpo, etc.
+
+        Returns:
+        bool: Se o formulário recebido é válido.
+        """
         if not self.file[0]:
             self.__error_message = 'Era esperado receber um arquivo. Por favor, selecione um arquivo e tente novamente.'
             return False

@@ -34,7 +34,8 @@ urlpatterns = [
     path('transactions/year/<int:year>/month/<int:month>/', TransactionByYearAndMonth.as_view()),
     path('transactions/accounts/<int:account_id>/year/<int:year>/month/<int:month>/', ExtractByAccountYearAndMonth.as_view()),
     path('transactions/card/<int:card_id>/year/<int:year>/month/<int:month>/', InvoiceByCardYearAndMonth.as_view()),
-    path('transactions/import/', csrf_exempt(ImportTransactions.as_view())),
+    path('transactions/import/', ImportTransactions.as_view(), name='import-transactions'),
+    path('transactions/', TransactionsList.as_view(), name='transactions-list'),
 
     path('subcategories/', SubcategoryList.as_view(), name='subcategory-list'),
 

@@ -110,38 +110,38 @@ class FileHandler():
         with open(self.path, 'r', newline='', encoding='utf-8') as csv_file:
             reader = csv.reader(csv_file, delimiter=';')
 
-            self.__file_conf = json.loads(self.account.file_handler_conf)
+            if self.account.file_handler_conf:
+                self.__file_conf = json.loads(self.account.file_handler_conf)
+            else:
+                self.__error_message = 'A propriedade file_handler_conf desta conta não está configurada.'
+                raise ValueError(self.error_message)
 
             ignore = True
             
             for id, row in enumerate(reader):
-                try:
-                    if row == self.file_conf['header']:
-                        ignore = False
+                if row == self.file_conf['header']:
+                    ignore = False
+                    continue
 
-                    if not ignore:
-                        transaction = {
-                            'id': id,
-                            'date': self.__handle_date(row[0]),
-                            'account': self.account.id if self.account else None,
-                            'card': self.card.id if self.card else None,
-                            'category': self.__handle_category(row[1]),
-                            'subcategory': self.__handle_subcategory(row[1]),
-                            'type': self.__handle_type(row[2]),
-                            'description': self.__handle_description(row[1]),
-                            'value': self.__handle_value(row[2])
-                        }
+                if not ignore:
+                    transaction = {
+                        'id': id,
+                        'date': self.__handle_date(row[0]),
+                        'account': self.account.id if self.account else None,
+                        'card': self.card.id if self.card else None,
+                        'category': self.__handle_category(row[1]),
+                        'subcategory': self.__handle_subcategory(row[1]),
+                        'type': self.__handle_type(row[2]),
+                        'description': self.__handle_description(row[1]),
+                        'value': self.__handle_value(row[2])
+                    }
 
-                        if self.account:
-                            del transaction['card']
-                        else:
-                            del transaction['account']
-                        
-                        self.transactions.append(transaction)
-                except IndexError:
-                    pass
-                except ValueError:
-                    pass
+                    if self.account:
+                        del transaction['card']
+                    else:
+                        del transaction['account']
+                    
+                    self.transactions.append(transaction)
 
     def __handle_date(self, date):
         day, month, year = date.split('/')

@@ -10,7 +10,6 @@ from statement.repositories import next_month_view_repository, installment_repos
 from statement.repositories.templatetags_repository import set_menu_templatetags, set_dashboard_templatetags, \
     set_templatetags, set_transaction_navigation_templatetags
 from statement.repositories.transaction_repository import *
-from statement.services import file_handling
 from statement.services import transaction_installment_services
 
 
@@ -61,19 +60,7 @@ def create_transaction(request, type):
 
 @login_required
 def import_transactions(request):
-    if request.method == 'POST':
-        upload_file_form = UploadFileForm(request.POST, request.FILES)
-        if upload_file_form.is_valid():
-            file = request.FILES['file']
-            account = upload_file_form.cleaned_data['account']
-            card = upload_file_form.cleaned_data['card']
-            file_handled = file_handling.FileHandling(file=file,user=request.user)
-            for transaction in file_handled.transactions:
-                print(transaction)
-        else:
-            print(upload_file_form.errors)
-    else:
-        upload_file_form = UploadFileForm(request.user)
+    upload_file_form = UploadFileForm(request.user)
     templatetags = set_templatetags()
     set_menu_templatetags(request.user, templatetags)
     templatetags['upload_file_form'] = upload_file_form

@@ -7,11 +7,15 @@ const fileInput = document.querySelector('#id_file'),
     boxTransactions = document.querySelector('#box-transactions'),
     divImportTransactions = document.querySelector('#div-import-transactions'),
     transactionRows = document.querySelector('#transaction-rows'),
-    checkboxCheckAll = document.querySelector('#checkall');
+    checkboxCheckAll = document.querySelector('#checkall'),
+    sendTransactionsBtn = document.querySelector('#send-transactions-btn');
 
 selects.paymentMethod.value = 2;
 divs.card.classList.add('toggled');
 
+/**
+ * Configura os selects relacionados ao meio de pagamento.
+ */
 export function selectPaymentMethod() {
     const paymentMethod = selects.paymentMethod.value;
     if (paymentMethod == 1) {
@@ -29,8 +33,10 @@ export function selectPaymentMethod() {
     };
 };
 
+/**
+ * Envia o arquivo para o servidor, grava o retorno na localStorage e mostra mensagens de erro do backend.
+ */
 async function sendFile() {
-    const csrf = document.getElementsByName('csrfmiddlewaretoken')[0].value;
     const formData = new FormData();
 
     formData.append('file', fileInput.files[0]);
@@ -47,7 +53,7 @@ async function sendFile() {
     } else if (selects.paymentMethod.value == 2 && !selects.account.value) {
         alert('Selecione uma conta para continuar.');
     } else {
-        const transaction = await services.importTransactions(formData, csrf),
+        const transaction = await services.importTransactions(formData),
             importError = document.querySelector('#import-error');
         if (transaction.errors) {
             importError.classList.remove('toggled');
@@ -59,6 +65,11 @@ async function sendFile() {
     }
 }
 
+
+
+/**
+ * renderiza as linhas da tabela.
+ */
 async function renderBox() {
     const transactions = JSON.parse(sessionStorage.getItem('imported-transactions')),
         accounts = await services.getResource('accounts'),
@@ -67,8 +78,7 @@ async function renderBox() {
 
     for (let account of accounts) {
         if (transactions[0].account == account.id) {
-            let bank = await services.getSpecificResource('banks', transactions[0].account);
-            var accountDescription = bank.description;
+            var bank = await services.getSpecificResource('banks', transactions[0].account);
         }
     }
 
@@ -91,14 +101,14 @@ async function renderBox() {
         for (let i = 1; i < keys.length; i++) {
             let newCell = newRow.insertCell();
             if (keys[i] == 'category') {
-                const categories = JSON.parse(sessionStorage.getItem('categories'));
+                const categories = await services.getResource('categories');
                 for (let category of categories) {
                     if (category.id == transaction[keys[i]]) {
                         newCell.textContent = category.description;
                     }
                 }
             } else if (keys[i] == 'account') {
-                newCell.textContent = accountDescription;
+                newCell.textContent = bank.description;
             } else if (keys[i] == 'subcategory') {
                 for (let subcategory of subcategories) {
                     if (subcategory.id == transaction[keys[i]]) {
@@ -116,6 +126,49 @@ async function renderBox() {
 }
 
 
+/**
+ * Envia as transações selecionadas para serem cadastradas no backend.
+ */
+function importTransactions() {
+    let transacionsIds = [];
+    for (let row of transactionRows.children) {
+        if (row.firstChild.firstChild.checked) {
+            transacionsIds.push(parseInt(row.firstChild.firstChild.id));
+        }
+    }
+    const transactions = JSON.parse(sessionStorage.getItem('imported-transactions'));
+
+    for (let transaction of transactions) {
+        if (transacionsIds.includes(transaction.id)) {
+            let newTransaction = {
+                'release_date': transaction.date,
+                'payment_date': transaction.date,
+                'account': transaction.account,
+                'card': transaction.card ? transaction.card : null,
+                'category': transaction.category,
+                'subcategory': transaction.subcategory,
+                'description': transaction.description,
+                'value': transaction.value.replace('.', '').replace(',', '.'),
+                'installments_number': transaction.installments_number,
+                'paid': transaction.paid,
+                'fixed': transaction.fixed,
+                'annual': transaction.annual,
+                'currency': transaction.currency,
+                'observation': transaction.observation,
+                'remember': transaction.remember,
+                'type': transaction.type,
+                'effected': transaction.effected,
+                'home_screen': transaction.home_screen,
+                'user': transaction.user,
+                'installment': transaction.installment
+            }
+            services.createResource('transactions', JSON.stringify(newTransaction));
+        }
+    }
+    window.location.href = '/relatorio_financeiro/mes_atual/'
+}
+
+
 importBtn.addEventListener('click', () => sendFile());
 
 selects.paymentMethod.addEventListener('change', () => selectPaymentMethod());
@@ -126,4 +179,6 @@ checkboxCheckAll.addEventListener('change', function() {
     }
 });
 
-
+sendTransactionsBtn.addEventListener('click', () => {
+    importTransactions();
+});
