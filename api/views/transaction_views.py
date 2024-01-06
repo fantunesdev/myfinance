@@ -1,7 +1,6 @@
 import json
 
 from django.core.exceptions import ObjectDoesNotExist
-from django.utils.translation import gettext as _
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -70,7 +69,7 @@ class ImportTransactions(APIView):
                     error_message = f'Não existe uma conta com o id {request.data["account"]}.'
                 elif request.data['card'] and not request.data['account']:
                     error_message = f'Não existe um cartão com o id {request.data["card"]}.'
-                return Response({'errors': _(error_message)}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'errors': error_message}, status=status.HTTP_400_BAD_REQUEST)
             except ValueError as error:
                 return Response({'errors': str(error)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
         else:

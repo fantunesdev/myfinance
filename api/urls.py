@@ -11,8 +11,6 @@ from api.views.next_month_view_view import NextMonthView
 from api.views.transaction_views import *
 from api.views.subcategoy_views import *
 
-from django.views.decorators.csrf import csrf_exempt
-
 urlpatterns = [
     path('next_month_view/', NextMonthView.as_view(), name='next_month_view'),
 
