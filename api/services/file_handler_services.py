@@ -147,7 +147,16 @@ class FileHandler():
                     self.transactions.append(transaction)
 
     def __handle_date(self, date):
-        day, month, year = date.split('/')
+        if '/' in date:
+            day, month, year = date.split('/')
+        elif '-' in date:
+            day, month, year = date.split('-')
+            if len(year) == 2:
+                year, month, day = date.split('-')
+        else:
+            year = date[:4]
+            month = date[5:6]
+            day = date[6:]
         return f'{year}-{month}-{day}'
     
     def __handle_category(self, file_description):
