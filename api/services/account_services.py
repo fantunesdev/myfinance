@@ -14,6 +14,6 @@ def get_accounts(user):
 
 def get_account_by_id(id, user):
     try:
-        account_services.get_account_by_id(id, user)
+        return account_services.get_account_by_id(id, user)
     except ObjectDoesNotExist:
         return Http404

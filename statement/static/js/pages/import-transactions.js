@@ -129,7 +129,7 @@ async function renderBox() {
 /**
  * Envia as transações selecionadas para serem cadastradas no backend.
  */
-function importTransactions() {
+async function importTransactions() {
     let transacionsIds = [];
     for (let row of transactionRows.children) {
         if (row.firstChild.firstChild.checked) {
@@ -137,7 +137,8 @@ function importTransactions() {
         }
     }
     const transactions = JSON.parse(sessionStorage.getItem('imported-transactions')),
-        importedTransactions = [];
+        accountSelect = document.querySelector('#id_account'),
+        account = await services.getSpecificResource('accounts', accountSelect.value);
 
     for (let transaction of transactions) {
         if (transacionsIds.includes(transaction.id)) {
@@ -159,15 +160,13 @@ function importTransactions() {
                 'remember': transaction.remember,
                 'type': transaction.type,
                 'effected': transaction.effected,
-                'home_screen': transaction.home_screen,
+                'home_screen': account.home_screen,
                 'user': transaction.user,
                 'installment': transaction.installment
             }
-            let importedTransaciton = services.createResource('transactions', JSON.stringify(newTransaction));
-            importedTransactions.push(importedTransaciton);
+            let importedTransaciton = await services.createResource('transactions', JSON.stringify(newTransaction));
         }
     }
-    sessionStorage.setItem('db-imported-transactions', importedTransactions);
     window.location.href = '/relatorio_financeiro/mes_atual/';
 }
 

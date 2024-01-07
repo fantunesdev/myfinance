@@ -1,6 +1,6 @@
 from django.urls import path
 
-from api.views.account_views import AccountsList
+from api.views.account_views import *
 from api.views.bank_views import *
 from api.views.card_views import *
 from api.views.category_views import *
@@ -15,6 +15,7 @@ urlpatterns = [
     path('next_month_view/', NextMonthView.as_view(), name='next_month_view'),
 
     path('accounts/', AccountsList.as_view()),
+    path('accounts/<int:account_id>/', AccountsDetails.as_view()),
 
     path('banks/', BankList.as_view()),
     path('banks/<int:bank_id>/', BankDetails.as_view()),

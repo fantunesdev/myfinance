@@ -48,14 +48,14 @@ class TransactionsList(APIView):
                 remember=False,
                 type=serializer.validated_data['type'],
                 effected=False,
-                home_screen=True,
+                home_screen=serializer.validated_data['home_screen'],
                 user=serializer.validated_data['user'],
                 installment=None
             )
             db_transaction = transaction_services.create_transaction(new_transaction)
             serializer = transaction_serializer.TransactionSerializer(db_transaction)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
     
 
 class ImportTransactions(APIView):
