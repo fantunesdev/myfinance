@@ -1,7 +1,8 @@
 /statement/static/admin/
 /statement/static/rest_framework/
 /static/
-/media/
+/media/img/*
+/media/uploads/*
 __init__.py
 
 # Created by https://www.toptal.com/developers/gitignore/api/python,visualstudiocode,pycharm
