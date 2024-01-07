@@ -79,6 +79,9 @@ class FileHandler():
         return file.name.split('.')[-1].lower()
         
     def __set_path(self, request):
+        upload_dir = f'{settings.MEDIA_ROOT}/uploads'
+        if not os.path.exists(upload_dir):
+            os.mkdir(upload_dir)
         file = request.FILES.get('file')
         return os.path.join(settings.MEDIA_ROOT, 'uploads', file.name)
 
