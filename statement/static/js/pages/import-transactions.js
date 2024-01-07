@@ -167,8 +167,8 @@ function importTransactions() {
             importedTransactions.push(importedTransaciton);
         }
     }
-    sessionStorage.setItem('importedTransactions', importTransactions);
-    // window.location.href = '/relatorio_financeiro/mes_atual/';
+    sessionStorage.setItem('db-imported-transactions', importedTransactions);
+    window.location.href = '/relatorio_financeiro/mes_atual/';
 }
 
 

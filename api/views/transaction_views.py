@@ -48,7 +48,7 @@ class TransactionsList(APIView):
                 remember=False,
                 type=serializer.validated_data['type'],
                 effected=False,
-                home_screen=False,
+                home_screen=True,
                 user=serializer.validated_data['user'],
                 installment=None
             )
