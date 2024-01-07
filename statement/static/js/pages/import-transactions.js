@@ -136,7 +136,8 @@ function importTransactions() {
             transacionsIds.push(parseInt(row.firstChild.firstChild.id));
         }
     }
-    const transactions = JSON.parse(sessionStorage.getItem('imported-transactions'));
+    const transactions = JSON.parse(sessionStorage.getItem('imported-transactions')),
+        importedTransactions = [];
 
     for (let transaction of transactions) {
         if (transacionsIds.includes(transaction.id)) {
@@ -162,10 +163,12 @@ function importTransactions() {
                 'user': transaction.user,
                 'installment': transaction.installment
             }
-            services.createResource('transactions', JSON.stringify(newTransaction));
+            let importedTransaciton = services.createResource('transactions', JSON.stringify(newTransaction));
+            importedTransactions.push(importedTransaciton);
         }
     }
-    window.location.href = '/relatorio_financeiro/mes_atual/'
+    sessionStorage.setItem('importedTransactions', importTransactions);
+    // window.location.href = '/relatorio_financeiro/mes_atual/';
 }
 
 

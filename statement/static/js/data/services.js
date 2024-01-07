@@ -115,7 +115,8 @@ export async function createResource(model, resource) {
         }
     
     try {
-        await fetch(url, requestOptions);
+        const response = await fetch(url, requestOptions);
+        return await response.json();
     } catch(error) {
         return error;
     }
