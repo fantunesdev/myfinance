@@ -52,6 +52,8 @@ async function sendFile() {
         alert('Selecione um cartão para continuar.');
     } else if (selects.paymentMethod.value == 2 && !selects.account.value) {
         alert('Selecione uma conta para continuar.');
+    } else if (selects.paymentMethod.value == 2) {
+        alert('Funcionalidade ainda não desenvolvida.')
     } else {
         const transaction = await services.importTransactions(formData),
             importError = document.querySelector('#import-error');
@@ -140,6 +142,8 @@ async function importTransactions() {
         accountSelect = document.querySelector('#id_account'),
         account = await services.getSpecificResource('accounts', accountSelect.value);
 
+    let errors = 0;
+
     for (let transaction of transactions) {
         if (transacionsIds.includes(transaction.id)) {
             let newTransaction = {
@@ -164,10 +168,25 @@ async function importTransactions() {
                 'user': transaction.user,
                 'installment': transaction.installment
             }
-            let importedTransaciton = await services.createResource('transactions', JSON.stringify(newTransaction));
+            const importError = document.querySelector('#import-error');
+            try {
+                let response = await services.createResource('transactions', JSON.stringify(newTransaction));
+                importError.classList.add('toggled');
+                if (response instanceof Error) {
+                    errors += 1;
+                    throw new Error(response.message);
+                }
+            } catch (error) {
+                importError.classList.remove('toggled');
+                importError.textContent = error.message;
+            }
+            
+            
         }
     }
-    window.location.href = '/relatorio_financeiro/mes_atual/';
+    if (errors == 0) {
+        window.location.href = '/relatorio_financeiro/mes_atual/';
+    }
 }
 
 
