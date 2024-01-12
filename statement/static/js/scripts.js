@@ -1,8 +1,6 @@
 // DEFINIÇÃO DE CONSTANTES
 
 const pathName = window.location.pathname,
-    yearNavigation = document.getElementById('id_year'),
-    monthNavigation = document.getElementById('id_month'),
     search = document.querySelector('#id_search_description'),
     asides = document.getElementsByTagName('aside')[0],
     sidebarButton = document.querySelector('#sidebar-button'),
@@ -203,16 +201,4 @@ search.addEventListener('keydown', event => {
     if (event.key === 'Enter') {
         searchByDescription();
     }
-});
-
-// Redireciona para a página do ano selecionado.
-yearNavigation.addEventListener('change', () => {
-    let url = `/relatorio_financeiro/${yearNavigation.value}/${monthNavigation.value}`;
-    window.location.href = url;
-});
-
-// Redireciona para a página do mês selecionado.
-monthNavigation.addEventListener('change', () => {
-    let url = `/relatorio_financeiro/${yearNavigation.value}/${monthNavigation.value}`;
-    window.location.href = url;
 });

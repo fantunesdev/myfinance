@@ -9,3 +9,19 @@ class Account:
         self.home_screen = home_screen
         self.user = user
 
+    def __str__(self) -> str:
+        return f'Banco: {self.bank} - Agência: {self.branch} - Número: {self.number}'
+
+    def __repr__(self) -> str:
+        return f"""
+        Account:
+            bank: {self.bank}
+            branch: {self.branch}
+            number: {self.number}
+            balance: {self.balance}
+            limits: {self.limits}
+            type: {self.type}
+            home_screen: {self.home_screen}
+            user: {self.user}
+        """
+

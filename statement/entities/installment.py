@@ -3,3 +3,6 @@ class Installment:
         self.release_date = release_date
         self.description = description
         self.user = user
+
+    def __str__(self) -> str:
+        self.description

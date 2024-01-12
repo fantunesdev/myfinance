@@ -9,7 +9,7 @@
 {% block content %}
     <div class="box box-primary box-500 center-div">
         <div class="header">
-            <h3 class="box-title">Login</h3>
+            <h3 class="box-title">MyFinance - Login</h3>
         </div>
         <form method="post">
             <div class="box-body">
@@ -26,14 +26,13 @@
                     <label>Senha: </label>
                     {{ login_form.password }}
                 </div>
-                <div class="center-text pt-15">
-                    <span>Versão: </span><span id="version"></span>
-                </div>
+                <input type="submit" value="Logar" class="btn btn-primary">
+                <a href="/usuarios/cadastrar">Cadastrar novo usuário</a>
             </div>
             <div class="box-footer">
-                <input type="submit" value="Logar" class="btn btn-primary">
-                <a href="{% url 'login_user' %}" class="btn btn-primary">Voltar</a>
-                <a href="/usuarios/cadastrar">Cadastrar novo usuároi</a>
+                <div class="center-text">
+                    <span>Versão: </span><span id="version"></span>
+                </div>
             </div>
         </form>
     </div>

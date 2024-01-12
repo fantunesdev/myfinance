@@ -11,3 +11,10 @@ class AccountsList(APIView):
         accounts = account_services.get_accounts(request.user)
         serializer = account_serializer.AccountSerializer(accounts, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+class AccountsDetails(APIView):
+    def get(self, request, account_id):
+        account = account_services.get_account_by_id(account_id, request.user)
+        serializer = account_serializer.AccountSerializer(account)
+        return Response(serializer.data, status=status.HTTP_200_OK)

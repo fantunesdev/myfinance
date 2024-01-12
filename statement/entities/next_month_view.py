@@ -3,3 +3,6 @@ class NextMonthView:
         self.day = day
         self.active = active
         self.user = user
+
+    def __str__(self) -> str:
+        return self.active

@@ -55,6 +55,7 @@ class Account(models.Model):
     limits = models.FloatField(default=0)
     type = models.ForeignKey(AccountType, on_delete=models.PROTECT)
     home_screen = models.BooleanField(default=False,)
+    file_handler_conf = models.TextField(blank=True, null=True)
     user = models.ForeignKey(User, on_delete=models.PROTECT)
 
     def __str__(self):
@@ -78,6 +79,7 @@ class Card(models.Model):
     expiration_day = models.IntegerField(blank=False, null=False)
     closing_day = models.IntegerField(blank=False, null=False)
     home_screen = models.BooleanField(default=False,)
+    file_handler_conf = models.TextField(blank=True, null=True)
     user = models.ForeignKey(User, on_delete=models.PROTECT)
 
     def __str__(self):
