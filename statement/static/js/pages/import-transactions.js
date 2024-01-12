@@ -52,7 +52,7 @@ async function sendFile() {
         alert('Selecione um cartão para continuar.');
     } else if (selects.paymentMethod.value == 2 && !selects.account.value) {
         alert('Selecione uma conta para continuar.');
-    } else if (selects.paymentMethod.value == 2) {
+    } else if (selects.paymentMethod.value == 1) {
         alert('Funcionalidade ainda não desenvolvida.')
     } else {
         const transaction = await services.importTransactions(formData),
