@@ -1,5 +1,7 @@
 class Account:
-    def __init__(self, bank, branch, number, balance, limits, type, home_screen, user):
+    def __init__(
+        self, bank, branch, number, balance, limits, type, home_screen, user
+    ):
         self.bank = bank
         self.branch = branch
         self.number = number
@@ -24,4 +26,3 @@ class Account:
             home_screen: {self.home_screen}
             user: {self.user}
         """
-

@@ -1,14 +1,25 @@
 import copy
+from datetime import datetime
 
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
-from datetime import datetime
 
 from statement.entities.transaction import Transaction
-from statement.forms.general_forms import ExclusionForm, NavigationForm, UploadFileForm
-from statement.repositories import next_month_view_repository, installment_repository
-from statement.repositories.templatetags_repository import set_menu_templatetags, set_dashboard_templatetags, \
-    set_templatetags, set_transaction_navigation_templatetags
+from statement.forms.general_forms import (
+    ExclusionForm,
+    NavigationForm,
+    UploadFileForm,
+)
+from statement.repositories import (
+    installment_repository,
+    next_month_view_repository,
+)
+from statement.repositories.templatetags_repository import (
+    set_dashboard_templatetags,
+    set_menu_templatetags,
+    set_templatetags,
+    set_transaction_navigation_templatetags,
+)
 from statement.repositories.transaction_repository import *
 from statement.services import transaction_installment_services
 
@@ -27,7 +38,9 @@ def create_transaction(request, type):
                 subcategory=transaction_form.cleaned_data['subcategory'],
                 description=transaction_form.cleaned_data['description'],
                 value=transaction_form.cleaned_data['value'],
-                installments_number=transaction_form.cleaned_data['installments_number'],
+                installments_number=transaction_form.cleaned_data[
+                    'installments_number'
+                ],
                 paid=transaction_form.cleaned_data['paid'],
                 fixed=transaction_form.cleaned_data['fixed'],
                 annual=transaction_form.cleaned_data['annual'],
@@ -38,9 +51,13 @@ def create_transaction(request, type):
                 effected=transaction_form.cleaned_data['effected'],
                 home_screen=transaction_form.cleaned_data['home_screen'],
                 user=request.user,
-                installment=None
+                installment=None,
             )
-            home_screen = transaction.account.home_screen if transaction.account else transaction.card.home_screen
+            home_screen = (
+                transaction.account.home_screen
+                if transaction.account
+                else transaction.card.home_screen
+            )
             transaction.home_screen = home_screen
             validate_account_balance(transaction)
             validate_installment(transaction)
@@ -64,14 +81,18 @@ def import_transactions(request):
     templatetags = set_templatetags()
     set_menu_templatetags(request.user, templatetags)
     templatetags['upload_file_form'] = upload_file_form
-    return render(request, 'transaction/import_transactions.html', templatetags)
+    return render(
+        request, 'transaction/import_transactions.html', templatetags
+    )
 
 
 @login_required
 def get_transactions(request):
     templatetags = set_templatetags()
     set_menu_templatetags(request.user, templatetags)
-    templatetags['transactions'] = transaction_services.get_transactions(request.user)
+    templatetags['transactions'] = transaction_services.get_transactions(
+        request.user
+    )
     return render(request, 'transaction/get_transactions.html', templatetags)
 
 
@@ -79,23 +100,37 @@ def get_transactions(request):
 def get_transactions_by_description(request, description):
     year = datetime.today().year
     month = datetime.today().month
-    transactions = transaction_services.get_transactions_by_description(description, request.user)
-    revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(transactions)
+    transactions = transaction_services.get_transactions_by_description(
+        description, request.user
+    )
+    revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(
+        transactions
+    )
     templatetags = set_templatetags()
-    set_dashboard_templatetags(templatetags, revenue, expenses, cards, cash, fixed)
+    set_dashboard_templatetags(
+        templatetags, revenue, expenses, cards, cash, fixed
+    )
     set_transaction_navigation_templatetags(templatetags, year, month)
     set_menu_templatetags(request.user, templatetags)
     templatetags['transactions'] = transactions
-    templatetags['navigation_form'] = NavigationForm(initial={'year': year, 'month': month})
+    templatetags['navigation_form'] = NavigationForm(
+        initial={'year': year, 'month': month}
+    )
     return render(request, 'transaction/get_transactions.html', templatetags)
 
 
 @login_required
 def get_transactions_by_year(request, year):
-    transactions = transaction_services.get_transactions_by_year(year, request.user)
-    revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(transactions)
+    transactions = transaction_services.get_transactions_by_year(
+        year, request.user
+    )
+    revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(
+        transactions
+    )
     templatetags = set_templatetags()
-    set_dashboard_templatetags(templatetags, revenue, expenses, cards, cash, fixed)
+    set_dashboard_templatetags(
+        templatetags, revenue, expenses, cards, cash, fixed
+    )
     set_transaction_navigation_templatetags(templatetags, year)
     set_menu_templatetags(request.user, templatetags)
     templatetags['transactions'] = transactions
@@ -106,39 +141,59 @@ def get_transactions_by_year(request, year):
 def get_current_month_transactions(request):
     current_month = next_month_view_repository.get_current_month(request.user)
     transactions = transaction_services.get_transactions_by_year_and_month(
-        year=current_month.year,
-        month=current_month.month,
-        user=request.user
+        year=current_month.year, month=current_month.month, user=request.user
     )
-    revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(transactions)
+    revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(
+        transactions
+    )
     templatetags = set_templatetags()
-    set_dashboard_templatetags(templatetags, revenue, expenses, cards, cash, fixed)
+    set_dashboard_templatetags(
+        templatetags, revenue, expenses, cards, cash, fixed
+    )
     set_transaction_navigation_templatetags(templatetags, current_month)
     set_menu_templatetags(request.user, templatetags)
     templatetags['transactions'] = transactions
-    templatetags['navigation_form'] = NavigationForm(initial={'year': current_month.year, 'month': current_month.month})
+    templatetags['navigation_form'] = NavigationForm(
+        initial={'year': current_month.year, 'month': current_month.month}
+    )
     return render(request, 'transaction/get_transactions.html', templatetags)
 
 
 @login_required
 def get_transactions_by_year_and_month(request, year, month):
-    transactions = transaction_services.get_transactions_by_year_and_month(year, month, request.user)
-    revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(transactions)
+    transactions = transaction_services.get_transactions_by_year_and_month(
+        year, month, request.user
+    )
+    revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(
+        transactions
+    )
     templatetags = set_templatetags()
-    set_dashboard_templatetags(templatetags, revenue, expenses, cards, cash, fixed)
+    set_dashboard_templatetags(
+        templatetags, revenue, expenses, cards, cash, fixed
+    )
     set_transaction_navigation_templatetags(templatetags, year, month)
     set_menu_templatetags(request.user, templatetags)
     templatetags['transactions'] = transactions
-    templatetags['navigation_form'] = NavigationForm(initial={'year': year, 'month': month})
+    templatetags['navigation_form'] = NavigationForm(
+        initial={'year': year, 'month': month}
+    )
     return render(request, 'transaction/get_transactions.html', templatetags)
 
 
 @login_required
 def get_fixed_transactions_by_year_and_month(request, year, month):
-    transactions = transaction_services.get_fixed_transactions_by_year_and_month(year, month, request.user)
-    revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(transactions)
+    transactions = (
+        transaction_services.get_fixed_transactions_by_year_and_month(
+            year, month, request.user
+        )
+    )
+    revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(
+        transactions
+    )
     templatetags = set_templatetags()
-    set_dashboard_templatetags(templatetags, revenue, expenses, cards, cash, fixed)
+    set_dashboard_templatetags(
+        templatetags, revenue, expenses, cards, cash, fixed
+    )
     set_transaction_navigation_templatetags(templatetags, year, month)
     set_menu_templatetags(request.user, templatetags)
     templatetags['transactions'] = transactions
@@ -150,7 +205,11 @@ def detail_transaction(request, id):
     transaction = transaction_services.get_transaction_by_id(id, request.user)
     templatetags = set_templatetags()
     if transaction.installment:
-        transactions = transaction_installment_services.get_transaction_by_installment(transaction.parcelamento)
+        transactions = (
+            transaction_installment_services.get_transaction_by_installment(
+                transaction.parcelamento
+            )
+        )
         templatetags['transactions'] = transactions
     templatetags['transaction'] = transaction
     set_menu_templatetags(request.user, templatetags)
@@ -159,8 +218,12 @@ def detail_transaction(request, id):
 
 @login_required
 def update_transaction(request, id):
-    old_transaction = transaction_services.get_transaction_by_id(id, request.user)
-    transaction_form = UpdateTransactionForm(request.POST or None, instance=old_transaction)
+    old_transaction = transaction_services.get_transaction_by_id(
+        id, request.user
+    )
+    transaction_form = UpdateTransactionForm(
+        request.POST or None, instance=old_transaction
+    )
     old_transaction_copy = copy.deepcopy(old_transaction)
     if transaction_form.is_valid():
         new_transaction = Transaction(
@@ -183,16 +246,26 @@ def update_transaction(request, id):
             effected=transaction_form.cleaned_data['effected'],
             home_screen=transaction_form.cleaned_data['home_screen'],
             user=request.user,
-            installment=old_transaction.installment
+            installment=old_transaction.installment,
         )
-        home_screen = new_transaction.account.home_screen if new_transaction.account else new_transaction.card.home_screen
+        home_screen = (
+            new_transaction.account.home_screen
+            if new_transaction.account
+            else new_transaction.card.home_screen
+        )
         new_transaction.home_screen = home_screen
-        validate_new_account_balance(old_transaction, new_transaction, old_transaction_copy)
+        validate_new_account_balance(
+            old_transaction, new_transaction, old_transaction_copy
+        )
         if transaction_form.cleaned_data['installment_option'] == 'parcelar':
-            installment_repository.validate_installment(old_transaction_copy, new_transaction)
+            installment_repository.validate_installment(
+                old_transaction_copy, new_transaction
+            )
             return redirect('get_current_month_transactions')
         else:
-            transaction_services.update_transaction(old_transaction, new_transaction)
+            transaction_services.update_transaction(
+                old_transaction, new_transaction
+            )
         return redirect('get_current_month_transactions')
     templatetags = set_templatetags()
     set_menu_templatetags(request.user, templatetags)

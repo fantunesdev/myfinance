@@ -1,11 +1,14 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
+from django.shortcuts import redirect, render
 
 from statement.entities.account import Account
 from statement.forms.account_form import AccountForm
 from statement.forms.general_forms import ExclusionForm
 from statement.repositories import account_repository
-from statement.repositories.templatetags_repository import set_templatetags, set_menu_templatetags
+from statement.repositories.templatetags_repository import (
+    set_menu_templatetags,
+    set_templatetags,
+)
 from statement.services import account_services
 
 
@@ -22,7 +25,7 @@ def create_account(request):
                 limits=account_form.cleaned_data['limits'],
                 type=account_form.cleaned_data['type'],
                 home_screen=account_form.cleaned_data['home_screen'],
-                user=request.user
+                user=request.user,
             )
             account_services.create_account(account)
             return redirect('setup_settings')
@@ -48,9 +51,11 @@ def update_account(request, id):
             limits=account_form.cleaned_data['limits'],
             type=account_form.cleaned_data['type'],
             home_screen=account_form.cleaned_data['home_screen'],
-            user=request.user
+            user=request.user,
         )
-        account_repository.set_home_screen(old_account.id, new_account.home_screen, request.user)
+        account_repository.set_home_screen(
+            old_account.id, new_account.home_screen, request.user
+        )
         account_services.update_account(old_account, new_account)
         return redirect('setup_settings')
     templatetags = set_templatetags()
@@ -71,4 +76,6 @@ def delete_account(request, id):
     set_menu_templatetags(request.user, templatetags)
     templatetags['exclusion_form'] = exclusion_form
     templatetags['account'] = account
-    return render(request, 'account/exclusion_confirmation_account.html', templatetags)
+    return render(
+        request, 'account/exclusion_confirmation_account.html', templatetags
+    )

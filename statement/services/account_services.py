@@ -10,7 +10,7 @@ def create_account(account):
         limits=account.limits,
         type=account.type,
         home_screen=account.home_screen,
-        user=account.user
+        user=account.user,
     )
     return new_account
 

@@ -18,7 +18,9 @@ def get_transactions_by_year(year, user):
 
 
 def get_transactions_by_year_and_month(year, month, user):
-    transactions = transaction_services.get_transactions_by_year_and_month(year, month, user)
+    transactions = transaction_services.get_transactions_by_year_and_month(
+        year, month, user
+    )
     if transactions:
         return transactions
     raise Http404

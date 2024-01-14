@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from api.serializers import bank_serializer
-from api.services import bank_services, account_services
+from api.services import account_services, bank_services
 
 
 class BankList(APIView):

@@ -16,25 +16,23 @@ Including another URLconf
 """
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import include, path
 
-from myfinance import settings
 from login.views import *
+from myfinance import settings
 from statement.views.transaction_views import get_current_month_transactions
 
 urlpatterns = [
     path('', get_current_month_transactions),
-
     path('admin/', admin.site.urls),
-
     path('api/', include('api.urls')),
-
     path('relatorio_financeiro/', include('statement.urls.statement_urls')),
-
     path('usuarios/', include('login.urls')),
     path('login/', login_user, name='login_user'),
     path('logout/', logout_user, name='logout_user'),
 ]
 
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(
+        settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
+    )

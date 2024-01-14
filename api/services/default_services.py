@@ -12,7 +12,7 @@ def get_defaults():
         version = Version.objects.latest('id')
         defaults = {
             'version': version.version,
-            'year': datetime.datetime.today().year
+            'year': datetime.datetime.today().year,
         }
         return defaults
     except ObjectDoesNotExist:

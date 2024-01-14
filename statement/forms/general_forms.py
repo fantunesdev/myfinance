@@ -9,12 +9,11 @@ class ExclusionForm(forms.Form):
     confirmation = forms.BooleanField(label='', required=True)
 
 
-
 class NavigationForm(forms.Form):
     year = forms.ChoiceField(
         label='',
         choices=(
-            (y, y) for y in range (2010, datetime.datetime.today().year + 3)
+            (y, y) for y in range(2010, datetime.datetime.today().year + 3)
         ),
         widget=forms.Select(attrs={'class': 'navigation-form'}),
     )
@@ -44,13 +43,13 @@ class UploadFileForm(forms.Form):
         self.fields['account'] = forms.ModelChoiceField(
             required=False,
             queryset=Account.objects.filter(user=user),
-            widget=forms.Select(attrs={'class': 'form-control'})
-            )
+            widget=forms.Select(attrs={'class': 'form-control'}),
+        )
         self.fields['card'] = forms.ModelChoiceField(
             required=False,
             queryset=Card.objects.filter(user=user),
-            widget=forms.Select(attrs={'class': 'form-control'})
-            )
+            widget=forms.Select(attrs={'class': 'form-control'}),
+        )
 
     file = forms.FileField()
     payment_method = forms.ChoiceField(
@@ -59,5 +58,5 @@ class UploadFileForm(forms.Form):
         choices=(
             (1, 'Cartão de Crédito'),
             (2, 'Conta Corrente'),
-        )
+        ),
     )

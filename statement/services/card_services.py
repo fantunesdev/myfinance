@@ -11,7 +11,7 @@ def create_card(card):
         expiration_day=card.expiration_day,
         closing_day=card.closing_day,
         home_screen=card.home_screen,
-        user=card.user
+        user=card.user,
     )
     return new_card
 

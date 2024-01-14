@@ -1,4 +1,4 @@
-from django.urls import path, include
+from django.urls import include, path
 
 from statement.views.settings_view import *
 
@@ -11,5 +11,8 @@ urlpatterns = [
     path('contas/', include('statement.urls.account_urls')),
     path('parcelamento/', include('statement.urls.installment_urls')),
     path('subcategorias/', include('statement.urls.subcategory_urls')),
-    path('visualizacao_proximo_mes/', include('statement.urls.next_month_view_url')),
+    path(
+        'visualizacao_proximo_mes/',
+        include('statement.urls.next_month_view_url'),
+    ),
 ]

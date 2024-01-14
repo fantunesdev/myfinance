@@ -1,10 +1,15 @@
 import pprint
 from datetime import date
+
 from dateutil.relativedelta import relativedelta
 
 from statement.entities.installment import Installment
 from statement.forms.transaction_forms import *
-from statement.services import account_services, transaction_services, installment_services
+from statement.services import (
+    account_services,
+    installment_services,
+    transaction_services,
+)
 
 
 def validate_form_by_type(type, *args):
@@ -29,20 +34,28 @@ def validate_account_balance_when_delete_transaction(transaction):
             deposit(transaction.account, transaction.value)
 
 
-def validate_new_account_balance(old_transaction, new_transaction, old_transaction_copy):
+def validate_new_account_balance(
+    old_transaction, new_transaction, old_transaction_copy
+):
     if new_transaction.account:
         if old_transaction.type == 'entrada':
             withdraw(old_transaction_copy.account, old_transaction_copy.value)
             if old_transaction_copy.account == new_transaction.account:
-                new_transaction.account.balance = old_transaction_copy.account.balance
+                new_transaction.account.balance = (
+                    old_transaction_copy.account.balance
+                )
             deposit(new_transaction.account, new_transaction.value)
         else:
             if old_transaction_copy.card:
-                account = account_services.get_account_by_id(new_transaction.account.id, new_transaction.user)
+                account = account_services.get_account_by_id(
+                    new_transaction.account.id, new_transaction.user
+                )
                 old_transaction_copy.account = account
             deposit(old_transaction_copy.account, old_transaction_copy.value)
             if old_transaction_copy.account == new_transaction.account:
-                new_transaction.account.balance = old_transaction_copy.account.balance
+                new_transaction.account.balance = (
+                    old_transaction_copy.account.balance
+                )
             withdraw(new_transaction.account, new_transaction.value)
 
 
@@ -65,7 +78,7 @@ def piecemeal(transaction):
     installment = Installment(
         release_date=transaction.release_date,
         description=transaction.description,
-        user=transaction.user
+        user=transaction.user,
     )
     installment_db = installment_services.create_installment(installment)
     transaction.installment = installment_db
@@ -81,7 +94,7 @@ def add_month(transaction, repetition):
         transaction.payment_date = date(
             transaction.release_date.year,
             transaction.release_date.month,
-            transaction.card.expiration_day
+            transaction.card.expiration_day,
         )
         if transaction.release_date.day >= transaction.card.closing_day:
             transaction.payment_date += relativedelta(months=1)

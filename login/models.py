@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractBaseUser
 from django.db import models
+
 from login.manager import *
 
 # Create your models here.

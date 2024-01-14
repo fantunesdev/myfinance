@@ -1,5 +1,16 @@
 class Card:
-    def __init__(self, flag, icon, description, limits, account, expiration_day, closing_day, home_screen, user):
+    def __init__(
+        self,
+        flag,
+        icon,
+        description,
+        limits,
+        account,
+        expiration_day,
+        closing_day,
+        home_screen,
+        user,
+    ):
         self.flag = flag
         self.icon = icon
         self.description = description
