@@ -22,7 +22,7 @@ def create_transaction(transaction):
         effected=transaction.effected,
         home_screen=transaction.home_screen,
         user=transaction.user,
-        installment=transaction.installment
+        installment=transaction.installment,
     )
     return new_transaction
 
@@ -32,24 +32,34 @@ def get_transactions(user):
 
 
 def get_transactions_by_year(year, user):
-    return Transaction.objects\
-        .filter(payment_date__year=year, user=user, home_screen=True)\
-        .order_by('release_date')
+    return Transaction.objects.filter(
+        payment_date__year=year, user=user, home_screen=True
+    ).order_by('release_date')
 
 
 def get_transactions_by_year_and_month(year, month, user):
-    return Transaction.objects\
-        .filter(payment_date__year=year, payment_date__month=month, user=user, home_screen=True)\
-        .order_by('release_date')
+    return Transaction.objects.filter(
+        payment_date__year=year,
+        payment_date__month=month,
+        user=user,
+        home_screen=True,
+    ).order_by('release_date')
+
 
 def get_fixed_transactions_by_year_and_month(year, month, user):
-    return Transaction.objects\
-        .filter(payment_date__year=year, payment_date__month=month, user=user, home_screen=True, fixed=True)\
-        .order_by('release_date')
+    return Transaction.objects.filter(
+        payment_date__year=year,
+        payment_date__month=month,
+        user=user,
+        home_screen=True,
+        fixed=True,
+    ).order_by('release_date')
 
 
 def get_transactions_by_description(description, user):
-    return Transaction.objects.filter(description__icontains=description, user=user)
+    return Transaction.objects.filter(
+        description__icontains=description, user=user
+    )
 
 
 def get_transaction_by_id(id, user):

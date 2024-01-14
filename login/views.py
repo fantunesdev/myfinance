@@ -1,8 +1,13 @@
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
+from django.contrib.auth import (
+    authenticate,
+    login,
+    logout,
+    update_session_auth_hash,
+)
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
-from django.shortcuts import render, redirect
+from django.shortcuts import redirect, render
 
 from .entities.user import User
 from .forms import user_forms
@@ -10,8 +15,8 @@ from .forms.password_form import PasswordChangeCustomForm
 from .repository import *
 from .services import user_services
 
-
 # Create your views here.
+
 
 def create_user(request):
     if request.method == 'POST':
@@ -26,7 +31,7 @@ def create_user(request):
                 is_staff=False,
                 is_active=True,
                 date_joined=None,
-                photo=user_form.cleaned_data['photo']
+                photo=user_form.cleaned_data['photo'],
             )
             db_user = user_services.create_user(new_user)
             create_categories(db_user)
@@ -66,13 +71,17 @@ def change_password(request):
             return redirect('get_profile')
     else:
         password_form = PasswordChangeForm(request.user)
-    return render(request, 'user/password_form.html', {'form_senha': password_form})
+    return render(
+        request, 'user/password_form.html', {'form_senha': password_form}
+    )
 
 
 @login_required
 def update_profile(request):
     if request.method == 'POST':
-        profile_form = user_forms.ProfileForm(request.POST, request.FILES, instance=request.user)
+        profile_form = user_forms.ProfileForm(
+            request.POST, request.FILES, instance=request.user
+        )
         if profile_form.is_valid():
             profile_form.photo = profile_form.cleaned_data['photo']
             print(profile_form.photo)
@@ -82,7 +91,9 @@ def update_profile(request):
             print(profile_form.errors)
     else:
         profile_form = user_forms.ProfileForm(instance=request.user)
-    return render(request, 'user/profile_form.html', {'profile_form': profile_form})
+    return render(
+        request, 'user/profile_form.html', {'profile_form': profile_form}
+    )
 
 
 @login_required

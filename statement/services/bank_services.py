@@ -3,9 +3,7 @@ from ..models import Bank
 
 def create_bank(bank):
     Bank.objects.create(
-        description=bank.description,
-        code=bank.code,
-        icon=bank.icon
+        description=bank.description, code=bank.code, icon=bank.icon
     )
 
 

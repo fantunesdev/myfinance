@@ -3,6 +3,6 @@ class Subcategory:
         self.description = description
         self.category = category
         self.user = user
-    
+
     def __str__(self) -> str:
         self.description

@@ -12,7 +12,9 @@ def get_subcategories(user):
 
 
 def get_subcategories_by_category(category_id, user):
-    subcategories = Subcategory.objects.select_related('category').filter(category=category_id, user=user)
+    subcategories = Subcategory.objects.select_related('category').filter(
+        category=category_id, user=user
+    )
     if subcategories:
         return subcategories
     raise Http404

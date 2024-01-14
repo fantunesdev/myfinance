@@ -3,8 +3,7 @@ from statement.models import Flag
 
 def create_flag(flag):
     new_flag = Flag.objects.create(
-        description=flag.description,
-        icon=flag.icon
+        description=flag.description, icon=flag.icon
     )
     return new_flag
 

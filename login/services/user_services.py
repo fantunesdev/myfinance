@@ -13,5 +13,5 @@ def create_user(user):
         is_staff=user.is_staff,
         is_active=user.is_active,
         date_joined=date.today(),
-        photo=user.photo
+        photo=user.photo,
     )

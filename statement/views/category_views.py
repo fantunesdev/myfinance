@@ -4,8 +4,11 @@ from django.shortcuts import redirect, render
 from ..forms.category_form import CategoryForm
 from ..forms.general_forms import ExclusionForm
 from ..models import Category
-from ..repositories.templatetags_repository import set_templatetags, set_menu_templatetags
-from ..services import category_services, account_services, card_services
+from ..repositories.templatetags_repository import (
+    set_menu_templatetags,
+    set_templatetags,
+)
+from ..services import account_services, card_services, category_services
 
 
 @login_required
@@ -19,7 +22,7 @@ def create_category(request):
                 color=category_form.cleaned_data['color'],
                 icon=category_form.cleaned_data['icon'],
                 ignore=category_form.cleaned_data['ignore'],
-                user=request.user
+                user=request.user,
             )
             category_services.create_category(new_category)
             return redirect('setup_settings')
@@ -34,7 +37,9 @@ def create_category(request):
 @login_required
 def update_category(request, id):
     old_category = category_services.get_category_by_id(id, request.user)
-    category_form = CategoryForm(request.POST or None, request.FILES or None, instance=old_category)
+    category_form = CategoryForm(
+        request.POST or None, request.FILES or None, instance=old_category
+    )
     if category_form.is_valid():
         new_category = Category(
             type=category_form.cleaned_data['type'],
@@ -42,7 +47,7 @@ def update_category(request, id):
             color=category_form.cleaned_data['color'],
             icon=category_form.cleaned_data['icon'],
             ignore=category_form.cleaned_data['ignore'],
-            user=request.user
+            user=request.user,
         )
         category_services.update_category(old_category, new_category)
         return redirect('setup_settings')
@@ -63,4 +68,6 @@ def delete_category(request, id):
     set_menu_templatetags(request.user, templatetags)
     templatetags['category'] = category
     templatetags['exclusion_form'] = ExclusionForm()
-    return render(request, 'category/exclusion_confirmation_category.html', templatetags)
+    return render(
+        request, 'category/exclusion_confirmation_category.html', templatetags
+    )

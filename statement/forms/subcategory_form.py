@@ -9,5 +9,5 @@ class SubcategoryForm(forms.ModelForm):
         fields = ['description', 'category']
         widgets = {
             'description': forms.TextInput(attrs={'class': 'form-control'}),
-            'category': forms.Select(attrs={'class': 'form-control'})
+            'category': forms.Select(attrs={'class': 'form-control'}),
         }

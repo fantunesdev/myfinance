@@ -1,10 +1,13 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
+from django.shortcuts import redirect, render
 
-from statement.forms.bank_form import BankForm
 from statement.entities.bank import Bank
+from statement.forms.bank_form import BankForm
 from statement.forms.general_forms import ExclusionForm
-from statement.repositories.templatetags_repository import set_templatetags, set_menu_templatetags
+from statement.repositories.templatetags_repository import (
+    set_menu_templatetags,
+    set_templatetags,
+)
 from statement.services import bank_services
 
 
@@ -16,7 +19,7 @@ def create_bank(request):
             banco = Bank(
                 description=bank_form.cleaned_data['description'],
                 code=bank_form.cleaned_data['code'],
-                icon=bank_form.cleaned_data['icon']
+                icon=bank_form.cleaned_data['icon'],
             )
             bank_services.create_bank(banco)
             return redirect('setup_settings')
@@ -40,12 +43,14 @@ def get_banks(request):
 @login_required
 def update_bank(request, id):
     old_bank = bank_services.get_bank_by_id(id)
-    bank_form = BankForm(request.POST or None, request.FILES or None, instance=old_bank)
+    bank_form = BankForm(
+        request.POST or None, request.FILES or None, instance=old_bank
+    )
     if bank_form.is_valid():
         new_bank = Bank(
             description=bank_form.cleaned_data['description'],
             code=bank_form.cleaned_data['code'],
-            icon=bank_form.cleaned_data['icon']
+            icon=bank_form.cleaned_data['icon'],
         )
         bank_services.update_bank(old_bank, new_bank)
         return redirect('setup_settings')
@@ -67,4 +72,6 @@ def delete_bank(request, id):
     set_menu_templatetags(request.user, templatetags)
     templatetags['bank'] = bank
     templatetags['exclusion_form'] = exclusion_form
-    return render(request, 'bank/exclusion_confirmation_bank.html', templatetags)
+    return render(
+        request, 'bank/exclusion_confirmation_bank.html', templatetags
+    )

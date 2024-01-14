@@ -9,5 +9,5 @@ class BankForm(forms.ModelForm):
         fields = ['description', 'code', 'icon']
         widgets = {
             'description': forms.TextInput(attrs={'class': 'form-control'}),
-            'code': forms.TextInput(attrs={'class': 'form-control'})
+            'code': forms.TextInput(attrs={'class': 'form-control'}),
         }

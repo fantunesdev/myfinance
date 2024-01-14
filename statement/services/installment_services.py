@@ -5,7 +5,7 @@ def create_installment(installment):
     new_installment = Installment.objects.create(
         release_date=installment.release_date,
         description=installment.description,
-        user=installment.user
+        user=installment.user,
     )
     return new_installment
 

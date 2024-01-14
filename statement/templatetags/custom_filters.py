@@ -33,7 +33,9 @@ def total_amount(transaction):
     total = 0
     for i in transaction:
         total += i.value
-    return f'{transaction[0].currency.symbol} {total:_.2f}'.replace('.', ',').replace('_', '.')
+    return f'{transaction[0].currency.symbol} {total:_.2f}'.replace(
+        '.', ','
+    ).replace('_', '.')
 
 
 @register.filter(name='paid_installments')

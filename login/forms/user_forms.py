@@ -5,8 +5,14 @@ from login.models import User
 
 
 class UserForm(forms.ModelForm):
-    password1 = forms.CharField(label='Senha', widget=forms.PasswordInput(attrs={'class': 'form-control'}))
-    password2 = forms.CharField(label='Confirmação senha', widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+    password1 = forms.CharField(
+        label='Senha',
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
+    )
+    password2 = forms.CharField(
+        label='Confirmação senha',
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
+    )
 
     class Meta:
         attrs = {'class': 'form-control'}
@@ -15,7 +21,7 @@ class UserForm(forms.ModelForm):
         widgets = {
             'name': forms.TextInput(attrs=attrs),
             'email': forms.TextInput(attrs=attrs),
-            'username': forms.TextInput(attrs=attrs)
+            'username': forms.TextInput(attrs=attrs),
         }
 
     def clean_password2(self):

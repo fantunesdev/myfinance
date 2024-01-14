@@ -9,7 +9,7 @@ from statement.entities.transaction import Transaction
 from statement.services import account_services, card_services
 
 
-class FileHandler():
+class FileHandler:
     def __init__(self, request) -> None:
         self.__file = request.FILES.get('file')
         self.__account = self.__set_account(request)
@@ -73,11 +73,11 @@ class FileHandler():
             return card_services.get_card_by_id(card, user)
         except ValueError:
             return None
-        
+
     def __set_extension(self, request):
         file = request.FILES.get('file')
         return file.name.split('.')[-1].lower()
-        
+
     def __set_path(self, request):
         upload_dir = f'{settings.MEDIA_ROOT}/uploads'
         if not os.path.exists(upload_dir):
@@ -104,8 +104,7 @@ class FileHandler():
                 return content
             case 'csv':
                 return self.__read_csv()
-        
-    
+
     def __remove_file(self):
         os.remove(self.path)
 
@@ -120,7 +119,7 @@ class FileHandler():
                 raise ValueError(self.error_message)
 
             ignore = True
-            
+
             for id, row in enumerate(reader):
                 if row == self.file_conf['header']:
                     ignore = False
@@ -136,14 +135,14 @@ class FileHandler():
                         'subcategory': self.__handle_subcategory(row[1]),
                         'type': self.__handle_type(row[2]),
                         'description': self.__handle_description(row[1]),
-                        'value': self.__handle_value(row[2])
+                        'value': self.__handle_value(row[2]),
                     }
 
                     if self.account:
                         del transaction['card']
                     else:
                         del transaction['account']
-                    
+
                     self.transactions.append(transaction)
         if ignore:
             self.__error_message = 'O cabeçalho do arquivo é inválido.'
@@ -161,13 +160,13 @@ class FileHandler():
             month = date[5:6]
             day = date[6:]
         return f'{year}-{month}-{day}'
-    
+
     def __handle_category(self, file_description):
         for category in self.file_conf['categories']:
             if category['word'] in file_description:
                 return category['id']
         return file_description.split('-')[0].rstrip()
-    
+
     def __handle_subcategory(self, file_description):
         for subcategory in self.file_conf['subcategories']:
             if subcategory['word'] in file_description:
@@ -182,12 +181,14 @@ class FileHandler():
     def __handle_description(self, file_description):
         file_words = file_description.split()
         file_description = ' '.join(file_words)
-        
+
         for description in self.file_conf['description']:
             if description['word'] in file_description:
-                return file_description.split(description['delimiter'])[-1].upper()
+                return file_description.split(description['delimiter'])[
+                    -1
+                ].upper()
         return file_description.split('-')[-1].title()
-    
+
     def __handle_value(self, value):
         if value[0] == '-':
             return value[1:]

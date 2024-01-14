@@ -8,7 +8,7 @@ def create_category(category):
         color=category.color,
         icon=category.icon,
         ignore=category.ignore,
-        user=category.user
+        user=category.user,
     )
     return new_category
 
