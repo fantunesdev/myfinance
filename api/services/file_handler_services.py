@@ -145,6 +145,9 @@ class FileHandler():
                         del transaction['account']
                     
                     self.transactions.append(transaction)
+        if ignore:
+            self.__error_message = 'O cabeçalho do arquivo é inválido.'
+            raise ValueError(self.error_message)
 
     def __handle_date(self, date):
         if '/' in date:
