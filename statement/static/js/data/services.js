@@ -61,12 +61,15 @@ export async function getResource(model) {
 export async function getSpecificResource(model, id) {
     const sessionData = sessionStorage.getItem(`${model}-${id}`);
     if (sessionData) {
-        return sessionData;
+        return JSON.parse(sessionData);
     }
 
     const url = `/api/${model}/${id}/`,
         response = await fetch(url),
-        data = await response.json();
+        data = await response.json(),
+        sessionStorageData = JSON.stringify(data);
+        
+    sessionStorage.setItem(`${model}-${id}`, sessionStorageData);
     return data;
 }
 
@@ -81,15 +84,16 @@ export async function getSpecificResource(model, id) {
 export async function getRelatedResource(model, related, id) {
     const sessionData = sessionStorage.getItem(`${model}-${id}-${related}`);
     if (sessionData) {
-        return sessionData;
+        return JSON.parse(sessionData);
     }
 
     const url = `/api/${model}/${id}/${related}`,
         response = await fetch(url),
+        data = await response.json(),
         sessionStorageData = JSON.stringify(data);
 
     sessionStorage.setItem(`${model}-${id}-${related}`, sessionStorageData);
-    return await response.json();
+    return data;
 }
 
 
