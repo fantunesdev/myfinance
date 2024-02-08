@@ -132,7 +132,6 @@ function yearMonthRouter() {
         url = `/relatorio_financeiro/contas/${account}/extrato/${yearNavigation.value}/${monthNavigation.value.padStart(2, '0')}/`;
     } else if (actualPath.includes('fatura')) {
         card = splitedPath[3];
-        console.log('entrou ' + card)
         url = `/relatorio_financeiro/cartoes/${card}/fatura/${yearNavigation.value}/${monthNavigation.value.padStart(2, '0')}/`;
     } else {
         url = `/relatorio_financeiro/${yearNavigation.value}/${monthNavigation.value.padStart(2, '0')}/`;
@@ -146,10 +145,6 @@ resetDashboardButton.addEventListener('click', () => {
     updateBarChart(barChart);
     sessionStorage.setItem('bar_chart_level', 'categories');
 });
-    
-// expensesSelector.addEventListener('change', () => {
-//     updateBarChart(barChart);
-// });
 
 let barChart = await draw();
 sessionStorage.setItem('bar_chart_level', 'categories');

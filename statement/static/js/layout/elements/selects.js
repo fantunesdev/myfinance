@@ -20,7 +20,6 @@ function renderDefaultOption(select) {
  * @param {Array} objectList - Um array de objetos literais. 
  */
 export function renderOptions(select, objectList) {
-    console.log(objectList);
     select.length = 0;
     renderDefaultOption(select);
     
