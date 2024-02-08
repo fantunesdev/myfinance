@@ -7,7 +7,7 @@ export function orderExpensesBySubcategory(transactions, categoryId, expenses) {
     let newTransactions = [];
     for (let i = 0; i < expenses.length; i++) {
         expenses[i].order = i;
-    };
+    }
 
     for (let transaction of transactions) {
         if (transaction.category == categoryId) {
@@ -17,11 +17,11 @@ export function orderExpensesBySubcategory(transactions, categoryId, expenses) {
                 }
             }
             newTransactions.push(transaction);
-        };
-    };
+        }
+    }
 
     return newTransactions.sort((a, b) => a.order < b.order ? -1 : a.order > b.order ? 1 : 0);
-};
+}
 
 
 export function setData(transaction, transactionAttrs) {
@@ -40,8 +40,8 @@ export function setData(transaction, transactionAttrs) {
     for (card of transactionAttrs.cards) {
         if (transaction.card == card.id) {
             data.push(card.icon);
-        };
-    };
+        }
+    }
 
     // If accounts:
     for (account of transactionAttrs.accounts) {
@@ -49,10 +49,10 @@ export function setData(transaction, transactionAttrs) {
             for (bank of transactionAttrs.banks) {
                 if (bank.id == account.bank) {
                     data.push(bank.icon);
-                };
-            };
-        };
-    };
+                }
+            }
+        }
+    }
 
     // Column 3 - Category data
     data.push(transactionAttrs.category.description);
@@ -61,8 +61,8 @@ export function setData(transaction, transactionAttrs) {
     for (let subcategory of transactionAttrs.subcategories) {
         if (transaction.subcategory == subcategory.id) {
             data.push(`${subcategory.name}`);
-        };
-    };
+        }
+    }
 
     // Column 5 - Description data
     data.push(transaction.description);
@@ -71,7 +71,7 @@ export function setData(transaction, transactionAttrs) {
     data.push(transaction.value.toLocaleString('pt-br',{style: 'currency', currency: transaction.currency}));
     
     return data;
-};
+}
 
 
 export function setURLs(transaction) {
@@ -91,4 +91,4 @@ export function setURLs(transaction) {
         ]
     }    
     return urls;
-};
+}

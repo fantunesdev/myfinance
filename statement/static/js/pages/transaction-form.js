@@ -18,8 +18,8 @@ function selectPaymentMethod() {
         divs.card.classList.add('toggled');
         divs.account.classList.remove('toggled');
         selects.card.selectedIndex = 0;
-    };
-};
+    }
+}
 
 
 /**
@@ -29,11 +29,11 @@ async function changePaymentDateInput() {
     if (selects.paymentMethod.value == 1) {
         let cardId = selects.card.value
         var card = await services.getSpecificResource('cards', cardId);
-    };
+    }
     const releaseDate = selects.releaseDate.value,
         paymentDate = data.setPaymentDate(releaseDate, card);
     selects.paymentDate.value = paymentDate;
-};
+}
 
 /**
  * Autogerencia o input do payment method para se ajustar de acordo com o meio de pagamento.
@@ -67,7 +67,7 @@ async function changeSubcategoriesInput(categoryId) {
 
 if (buttons.installment) {
     buttons.installment.addEventListener('click', () => showHide(divs.installment));
-};
+}
 buttons.otherOptions.addEventListener('click', () => showHide(divs.otherOptions));
 
 selects.paymentMethod.addEventListener('change', () => selectPaymentMethod());

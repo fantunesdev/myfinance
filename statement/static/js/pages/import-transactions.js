@@ -30,8 +30,8 @@ export function selectPaymentMethod() {
         selects.account.required = true;
         selects.card.required = false;
         selects.card.selectedIndex = 0;
-    };
-};
+    }
+}
 
 /**
  * Envia o arquivo para o servidor, grava o retorno na localStorage e mostra mensagens de erro do backend.

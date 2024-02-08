@@ -10,8 +10,8 @@ export function setPaymentDate(releaseDate, card) {
         }
     } else {
         return releaseDate;
-    };
-};
+    }
+}
 
 
 function addMonth(day, monthString, anoString) {
@@ -22,7 +22,7 @@ function addMonth(day, monthString, anoString) {
     if (month > 12) {
         month = 1;
         year = year + 1;
-    };
+    }
 
     return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
 }

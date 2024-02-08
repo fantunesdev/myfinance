@@ -28,14 +28,14 @@ export async function getMonthYear() {
             year = path.split('/')[2];
             month = path.split('/')[3];
         }
-    };
+    }
 
     const yearMonth = [year, month];
 
     sessionStorage.setItem('year-month', yearMonth)
 
     return yearMonth;
-};
+}
 
 
 /**
@@ -60,7 +60,7 @@ export function setCategoriesReport(transactions, categories) {
             id: category.id,
             name: category.description,
             amount: 0
-        };
+        }
 
         if (category.type === 'entrada') {
             revenue.push(object);
@@ -70,39 +70,41 @@ export function setCategoriesReport(transactions, categories) {
             } else {
                 ignoredCategories.push(category.id);
             }
-        };
-    };
+        }
+    }
 
     // Classifica os lançamentos como receitas e despesas e calcula o montante total de ambas.
-    for (let transaction of transactions) {
-
-        for (category of revenue) {
-            if (transaction.category === category.id) {
-                category.amount += transaction.value;
+    if (Array.isArray(transactions)) {
+        for (let transaction of transactions) {
+    
+            for (category of revenue) {
+                if (transaction.category === category.id) {
+                    category.amount += transaction.value;
+                }
             }
-        };
-        
-        for (category of expenses) {
-            if (transaction.category === category.id) {
-                category.amount += transaction.value;
+            
+            for (category of expenses) {
+                if (transaction.category === category.id) {
+                    category.amount += transaction.value;
+                }
             }
-        };
-
-        
-        if (transaction.type === 'entrada') {
-            amount.revenue += transaction.value;            
-        } else {
-            if (!ignoredCategories.includes(transaction.category)) {
-                amount.expenses += transaction.value;
+    
+            
+            if (transaction.type === 'entrada') {
+                amount.revenue += transaction.value;            
+            } else {
+                if (!ignoredCategories.includes(transaction.category)) {
+                    amount.expenses += transaction.value;
+                }
             }
         }
-    };
+    }
 
     // Ordena as despesas pelo montante. Os maiores gastos aparecem primeiro.
     expenses.sort((a, b) => a.amount < b.amount ? 1 : a.amount > b.amount ? -1 : 0);
     
-    return {revenue, expenses, amount};
-};
+    return {revenue, expenses, amount}
+}
 
 
 /**
@@ -130,8 +132,8 @@ export function setCategoriesDataset(report, revenue) {
             colors.push(`rgba(139, 0, 0, 1)`);
         }
     }
-    return {names, values, colors};
-};
+    return {names, values, colors}
+}
 
 
 /**
@@ -150,7 +152,7 @@ export function setCategoriesOptions(report) {
             amount: i.amount
         }
         options.push(object)
-    };
+    }
     return options;
 }
 
@@ -166,5 +168,5 @@ export function setAmountDataset(amount) {
             'rgba(0, 150, 0, 1)',
             'rgba(139, 0, 0, 1)'
         ]
-    return {names, values, colors};
-};
+    return {names, values, colors}
+}

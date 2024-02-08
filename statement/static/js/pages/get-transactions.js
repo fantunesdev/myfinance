@@ -29,7 +29,7 @@ async function draw() {
     graphics.drawDoughnutChart(amount, 'amount', 'Receitas/Despesas');    
 
     return barChart;
-};
+}
 
 
 /**
@@ -59,7 +59,7 @@ export async function updateBarChart(barChart) {
     graphics.updateChart(barChart, dataset);
     
     updateTable(transactions, expenses)
-};
+}
 
 
 /**
@@ -103,18 +103,43 @@ async function updateTable(transactions, expenses) {
                         category: category,
                         subcategories: expenses,
                         banks: banks
-                    };
-                    originalTable.classList.add('hide');
-                    let filteredTransactions = dataTable.orderExpensesBySubcategory(transactions, selectedCategory.id, expenses);
-                    
-                    tables.renderTable(statementBox, filteredTransactions, transactionAttrs);
-                }
-                sessionStorage.removeItem('bar_label_clicked');
+                    }
+
+                originalTable.classList.add('hide');
+                let filteredTransactions = dataTable.orderExpensesBySubcategory(transactions, selectedCategory.id, expenses);
+                
+                tables.renderTable(statementBox, filteredTransactions, transactionAttrs);
             }
-        } else {
-            originalTable.classList.remove('hide');
+            sessionStorage.removeItem('bar_label_clicked');
         }
+    } else {
+        originalTable.classList.remove('hide');
     }
+}
+
+/**
+ * Redireciona a a página para a url selecionada pelo options de navegação mês e ano.
+ */
+function yearMonthRouter() {
+    let actualPath = window.location.pathname,
+        splitedPath = actualPath.split('/'),
+        url,
+        card,
+        account;
+
+    if (actualPath.includes('conta')) {
+        account = splitedPath[3];
+        url = `/relatorio_financeiro/contas/${account}/extrato/${yearNavigation.value}/${monthNavigation.value.padStart(2, '0')}/`;
+    } else if (actualPath.includes('fatura')) {
+        card = splitedPath[3];
+        console.log('entrou ' + card)
+        url = `/relatorio_financeiro/cartoes/${card}/fatura/${yearNavigation.value}/${monthNavigation.value.padStart(2, '0')}/`;
+    } else {
+        url = `/relatorio_financeiro/${yearNavigation.value}/${monthNavigation.value.padStart(2, '0')}/`;
+    }
+
+    window.location.href = url;
+}
     
 const resetDashboardButton = document.querySelector('#reset-dashboard-button');
 resetDashboardButton.addEventListener('click', () => {
@@ -132,12 +157,10 @@ sessionStorage.setItem('bar_chart_level', 'categories');
 
 // Redireciona para a página do ano selecionado.
 yearNavigation.addEventListener('change', () => {
-    let url = `/relatorio_financeiro/${yearNavigation.value}/${monthNavigation.value}`;
-    window.location.href = url;
+    yearMonthRouter();
 });
 
 // Redireciona para a página do mês selecionado.
 monthNavigation.addEventListener('change', () => {
-    let url = `/relatorio_financeiro/${yearNavigation.value}/${monthNavigation.value}`;
-    window.location.href = url;
+    yearMonthRouter();
 });

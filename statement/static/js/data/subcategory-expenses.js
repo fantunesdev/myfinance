@@ -13,19 +13,19 @@ export async function setSubcategoryDataset(id) {
             id: subcategory.id,
             name: subcategory.description,
             amount: 0
-        };
+        }
         expenses.push(object);
-    };
+    }
 
     for (transaction of transactions) {
         for (subcategory of expenses) {
             if (subcategory.id === transaction.subcategory) {
                 subcategory.amount += transaction.value;
             }
-        };
-    };
+        }
+    }
 
     expenses.sort((a, b) => a.amount < b.amount ? 1 : a.amount > b.amount ? -1 : 0);
 
     return expenses;
-};
+}

@@ -25,7 +25,7 @@ export function renderTable(father, transactions, transactionAttrs) {
     table.appendChild(tbody);
     
     father.appendChild(table);
-};
+}
 
 
 function createTitleRow(row, data) {
@@ -47,14 +47,14 @@ function createRow(row, type, data, anchors) {
             column.innerHTML = data[i];
         }
         row.appendChild(column);
-    };
+    }
     if (anchors) {
         for (let anchor of anchors) {
             row.appendChild(anchor);
         }
-    };
+    }
     return row;
-};
+}
 
 
 function createImage(father, src) {
@@ -75,10 +75,10 @@ function createAnchors(urls) {
             anchor.href = urls[index];
             anchor.appendChild(content);
             anchors.push(anchor);
-        };
+        }
         
         return anchors;
-    };
+    }
     
     
 function createAnchorWithFontAwesomeIcons(index) {
@@ -91,7 +91,7 @@ function createAnchorWithFontAwesomeIcons(index) {
                 'fa-trash'
             ],
             behavior: 'action-icon'
-        };
+        }
         
     content.classList.add(fontAwesomeClassName.format);
     content.classList.add(fontAwesomeClassName.icons[index]);

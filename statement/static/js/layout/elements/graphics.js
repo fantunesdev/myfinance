@@ -121,10 +121,10 @@ export function drawDoughnutChart(dataset, fatherHtmlId, label) {
                 }
             }
         }
-    };
+    }
 
     new Chart(father, data);
-};
+}
 
 
 function addData(chart, label, data) {
@@ -133,7 +133,7 @@ function addData(chart, label, data) {
         dataset.data.push(data);
     });
     chart.update();
-};
+}
 
 
 function removeData(chart) {
@@ -142,7 +142,7 @@ function removeData(chart) {
         dataset.data.pop();
     });
     chart.update();
-};
+}
 
 
 export function updateChart(chart, dataset) {
@@ -151,9 +151,9 @@ export function updateChart(chart, dataset) {
 
     for (i = 0; i < max; i++) {
         removeData(chart);
-    };
+    }
 
     for (i = 0; i < dataset.names.length; i++) {
         addData(chart, dataset.names[i], dataset.values[i]);
-    };
+    }
 }
