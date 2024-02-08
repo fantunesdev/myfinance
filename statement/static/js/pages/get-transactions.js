@@ -22,8 +22,7 @@ async function draw() {
         report = categoryData.setCategoriesReport(transactions, categories),
         revenue = categoryData.setCategoriesDataset(report.revenue, true),
         expenses = categoryData.setCategoriesDataset(report.expenses),
-        amount = categoryData.setAmountDataset(report.amount),
-        optionsCategory = categoryData.setCategoriesOptions(report.expenses);
+        amount = categoryData.setAmountDataset(report.amount);
 
     const barChart = graphics.drawBarChart(expenses, 'Despesas');
     graphics.drawDoughnutChart(revenue, 'revenue', 'Receitas');

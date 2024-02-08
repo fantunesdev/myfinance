@@ -51,6 +51,7 @@ export function setCategoriesReport(transactions, categories) {
             revenue: 0, 
             expenses: 0
         },
+        ignoredCategories = [],
         category;
     
     // Separa as categorias de receitas e de despesas.
@@ -66,6 +67,8 @@ export function setCategoriesReport(transactions, categories) {
         } else {
             if (!category.ignore) {
                 expenses.push(object);
+            } else {
+                ignoredCategories.push(category.id);
             }
         };
     };
@@ -84,11 +87,12 @@ export function setCategoriesReport(transactions, categories) {
                 category.amount += transaction.value;
             }
         };
+
         
         if (transaction.type === 'entrada') {
             amount.revenue += transaction.value;            
         } else {
-            if (!category.ignore) {
+            if (!ignoredCategories.includes(transaction.category)) {
                 amount.expenses += transaction.value;
             }
         }
