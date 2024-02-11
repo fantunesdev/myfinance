@@ -23,4 +23,8 @@ export const selects = {
     category: getElement('id_category'),
     subcategory: getElement('id_subcategory'),
     value: getElement('id_value'),
+    price: getElement('id_price'),
+    km: getElement('id_km'),
+    observation: getElement('id_observation'),
+    description: getElement('id_description'),
 }

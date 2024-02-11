@@ -1,6 +1,7 @@
 import { showHide } from './index.js';
 import { buttons, divs, selects } from '../layout/elements/transaction-form-elements.js';
 import * as data from '../data/transaction-form-data.js';
+import * as general from '../layout/general.js';
 import * as services from '../data/services.js';
 import * as selectInput from '../layout/elements/selects.js';
 
@@ -77,43 +78,91 @@ selects.account.addEventListener('change', () => changePaymentDateInput());
 selects.releaseDate.addEventListener('change', () => changePaymentDateInput());
 
 selects.category.addEventListener('change', () => changeSubcategoriesInput(selects.category.value));
+selects.subcategory.addEventListener('change', () => {
+    if (selects.subcategory.value == 5) {
+        general.toggle('div-fuel');
+        selects.price.required = true;
+        selects.km.required = true;
 
-selects.value.addEventListener('keyup', 
-    /**
-     * Trata o valor do campo Valor de forma que sempre retorne um float de dois dígitos.
-     * 
-     * @param {object} event - KeyboardEvent que pega a tecla que foi digitada.
-     */
-    function(event) {
-        let value = this.value,
-            valueString = value.toString(),
-            valueLength = valueString.length,
-            integer,
-            cents;
+        selects.price.addEventListener('keyup', () => {
+            selects.observation.value = returnFuelObservation();
+        });
+        selects.value.addEventListener('keyup', () => {
+            selects.observation.value = returnFuelObservation();
+        });
+        selects.km.addEventListener('keyup', () => {
+            selects.observation.value = returnFuelObservation();
+        });
+    }
+});
 
-        if (this.valueString == 0) {
-            this.value = '';
-        }
+selects.value.addEventListener('keyup', twoDigitFloatHandler);
+selects.price.addEventListener('keyup', twoDigitFloatHandler);
 
-        if (valueLength == 3) {
-            if (valueString.includes('.')) {
-                this.value = valueString.replace('.', '');
-                this.value = `0.${this.value}`;
-            } else {
-                integer = valueString.slice(0, -2);
-                cents = valueString.slice(-2);
-                this.value = `${integer}.${cents}`;
-            }
-        } else if (valueLength >= 4) {
-            valueString = valueString.replace('.', '');
-            integer = parseInt(valueString.slice(0, -2));
+const divFuelToggler = document.querySelector('#div-fuel-toggler');
+divFuelToggler.addEventListener('click', () => {
+    general.toggle('div-fuel');
+    selects.subcategory.value = 0;
+    selects.price.required = false;
+    selects.km.required = false;
+});
+
+function returnFuelObservation() {
+    let price = selects.price.value,
+        km = selects.km.value,
+        value = selects.value.value,
+        liters = (value / price).toFixed(2),
+        kmPerL = (km / liters).toFixed(1),
+        realPerKm = (value / km).toFixed(2);
+
+    return `##########  CÁLCULOS DE COMBUSTÍVEL ##########
+
+CUSTO: R$ ${realPerKm} por km.
+CONSUMO: ${kmPerL} km/l.
+
+PREÇO: R$ ${price}.
+LITROS: ${liters} l.
+DISTÂNCIA: ${km} km.
+
+#########################################
+`;
+}
+
+
+/**
+ * Trata o valor do campo Valor de forma que sempre retorne um float de dois dígitos.
+ * 
+ * @param {object} event - KeyboardEvent que pega a tecla que foi digitada.
+ */
+function twoDigitFloatHandler(event) {
+    let value = this.value,
+        valueString = value.toString(),
+        valueLength = valueString.length,
+        integer,
+        cents;
+
+    if (this.valueString == 0) {
+        this.value = '';
+    }
+
+    if (valueLength == 3) {
+        if (valueString.includes('.')) {
+            this.value = valueString.replace('.', '');
+            this.value = `0.${this.value}`;
+        } else {
+            integer = valueString.slice(0, -2);
             cents = valueString.slice(-2);
             this.value = `${integer}.${cents}`;
-        } else {
-            this.value = `0.0${this.value}`;
         }
-
-  });
+    } else if (valueLength >= 4) {
+        valueString = valueString.replace('.', '');
+        integer = parseInt(valueString.slice(0, -2));
+        cents = valueString.slice(-2);
+        this.value = `${integer}.${cents}`;
+    } else {
+        this.value = `0.0${this.value}`;
+    }
+}
 
 selectPaymentMethod();
 

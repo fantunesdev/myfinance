@@ -80,6 +80,19 @@
                             {{ transaction_form.value }}
                             {{ transaction_form.value.errors }}
                         </div>
+
+                        <div class="toggled" id="div-fuel">
+                            <h3 id="div-fuel-toggler" class="cursor-pointer">Módulo Combustível -</h3>
+                            <div class="form-input">
+                                <label for="id_price">Preço</label>
+                                <input type="number" name="id_price" id="id_price" class="form-control" step="any">
+                            </div>
+    
+                            <div class="form-input">
+                                <label for="id_km">Quilômetros</label>
+                                <input type="number" name="id_km" id="id_km" class="form-control">
+                            </div>
+                        </div>
                         <br>
 
                         <h3 id="btn-installment" class="cursor-pointer">Parcelamento +</h3>
@@ -99,7 +112,7 @@
                             </div>
 
                             <div class="form-input">
-                                <label for="id_pagas">Pagas</label>
+                                <label for="id_paid">Pagas</label>
                                 {{ transaction_form.paid }}
                                 {{ transaction_form.paid.errors }}
                             </div>
