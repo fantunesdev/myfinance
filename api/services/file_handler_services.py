@@ -1,10 +1,10 @@
 import csv
 import json
 import os
+from json import JSONDecodeError
 
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
-from json import JSONDecodeError
 
 from statement.entities.transaction import Transaction
 from statement.services import account_services, card_services
@@ -85,7 +85,7 @@ class FileHandler:
             os.mkdir(upload_dir)
         file = request.FILES.get('file')
         return os.path.join(settings.MEDIA_ROOT, 'uploads', file.name)
-    
+
     def __set_file_conf(self):
         """
         Valida se o file_handler_conf está configurado e atribui o valor para a propriedade file_conf.
@@ -93,13 +93,17 @@ class FileHandler:
         try:
             if self.account:
                 if self.account.file_handler_conf:
-                    self.__file_conf = json.loads(self.account.file_handler_conf)
+                    self.__file_conf = json.loads(
+                        self.account.file_handler_conf
+                    )
             if self.card:
                 if self.card.file_handler_conf:
                     self.__file_conf = json.loads(self.card.file_handler_conf)
         except JSONDecodeError as message:
-            self.__error_message = f'Erro ao ler a propriedade file_handler_conf: {message}.'
-            raise ValueError(self.error_message)                    
+            self.__error_message = (
+                f'Erro ao ler a propriedade file_handler_conf: {message}.'
+            )
+            raise ValueError(self.error_message)
 
         if not self.__file_conf:
             self.__error_message = 'A propriedade file_handler_conf desta conta não está configurada.'
@@ -131,19 +135,19 @@ class FileHandler:
     def __read_csv(self):
         with open(self.path, 'r', newline='', encoding='utf-8') as csv_file:
             self.__set_file_conf()
-            
+
             first_row = csv_file.readline()
             first_row = first_row.replace('\n', '')
-
 
             if ',' in first_row:
                 delimiter = ','
             elif ';' in first_row:
                 delimiter = ';'
             else:
-                self.__error_message = 'O arquivo não tem um delimitador válido ("," ou ";").'
+                self.__error_message = (
+                    'O arquivo não tem um delimitador válido ("," ou ";").'
+                )
                 raise ValueError(self.error_message)
-
 
             reader = csv.reader(csv_file, delimiter=delimiter)
             file_header = first_row.split(delimiter)
@@ -166,9 +170,13 @@ class FileHandler:
                         'account': self.account.id if self.account else None,
                         'card': self.card.id if self.card else None,
                         'category': self.__handle_category(row[1]),
-                        'subcategory': self.__handle_subcategory(row[1 + plus]),
+                        'subcategory': self.__handle_subcategory(
+                            row[1 + plus]
+                        ),
                         'type': self.__handle_type(row[2 + plus]),
-                        'description': self.__handle_description(row[1 + plus]),
+                        'description': self.__handle_description(
+                            row[1 + plus]
+                        ),
                         'value': self.__handle_value(row[2 + plus]),
                     }
 
@@ -181,7 +189,6 @@ class FileHandler:
             else:
                 self.__error_message = f'O cabeçalho do arquivo é inválido: {file_header}. Cabeçalho esperado: {conf_header}.'
                 raise ValueError(self.error_message)
-
 
     def __handle_date(self, date):
         if '/' in date:

@@ -16,6 +16,7 @@ class TransactionByYearAndMonth(APIView):
     Esta classe trata os lançamentos da requisição quando recebem parâmetros
     relativos ano e ao mês.
     """
+
     def get(self, request, year, month):
         """
         Lista os lançamentos filtrando por ano e mês
@@ -26,7 +27,7 @@ class TransactionByYearAndMonth(APIView):
         cabeçalhos, método HTTP, dados do corpo, etc.
 
         Returns:
-        Em caso de sucesso, uma lista de objetos do tipo transactions. Em casso 
+        Em caso de sucesso, uma lista de objetos do tipo transactions. Em casso
         de falha, um código e uma mensagem de erro.
         """
         transactions = transaction_services.get_transactions_by_year_and_month(
@@ -43,6 +44,7 @@ class TransactionYear(APIView):
     Esta classe trata os lançamentos da requisição quando recebem um
     parâmetro relativo ao ano.
     """
+
     def get(self, request, year):
         """
         Lista os lançamentos filtrando por ano
@@ -53,7 +55,7 @@ class TransactionYear(APIView):
         cabeçalhos, método HTTP, dados do corpo, etc.
 
         Returns:
-        Em caso de sucesso, uma lista de objetos do tipo transactions. Em casso 
+        Em caso de sucesso, uma lista de objetos do tipo transactions. Em casso
         de falha, um código e uma mensagem de erro.
         """
         transactions = transaction_services.get_transactions_by_year(
@@ -70,6 +72,7 @@ class TransactionsList(APIView):
     Esta classe trata os lançamentos da requisição quando não recebem um
     parâmetro.
     """
+
     def post(self, request):
         """
         Cadastra o lançamento no banco de dados fazendo as validações.
@@ -121,10 +124,12 @@ class TransactionsList(APIView):
             {'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST
         )
 
+
 class ImportTransactions(APIView):
     """
     Esta classe recebe e trata o arquivo de carga.
     """
+
     def post(self, request):
         """
         Recebe, valida o arquivo de carga, trata os lançamentos e devolve uma lista de lançamentos.

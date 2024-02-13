@@ -78,10 +78,9 @@ class Transaction:
 
     def to_dict(self):
         return self.__dict__
-    
+
     def set_payment_date(self):
         if self.card:
             self.card = card_services.get_card_by_id(self.card)
             return
         return self.release_date
-
