@@ -37,8 +37,7 @@ async function draw() {
  * @param {Object} barChart - A instância original do gráfico de barras
  */
 export async function updateBarChart(barChart) {
-    const [year, month] = sessionStorage.getItem('year-month').split(','),
-        transactions = JSON.parse(sessionStorage.getItem('transactions')),
+    const transactions = JSON.parse(sessionStorage.getItem('transactions')),
         categories = JSON.parse(sessionStorage.getItem('categories'));
 
     let barLabelClicked = sessionStorage.getItem('bar_label_clicked')

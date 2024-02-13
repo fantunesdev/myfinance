@@ -10,13 +10,13 @@ export async function getMonthYear() {
         year;
 
     const nextMonthView = await services.getResource('next_month_view');
-    
+
     if (root || currentMonth) {
         if (path.includes('contas')) {
             month = today.getMonth() + 1;
             year = today.getFullYear();
         } else {
-            month = today.getDate() < nextMonthView.day && nextMonthView.active ? today.getMonth() + 1 : today.getMonth() + 2;
+            month = today.getDate() < nextMonthView.day && nextMonthView.active ? today.getMonth() + 2 : today.getMonth() + 1;
             year = month <= 12 ? today.getFullYear() : today.getFullYear() + 1;
             month = month === 13 ? 1 : month;
         }
