@@ -43,14 +43,18 @@
                         <label for="id_account">Conta</label>
                         {{ card_form.account }}
 
-                        {{ card_form.expiration_day.errors }}
-                        <label for="id_expiration_day">Vencimento</label>
-                        {{ card_form.expiration_day }}
-
                         {{ card_form.closing_day.errors }}
                         <label for="id_closing_day">Fechamento</label>
                         {{ card_form.closing_day }}
 
+                        {{ card_form.file_handler_conf.errors }}
+                        <label for="id_type">Configurações do arquivivo de carga</label>
+                        {{ card_form.file_handler_conf }}
+                        
+                        {{ card_form.expiration_day.errors }}
+                        <label for="id_expiration_day">Vencimento</label>
+                        {{ card_form.expiration_day }}
+                        
                         {{ card_form.home_screen.errors }}
                         {{ card_form.home_screen }}
                         <label for="id_home_screen">Tela Inicial</label><br>

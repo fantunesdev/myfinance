@@ -52,8 +52,6 @@ async function sendFile() {
         alert('Selecione um cartão para continuar.');
     } else if (selects.paymentMethod.value == 2 && !selects.account.value) {
         alert('Selecione uma conta para continuar.');
-    } else if (selects.paymentMethod.value == 1) {
-        alert('Funcionalidade ainda não desenvolvida.')
     } else {
         const transaction = await services.importTransactions(formData),
             importError = document.querySelector('#import-error');
@@ -139,8 +137,19 @@ async function importTransactions() {
         }
     }
     const transactions = JSON.parse(sessionStorage.getItem('imported-transactions')),
+        paymentMethod = document.querySelector('#id_payment_method'),
         accountSelect = document.querySelector('#id_account'),
-        account = await services.getSpecificResource('accounts', accountSelect.value);
+        cardSelect = document.querySelector('#id_card');
+
+    let homeScreen;    
+        
+    if (paymentMethod.value == 2) {
+        let account = await services.getSpecificResource('accounts', accountSelect.value);
+        homeScreen = account.home_screen;
+    } else {
+        let card = await services.getSpecificResource('cards', cardSelect.value);
+        homeScreen = card.home_screen;
+    }
 
     let errors = 0;
 
@@ -149,7 +158,7 @@ async function importTransactions() {
             let newTransaction = {
                 'release_date': transaction.date,
                 'payment_date': transaction.date,
-                'account': transaction.account,
+                'account': transaction.account ? transaction.account : null,
                 'card': transaction.card ? transaction.card : null,
                 'category': transaction.category,
                 'subcategory': transaction.subcategory,
@@ -164,7 +173,7 @@ async function importTransactions() {
                 'remember': transaction.remember,
                 'type': transaction.type,
                 'effected': transaction.effected,
-                'home_screen': account.home_screen,
+                'home_screen': homeScreen,
                 'user': transaction.user,
                 'installment': transaction.installment
             }
@@ -184,9 +193,9 @@ async function importTransactions() {
             
         }
     }
-    if (errors == 0) {
-        window.location.href = '/relatorio_financeiro/mes_atual/';
-    }
+    // if (errors == 0) {
+    //     window.location.href = '/relatorio_financeiro/mes_atual/';
+    // }
 }
 
 
