@@ -1,0 +1,1 @@
+"""Arquivo vazio por design gerado automaticamente."""
