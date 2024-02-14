@@ -8,6 +8,17 @@ from statement.services import category_services
 
 
 def get_defaults():
+    """
+    Obtém configurações padrão, incluindo a versão mais recente e o ano atual.
+
+    Returns:
+    Um dicionário contendo as configurações padrão:
+    - 'version': A versão mais recente.
+    - 'year': O ano atual.
+
+    Raises:
+    Http404: Se não for possível encontrar a versão mais recente.
+    """
     try:
         version = Version.objects.latest('id')
         defaults = {

@@ -1,17 +1,41 @@
+"""
+Este módulo fornece serviços relacionados ao manuseio de arquivos. 
+Oferece funcionalidades para processar arquivos, incluindo a leitura de arquivos CSV e TXT 
+e a conversão de seu conteúdo em lançamentos."""
+
 import csv
 import json
 import os
 from json import JSONDecodeError
 
 from django.conf import settings
-from django.core.exceptions import ObjectDoesNotExist
 
-from statement.entities.transaction import Transaction
 from statement.services import account_services, card_services
 
 
 class FileHandler:
+    """Uma classe que processa arquivos, lê seu conteúdo e converte em lançamentos."""
     def __init__(self, request) -> None:
+        """
+        Inicializa a instância da classe FileHandler.
+
+        Parameters:
+        - request: O objeto de requisição Django contendo informações sobre o formulário e o arquivo.
+
+        Initializes:
+        - __file: O arquivo fornecido para processamento.
+        - __account: A conta associada à requisição, se especificada.
+        - __card: O cartão associado à requisição, se especificado.
+        - __user: O usuário associado à requisição.
+        - __extention: A extensão do arquivo.
+        - __path: O caminho para o local onde o arquivo é salvo temporariamente.
+        - __transactions: Uma lista vazia que armazenará os lançamentos extraídos do arquivo.
+        - __error_message: Mensagem de erro, inicialmente vazia.
+        - __file_conf: Um JSON com configuração da conta ou do cartão associado proveniente da instância da conta ou do cartão.
+        
+        Calls:
+        - __handle_file(): Processa o arquivo, salvando, lendo e removendo
+        """
         self.__file = request.FILES.get('file')
         self.__account = self.__set_account(request)
         self.__card = self.__set_card(request)
@@ -25,41 +49,104 @@ class FileHandler:
 
     @property
     def file(self):
+        """
+        Getter para a propriedade 'file'.
+
+        Returns:
+        O arquivo fornecido para processamento.
+        """
         return self.__file
 
     @property
     def error_message(self):
+        """
+        Getter para a propriedade 'error_message'.
+
+        Returns:
+        A mensagem de erro associada ao processamento do arquivo.
+        """
         return self.__error_message
 
     @property
     def account(self):
+        """
+        Obtém a instância da conta cadastrada no banco de dados com suas configurações.
+
+        Returns:
+        A conta associada à requisição, se especificada. Retorna None se não houver uma conta associada.
+        """
         return self.__account
 
     @property
     def card(self):
+        """
+        Obtém a instância do cartão cadastrada no banco de dados com suas configurações.
+
+        Returns:
+        O cartão associada à requisição, se especificado. Retorna None se não houver um cartão associado.
+        """
         return self.__card
 
     @property
     def extention(self):
+        """
+        Getter para a propriedade 'extention'.
+
+        Returns:
+        A extensão do arquivo em letras minúsculas.
+        """
         return self.__extention
 
     @property
     def path(self):
+        """
+        Getter para a propriedade 'path'.
+
+        Returns:
+        O caminho para o local onde o arquivo é salvo temporariamente.
+        """
         return self.__path
 
     @property
     def user(self):
+        """
+        Getter para a propriedade 'user'.
+
+        Returns:
+        O usuário associado ao arquivo.
+        """
         return self.__user
 
     @property
     def file_conf(self):
+        """
+        Getter para a propriedade 'file_conf'.
+
+        Returns:
+        A configuração do manipulador de arquivo para a conta ou cartão associado.
+        """
         return self.__file_conf
 
     @property
     def transactions(self):
+        """
+        Getter para a propriedade 'transactions'.
+
+        Returns:
+        Uma lista de lançamentos extraídos do arquivo.
+        """
         return self.__transactions
 
     def __set_account(self, request):
+        """
+        Setter do atributo 'account' com a instância da conta associada à requisição, se especificada.
+
+        Parameters:
+        - request: O objeto de requisição Django contendo informações sobre o upload do arquivo.
+
+        Returns:
+        A instância da conta cadastrada no banco de dados com base no ID fornecido no request. Retorna None se não houver uma conta associada ou se ocorrer um erro durante a obtenção da conta.
+        """
         try:
             account = request.data['account']
             user = request.user
@@ -68,6 +155,15 @@ class FileHandler:
             return None
 
     def __set_card(self, request):
+        """
+        Setter do atributo 'card' com a instância do cartão associado à requisição, se especificada.
+
+        Parameters:
+        - request: O objeto de requisição Django contendo informações sobre o upload do arquivo.
+
+        Returns:
+        A instância do cartão cadastrado no banco de dados com base no ID fornecido no request. Retorna None se não houver um cartão associado ou se ocorrer um erro durante a obtenção do cartão.
+        """
         try:
             card = request.data['card']
             user = request.user
@@ -76,10 +172,28 @@ class FileHandler:
             return None
 
     def __set_extension(self, request):
+        """
+        Setter do atributo 'extension' que corresponde à extensão do arquivo fornecido no request.
+
+        Parameters:
+        - request: O objeto de requisição Django contendo informações sobre o upload do arquivo.
+
+        Returns:
+        A extensão do arquivo em letras minúsculas.
+        """
         file = request.FILES.get('file')
         return file.name.split('.')[-1].lower()
 
     def __set_path(self, request):
+        """
+        Configura o caminho onde o arquivo será temporariamente salvo.
+
+        Parameters:
+        - request: O objeto de requisição Django contendo informações sobre o upload do arquivo.
+
+        Returns:
+        O caminho para o local onde o arquivo será salvo temporariamente.
+        """
         upload_dir = f'{settings.MEDIA_ROOT}/uploads'
         if not os.path.exists(upload_dir):
             os.mkdir(upload_dir)
@@ -88,7 +202,11 @@ class FileHandler:
 
     def __set_file_conf(self):
         """
-        Valida se o file_handler_conf está configurado e atribui o valor para a propriedade file_conf.
+        Valida se a propriedade 'file_handler_conf' está configurado para este cartão ou conta e atribui seu valor para a propriedade 'file_conf'.
+
+        Raises:
+        - JSONDecodeError: Se ocorrer um erro ao decodificar a propriedade 'file_handler_conf'.
+        - ValueError: Se a propriedade 'file_handler_conf' não estiver configurada para a conta ou cartão associado.
         """
         try:
             if self.account:
@@ -110,17 +228,43 @@ class FileHandler:
             raise ValueError(self.error_message)
 
     def __handle_file(self):
+        """
+        Processa o arquivo, salvando, lendo e removendo.
+
+        Calls:
+        - __save_file(): Salva o arquivo temporariamente.
+        - __read_file(): Lê o conteúdo do arquivo com base na sua extensão (CSV ou TXT).
+        - __remove_file(): Remove o arquivo temporário após a leitura.
+
+        Returns:
+        O conteúdo do arquivo lido.
+        """
         self.__save_file()
         content = self.__read_file()
         self.__remove_file()
         return content
 
     def __save_file(self):
+        """
+        Salva o arquivo temporariamente no caminho especificado.
+
+        Raises:
+        - IOError: Se ocorrer um erro ao salvar o arquivo.
+        """
         with open(self.path, 'wb+') as destination:
             for chunk in self.__file.chunks():
                 destination.write(chunk)
 
     def __read_file(self):
+        """
+        Lê o conteúdo do arquivo com base na sua extensão.
+
+        Returns:
+        O conteúdo do arquivo lido.
+
+        Raises:
+        - ValueError: Se a extensão do arquivo não for suportada.
+        """
         match self.extention:
             case 'txt':
                 with open(self.path, 'r') as file:
@@ -130,9 +274,21 @@ class FileHandler:
                 return self.__read_csv()
 
     def __remove_file(self):
+        """
+        Remove o arquivo temporário após a leitura.
+
+        Raises:
+        - FileNotFoundError: Se o arquivo não puder ser encontrado ou removido.
+        """
         os.remove(self.path)
 
     def __read_csv(self):
+        """
+        Lê o conteúdo de um arquivo CSV e processa suas linhas para extrair os lançamentos.
+
+        Raises:
+        - ValueError: Se ocorrerem erros durante a leitura ou processamento do arquivo CSV.
+        """
         with open(self.path, 'r', newline='', encoding='utf-8') as csv_file:
             self.__set_file_conf()
 
@@ -191,6 +347,15 @@ class FileHandler:
                 raise ValueError(self.error_message)
 
     def __handle_date(self, date):
+        """
+        Converte uma string de data no formato 'dd/mm/aaaa' ou 'aaaa-mm-dd' para o formato 'aaaa-mm-dd'.
+
+        Parameters:
+        - date: A string de data a ser processada.
+
+        Returns:
+        A string de data no formato 'aaaa-mm-dd'.
+        """
         if '/' in date:
             day, month, year = date.split('/')
         elif '-' in date:
@@ -204,18 +369,45 @@ class FileHandler:
         return f'{year}-{month}-{day}'
 
     def __handle_category(self, file_description):
+        """
+        Identifica a categoria associada a uma descrição de arquivo com base nas configurações da conta ou cartão (file_handler_conf).
+
+        Parameters:
+        - file_description: A descrição do arquivo a ser processada.
+
+        Returns:
+        O ID da categoria associada à descrição do arquivo, ou a primeira parte da descrição se nenhuma correspondência for encontrada.
+        """
         for category in self.file_conf['categories']:
             if category['word'] in file_description:
                 return category['id']
         return file_description.split('-')[0].rstrip()
 
     def __handle_subcategory(self, file_description):
+        """
+        Identifica a subcategoria associada a uma descrição de arquivo com base nas configurações da conta ou cartão (file_handler_conf).
+
+        Parameters:
+        - file_description: A descrição do arquivo a ser processada.
+
+        Returns:
+        O ID da subcategoria associada à descrição do arquivo, ou a primeira parte da descrição se nenhuma correspondência for encontrada.
+        """
         for subcategory in self.file_conf['subcategories']:
             if subcategory['word'] in file_description:
                 return subcategory['id']
         return file_description.split('-')[0].rstrip()
 
     def __handle_type(self, value):
+        """
+        Determina o tipo de lançamento (entrada ou saída) com base no valor (positivo ou negativo) invertendo esses valores no caso do cartão.
+
+        Parameters:
+        - value: O valor da lançamento.
+
+        Returns:
+        Uma string indicando o tipo de lançamento: 'entrada' ou 'saida'.
+        """
         if self.account:
             if value[0] == '-':
                 return 'saida'
@@ -226,6 +418,15 @@ class FileHandler:
             return 'saida'
 
     def __handle_description(self, file_description):
+        """
+        Processa a descrição do arquivo, aplicando regras de correspondência configuradas da conta ou do cartão (file_handler_conf).
+
+        Parameters:
+        - file_description: A descrição do arquivo a ser processada.
+
+        Returns:
+        A descrição processada conforme as regras de correspondência configuradas.
+        """
         file_words = file_description.split()
         file_description = ' '.join(file_words)
 
