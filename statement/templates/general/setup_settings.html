@@ -36,6 +36,40 @@
         </div>
         <div class="box box-primary">
             <div class="box-header">
+                <h3 class="box-title">Despesas Fixas</h3>
+            </div>
+            <div class="box-body">
+                <a href="{% url 'create_fixed_expense' %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Data Inicial</th>
+                            <th>Data Final</th>
+                            <th>Descrição</th>
+                            <th>Valor</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for fixed_expense in fixed_expenses %}
+                        <tr>
+                            <td><a href="#">{{ fixed_expense.start_date | date:"d/m/Y" }}</a></td>
+                            <td><a href="#">{{ fixed_expense.end_date | date:"d/m/Y" }}</a></td>
+                            <td><a href="#">{{ fixed_expense.description }}</a></td>
+                            <td><a href="#">{{ fixed_expense.value | to_reais }}</a></td>
+                            <td><a href="{% url 'update_fixed_expense' fixed_expense.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="box-footer">
+                <span>Total de ítens listados: {{ fixed_expenses.count }}</span>
+            </div>
+        </div>
+        </div>
+        <div class="box box-primary">
+            <div class="box-header">
                 <h3 class="box-title">Listar Bancos</h3>
             </div>
             <div class="box-body">

@@ -1,0 +1,47 @@
+{% extends 'index.html' %}
+
+{% block title %}Cadastrar Despesa Fixa{% endblock %}
+
+    {% block content %}
+        <div class="box box-primary">
+            <div class="box-header">
+                <h3 class="box-title">
+                {% spaceless %}
+                    {% if 'bancos/cadastrar/' in request.path %}
+                        Cadastrar Despesa Fixa
+                    {% else %}
+                        Editar Despesa Fixa
+                    {% endif %}
+                {% endspaceless %}
+                </h3>
+            </div>
+            <form method="post" enctype="multipart/form-data">
+                <div class="box-body">
+                        {% csrf_token %}
+
+                        {{ fixed_expenses_form.start_date.errors }}
+                        <label for="id_start_date">Data Inicial</label>
+                        {{ fixed_expenses_form.start_date }}
+
+                        {{ fixed_expenses_form.end_date.errors }}
+                        <label for="id_end_date">Data Final</label>
+                        {{ fixed_expenses_form.end_date }}
+
+                        {{ fixed_expenses_form.description.errors }}
+                        <label for="id_description">Descrição</label>
+                        {{ fixed_expenses_form.description }}
+
+                        {{ fixed_expenses_form.value.errors }}
+                        <label for="id_value">Valor</label>
+                        {{ fixed_expenses_form.value }}
+                </div>
+                <div class="box-footer">
+                    <input class="btn btn-primary" type="submit" name="Cadastrar">
+                    <a href="{{request.META.HTTP_REFERER}}" class="btn btn-info">Voltar</a>
+                    {% if 'despesas_fixas/editar/' in request.path %}
+                    <a href="{% url 'delete_fixed_expense' old_fixed_expense.id %}"><input type="button" value="Excluir" class="btn btn-danger"></a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    {% endblock content %}

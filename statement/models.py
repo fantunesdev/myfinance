@@ -160,6 +160,16 @@ class NextMonthView(models.Model):
     user = models.ForeignKey(User, on_delete=models.PROTECT)
 
 
+class FixedExpenses(models.Model):
+    start_date = models.DateField()
+    end_date = models.DateField(blank=True, null=True)
+    description = models.CharField(
+        max_length=50,
+    )
+    value = models.FloatField(default=0)
+    user = models.ForeignKey(User, on_delete=models.PROTECT)
+
+
 class Version(models.Model):
     version = models.CharField(max_length=30)
 
