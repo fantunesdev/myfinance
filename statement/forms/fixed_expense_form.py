@@ -3,7 +3,6 @@ from django.utils import timezone
 
 from statement.models import FixedExpenses
 
-
 today = timezone.localtime(timezone.now()).strftime('%Y-%m-%d')
 
 

@@ -21,7 +21,10 @@ from statement.repositories.templatetags_repository import (
     set_transaction_navigation_templatetags,
 )
 from statement.repositories.transaction_repository import *
-from statement.services import transaction_installment_services
+from statement.services import (
+    fixed_expenses_services,
+    transaction_installment_services,
+)
 
 
 @login_required
@@ -187,6 +190,11 @@ def get_fixed_transactions_by_year_and_month(request, year, month):
             year, month, request.user
         )
     )
+    fixed_expenses = (
+        fixed_expenses_services.get_fixed_expenses_by_year_and_month(
+            year, month, request.user
+        )
+    )
     revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(
         transactions
     )
@@ -197,6 +205,7 @@ def get_fixed_transactions_by_year_and_month(request, year, month):
     set_transaction_navigation_templatetags(templatetags, year, month)
     set_menu_templatetags(request.user, templatetags)
     templatetags['transactions'] = transactions
+    templatetags['fixed_expenses'] = fixed_expenses
     return render(request, 'transaction/get_transactions.html', templatetags)
 
 

@@ -7,6 +7,7 @@ from statement.entities.installment import Installment
 from statement.forms.transaction_forms import *
 from statement.services import (
     account_services,
+    fixed_expenses_services,
     installment_services,
     transaction_services,
 )
@@ -125,4 +126,10 @@ def calculate_total_revenue_expenses(transactions):
                 expenses += transaction.value
         else:
             revenue += transaction.value
+
+    fixed_expenses = fixed_expenses_services.get_fixed_expenses(
+        transactions[0].user
+    )
+    for fixed_expense in fixed_expenses:
+        fixed += fixed_expense.value
     return revenue, expenses, cards, cash, fixed

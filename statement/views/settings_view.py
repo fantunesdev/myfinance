@@ -29,7 +29,9 @@ def setup_settings(request):
     templatetags['flags'] = flag_services.get_flags()
     templatetags['cards'] = card_services.get_cards(request.user)
     templatetags['categories'] = category_services.get_categories(request.user)
-    templatetags['fixed_expenses'] = fixed_expenses_services.get_fixed_expenses(request.user)
+    templatetags[
+        'fixed_expenses'
+    ] = fixed_expenses_services.get_fixed_expenses(request.user)
     templatetags['subcategories'] = subcategory_services.get_subcategories(
         request.user
     )
