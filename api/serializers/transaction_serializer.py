@@ -26,5 +26,6 @@ class TransactionSerializer(serializers.ModelSerializer):
             fields (str): Uma string indicando quais campos do modelo devem ser incluídos
                           na serialização. No caso, '__all__' significa todos os campos.
         """
+
         model = Transaction
         fields = '__all__'

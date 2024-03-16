@@ -1,6 +1,6 @@
 """
-Este módulo fornece serviços relacionados ao manuseio de arquivos. 
-Oferece funcionalidades para processar arquivos, incluindo a leitura de arquivos CSV e TXT 
+Este módulo fornece serviços relacionados ao manuseio de arquivos.
+Oferece funcionalidades para processar arquivos, incluindo a leitura de arquivos CSV e TXT
 e a conversão de seu conteúdo em lançamentos."""
 
 import csv
@@ -15,6 +15,7 @@ from statement.services import account_services, card_services
 
 class FileHandler:
     """Uma classe que processa arquivos, lê seu conteúdo e converte em lançamentos."""
+
     def __init__(self, request) -> None:
         """
         Inicializa a instância da classe FileHandler.
@@ -32,7 +33,7 @@ class FileHandler:
         - __transactions: Uma lista vazia que armazenará os lançamentos extraídos do arquivo.
         - __error_message: Mensagem de erro, inicialmente vazia.
         - __file_conf: Um JSON com configuração da conta ou do cartão associado proveniente da instância da conta ou do cartão.
-        
+
         Calls:
         - __handle_file(): Processa o arquivo, salvando, lendo e removendo
         """

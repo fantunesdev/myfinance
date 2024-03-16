@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from statement.models import Account
 
+
 class AccountSerializer(serializers.ModelSerializer):
     """
     Serializador para a classe Account.
@@ -24,5 +25,6 @@ class AccountSerializer(serializers.ModelSerializer):
             fields (str): Uma string indicando quais campos do modelo devem ser incluídos
                           na serialização. No caso, '__all__' significa todos os campos.
         """
+
         model = Account
         fields = '__all__'
