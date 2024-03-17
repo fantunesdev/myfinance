@@ -47,6 +47,7 @@ urlpatterns = [
         'transactions/year/<int:year>/month/<int:month>/',
         TransactionByYearAndMonth.as_view(),
     ),
+    path('transactions/year/<int:year>/',TransactionsByYear.as_view()),
     path(
         'transactions/accounts/<int:account_id>/year/<int:year>/month/<int:month>/',
         ExtractByAccountYearAndMonth.as_view(),

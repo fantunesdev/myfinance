@@ -16,9 +16,30 @@ export async function getTransactionsByYearAndMonth(year, month) {
         } else if (path.includes('cartoes')) {
         cardId = path.split('/')[3];
         url = `/api/transactions/card/${cardId}/year/${year}/month/${month}/`;
-    } else {
-        url = `/api/transactions/year/${year}/month/${month}/`;
-    }
+        } else {
+            url = `/api/transactions/year/${year}/month/${month}/`;
+        }
+
+    const response = await fetch(url),
+        data = await response.json(),
+        sessionStorageData = JSON.stringify(data);
+
+    sessionStorage.setItem('transactions', sessionStorageData);
+    return data;
+}
+
+/**
+ * Consulta na API os lançamentos do ano desejado.
+ * @param {string} year - O ano da pesquisa.
+ * @returns Uma lista de obsjetos literais contendo todos os lançamentos do ano.
+ */
+export async function getTransactionsByYear(year) {
+    const path = window.location.pathname;
+    let accountId,
+        cardId,
+        url;
+    
+    url = `/api/transactions/year/${year}/`;
 
     const response = await fetch(url),
         data = await response.json(),

@@ -123,6 +123,15 @@ class TransactionsList(APIView):
         return Response(
             {'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST
         )
+    
+class TransactionsByYear(APIView):
+    """
+    Esta classe trata das requisições que recebem um argumento do tipo YEAR
+    """
+    def get(self, request, year):
+        transactions = transaction_services.get_transactions_by_year(year, request.user)
+        serializer = transaction_serializer.TransactionSerializer(transactions, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class ImportTransactions(APIView):
