@@ -12,7 +12,13 @@
     {% endspaceless %}
 
     {% block content %}
-    <div class="box box-primary">
+    {% comment %}*** INÍCIO NAVEGAÇÃO ***{% endcomment %}
+    <i class="fa-solid fa-backward-step" id="id_decrease"></i>
+    <a class="nav-btn mr-5">{{ navigation_form.year }}</a>
+    <i class="fa-solid fa-forward-step" id="id_increase"></i>
+    {% comment %}*** FIM NAVEGAÇÃO ***{% endcomment %}
+    
+    <div class="box box-primary box-max-width-2000 v-center-div">
         <div class="box-header">
             <h3 class="box-title">
                 <span class="tab" id="revenue-expenses-tab">Receitas/Despesas</span>

@@ -5,6 +5,13 @@ export function setMontlyReport(transactions) {
         expensesByMonth = {},
         investimentsByMonth = {};
 
+    for (let index = 0; index < 12; index++) {
+        const monthInFull = handleMonth(index);
+        revenuesByMont[monthInFull] = 0;
+        expensesByMonth[monthInFull] = 0;
+        investimentsByMonth[monthInFull] = 0;
+    }
+
     for (const transaction of transactions) {
         let [yearInt, monthInt, dayInt] = transaction.payment_date.split('-').map(Number);
         const date = new Date(yearInt, monthInt -1, dayInt)
@@ -13,20 +20,11 @@ export function setMontlyReport(transactions) {
         const category = getCategory(transaction.category);
         
         if (transaction.type == 'entrada' && transaction.home_screen) {
-            if (!revenuesByMont[monthInFull]) {
-                revenuesByMont[monthInFull] = 0
-            }
             revenuesByMont[monthInFull] += transaction.value;
         } else {
             if (transaction.category != 5 && !category.ignore) {
-                if (!expensesByMonth[monthInFull]) {
-                    expensesByMonth[monthInFull] = 0
-                }
                 expensesByMonth[monthInFull] += transaction.value;
             } else {
-                if (!investimentsByMonth[monthInFull]) {
-                    investimentsByMonth[monthInFull] = 0
-                }
                 investimentsByMonth[monthInFull] += transaction.value;
             }
         }
@@ -47,7 +45,7 @@ export function setMonthDataset(report) {
         key;
 
     for (key in report) {
-        names.push(key);
+        names.push(translateMonth(key));
         values.push(report[key]);
         colors.push(`rgba(139, 0, 0, 1)`);
     }
@@ -80,6 +78,35 @@ function handleMonth(month) {
             return 'november';
         case 11:
             return 'december';
+    }
+}
+
+function translateMonth(month) {
+    switch (month) {
+        case 'january':
+            return 'Janeiro';
+        case 'february':
+            return 'Fevereiro';
+        case 'march':
+            return 'Março';
+        case 'april':
+            return 'Abril';
+        case 'may':
+            return 'Maio';
+        case 'june':
+            return 'Junho';
+        case 'july':
+            return 'Julho';
+        case 'august':
+            return 'Agosto';
+        case 'september':
+            return 'Setembro';
+        case 'october':
+            return 'Outubro';
+        case 'november':
+            return 'Novembro';
+        case 'december':
+            return 'Dezembro';
     }
 }
 
