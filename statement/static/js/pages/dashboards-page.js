@@ -31,7 +31,7 @@ async function draw() {
     const monthlyReport = monthsData.setMontlyReport(transactions);
     const dataset = monthsData.setMonthDataset(monthlyReport[dashboardSelect.value])
 
-    const label = `${dashboardSelect.options[dashboardSelect.selectedIndex].innerText} ${yearSeletct.value}`;
+    const label = dashboardSelect.options[dashboardSelect.selectedIndex].innerText;
     const lineChart = graphics.drawBarChart(dataset, label);
     window.lineChart = lineChart;
 
