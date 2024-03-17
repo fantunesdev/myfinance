@@ -126,10 +126,10 @@ def calculate_total_revenue_expenses(transactions):
                 expenses += transaction.value
         else:
             revenue += transaction.value
-
-    fixed_expenses = fixed_expenses_services.get_fixed_expenses(
-        transactions[0].user
-    )
-    for fixed_expense in fixed_expenses:
-        fixed += fixed_expense.value
+    if transactions:
+        fixed_expenses = fixed_expenses_services.get_fixed_expenses(
+            transactions[0].user
+        )
+        for fixed_expense in fixed_expenses:
+            fixed += fixed_expense.value
     return revenue, expenses, cards, cash, fixed
