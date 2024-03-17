@@ -24,7 +24,7 @@ export function setMontlyReport(transactions) {
         } else {
             if (transaction.category != 5 && !category.ignore) {
                 expensesByMonth[monthInFull] += transaction.value;
-            } else {
+            } else if (transaction.category == 5) {
                 investimentsByMonth[monthInFull] += transaction.value;
             }
         }
