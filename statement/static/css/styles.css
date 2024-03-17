@@ -523,6 +523,12 @@ td a:hover {
     font-size: 16px;
 }
 
+.tab {
+    padding: 3px 20px 3px 20px;
+    border-left: #404040 1px solid;
+    border-right: #404040 1px solid;
+}
+
 
 
 .box-max-width-400 {

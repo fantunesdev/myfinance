@@ -30,7 +30,17 @@
                         </div>
                     </a>
                 </li>
-<!--                 INICIO EXEMPLO ÍTEM COM DROPDOWN-->
+                <li>
+                    <a href="{% url 'show_dashboard' %}">
+                        <div>
+                            <i class="fa-solid fa-chart-line"></i>
+                        </div>
+                        <div class="toggle">
+                            <span>Dashboards</span>
+                        </div>
+                    </a>
+                </li>
+                {% comment %}*** INICIO ÍTEM COM DROPDOWN ***{% endcomment %}
                 <li>
                     <a id="conta-submenu-button" onclick="toggleSubMenu('conta-submenu')">
                         <div>
@@ -71,7 +81,7 @@
                         </li>
                         {% endfor %}
                     </ul>
-                <!-- FIM EXEMPLO ÍTEM COM DROPDOWN -->
+                {% comment %}*** FIM ÍTEM COM DROPDOWN ***{% endcomment %}
                 <li>
                     <a href="{% url 'import_transactions' %}">
                         <div>

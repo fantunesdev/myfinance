@@ -1,6 +1,6 @@
 {% load static %}
         <header>
-            <!-- INÍCIO BOTÕES BARRA SUPERIOR -->
+            {% comment %} INÍCIO BOTÕES BARRA SUPERIOR {% endcomment %}
             <ul class="flex-v-center">
                 <li>
                     <a id="sidebar-button"><i class="fa-solid fa-bars"></i></a>
@@ -21,9 +21,9 @@
                     {% endspaceless %}
                 </li>
             </ul>
-            <!-- FIM BOTÕES BARRA SUPERIOR -->
+            {% comment %} FIM BOTÕES BARRA SUPERIOR {% endcomment %}
 
-            <!-- INÍCIO BUSCA -->
+            {% comment %} INÍCIO BUSCA {% endcomment %}
             <section id="search" class="toggled">
                 <div class="photo">
                     <div class="search-form">
@@ -48,9 +48,9 @@
                     <a class="btn" onclick="searchByDescription()">Buscar</a>
                 </div>
             </section>
-            <!-- FIM BUSCA -->
+            {% comment %} FIM BUSCA {% endcomment %}
 
-            <!-- INÍCIO PROFILE -->
+            {% comment %} INÍCIO PROFILE {% endcomment %}
             <section id="profile" class="toggled">
                 <div class="photo">
                     {% if user.photo %}
@@ -73,6 +73,6 @@
                     <a href="{% url 'logout_user' %}" class="btn">Logout</a>
                 </div>
             </section>
-            <!-- FIM PROFILE -->
+            {% comment %} FIM PROFILE {% endcomment %}
         </header>
-        <!-- FIM BARRA SUPERIOR -->
+        {% comment %} FIM BARRA SUPERIOR {% endcomment %}
