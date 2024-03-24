@@ -58,6 +58,7 @@ class TransactionYear(APIView):
         Em caso de sucesso, uma lista de objetos do tipo transactions. Em casso
         de falha, um código e uma mensagem de erro.
         """
+        print('year')
         transactions = transaction_services.get_transactions_by_year(
             year, request.user
         )
@@ -130,6 +131,16 @@ class TransactionsByYear(APIView):
     """
     def get(self, request, year):
         transactions = transaction_services.get_transactions_by_year(year, request.user)
+        serializer = transaction_serializer.TransactionSerializer(transactions, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+class LastTwelveTransactionsByYearAndMonth(APIView):
+    """
+    Esta classe trata das requisições que recebem um argumento do tipo YEAR
+    """
+    def get(self, request, year, month):
+        transactions = transaction_services.get_last_twelve_months_transactions_by_year_and_month(year, month, request.user)
         serializer = transaction_serializer.TransactionSerializer(transactions, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

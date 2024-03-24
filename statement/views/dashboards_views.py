@@ -11,10 +11,10 @@ from statement.repositories.templatetags_repository import (
 
 @login_required
 def show_dashboard(request):
-    current_year = date.today().year
+    today = date.today()
     templatetags = set_templatetags()
     templatetags['navigation_form'] = NavigationForm(
-        initial={'year': current_year}
+        initial={'year': today.year, 'month': today.month}
     )
     set_menu_templatetags(request.user, templatetags)
     return render(request, 'dashboards/index.html', templatetags)

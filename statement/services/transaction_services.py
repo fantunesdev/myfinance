@@ -1,3 +1,7 @@
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
+from django.db.models import Q
+
 from statement.models import Transaction
 
 
@@ -34,6 +38,18 @@ def get_transactions(user):
 def get_transactions_by_year(year, user):
     return Transaction.objects.filter(
         payment_date__year=year, user=user, home_screen=True
+    ).order_by('release_date')
+
+
+def get_last_twelve_months_transactions_by_year_and_month(year, month, user):
+    end_date = datetime(year, month, 1)
+    start_date = end_date - relativedelta(months=11)
+    print(start_date)
+    print(end_date)
+    return Transaction.objects.filter(
+        Q(payment_date__gte=start_date) & Q(payment_date__lte=end_date),
+        user=user,
+        home_screen=True
     ).order_by('release_date')
 
 

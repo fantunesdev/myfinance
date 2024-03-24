@@ -49,6 +49,27 @@ export async function getTransactionsByYear(year) {
     return data;
 }
 
+/**
+ * Consulta na API os lançamentos do ano desejado.
+ * @param {string} year - O ano da pesquisa.
+ * @returns Uma lista de obsjetos literais contendo todos os lançamentos do ano.
+ */
+export async function getLastTwelveMonthsTransactionsByYearAndMonth(year, month) {
+    const path = window.location.pathname;
+    let accountId,
+        cardId,
+        url;
+    
+    url = `/api/transactions/last_twelve/${year}-${month}/`;
+
+    const response = await fetch(url),
+        data = await response.json(),
+        sessionStorageData = JSON.stringify(data);
+
+    sessionStorage.setItem('transactions', sessionStorageData);
+    return data;
+}
+
 
 /**
  * Consulta na API um recurso específico. Geralmente as instâncias de um modelo.
