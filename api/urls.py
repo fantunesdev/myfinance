@@ -39,6 +39,11 @@ urlpatterns = [
         name='category-type',
     ),
     path(
+        'transactions/',
+        TransactionsList.as_view(),
+        name='transactions',
+    ),
+    path(
         'transactions/year/<int:year>/',
         TransactionYear.as_view(),
         name='transaction-year',

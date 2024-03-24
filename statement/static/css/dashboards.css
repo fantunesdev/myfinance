@@ -1,0 +1,40 @@
+.dashboard {
+    display: grid;
+    grid-template-columns: 74% 25%;
+    grid-template-rows: auto auto;
+    grid-template-areas: 
+        "line doughnut"
+}
+
+.line,
+.doughnut {
+    text-align: center;
+}
+
+.line {
+    grid-area: line;
+}
+
+.doughnut {
+    grid-area: doughnut;
+}
+
+.statement {
+    grid-area: statement;
+}
+
+.cash {
+    grid-area: cash;
+}
+
+.card {
+    grid-area: card;
+}
+
+.fixed {
+    grid-area: fixed;
+}
+
+.dashboard a {
+    text-decoration: none;
+}

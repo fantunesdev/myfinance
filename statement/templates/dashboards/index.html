@@ -1,5 +1,6 @@
 {% extends 'index.html' %}
 {% load static %}
+    {% block styles %}<link rel="stylesheet" href="{% static 'css/dashboards.css' %}">{% endblock %}
 
     {% block title %}Dashboards{% endblock %}
 
@@ -20,7 +21,14 @@
         </div>
         <div class="box-body">
             <select class="form-control" name="" id="dashboard-select"></select>
-            <canvas id="expenses-bar-chart" width="40" height="15"></canvas>
+            <div class="dashboard">
+                <div class="line">
+                    <canvas id="expenses-bar-chart" width="40" height="15"></canvas>
+                </div>
+                <div class="doughnut">
+                    <canvas id="donnut-chart" style="width: 20%;" height="15"></canvas>
+                </div>
+            </div>
         </div>
         <div class="box-footer">
         </div>

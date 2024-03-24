@@ -1,6 +1,7 @@
 import json
 
 from django.core.exceptions import ObjectDoesNotExist
+from django.http import Http404
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -33,10 +34,13 @@ class TransactionByYearAndMonth(APIView):
         transactions = transaction_services.get_transactions_by_year_and_month(
             year, month, request.user
         )
-        serializer = transaction_serializer.TransactionSerializer(
-            transactions, many=True
-        )
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        if transactions:
+            serializer = transaction_serializer.TransactionSerializer(
+                transactions, many=True
+            )
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            raise Http404
 
 
 class TransactionYear(APIView):
@@ -58,14 +62,16 @@ class TransactionYear(APIView):
         Em caso de sucesso, uma lista de objetos do tipo transactions. Em casso
         de falha, um código e uma mensagem de erro.
         """
-        print('year')
         transactions = transaction_services.get_transactions_by_year(
             year, request.user
         )
-        serializer = transaction_serializer.TransactionSerializer(
-            transactions, many=True
-        )
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        if transactions:
+            serializer = transaction_serializer.TransactionSerializer(
+                transactions, many=True
+            )
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            raise Http404
 
 
 class TransactionsList(APIView):
@@ -73,6 +79,14 @@ class TransactionsList(APIView):
     Esta classe trata os lançamentos da requisição quando não recebem um
     parâmetro.
     """
+
+    def get(self, request):
+        transactions = transaction_services.get_transactions(request.user)
+        if transactions:
+            serializer = transaction_serializer.TransactionSerializer(transactions, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            raise Http404
 
     def post(self, request):
         """
@@ -131,8 +145,11 @@ class TransactionsByYear(APIView):
     """
     def get(self, request, year):
         transactions = transaction_services.get_transactions_by_year(year, request.user)
-        serializer = transaction_serializer.TransactionSerializer(transactions, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        if transactions:
+            serializer = transaction_serializer.TransactionSerializer(transactions, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            raise Http404
     
 
 class LastTwelveTransactionsByYearAndMonth(APIView):
@@ -141,8 +158,11 @@ class LastTwelveTransactionsByYearAndMonth(APIView):
     """
     def get(self, request, year, month):
         transactions = transaction_services.get_last_twelve_months_transactions_by_year_and_month(year, month, request.user)
-        serializer = transaction_serializer.TransactionSerializer(transactions, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        if transactions:
+            serializer = transaction_serializer.TransactionSerializer(transactions, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            raise Http404
 
 
 class ImportTransactions(APIView):

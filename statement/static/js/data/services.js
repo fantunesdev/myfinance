@@ -34,12 +34,7 @@ export async function getTransactionsByYearAndMonth(year, month) {
  * @returns Uma lista de obsjetos literais contendo todos os lançamentos do ano.
  */
 export async function getTransactionsByYear(year) {
-    const path = window.location.pathname;
-    let accountId,
-        cardId,
-        url;
-    
-    url = `/api/transactions/year/${year}/`;
+    const url = `/api/transactions/year/${year}/`;
 
     const response = await fetch(url),
         data = await response.json(),

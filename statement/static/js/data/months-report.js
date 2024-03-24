@@ -52,6 +52,18 @@ export function setMonthDataset(report) {
     return {names, values, colors}
 }
 
+export function setDoughnutDataset(report) {
+    const revenues = Object.values(report.revenues).reduce((acc, cur) => acc + cur, 0);
+    const expenses = Object.values(report.expenses).reduce((acc, cur) => acc + cur, 0);
+    const investments = Object.values(report.investments).reduce((acc, cur) => acc + cur, 0);
+    
+    const names = ['Despesas', 'Investimentos', 'Receitas'];
+    const values = [expenses, investments, revenues];
+    const colors = ['rgba(139, 0, 0, 1)', 'rgba(255, 191, 0, 1)', 'rgba(0, 139, 0, 1)']
+
+    return {names, values, colors}
+}
+
 function handleMonth(month) {
     switch (month) {
         case 0:
