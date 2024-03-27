@@ -24,39 +24,38 @@ createSelectOptions(
 
 /**
  * Busca todas as informações para desenhar os gráficos de linhas do demonstrativo anual.
- * @returns - Um gráfico de barras.
+ * @returns - Um gráfico de linhas.
  */
-async function drawAnnualStatementChart() {
+async function drawAnnualStatementChart(select) {
     await destroyCharts();
 
     const year = yearSeletct.value;
     const transactions = await services.getTransactionsByYear(year);
     
     const monthlyReport = monthsData.setMontlyReport(transactions);
-    const lineDataset = monthsData.setMonthDataset(monthlyReport[dashboardSelect.value]);
+    const lineDataset = monthsData.setMonthDataset(monthlyReport[select]);
     const doughnutDataset = monthsData.setDoughnutDataset(monthlyReport);
 
-    const label = dashboardSelect.options[dashboardSelect.selectedIndex].innerText;
-    const lineChart = graphics.drawBarChart(lineDataset, label);
-    const doughnutChart = doughnut.drawDoughnutChart(doughnutDataset, 'Receitas / Despesas / Investimentos');
+    const lineChart = graphics.drawLineChart(lineDataset, handleLabel(select));
+    const doughnutChart = doughnut.drawDoughnutChart(doughnutDataset, 'Receitas / Despesas / Investimentos', handleAnnualStatementDoughnutClick);
+
     window.lineChart = lineChart;
     window.doughnutChart = doughnutChart;
 
     return lineChart, doughnutChart;
 }
 
-async function drawAnnualOverviewChart() {
+async function drawAnnualOverviewChart(select) {
     await destroyCharts();
-
-    const select = 'expenses';
 
     const transactions = await services.getResource('transactions');
     const annualReport = annualData.setAnnualReport(transactions);
     const lineDataset = annualData.setAnnualDataset(annualReport[select]);
     const doughnutDataset = monthsData.setDoughnutDataset(annualReport);
 
-    const lineChart = graphics.drawBarChart(lineDataset, select);
-    const doughnutChart = doughnut.drawDoughnutChart(doughnutDataset, 'Receitas / Despesas / Investimentos');
+    const lineChart = graphics.drawLineChart(lineDataset, handleLabel(select));
+    const doughnutChart = doughnut.drawDoughnutChart(doughnutDataset, 'Receitas / Despesas / Investimentos', handleAnnualSOverviewDoughnutClick);
+
     window.lineChart = lineChart;
     window.doughnutChart = doughnutChart;
 
@@ -84,9 +83,29 @@ function createSelectOptions(select, object) {
     for (const key in object) {
         const option = document.createElement('option');
         option.text = object[key];
-        option.value = key
+        option.value = key;
         select.appendChild(option);
     }
+}
+
+function handleLabel(select) {
+    if (select == 'revenues') {
+        return 'Receitas';
+    } else if (select == ';expenses') {
+        return 'Despesas';
+    } else {
+        return 'Investimentos';
+    }
+}
+
+function handleAnnualStatementDoughnutClick(newSelect) {
+    let select = newSelect;
+    drawAnnualStatementChart(select);
+}
+
+function handleAnnualSOverviewDoughnutClick(newSelect) {
+    let select = newSelect;
+    drawAnnualOverviewChart(select);
 }
 
 dashboardSelect.addEventListener('change', () => {
@@ -97,23 +116,23 @@ yearSeletct.addEventListener('change', () => {
 });
 decreaseButton.addEventListener('click', () => {
     yearSeletct.value --;
-    drawAnnualStatementChart()
+    drawAnnualStatementChart('revenues')
 });
 increaseButton.addEventListener('click', () => {
     yearSeletct.value ++;
-    drawAnnualStatementChart()
+    drawAnnualStatementChart('revenues')
 });
 
 
 annualStatementTab.addEventListener('click', () => {
-    drawAnnualStatementChart();
+    drawAnnualStatementChart('revenues');
 });
 annualOverviewTab.addEventListener('click', () => {
-    drawAnnualOverviewChart();
+    drawAnnualOverviewChart('revenues');
 });
 expensesCategoryTab.addEventListener('click', () => {
     drawExpensesCategoryChart();
 });
 
 
-let lineChart = await drawAnnualStatementChart();
+let lineChart = await drawAnnualStatementChart('revenues');

@@ -6,7 +6,7 @@ let chart;
  * @param {Array} label - Array de labels para as barras do gráfico.
  * @returns {Object} - O gráfico.
  */
-export function drawBarChart(dataset, label) {
+export function drawLineChart(dataset, label) {
     const father = document.getElementById('expenses-bar-chart').getContext('2d');
 
     chart = new Chart(father, {
