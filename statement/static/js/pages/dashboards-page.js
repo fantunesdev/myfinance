@@ -5,22 +5,12 @@ import * as monthsData from '../data/months-report.js';
 import * as annualData from '../data/annual-report.js';
 import * as services from '../data/services.js';
 
-const dashboardSelect = document.getElementById('dashboard-select');
 const yearSeletct = document.getElementById('id_year');
 const decreaseButton = document.getElementById('id_decrease');
 const increaseButton = document.getElementById('id_increase');
 const annualStatementTab = document.getElementById('annual-statement-tab');
 const annualOverviewTab = document.getElementById('annual-overview-tab');
 const expensesCategoryTab = document.getElementById('expenses-category-tab');
-
-createSelectOptions(
-    dashboardSelect, 
-    {
-        revenues: 'Entradas',
-        expenses: 'Saídas',
-        investments: 'Investimentos'
-    }
-);
 
 /**
  * Busca todas as informações para desenhar os gráficos de linhas do demonstrativo anual.
@@ -91,7 +81,7 @@ function createSelectOptions(select, object) {
 function handleLabel(select) {
     if (select == 'revenues') {
         return 'Receitas';
-    } else if (select == ';expenses') {
+    } else if (select == 'expenses') {
         return 'Despesas';
     } else {
         return 'Investimentos';
@@ -108,19 +98,16 @@ function handleAnnualSOverviewDoughnutClick(newSelect) {
     drawAnnualOverviewChart(select);
 }
 
-dashboardSelect.addEventListener('change', () => {
-    drawAnnualStatementChart()
-});
 yearSeletct.addEventListener('change', () => {
     drawAnnualStatementChart()
 });
 decreaseButton.addEventListener('click', () => {
     yearSeletct.value --;
-    drawAnnualStatementChart('revenues')
+    drawAnnualStatementChart('revenues');
 });
 increaseButton.addEventListener('click', () => {
     yearSeletct.value ++;
-    drawAnnualStatementChart('revenues')
+    drawAnnualStatementChart('revenues');
 });
 
 
@@ -131,7 +118,9 @@ annualOverviewTab.addEventListener('click', () => {
     drawAnnualOverviewChart('revenues');
 });
 expensesCategoryTab.addEventListener('click', () => {
+    destroyCharts();
     drawExpensesCategoryChart();
+    alert('Em construção');
 });
 
 

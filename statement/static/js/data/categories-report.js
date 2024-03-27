@@ -95,6 +95,8 @@ export function setCategoriesReport(transactions, categories) {
             } else {
                 if (!ignoredCategories.includes(transaction.category)) {
                     amount.expenses += transaction.value;
+                } else if (transaction.category == 5) {
+                    amount.expenses +=transaction.value;
                 }
             }
         }

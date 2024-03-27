@@ -7,7 +7,7 @@ let chart;
  * @returns {Object} - O gráfico.
  */
 export function drawLineChart(dataset, label) {
-    const father = document.getElementById('expenses-bar-chart').getContext('2d');
+    const father = document.getElementById('line-chart').getContext('2d');
 
     chart = new Chart(father, {
         type: 'line',
