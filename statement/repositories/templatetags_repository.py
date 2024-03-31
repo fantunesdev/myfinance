@@ -26,12 +26,12 @@ def set_menu_templatetags(user, dictionary):
     """
     Define as tags de menu para o contexto do template.
 
-    Adiciona as tags de menu, como extratos de conta e faturas de cartão, ao dicionário 
+    Adiciona as tags de menu, como extratos de conta e faturas de cartão, ao dicionário
     do contexto do template.
 
     Args:
         user: O usuário para o qual as tags de menu devem ser definidas.
-        dictionary (dict): O dicionário do contexto do template ao qual as tags de menu devem 
+        dictionary (dict): O dicionário do contexto do template ao qual as tags de menu devem
         ser adicionadas.
 
     Returns:
@@ -45,11 +45,11 @@ def set_transaction_navigation_templatetags(dictionary, *args):
     """
     Define as tags de navegação de transações para o contexto do template.
 
-    Adiciona as tags de navegação de transações, como o mês atual, mês anterior e próximo mês, ao 
+    Adiciona as tags de navegação de transações, como o mês atual, mês anterior e próximo mês, ao
     dicionário do contexto do template.
 
     Args:
-        dictionary (dict): O dicionário do contexto do template ao qual as tags de navegação de 
+        dictionary (dict): O dicionário do contexto do template ao qual as tags de navegação de
         transações devem ser adicionadas.
         *args: Argumentos adicionais para determinar o mês e ano atual, mês anterior e próximo mês.
 
@@ -93,11 +93,11 @@ def set_dashboard_templatetags(
     """
     Define as tags do painel para o contexto do template.
 
-    Adiciona as tags do painel, como receita, despesas, diferença, cartões, dinheiro e fixo, 
+    Adiciona as tags do painel, como receita, despesas, diferença, cartões, dinheiro e fixo,
     ao dicionário do contexto do template.
 
     Args:
-        dictionary (dict): O dicionário do contexto do template ao qual as tags do painel devem 
+        dictionary (dict): O dicionário do contexto do template ao qual as tags do painel devem
         ser adicionadas.
         revenue (float): A receita total.
         expenses (float): As despesas totais.

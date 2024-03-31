@@ -32,9 +32,9 @@ def create_transaction(request, type):
     """
     Cria uma nova transação com base nos dados fornecidos pelo formulário.
 
-    Esta view trata as solicitações POST recebidas do formulário de criação de transações. 
-    Valida os dados do formulário, cria uma nova transação com base nesses dados e executa 
-    verificações de saldo da conta e divisão em parcelas. Se a transação for bem-sucedida, 
+    Esta view trata as solicitações POST recebidas do formulário de criação de transações.
+    Valida os dados do formulário, cria uma nova transação com base nesses dados e executa
+    verificações de saldo da conta e divisão em parcelas. Se a transação for bem-sucedida,
     redireciona para a página de visualização de transações do mês atual.
 
     Args:
@@ -101,14 +101,14 @@ def import_transactions(request):
     Renderiza a página de importação de transações.
 
     Esta view renderiza a página de importação de transações, exibindo um formulário para upload
-    de arquivos contendo dados de transações. O formulário é inicializado com as permissões 
+    de arquivos contendo dados de transações. O formulário é inicializado com as permissões
     do usuário atual.
 
     Args:
         request (HttpRequest): O objeto de solicitação HTTP enviado pelo cliente.
 
     Returns:
-        HttpResponse: Uma resposta HTTP que renderiza a página de importação de transações com 
+        HttpResponse: Uma resposta HTTP que renderiza a página de importação de transações com
         o formulário de upload de arquivos.
     """
     upload_file_form = UploadFileForm(request.user)
@@ -132,7 +132,7 @@ def get_transactions(request):
         request (HttpRequest): O objeto de solicitação HTTP enviado pelo cliente.
 
     Returns:
-        HttpResponse: Uma resposta HTTP que renderiza a página de transações com as transações 
+        HttpResponse: Uma resposta HTTP que renderiza a página de transações com as transações
         do usuário atual.
     """
     templatetags = set_templatetags()
@@ -148,7 +148,7 @@ def get_transactions_by_description(request, description):
     """
     Renderiza a página de transações filtradas por descrição.
 
-    Esta view renderiza a página de transações filtradas por uma descrição específica, exibindo 
+    Esta view renderiza a página de transações filtradas por uma descrição específica, exibindo
     as transações que correspondem à descrição fornecida.
 
     Args:
@@ -156,7 +156,7 @@ def get_transactions_by_description(request, description):
         description (str): A descrição para filtrar as transações.
 
     Returns:
-        HttpResponse: Uma resposta HTTP que renderiza a página de transações filtradas 
+        HttpResponse: Uma resposta HTTP que renderiza a página de transações filtradas
         pela descrição.
     """
     year = datetime.today().year
@@ -216,7 +216,7 @@ def get_current_month_transactions(request):
     """
     Renderiza a página de transações do mês atual.
 
-    Esta view renderiza a página de transações do mês atual do usuário atual, exibindo todas 
+    Esta view renderiza a página de transações do mês atual do usuário atual, exibindo todas
     as transações associadas a esse mês.
 
     Args:
@@ -250,7 +250,7 @@ def get_transactions_by_year_and_month(request, year, month):
     """
     Renderiza a página de transações de um determinado ano e mês.
 
-    Esta view renderiza a página de transações de um determinado ano e mês, exibindo todas 
+    Esta view renderiza a página de transações de um determinado ano e mês, exibindo todas
     as transações associadas a esse ano e mês.
 
     Args:
@@ -259,7 +259,7 @@ def get_transactions_by_year_and_month(request, year, month):
         month (int): O mês para o qual as transações devem ser filtradas.
 
     Returns:
-        HttpResponse: Uma resposta HTTP que renderiza a página de transações do ano e 
+        HttpResponse: Uma resposta HTTP que renderiza a página de transações do ano e
         mês especificados.
     """
     transactions = transaction_services.get_transactions_by_year_and_month(
@@ -286,7 +286,7 @@ def get_fixed_transactions_by_year_and_month(request, year, month):
     """
     Renderiza a página de transações fixas de um determinado ano e mês.
 
-    Esta view renderiza a página de transações fixas de um determinado ano e mês, exibindo todas 
+    Esta view renderiza a página de transações fixas de um determinado ano e mês, exibindo todas
     as transações fixas associadas a esse ano e mês.
 
     Args:
@@ -295,7 +295,7 @@ def get_fixed_transactions_by_year_and_month(request, year, month):
         month (int): O mês para o qual as transações fixas devem ser filtradas.
 
     Returns:
-        HttpResponse: Uma resposta HTTP que renderiza a página de transações fixas do ano e 
+        HttpResponse: Uma resposta HTTP que renderiza a página de transações fixas do ano e
         mês especificados.
     """
     transactions = (
@@ -327,7 +327,7 @@ def detail_transaction(request, id):
     """
     Renderiza a página de detalhes de uma transação.
 
-    Esta view renderiza a página de detalhes de uma transação específica, exibindo todas as 
+    Esta view renderiza a página de detalhes de uma transação específica, exibindo todas as
     informações detalhadas sobre essa transação.
 
     Args:
@@ -335,7 +335,7 @@ def detail_transaction(request, id):
         id (int): O ID da transação para a qual os detalhes devem ser exibidos.
 
     Returns:
-        HttpResponse: Uma resposta HTTP que renderiza a página de detalhes da 
+        HttpResponse: Uma resposta HTTP que renderiza a página de detalhes da
         transação especificada.
     """
     transaction = transaction_services.get_transaction_by_id(id, request.user)
@@ -427,7 +427,7 @@ def delete_transaction(request, id):
     """
     Exclui uma transação existente.
 
-    Esta view trata as solicitações POST recebidas do formulário de exclusão de transações. 
+    Esta view trata as solicitações POST recebidas do formulário de exclusão de transações.
     Exclui a transação existente e executa verificações de saldo da conta, se aplicável.
 
     Args:
@@ -435,7 +435,7 @@ def delete_transaction(request, id):
         id (int): O ID da transação a ser excluída.
 
     Returns:
-        HttpResponseRedirect: Um redirecionamento para a página de transações do mês atual 
+        HttpResponseRedirect: Um redirecionamento para a página de transações do mês atual
         após a exclusão bem-sucedida da transação.
     """
     transaction = transaction_services.get_transaction_by_id(id, request.user)

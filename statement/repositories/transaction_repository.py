@@ -22,7 +22,7 @@ def validate_form_by_type(type, *args):
         *args: Argumentos adicionais a serem passados para o formulário de transação.
 
     Returns:
-        TransactionRevenueForm or TransactionExpenseForm: Um formulário de transação adequado 
+        TransactionRevenueForm or TransactionExpenseForm: Um formulário de transação adequado
         com base no tipo fornecido.
     """
     if type == 'entrada':
@@ -34,7 +34,7 @@ def validate_account_balance(transaction):
     """
     Valida e atualiza o saldo da conta associada à transação.
 
-    Esta função verifica se a transação está associada a uma conta e, se estiver, atualiza o 
+    Esta função verifica se a transação está associada a uma conta e, se estiver, atualiza o
     saldo da conta de acordo com o tipo de transação.
 
     Args:
@@ -54,7 +54,7 @@ def validate_account_balance_when_delete_transaction(transaction):
     """
     Valida e atualiza o saldo da conta ao excluir uma transação.
 
-    Esta função verifica se a transação está associada a uma conta e, se estiver, atualiza 
+    Esta função verifica se a transação está associada a uma conta e, se estiver, atualiza
     o saldo da conta ao excluir a transação, revertendo o valor correspondente.
 
     Args:
@@ -83,7 +83,7 @@ def validate_new_account_balance(
     Args:
         old_transaction (Transaction): A transação original antes da edição.
         new_transaction (Transaction): A transação editada.
-        old_transaction_copy (Transaction): Uma cópia da transação original para manipulação 
+        old_transaction_copy (Transaction): Uma cópia da transação original para manipulação
         do saldo.
 
     Returns:
@@ -144,8 +144,8 @@ def validate_installment(transaction):
     Valida se uma transação deve ser dividida em parcelas ou tratada como uma única transação.
 
     Esta função verifica se o número de parcelas da transação é maior que zero. Se for, a função
-    piecemeal é chamada para dividir a transação em parcelas mensais e criar transações separadas 
-    para cada parcela. Caso contrário, a transação é criada como uma única transação no banco 
+    piecemeal é chamada para dividir a transação em parcelas mensais e criar transações separadas
+    para cada parcela. Caso contrário, a transação é criada como uma única transação no banco
     de dados.
 
     Args:
