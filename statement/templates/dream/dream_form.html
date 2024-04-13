@@ -28,9 +28,34 @@
                         <label for="id_value">Valor Total</label>
                         {{ dream_form.value }}
 
-                        {{ dream_form.installments.errors }}
-                        <label for="id_installments">Número de Parcelas</label>
-                        {{ dream_form.installments }}
+                        {{ dream_form.limit_date.errors }}
+                        <label for="id_limit_date">Data Limite</label>
+                        {{ dream_form.limit_date }}
+                        <br><br>
+                        <div>               
+                            <a href="{% url 'create_portion' old_dream.id %}"><input type="button" value="Cadastrar Depósito" class="btn btn-primary"></a>
+                            <table class="table" id="statement-table">
+                                <thead>
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Valor</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for portion in portions %}
+                                    <tr>
+                                    <td>{{ portion.date | date:"d/m/Y" }}</td>
+                                    <td>{{ portion.value| to_reais}}</td>
+                                    <td>
+                                        <a href="{% url 'update_portion' portion.id portion.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
+                                        <a href="{% url 'delete_portion' portion.id portion.id %}"><i class="fa-solid fa-trash action-icon"></i></a>
+                                    </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
                 </div>
                 <div class="box-footer">
                     <input class="btn btn-primary" type="submit" name="Cadastrar">
@@ -40,29 +65,5 @@
                     {% endif %}
                 </div>
             </form>
-            {% if portions %}                    
-                <table class="table" id="statement-table">
-                    <thead>
-                        <tr>
-                            <th>Data</th>
-                            <th>Valor</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <a href="{% url 'create_portion' dream.id %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
-                        {% for portion in portions %}
-                        <tr>
-                        <td>{{ portion.date | date:"d/m/Y" }}</td>
-                        <td>{{ portion.value| to_reais}}</td>
-                        <td>
-                            <a href="{% url 'update_portion' portion.id portion.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
-                            <a href="{% url 'delete_portion' portion.id portion.id %}"><i class="fa-solid fa-trash action-icon"></i></a>
-                        </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            {% endif %}
         </div>
     {% endblock content %}

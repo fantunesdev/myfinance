@@ -1,5 +1,6 @@
 {% extends "index.html" %}
 {% load custom_filters %}
+{% load custom_tags %}
 
     {% block title %}
         {% spaceless %}
@@ -28,9 +29,15 @@
                 </div>
                 <div class="box-body">
                     <p style="font-size: 18px;">Descrição: <b>{{ dream.description }}</b></p>
-                    <p style="font-size: 18px;">Valor: <b>{{ dream.value|to_reais }}</b></p>
+                    <p style="font-size: 18px;">Valor Total: <b>{{ dream.value|to_reais }}</b></p>
+                    <p style="font-size: 18px;">Acumulado: <b>{% get_cumulative_total_for_dream dream.id request.user %}</b></p>
+                    <p style="font-size: 18px;">Valor Restante: <b>{% get_remaining_value_for_dream dream.id dream.value request.user %}</b></p>
+                    <p style="font-size: 18px;">Data Limite: <b>{{ dream.limit_date }}</b></p>
+                    <p style="font-size: 18px;">Meses Restantes: <b>{% calculate_remaining_months dream %}</b></p>
+                    <p style="font-size: 18px;">Valor das Parcelas: <b>{% calcule_remaining_installment_value dream.id dream.value dream.limit_date request.user %}</b></p>
 
-                    {% if portions %}                    
+                    <br><br>
+                    <a href="{% url 'create_portion' dream.id %}"><input type="button" value="Cadastrar Depósito" class="btn btn-primary"></a>
                     <table class="table" id="statement-table">
                         <thead>
                             <tr>
@@ -40,7 +47,6 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <a href="{% url 'create_portion' dream.id %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
                             {% for portion in portions %}
                             <tr>
                             <td>{{ portion.date | date:"d/m/Y" }}</td>
@@ -53,7 +59,6 @@
                             {% endfor %}
                         </tbody>
                     </table>
-                    {% endif %}
                     <br>
                     {% if 'remover' in request.path %}
                     <div class="btn-danger">

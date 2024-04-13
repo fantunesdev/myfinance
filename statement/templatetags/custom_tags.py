@@ -1,6 +1,10 @@
+import datetime
+
 from django import template
-from statement.services import portion_services
 from django.utils.formats import number_format
+
+from statement.services import dream_services
+from statement.services import portion_services
 
 register = template.Library()
 
@@ -20,8 +24,16 @@ def get_remaining_value_for_dream(dream_id, dream_value, user):
     return f'R$ {formatted_total}'
 
 @register.simple_tag
-def calcule_remaining_installment_value(dream_id, dream_value, dream_installments, user):
+def calcule_remaining_installment_value(dream_id, dream_value, dream_limit_date, user):
     remaining_value = portion_services.calculate_remaining_value(dream_id, dream_value, user)
-    remaining_installments = remaining_value / dream_installments
-    formatted_total = number_format(remaining_installments, decimal_pos=2, force_grouping=True)
+    today = datetime.datetime.today()
+    remaining_months = dream_limit_date.month - today.month
+    remaining_limit_date = remaining_value / remaining_months
+    formatted_total = number_format(remaining_limit_date, decimal_pos=2, force_grouping=True)
     return f'R$ {formatted_total}'
+
+
+@register.simple_tag
+def calculate_remaining_months(dream):
+    today = datetime.datetime.today()
+    return dream.limit_date.month - today.month

@@ -20,7 +20,7 @@ def create_dream(request):
             new_dream = Dream(
                 description=dream_form.cleaned_data['description'],
                 value=dream_form.cleaned_data['value'],
-                installments=dream_form.cleaned_data['installments'],
+                limit_date=dream_form.cleaned_data['limit_date'],
                 user=request.user,
             )
             dream_services.create_dream(new_dream)
@@ -63,7 +63,7 @@ def update_dream(request, id):
         new_dream = Dream(
             description=dream_form.cleaned_data['description'],
             value=dream_form.cleaned_data['value'],
-            installments=dream_form.cleaned_data['installments'],
+            limit_date=dream_form.cleaned_data['limit_date'],
             user=request.user,
         )
         dream_services.update_dream(old_dream, new_dream)

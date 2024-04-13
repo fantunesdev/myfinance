@@ -178,7 +178,7 @@ class Version(models.Model):
 class Dream(models.Model):
     description = models.CharField(max_length=70)
     value = models.FloatField()
-    installments = models.IntegerField()
+    limit_date = models.DateField()
     user = models.ForeignKey(User, on_delete=models.PROTECT)
 
 class Portion(models.Model):

@@ -19,7 +19,8 @@
                             <th>Valor Total</th>
                             <th>Acumulado</th>
                             <th>Valor Restante</th>
-                            <th>Número de Parcelas</th>
+                            <th>Data Limite</th>
+                            <th>Meses Restantes</th>
                             <th>Valor das Parcelas</th>
                             <th>Ações</th>
                         </tr>
@@ -32,8 +33,9 @@
                             <td>{{ dream.value | to_reais }}</td>
                             <td>{% get_cumulative_total_for_dream dream.id request.user.id %}</td>
                             <td>{% get_remaining_value_for_dream dream.id dream.value request.user.id %}</td>
-                            <td>{{ dream.installments }}</td>
-                            <td>{% calcule_remaining_installment_value dream.id dream.value dream.installments request.user.id %}</td>
+                            <td>{{ dream.limit_date | date:'d/m/Y' }}</td>
+                            <td>{% calculate_remaining_months dream %}</td>
+                            <td>{% calcule_remaining_installment_value dream.id dream.value dream.limit_date request.user.id %}</td>
                             <td>
                                 <a href="{% url 'detail_dream' dream.id %}"><i class="fa-solid fa-file-lines action-icon"></i></a>
                                 <a href="{% url 'update_dream' dream.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>

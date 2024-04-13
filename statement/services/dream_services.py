@@ -5,7 +5,7 @@ def create_dream(dream):
     new_dream = Dream.objects.create(
         description=dream.description,
         value=dream.value,
-        installments=dream.installments,
+        limit_date=dream.limit_date,
         user=dream.user
     )
     return new_dream
@@ -22,7 +22,7 @@ def list_dream_by_id(id, user):
 def update_dream(old_dream, new_dream):
     old_dream.description=new_dream.description
     old_dream.value=new_dream.value
-    old_dream.installments=new_dream.installments
+    old_dream.limit_date=new_dream.limit_date
     old_dream.user=new_dream.user
     old_dream.save(force_update=True)
 
