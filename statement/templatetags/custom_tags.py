@@ -41,8 +41,8 @@ def calcule_remaining_installment_value(dream_id, dream_value, dream_limit_date,
 @register.simple_tag
 def calculate_remaining_months(dream):
     today = date.today()
-    diference_months_in_years = (dream.limit_date.year - today.year) * 12
-    difference_months = dream.limit_date.month - today.month
-    if difference_months > 0:
+    if dream.limit_date > today:
+        diference_months_in_years = (dream.limit_date.year - today.year) * 12
+        difference_months = dream.limit_date.month - today.month
         return diference_months_in_years + difference_months
     return 0
