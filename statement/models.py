@@ -172,6 +172,17 @@ class FixedExpenses(models.Model):
 
 class Version(models.Model):
     version = models.CharField(max_length=30)
+    date = models.DateField()
 
-    class Meta:
-        ordering = ['version']
+
+class Dream(models.Model):
+    description = models.CharField(max_length=70)
+    value = models.FloatField()
+    installments = models.IntegerField()
+    user = models.ForeignKey(User, on_delete=models.PROTECT)
+
+class Portion(models.Model):
+    date = models.DateField()
+    value = models.FloatField()
+    dream = models.ForeignKey(Dream, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.PROTECT)

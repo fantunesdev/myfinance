@@ -1,0 +1,47 @@
+{% extends 'index.html' %}
+
+{% block title %}
+{% spaceless %}
+{% if 'parcelas/cadastrar/' in request.path %}
+    Cadastrar Parcela
+{% else %}
+    Editar Parcela
+{% endif %}
+{% endspaceless %}
+{% endblock %}
+
+    {% block content %}
+        <div class="box box-primary">
+            <div class="box-header">
+                <h3 class="box-title">
+                {% spaceless %}
+                    {% if 'parcelas/cadastrar/' in request.path %}
+                        Cadastrar Parcela
+                    {% else %}
+                        Editar Parcela
+                    {% endif %}
+                {% endspaceless %}
+                </h3>
+            </div>
+            <form method="post" enctype="multipart/form-data">
+                <div class="box-body">
+                        {% csrf_token %}
+                        
+                        {{ portion_form.date.errors }}
+                        <label for="id_date">Data</label>
+                        {{ portion_form.date }}
+
+                        {{ portion_form.value.errors }}
+                        <label for="id_value">Valor</label>
+                        {{ portion_form.value }}
+                </div>
+                <div class="box-footer">
+                    <input class="btn btn-primary" type="submit" name="Cadastrar">
+                    <a href="{{request.META.HTTP_REFERER}}" class="btn btn-info">Voltar</a>
+                    {% if 'parcelas/editar/' in request.path %}
+                    <a href="{% url 'delete_portion' dream.id old_portion.id %}"><input type="button" value="Excluir" class="btn btn-danger"></a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    {% endblock content %}

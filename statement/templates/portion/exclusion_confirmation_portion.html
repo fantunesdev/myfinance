@@ -1,0 +1,80 @@
+{% extends "index.html" %}
+{% load custom_filters %}
+
+    {% block title %}
+        {% spaceless %}
+            {% if 'remover' in request.path %}
+                Excluir Sonho
+            {% else %}
+                Detalhar Sonho
+            {% endif  %}
+        {% endspaceless %}
+    {% endblock %}
+
+    {% block content %}
+        <div class="box box-primary">
+            <form method="post">
+                <div class="box-title">
+                    <h3>
+                    {% spaceless %}
+                        {% if 'remover' in request.path %}
+                            Atenção! Você está prestes a movimentação {{ portion.description }} do dia
+                            {{ portion.release_date }}. Esta operação é irreversível.
+                        {% else %}
+                            {{ portion.description }}
+                        {% endif %}
+                    {% endspaceless %}
+                    </h3>
+                </div>
+                <div class="box-body">
+                    <p style="font-size: 18px;">Data: <b>{{ portion.date }}</b></p>
+                    <p style="font-size: 18px;">Valor: <b>{{ portion.value|to_reais }}</b></p>
+
+                    {% if portions %}                    
+                    <table class="table" id="statement-table">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Valor</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <a href="{% url 'create_portion' portion.id %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
+                            {% for portion in portions %}
+                            <tr>
+                            <td>{{ portion.date | date:"d/m/Y" }}</td>
+                            <td>{{ portion.value| to_reais}}</td>
+                            <td>
+                                <a href="{% url 'update_portion' portion.id portion.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
+                                <a href="{% url 'delete_portion' portion.id portion.id %}"><i class="fa-solid fa-trash action-icon"></i></a>
+                            </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% endif %}
+                    <br>
+                    {% if 'remover' in request.path %}
+                    <div class="btn-danger">
+                        <p>
+                        {% csrf_token %}
+                        {{ exclusion_form }}
+                        Sim, desejo excluir e estou ciente de que esta operação é irreversível.
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="box-footer">
+                    <a href="{{request.META.HTTP_REFERER}}"><input type="button" value="Voltar" class="btn btn-primary"></a>
+                    {% if 'remover' in request.path %}
+                    {% csrf_token %}
+                    <input type="submit" value="Excluir" class="btn btn-danger">
+                    {% else %}
+                    <a href="{% url 'update_portion' portion.id %}" class="btn btn-primary">Editar</a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+
+    {% endblock content %}
