@@ -1,5 +1,6 @@
 import datetime
 
+from dateutil.relativedelta import relativedelta
 from django import template
 from django.utils.formats import number_format
 
@@ -27,7 +28,7 @@ def get_remaining_value_for_dream(dream_id, dream_value, user):
 def calcule_remaining_installment_value(dream_id, dream_value, dream_limit_date, user):
     remaining_value = portion_services.calculate_remaining_value(dream_id, dream_value, user)
     today = datetime.datetime.today()
-    remaining_months = dream_limit_date.month - today.month
+    remaining_months = relativedelta(dream_limit_date - today).months
     remaining_limit_date = remaining_value / remaining_months
     formatted_total = number_format(remaining_limit_date, decimal_pos=2, force_grouping=True)
     return f'R$ {formatted_total}'
