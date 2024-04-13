@@ -32,8 +32,10 @@
                         <label for="id_limit_date">Data Limite</label>
                         {{ dream_form.limit_date }}
                         <br><br>
-                        <div>               
+                        <div>
+                            {% if old_dream %}
                             <a href="{% url 'create_portion' old_dream.id %}"><input type="button" value="Cadastrar Depósito" class="btn btn-primary"></a>
+                            {% endif %}
                             <table class="table" id="statement-table">
                                 <thead>
                                     <tr>
