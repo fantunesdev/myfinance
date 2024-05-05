@@ -187,17 +187,14 @@ async function importTransactions() {
                 }
             } catch (error) {
                 importError.classList.remove('toggled');
-                importError.textContent = error.message;
-                importError.textContent += newTransaction;
+                importError.textContent = `${error.message}: ${JSON.stringify(newTransaction)}`;
                 break;
             }
-            
-            
         }
     }
-    // if (errors == 0) {
-    //     window.location.href = '/relatorio_financeiro/mes_atual/';
-    // }
+    if (errors == 0) {
+        window.location.href = '/relatorio_financeiro/mes_atual/';
+    }
 }
 
 

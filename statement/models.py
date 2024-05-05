@@ -126,7 +126,7 @@ class Transaction(models.Model):
     category = models.ForeignKey(Category, on_delete=models.PROTECT)
     subcategory = models.ForeignKey(Subcategory, on_delete=models.PROTECT)
     description = models.CharField(
-        max_length=50,
+        max_length=255,
     )
     value = models.FloatField(default=0)
     installments_number = models.IntegerField(default=0)
