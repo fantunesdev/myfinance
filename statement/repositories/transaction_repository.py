@@ -15,14 +15,14 @@ from statement.services import (
 
 def validate_form_by_type(type, *args):
     """
-    Valida e retorna um formulário de receita ou de despesa com base no tipo de transação.
+    Valida e retorna um formulário de receita ou de despesa com base no tipo de lançamento.
 
     Args:
-        type (str): O tipo de transação ('entrada' ou 'saída').
-        *args: Argumentos adicionais a serem passados para o formulário de transação.
+        type (str): O tipo de lançamento ('entrada' ou 'saída').
+        *args: Argumentos adicionais a serem passados para o formulário de lançamento.
 
     Returns:
-        TransactionRevenueForm or TransactionExpenseForm: Um formulário de transação adequado
+        TransactionRevenueForm or TransactionExpenseForm: Um formulário de lançamento adequado
         com base no tipo fornecido.
     """
     if type == 'entrada':
@@ -32,13 +32,13 @@ def validate_form_by_type(type, *args):
 
 def validate_account_balance(transaction):
     """
-    Valida e atualiza o saldo da conta associada à transação.
+    Valida e atualiza o saldo da conta associada ao lançamento.
 
-    Esta função verifica se a transação está associada a uma conta e, se estiver, atualiza o
-    saldo da conta de acordo com o tipo de transação.
+    Esta função verifica se o lançamento está associada a uma conta e, se estiver, atualiza o
+    saldo da conta de acordo com o tipo de lançamento.
 
     Args:
-        transaction (Transaction): A transação para validar e atualizar o saldo da conta.
+        transaction (Transaction): O lançamento para validar e atualizar o saldo da conta.
 
     Returns:
         None
@@ -52,13 +52,13 @@ def validate_account_balance(transaction):
 
 def validate_account_balance_when_delete_transaction(transaction):
     """
-    Valida e atualiza o saldo da conta ao excluir uma transação.
+    Valida e atualiza o saldo da conta ao excluir umo lançamento.
 
-    Esta função verifica se a transação está associada a uma conta e, se estiver, atualiza
-    o saldo da conta ao excluir a transação, revertendo o valor correspondente.
+    Esta função verifica se o lançamento está associada a uma conta e, se estiver, atualiza
+    o saldo da conta ao excluir o lançamento, revertendo o valor correspondente.
 
     Args:
-        transaction (Transaction): A transação a ser excluída e a conta associada para atualizar
+        transaction (Transaction): O lançamento a ser excluída e a conta associada para atualizar
         o saldo.
 
     Returns:
@@ -75,15 +75,15 @@ def validate_new_account_balance(
     old_transaction, new_transaction, old_transaction_copy
 ):
     """
-    Valida e atualiza o saldo da conta ao editar uma transação.
+    Valida e atualiza o saldo da conta ao editar umo lançamento.
 
     Esta função verifica se as transações antigas e novas estão associadas a uma conta e, se
     estiverem, atualiza o saldo da conta com base nas alterações realizadas.
 
     Args:
-        old_transaction (Transaction): A transação original antes da edição.
-        new_transaction (Transaction): A transação editada.
-        old_transaction_copy (Transaction): Uma cópia da transação original para manipulação
+        old_transaction (Transaction): O lançamento original antes da edição.
+        new_transaction (Transaction): O lançamento editada.
+        old_transaction_copy (Transaction): Uma cópia do lançamento original para manipulação
         do saldo.
 
     Returns:
@@ -141,15 +141,15 @@ def deposit(account, value):
 
 def validate_installment(transaction):
     """
-    Valida se uma transação deve ser dividida em parcelas ou tratada como uma única transação.
+    Valida se umo lançamento deve ser dividida em parcelas ou tratada como uma único lançamento.
 
-    Esta função verifica se o número de parcelas da transação é maior que zero. Se for, a função
-    piecemeal é chamada para dividir a transação em parcelas mensais e criar transações separadas
-    para cada parcela. Caso contrário, a transação é criada como uma única transação no banco
+    Esta função verifica se o número de parcelas do lançamento é maior que zero. Se for, a função
+    piecemeal é chamada para dividir o lançamento em parcelas mensais e criar transações separadas
+    para cada parcela. Caso contrário, o lançamento é criada como uma único lançamento no banco
     de dados.
 
     Args:
-        transaction (Transaction): Um objeto de transação a ser validado.
+        transaction (Transaction): Um objeto de lançamento a ser validado.
 
     Returns:
         None
@@ -162,13 +162,13 @@ def validate_installment(transaction):
 
 def piecemeal(transaction):
     """
-    Divide uma transação em parcelas mensais e as cria como transações separadas.
+    Divide umo lançamento em parcelas mensais e as cria como transações separadas.
 
-    Esta função cria parcelas de uma transação e as insere no banco de dados como transações
+    Esta função cria parcelas de umo lançamento e as insere no banco de dados como transações
     separadas. A data de pagamento de cada parcela é calculada com base na função add_month.
 
     Args:
-        transaction (Transaction): Um objeto de transação a ser dividido em parcelas.
+        transaction (Transaction): Um objeto de lançamento a ser dividido em parcelas.
 
     Returns:
         None
@@ -189,18 +189,18 @@ def piecemeal(transaction):
 
 def add_month(transaction, repetition):
     """
-    Adiciona um mês à data de pagamento da transação.
+    Adiciona um mês à data de pagamento do lançamento.
 
-    Esta função calcula a data de pagamento da transação, levando em consideração se a transação
-    foi feita com cartão ou em dinheiro, e se há repetição mensal da transação.
+    Esta função calcula a data de pagamento do lançamento, levando em consideração se o lançamento
+    foi feita com cartão ou em dinheiro, e se há repetição mensal do lançamento.
 
     Args:
-        transaction (Transaction): Um objeto de transação contendo informações sobre a transação,
+        transaction (Transaction): Um objeto de lançamento contendo informações sobre o lançamento,
         incluindo a data de lançamento e o método de pagamento (cartão ou dinheiro).
-        repetition (int): Um valor indicando o número de repetições mensais da transação.
+        repetition (int): Um valor indicando o número de repetições mensais do lançamento.
 
     Returns:
-        datetime.date: A data de pagamento atualizada da transação após adicionar um mês.
+        datetime.date: A data de pagamento atualizada do lançamento após adicionar um mês.
     """
     if transaction.card:
         transaction.payment_date = date(
@@ -225,7 +225,7 @@ def calculate_total_revenue_expenses(transactions):
     despesas fixas.
 
     Args:
-        transactions (list): Uma lista de objetos de transação.
+        transactions (list): Uma lista de objetos de lançamento.
 
     Returns:
         tuple: Uma tupla contendo os seguintes valores:

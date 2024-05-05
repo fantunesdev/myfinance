@@ -2,13 +2,16 @@ import * as categoryData from '../data/categories-report.js';
 import * as subcategoryData from '../data/subcategory-expenses.js';
 import * as dataTable from '../data/expenses-table.js';
 import * as graphics from '../layout/elements/graphics.js';
-import * as selects from '../layout/elements/selects.js';
 import * as tables from '../layout/elements/tables.js';
 import * as services from '../data/services.js';
-import { expensesSelector, originalTable, statementBox } from '../layout/elements/get-transactions-elements.js';
+import { originalTable, statementBox } from '../layout/elements/get-transactions-elements.js';
+import * as transactionObjectConversor from '../data/transactions-object-conversor.js';
+import * as objectToCSVConversor from '../data/objectToCsvConversor.js';
+import * as general from '../data/general.js';
 
 const yearNavigation = document.getElementById('id_year'),
-    monthNavigation = document.getElementById('id_month');
+    monthNavigation = document.getElementById('id_month'),
+    transactionDownloadButton = document.getElementById('download-transactions-button');
     
 /**
  * Busca todas as informações para desenhar os gráficos de barras e de donuts.
@@ -138,6 +141,51 @@ function yearMonthRouter() {
 
     window.location.href = url;
 }
+
+async function downloadTransactions() {
+    const transactions = JSON.parse(sessionStorage.getItem('transactions')),
+        deletedProperties = [
+            'annual', 'currency', 'effected', 'fixed', 'home_screen', 'id', 'installment', 'installments_number', 'observation',
+            'paid', 'remember', 'user'
+        ],
+        handledTransactions = [];
+
+    for (let transaction of transactions) {
+        transaction = await transactionObjectConversor.setTransaction(transaction);
+
+        if (transaction.account) {
+            transaction.account = transaction.account.bank.description;
+        } else {
+            transaction.account = '';
+        }
+
+        if (transaction.card) {
+            transaction.card = transaction.card.description;
+        } else {
+            transaction.card = '';
+        }
+
+        transaction.category = transaction.category.description;
+        transaction.subcategory = transaction.subcategory.description;
+        transaction.payment_date = convertDbDateForDayMonthYearDate(transaction.payment_date);
+        transaction.release_date = convertDbDateForDayMonthYearDate(transaction.release_date);
+        transaction.value = general.handleCurrency(transaction.value);
+        console.log(transaction.value)
+
+        for (let property of deletedProperties) {
+            delete transaction[property];
+        }
+
+        handledTransactions.push(transaction);
+    }
+
+    await objectToCSVConversor.convertTransactions(handledTransactions);
+}
+
+function convertDbDateForDayMonthYearDate(date) {
+    const [year, month, day] = date.split('-');
+    return `${day}/${month}/${year}`;
+}
     
 const resetDashboardButton = document.querySelector('#reset-dashboard-button');
 resetDashboardButton.addEventListener('click', () => {
@@ -157,4 +205,9 @@ yearNavigation.addEventListener('change', () => {
 // Redireciona para a página do mês selecionado.
 monthNavigation.addEventListener('change', () => {
     yearMonthRouter();
+});
+
+// Botão que faz o download da tabela
+transactionDownloadButton.addEventListener('click', () => {
+    downloadTransactions();
 });

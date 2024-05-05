@@ -765,6 +765,10 @@ td a:hover {
     transition: all .45s linear;
 }
 
+.icon-btn:hover {
+    cursor: pointer;
+}
+
 /* FIM BOTÕES */
 
 

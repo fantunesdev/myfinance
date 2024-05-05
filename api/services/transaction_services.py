@@ -39,7 +39,7 @@ def get_transactions_by_year(year, user):
     Uma lista de lançamentos associadas ao ano e usuário fornecidos.
 
     Raises:
-    Http404: Se nenhuma transação for encontrada para o ano e usuário fornecidos.
+    Http404: Se nenhum lançamento for encontrado para o ano e usuário fornecidos.
     """
     transactions = transaction_services.get_transactions_by_year(year, user)
     if transactions:

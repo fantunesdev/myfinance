@@ -30,20 +30,20 @@ from statement.services import (
 @login_required
 def create_transaction(request, type):
     """
-    Cria uma nova transação com base nos dados fornecidos pelo formulário.
+    Cria um novo lançamento com base nos dados fornecidos pelo formulário.
 
-    Esta view trata as solicitações POST recebidas do formulário de criação de transações.
-    Valida os dados do formulário, cria uma nova transação com base nesses dados e executa
-    verificações de saldo da conta e divisão em parcelas. Se a transação for bem-sucedida,
-    redireciona para a página de visualização de transações do mês atual.
+    Esta view trata as solicitações POST recebidas do formulário de criação de lançamentos.
+    Valida os dados do formulário, cria um novo lançamento com base nesses dados e executa
+    verificações de saldo da conta e divisão em parcelas. Se o lançamento for bem-sucedido,
+    redireciona para a página de visualização de lançamentos do mês atual.
 
     Args:
         request (HttpRequest): O objeto de solicitação HTTP enviado pelo cliente.
-        type (str): O tipo de transação ('entrada' ou 'saída').
+        type (str): O tipo de lançamento ('entrada' ou 'saída').
 
     Returns:
         HttpResponseRedirect ou HttpResponse: Um redirecionamento para a página de visualização
-        de transações do mês atual se a transação for bem-sucedida, caso contrário, uma resposta
+        de lançamentos do mês atual se o lançamento for bem-sucedido, caso contrário, uma resposta
         HTTP contendo os erros de validação do formulário.
     """
     if request.method == 'POST':
@@ -98,17 +98,17 @@ def create_transaction(request, type):
 @login_required
 def import_transactions(request):
     """
-    Renderiza a página de importação de transações.
+    Renderiza a página de importação de lançamentos.
 
-    Esta view renderiza a página de importação de transações, exibindo um formulário para upload
-    de arquivos contendo dados de transações. O formulário é inicializado com as permissões
+    Esta view renderiza a página de importação de lançamentos, exibindo um formulário para upload
+    de arquivos contendo dados de lançamentos. O formulário é inicializado com as permissões
     do usuário atual.
 
     Args:
         request (HttpRequest): O objeto de solicitação HTTP enviado pelo cliente.
 
     Returns:
-        HttpResponse: Uma resposta HTTP que renderiza a página de importação de transações com
+        HttpResponse: Uma resposta HTTP que renderiza a página de importação de lançamentos com
         o formulário de upload de arquivos.
     """
     upload_file_form = UploadFileForm(request.user)
@@ -123,16 +123,16 @@ def import_transactions(request):
 @login_required
 def get_transactions(request):
     """
-    Renderiza a página de transações do usuário atual.
+    Renderiza a página de lançamentos do usuário atual.
 
-    Esta view renderiza a página de transações do usuário atual, recuperando todas as transações
+    Esta view renderiza a página de lançamentos do usuário atual, recuperando todos os lançamento
     associadas a esse usuário e exibindo-as na página.
 
     Args:
         request (HttpRequest): O objeto de solicitação HTTP enviado pelo cliente.
 
     Returns:
-        HttpResponse: Uma resposta HTTP que renderiza a página de transações com as transações
+        HttpResponse: Uma resposta HTTP que renderiza a página de lançamentos com os lançamento
         do usuário atual.
     """
     templatetags = set_templatetags()
@@ -146,17 +146,17 @@ def get_transactions(request):
 @login_required
 def get_transactions_by_description(request, description):
     """
-    Renderiza a página de transações filtradas por descrição.
+    Renderiza a página de lançamentos filtradas por descrição.
 
-    Esta view renderiza a página de transações filtradas por uma descrição específica, exibindo
-    as transações que correspondem à descrição fornecida.
+    Esta view renderiza a página de lançamentos filtradas por uma descrição específica, exibindo
+    os lançamentos que correspondem à descrição fornecida.
 
     Args:
         request (HttpRequest): O objeto de solicitação HTTP enviado pelo cliente.
-        description (str): A descrição para filtrar as transações.
+        description (str): A descrição para filtrar os lançamentos.
 
     Returns:
-        HttpResponse: Uma resposta HTTP que renderiza a página de transações filtradas
+        HttpResponse: Uma resposta HTTP que renderiza a página de lançamentos filtradas
         pela descrição.
     """
     year = datetime.today().year
@@ -183,17 +183,17 @@ def get_transactions_by_description(request, description):
 @login_required
 def get_transactions_by_year(request, year):
     """
-    Renderiza a página de transações de um determinado ano.
+    Renderiza a página de lançamentos de um determinado ano.
 
-    Esta view renderiza a página de transações de um determinado ano, exibindo todas as transações
+    Esta view renderiza a página de lançamentos de um determinado ano, exibindo todos os lançamento
     associadas a esse ano.
 
     Args:
         request (HttpRequest): O objeto de solicitação HTTP enviado pelo cliente.
-        year (int): O ano para o qual as transações devem ser filtradas.
+        year (int): O ano para o qual os lançamentos devem ser filtradas.
 
     Returns:
-        HttpResponse: Uma resposta HTTP que renderiza a página de transações do ano especificado.
+        HttpResponse: Uma resposta HTTP que renderiza a página de lançamentos do ano especificado.
     """
     transactions = transaction_services.get_transactions_by_year(
         year, request.user
@@ -214,16 +214,16 @@ def get_transactions_by_year(request, year):
 @login_required
 def get_current_month_transactions(request):
     """
-    Renderiza a página de transações do mês atual.
+    Renderiza a página de lançamentos do mês atual.
 
-    Esta view renderiza a página de transações do mês atual do usuário atual, exibindo todas
-    as transações associadas a esse mês.
+    Esta view renderiza a página de lançamentos do mês atual do usuário atual, exibindo todas
+    os lançamentos associadas a esse mês.
 
     Args:
         request (HttpRequest): O objeto de solicitação HTTP enviado pelo cliente.
 
     Returns:
-        HttpResponse: Uma resposta HTTP que renderiza a página de transações do mês atual.
+        HttpResponse: Uma resposta HTTP que renderiza a página de lançamentos do mês atual.
     """
     current_month = next_month_view_repository.get_current_month(request.user)
     transactions = transaction_services.get_transactions_by_year_and_month(
@@ -248,18 +248,18 @@ def get_current_month_transactions(request):
 @login_required
 def get_transactions_by_year_and_month(request, year, month):
     """
-    Renderiza a página de transações de um determinado ano e mês.
+    Renderiza a página de lançamentos de um determinado ano e mês.
 
-    Esta view renderiza a página de transações de um determinado ano e mês, exibindo todas
-    as transações associadas a esse ano e mês.
+    Esta view renderiza a página de lançamentos de um determinado ano e mês, exibindo todas
+    os lançamentos associadas a esse ano e mês.
 
     Args:
         request (HttpRequest): O objeto de solicitação HTTP enviado pelo cliente.
-        year (int): O ano para o qual as transações devem ser filtradas.
-        month (int): O mês para o qual as transações devem ser filtradas.
+        year (int): O ano para o qual os lançamentos devem ser filtradas.
+        month (int): O mês para o qual os lançamentos devem ser filtradas.
 
     Returns:
-        HttpResponse: Uma resposta HTTP que renderiza a página de transações do ano e
+        HttpResponse: Uma resposta HTTP que renderiza a página de lançamentos do ano e
         mês especificados.
     """
     transactions = transaction_services.get_transactions_by_year_and_month(
@@ -284,18 +284,18 @@ def get_transactions_by_year_and_month(request, year, month):
 @login_required
 def get_fixed_transactions_by_year_and_month(request, year, month):
     """
-    Renderiza a página de transações fixas de um determinado ano e mês.
+    Renderiza a página de lançamentos fixas de um determinado ano e mês.
 
-    Esta view renderiza a página de transações fixas de um determinado ano e mês, exibindo todas
-    as transações fixas associadas a esse ano e mês.
+    Esta view renderiza a página de lançamentos fixas de um determinado ano e mês, exibindo todas
+    os lançamentos fixas associadas a esse ano e mês.
 
     Args:
         request (HttpRequest): O objeto de solicitação HTTP enviado pelo cliente.
-        year (int): O ano para o qual as transações fixas devem ser filtradas.
-        month (int): O mês para o qual as transações fixas devem ser filtradas.
+        year (int): O ano para o qual os lançamentos fixas devem ser filtradas.
+        month (int): O mês para o qual os lançamentos fixas devem ser filtradas.
 
     Returns:
-        HttpResponse: Uma resposta HTTP que renderiza a página de transações fixas do ano e
+        HttpResponse: Uma resposta HTTP que renderiza a página de lançamentos fixas do ano e
         mês especificados.
     """
     transactions = (
@@ -325,18 +325,18 @@ def get_fixed_transactions_by_year_and_month(request, year, month):
 @login_required
 def detail_transaction(request, id):
     """
-    Renderiza a página de detalhes de uma transação.
+    Renderiza a página de detalhes de um lançamento.
 
-    Esta view renderiza a página de detalhes de uma transação específica, exibindo todas as
-    informações detalhadas sobre essa transação.
+    Esta view renderiza a página de detalhes de um lançamento específica, exibindo todas as
+    informações detalhadas sobre esso lançamento.
 
     Args:
         request (HttpRequest): O objeto de solicitação HTTP enviado pelo cliente.
-        id (int): O ID da transação para a qual os detalhes devem ser exibidos.
+        id (int): O ID do lançamento para a qual os detalhes devem ser exibidos.
 
     Returns:
-        HttpResponse: Uma resposta HTTP que renderiza a página de detalhes da
-        transação especificada.
+        HttpResponse: Uma resposta HTTP que renderiza a página de detalhes do
+        lançamento especificado.
     """
     transaction = transaction_services.get_transaction_by_id(id, request.user)
     templatetags = set_templatetags()
@@ -355,16 +355,16 @@ def detail_transaction(request, id):
 @login_required
 def update_transaction(request, id):
     """
-    Atualiza uma transação existente com base nos dados do formulário.
+    Atualiza um lançamento existente com base nos dados do formulário.
 
-    Esta view trata as solicitações POST recebidas do formulário de edição de transações. Valida os dados do formulário, atualiza a transação existente com base nesses dados e executa verificações de saldo da conta e divisão em parcelas, se aplicável.
+    Esta view trata as solicitações POST recebidas do formulário de edição de lançamentos. Valida os dados do formulário, atualiza o lançamento existente com base nesses dados e executa verificações de saldo da conta e divisão em parcelas, se aplicável.
 
     Args:
         request (HttpRequest): O objeto de solicitação HTTP enviado pelo cliente.
-        id (int): O ID da transação a ser atualizada.
+        id (int): O ID do lançamento a ser atualizada.
 
     Returns:
-        HttpResponseRedirect: Um redirecionamento para a página de transações do mês atual após a atualização bem-sucedida da transação.
+        HttpResponseRedirect: Um redirecionamento para a página de lançamentos do mês atual após a atualização bem-sucedida do lançamento.
     """
     old_transaction = transaction_services.get_transaction_by_id(
         id, request.user
@@ -425,18 +425,18 @@ def update_transaction(request, id):
 @login_required
 def delete_transaction(request, id):
     """
-    Exclui uma transação existente.
+    Exclui um lançamento existente.
 
-    Esta view trata as solicitações POST recebidas do formulário de exclusão de transações.
-    Exclui a transação existente e executa verificações de saldo da conta, se aplicável.
+    Esta view trata as solicitações POST recebidas do formulário de exclusão de lançamentos.
+    Exclui o lançamento existente e executa verificações de saldo da conta, se aplicável.
 
     Args:
         request (HttpRequest): O objeto de solicitação HTTP enviado pelo cliente.
-        id (int): O ID da transação a ser excluída.
+        id (int): O ID do lançamento a ser excluída.
 
     Returns:
-        HttpResponseRedirect: Um redirecionamento para a página de transações do mês atual
-        após a exclusão bem-sucedida da transação.
+        HttpResponseRedirect: Um redirecionamento para a página de lançamentos do mês atual
+        após a exclusão bem-sucedida do lançamento.
     """
     transaction = transaction_services.get_transaction_by_id(id, request.user)
     exclusion_form = ExclusionForm()
