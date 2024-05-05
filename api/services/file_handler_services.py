@@ -410,8 +410,9 @@ class FileHandler:
         """
 
         # Para aproveitar o FOR, vamos cadastras as subcategorias na mensagem de erro
-        self.__error_message = f'Categoria não encontrada a partir da descrição: {file_description}. Subtegorias válidas: '
+        self.__error_message = f'Subcategoria não encontrada a partir da descrição: {file_description}. Subtegorias válidas: '
         for subcategory in self.file_conf['subcategories']:
+            self.__error_message += f'{subcategory["word"]}. '
             if subcategory['word'] in file_description:
                 return subcategory['id']
         raise ValueError(self.error_message)
