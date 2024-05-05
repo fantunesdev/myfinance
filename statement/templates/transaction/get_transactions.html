@@ -76,11 +76,15 @@
                                 {% endif %}
                             {% if transaction.account %}
                             <td>
-                                <img src="{{ transaction.account.bank.icon | handle_image }}" alt="Logotipo do banco {{ bank.description }}" style="max-height: 25px;">
+                                <a href="{% url 'get_extract_by_account_year_and_month' transaction.account.id transaction.payment_date|date:'Y' transaction.payment_date|date:'m' %}">
+                                    <img src="{{ transaction.account.bank.icon | handle_image }}" alt="Logotipo do banco {{ bank.description }}" style="max-height: 25px;">
+                                </a>
                             </td>
                             {% else %}
                             <td>
-                                <img src="{{ transaction.card.icon | handle_image }}" alt="Logotipo do cartão {{ transaction.card.description }}" style="max-height: 25px;">
+                                <a href="{% url 'get_invoice_by_card_year_and_month' transaction.card.id transaction.payment_date|date:'Y' transaction.payment_date|date:'m' %}">
+                                    <img src="{{ transaction.card.icon | handle_image }}" alt="Logotipo do cartão {{ transaction.card.description }}" style="max-height: 25px;">
+                                </a>
                             </td>
                             {% endif %}
                             <td style="text-align: left; max-width: 150px; min-width:115px"><i class="{{ transaction.category.icon }}" style="padding:10px;"></i> {{ transaction.category }}</td>
