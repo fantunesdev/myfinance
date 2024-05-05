@@ -170,7 +170,6 @@ async function downloadTransactions() {
         transaction.payment_date = convertDbDateForDayMonthYearDate(transaction.payment_date);
         transaction.release_date = convertDbDateForDayMonthYearDate(transaction.release_date);
         transaction.value = general.handleCurrency(transaction.value);
-        console.log(transaction.value)
 
         for (let property of deletedProperties) {
             delete transaction[property];
