@@ -321,28 +321,34 @@ class FileHandler:
 
             if file_header == conf_header:
                 for id, row in enumerate(reader):
-                    transaction = {
-                        'id': id,
-                        'date': self.__handle_date(row[0]),
-                        'account': self.account.id if self.account else None,
-                        'card': self.card.id if self.card else None,
-                        'category': self.__handle_category(row[1]),
-                        'subcategory': self.__handle_subcategory(
-                            row[1 + plus]
-                        ),
-                        'type': self.__handle_type(row[2 + plus]),
-                        'description': self.__handle_description(
-                            row[1 + plus]
-                        ),
-                        'value': self.__handle_value(row[2 + plus]),
-                    }
+                    if row:
+                        print(row)
+                        transaction = {
+                            'id': id,
+                            'date': self.__handle_date(row[0]),
+                            'account': self.account.id if self.account else None,
+                            'card': self.card.id if self.card else None,
+                            'category': self.__handle_category(row[1]),
+                            'subcategory': self.__handle_subcategory(
+                                row[1 + plus]
+                            ),
+                            'type': self.__handle_type(row[2 + plus]),
+                            'description': self.__handle_description(
+                                row[1 + plus]
+                            ),
+                            'value': self.__handle_value(row[2 + plus]),
+                        }
+                        print(transaction)
 
-                    if self.account:
-                        del transaction['card']
+                        if self.account:
+                            del transaction['card']
+                        else:
+                            del transaction['account']
+
+                        self.transactions.append(transaction)
                     else:
-                        del transaction['account']
-
-                    self.transactions.append(transaction)
+                        self.__error_message = 'Arquivo com linha vazia. Remova a linha vazia e tente novamente'
+                        raise ValueError(self.error_message)
             else:
                 self.__error_message = f'O cabeçalho do arquivo é inválido: {file_header}. Cabeçalho esperado: {conf_header}.'
                 raise ValueError(self.error_message)
@@ -371,37 +377,49 @@ class FileHandler:
 
     def __handle_category(self, file_description):
         """
-        Identifica a categoria associada a uma descrição de arquivo com base nas configurações da conta ou cartão (file_handler_conf).
+        Identifica a categoria associada a uma descrição de arquivo com base nas configurações da conta 
+        ou cartão (file_handler_conf).
 
         Parameters:
         - file_description: A descrição do arquivo a ser processada.
 
         Returns:
-        O ID da categoria associada à descrição do arquivo, ou a primeira parte da descrição se nenhuma correspondência for encontrada.
+        O ID da categoria associada à descrição do arquivo, ou a primeira parte da descrição se 
+        nenhuma correspondência for encontrada.
         """
+
+        # Para aproveitar o FOR, vamos cadastras as categorias na mensagem de erro
+        self.__error_message = f'Categoria não encontrada a partir da descrição: {file_description}. Categorias válidas: '
         for category in self.file_conf['categories']:
+            self.__error_message += f'{category["word"]}. '
             if category['word'] in file_description:
                 return category['id']
-        return file_description.split('-')[0].rstrip()
+        raise ValueError(self.error_message)
 
     def __handle_subcategory(self, file_description):
         """
-        Identifica a subcategoria associada a uma descrição de arquivo com base nas configurações da conta ou cartão (file_handler_conf).
+        Identifica a subcategoria associada a uma descrição de arquivo com base nas configurações 
+        da conta ou cartão (file_handler_conf).
 
         Parameters:
         - file_description: A descrição do arquivo a ser processada.
 
         Returns:
-        O ID da subcategoria associada à descrição do arquivo, ou a primeira parte da descrição se nenhuma correspondência for encontrada.
+        O ID da subcategoria associada à descrição do arquivo, ou a primeira parte da descrição se 
+        nenhuma correspondência for encontrada.
         """
+
+        # Para aproveitar o FOR, vamos cadastras as subcategorias na mensagem de erro
+        self.__error_message = f'Categoria não encontrada a partir da descrição: {file_description}. Subtegorias válidas: '
         for subcategory in self.file_conf['subcategories']:
             if subcategory['word'] in file_description:
                 return subcategory['id']
-        return file_description.split('-')[0].rstrip()
+        raise ValueError(self.error_message)
 
     def __handle_type(self, value):
         """
-        Determina o tipo de lançamento (entrada ou saída) com base no valor (positivo ou negativo) invertendo esses valores no caso do cartão.
+        Determina o tipo de lançamento (entrada ou saída) com base no valor (positivo ou negativo) 
+        invertendo esses valores no caso do cartão.
 
         Parameters:
         - value: O valor da lançamento.

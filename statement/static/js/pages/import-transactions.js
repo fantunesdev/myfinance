@@ -188,6 +188,8 @@ async function importTransactions() {
             } catch (error) {
                 importError.classList.remove('toggled');
                 importError.textContent = error.message;
+                importError.textContent += newTransaction;
+                break;
             }
             
             
