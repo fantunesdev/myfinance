@@ -79,9 +79,7 @@ class Card(models.Model):
     account = models.ForeignKey(Account, on_delete=models.PROTECT, null=True, blank=True)
     expiration_day = models.IntegerField(blank=False, null=False)
     closing_day = models.IntegerField(blank=False, null=False)
-    home_screen = models.BooleanField(
-        default=False,
-    )
+    home_screen = models.BooleanField(default=False)
     file_handler_conf = models.TextField(blank=True, null=True)
     user = models.ForeignKey(User, on_delete=models.PROTECT)
 
@@ -143,9 +141,7 @@ class NextMonthView(models.Model):
 class FixedExpenses(models.Model):
     start_date = models.DateField()
     end_date = models.DateField(blank=True, null=True)
-    description = models.CharField(
-        max_length=50,
-    )
+    description = models.CharField(max_length=50)
     value = models.FloatField(default=0)
     user = models.ForeignKey(User, on_delete=models.PROTECT)
 
