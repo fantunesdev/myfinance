@@ -147,6 +147,13 @@ class FixedExpenses(models.Model):
 
 
 class Version(models.Model):
+    """
+    Versão do programa.
+
+    Atributos:
+        version (CharField): A versão do programa. Ex.: v1.0.31.
+        date (DateField): o dia do release da versão.
+    """
     version = models.CharField(max_length=30)
     date = models.DateField()
 
@@ -171,7 +178,7 @@ class Index(models.Model):
 
     Atributos:
         name (CharField): Nome do índice financeiro (ex: CDI, SELIC).
-        date (DateField): Data em que o índice foi registrado ou atualizado.
+        date (DateField): Data do índice.
         rate (FloatField): Valor da taxa do índice na data especificada, geralmente expresso em percentual.
     """
 
@@ -185,13 +192,13 @@ class FixedIncome(models.Model):
     Representa um ativo de renda fixa no sistema financeiro.
 
     Atributos:
-        account: Referência ao modelo 'Account', representando a conta associada ao investimento.
-        principal: Valor principal investido.
+        account (Account): Referência ao modelo 'Account', representando a conta associada ao investimento.
+        principal (FloatFied): Valor principal investido.
         investment_date (DateField): Data em que o investimento foi realizado.
         maturity_date (DateField): Data de vencimento do investimento.
-        index: Referência ao modelo 'Index', representando o índice ao qual a taxa está vinculada (ex: CDI).
-        contractual_rate: Taxa contratada do investimento, expressa como uma porcentagem.
-        user: Referência ao modelo 'User', indicando o usuário que fez o investimento.
+        index: (Index) Referência ao modelo 'Index', representando o índice ao qual a taxa está vinculada (ex: CDI).
+        contractual_rate (FloatField): Taxa contratada do investimento, expressa como uma porcentagem.
+        user (User): Referência ao modelo 'User', indicando o usuário que fez o investimento.
     """
 
     account = models.ForeignKey(Account, on_delete=models.PROTECT)
