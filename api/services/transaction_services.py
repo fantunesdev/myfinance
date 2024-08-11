@@ -62,9 +62,7 @@ def get_transactions_by_year_and_month(year, month, user):
     Raises:
     Http404: Se nenhum lançamento for encontrado para o ano, mês e usuário fornecidos.
     """
-    transactions = transaction_services.get_transactions_by_year_and_month(
-        year, month, user
-    )
+    transactions = transaction_services.get_transactions_by_year_and_month(year, month, user)
     if transactions:
         return transactions
     raise Http404

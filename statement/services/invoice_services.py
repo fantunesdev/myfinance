@@ -11,12 +11,8 @@ def get_invoice_by_card_year_and_month(card, year, month, user):
 
 
 def get_invoice_by_card_and_year(card, year, user):
-    return Transaction.objects.filter(
-        payment_date__year=year, card=card, user=user
-    ).order_by('release_date')
+    return Transaction.objects.filter(payment_date__year=year, card=card, user=user).order_by('release_date')
 
 
 def get_invoice_by_card(card, user):
-    return Transaction.objects.filter(card=card, user=user).order_by(
-        'release_date'
-    )
+    return Transaction.objects.filter(card=card, user=user).order_by('release_date')

@@ -153,9 +153,7 @@ class Migration(migrations.Migration):
             fields=[
                 (
                     'id',
-                    models.CharField(
-                        max_length=3, primary_key=True, serialize=False
-                    ),
+                    models.CharField(max_length=3, primary_key=True, serialize=False),
                 ),
                 ('description', models.CharField(max_length=20)),
                 ('symbol', models.CharField(max_length=5)),

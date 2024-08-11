@@ -6,7 +6,7 @@ def create_portion(portion):
         date=portion.date,
         value=portion.value,
         dream=portion.dream,
-        user=portion.user
+        user=portion.user,
     )
     return new_portion
 
@@ -31,10 +31,10 @@ def calculate_remaining_value(dream_id, dream_value, user):
 
 
 def update_portion(old_portion, new_portion):
-    old_portion.description=new_portion.description,
-    old_portion.value=new_portion.value,
-    old_portion.dream=new_portion.dream,
-    old_portion.user=new_portion.user
+    old_portion.description = (new_portion.description,)
+    old_portion.value = (new_portion.value,)
+    old_portion.dream = (new_portion.dream,)
+    old_portion.user = new_portion.user
     old_portion.save(force_update=True)
 
 

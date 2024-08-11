@@ -12,9 +12,7 @@ class ExclusionForm(forms.Form):
 class NavigationForm(forms.Form):
     year = forms.ChoiceField(
         label='',
-        choices=(
-            (y, y) for y in range(2010, datetime.datetime.today().year + 3)
-        ),
+        choices=((y, y) for y in range(2010, datetime.datetime.today().year + 3)),
         widget=forms.Select(attrs={'class': 'navigation-form'}),
     )
     month = forms.ChoiceField(

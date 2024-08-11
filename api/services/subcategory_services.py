@@ -42,9 +42,7 @@ def get_subcategories_by_category(category_id, user):
     Raises:
     Http404: Se nenhuma subcategoria for encontrada para a categoria e usuário fornecidos.
     """
-    subcategories = Subcategory.objects.select_related('category').filter(
-        category=category_id, user=user
-    )
+    subcategories = Subcategory.objects.select_related('category').filter(category=category_id, user=user)
     if subcategories:
         return subcategories
     raise Http404

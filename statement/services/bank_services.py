@@ -2,9 +2,7 @@ from ..models import Bank
 
 
 def create_bank(bank):
-    Bank.objects.create(
-        description=bank.description, code=bank.code, icon=bank.icon
-    )
+    Bank.objects.create(description=bank.description, code=bank.code, icon=bank.icon)
 
 
 def get_banks():

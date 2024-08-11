@@ -4,10 +4,7 @@ from django.shortcuts import redirect, render
 from statement.forms.flag_form import FlagForm
 from statement.forms.general_forms import ExclusionForm
 from statement.models import Flag
-from statement.repositories.templatetags_repository import (
-    set_menu_templatetags,
-    set_templatetags,
-)
+from statement.repositories.templatetags_repository import set_menu_templatetags, set_templatetags
 from statement.services import flag_services
 
 
@@ -33,9 +30,7 @@ def create_flag(request):
 @login_required
 def update_flag(request, id):
     old_flag = flag_services.get_flag_by_id(id)
-    flag_form = FlagForm(
-        request.POST or None, request.FILES or None, instance=old_flag
-    )
+    flag_form = FlagForm(request.POST or None, request.FILES or None, instance=old_flag)
     if flag_form.is_valid():
         bandeira_nova = Flag(
             description=flag_form.cleaned_data['description'],
@@ -61,6 +56,4 @@ def delete_flag(request, id):
     set_menu_templatetags(request.user, templatetags)
     templatetags['exclusion_form'] = exclusion_form
     templatetags['flag'] = flag
-    return render(
-        request, 'flag/exclusion_confirmation_flag.html', templatetags
-    )
+    return render(request, 'flag/exclusion_confirmation_flag.html', templatetags)

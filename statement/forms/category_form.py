@@ -13,8 +13,6 @@ class CategoryForm(forms.ModelForm):
         widgets = {
             'type': forms.Select(attrs={'class': 'form-control'}),
             'description': TextInput(attrs={'class': 'form-control'}),
-            'color': TextInput(
-                attrs={'type': 'color', 'class': 'form-control'}
-            ),
+            'color': TextInput(attrs={'type': 'color', 'class': 'form-control'}),
             'icon': TextInput(attrs={'class': 'form-control'}),
         }

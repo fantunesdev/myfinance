@@ -1,6 +1,6 @@
 format:
 	@poetry run isort .
-	@poetry run blue .
+	@poetry run blue . --line-length 110
 install:
 	@echo "Instalando o MyFinance..."
 	@poetry install

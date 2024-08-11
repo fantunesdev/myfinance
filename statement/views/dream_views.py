@@ -4,12 +4,8 @@ from django.shortcuts import redirect, render
 from statement.entities.dream import Dream
 from statement.forms.dream_form import DreamForm
 from statement.forms.general_forms import ExclusionForm
-from statement.repositories.templatetags_repository import (
-    set_menu_templatetags,
-    set_templatetags,
-)
-from statement.services import dream_services
-from statement.services import portion_services
+from statement.repositories.templatetags_repository import set_menu_templatetags, set_templatetags
+from statement.services import dream_services, portion_services
 
 
 @login_required
@@ -76,7 +72,6 @@ def update_dream(request, id):
     return render(request, 'dream/dream_form.html', templatetags)
 
 
-
 @login_required
 def delete_dream(request, id):
     dream = dream_services.list_dream_by_id(id, request.user)
@@ -88,6 +83,4 @@ def delete_dream(request, id):
     set_menu_templatetags(request.user, templatetags)
     templatetags['dream'] = dream
     templatetags['exclusion_form'] = exclusion_form
-    return render(
-        request, 'dream/exclusion_confirmation_dream.html', templatetags
-    )
+    return render(request, 'dream/exclusion_confirmation_dream.html', templatetags)

@@ -23,7 +23,5 @@ class AccountForm(forms.ModelForm):
             'balance': forms.NumberInput(attrs={'class': 'form-control'}),
             'limits': forms.NumberInput(attrs={'class': 'form-control'}),
             'type': forms.Select(attrs={'class': 'form-control'}),
-            'file_handler_conf': forms.Textarea(
-                attrs={'class': 'form-control textarea'}
-            ),
+            'file_handler_conf': forms.Textarea(attrs={'class': 'form-control textarea'}),
         }

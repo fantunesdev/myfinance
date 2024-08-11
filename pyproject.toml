@@ -41,6 +41,7 @@ social-auth-app-django = "5.3.0"
 social-auth-core = "4.4.2"
 sqlparse = "0.4.4"
 urllib3 = "2.0.4"
+gunicorn = "^22.0.0"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -50,3 +51,6 @@ isort = "^5.13.2"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.blue]
+line-lenght = 100

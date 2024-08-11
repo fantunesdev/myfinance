@@ -4,10 +4,7 @@ from django.shortcuts import redirect, render
 from ..forms.category_form import CategoryForm
 from ..forms.general_forms import ExclusionForm
 from ..models import Category
-from ..repositories.templatetags_repository import (
-    set_menu_templatetags,
-    set_templatetags,
-)
+from ..repositories.templatetags_repository import set_menu_templatetags, set_templatetags
 from ..services import account_services, card_services, category_services
 
 
@@ -37,9 +34,7 @@ def create_category(request):
 @login_required
 def update_category(request, id):
     old_category = category_services.get_category_by_id(id, request.user)
-    category_form = CategoryForm(
-        request.POST or None, request.FILES or None, instance=old_category
-    )
+    category_form = CategoryForm(request.POST or None, request.FILES or None, instance=old_category)
     if category_form.is_valid():
         new_category = Category(
             type=category_form.cleaned_data['type'],
@@ -68,6 +63,4 @@ def delete_category(request, id):
     set_menu_templatetags(request.user, templatetags)
     templatetags['category'] = category
     templatetags['exclusion_form'] = ExclusionForm()
-    return render(
-        request, 'category/exclusion_confirmation_category.html', templatetags
-    )
+    return render(request, 'category/exclusion_confirmation_category.html', templatetags)

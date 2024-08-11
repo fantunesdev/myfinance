@@ -31,13 +31,9 @@ class TransactionByYearAndMonth(APIView):
         Em caso de sucesso, uma lista de objetos do tipo transactions. Em casso
         de falha, um código e uma mensagem de erro.
         """
-        transactions = transaction_services.get_transactions_by_year_and_month(
-            year, month, request.user
-        )
+        transactions = transaction_services.get_transactions_by_year_and_month(year, month, request.user)
         if transactions:
-            serializer = transaction_serializer.TransactionSerializer(
-                transactions, many=True
-            )
+            serializer = transaction_serializer.TransactionSerializer(transactions, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             raise Http404
@@ -62,13 +58,9 @@ class TransactionYear(APIView):
         Em caso de sucesso, uma lista de objetos do tipo transactions. Em casso
         de falha, um código e uma mensagem de erro.
         """
-        transactions = transaction_services.get_transactions_by_year(
-            year, request.user
-        )
+        transactions = transaction_services.get_transactions_by_year(year, request.user)
         if transactions:
-            serializer = transaction_serializer.TransactionSerializer(
-                transactions, many=True
-            )
+            serializer = transaction_serializer.TransactionSerializer(transactions, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             raise Http404
@@ -83,9 +75,7 @@ class TransactionsList(APIView):
     def get(self, request):
         transactions = transaction_services.get_transactions(request.user)
         if transactions:
-            serializer = transaction_serializer.TransactionSerializer(
-                transactions, many=True
-            )
+            serializer = transaction_serializer.TransactionSerializer(transactions, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             raise Http404
@@ -104,9 +94,7 @@ class TransactionsList(APIView):
         falha, um código e uma mensagem de erro.
         """
         request.data['user'] = request.user.id
-        serializer = transaction_serializer.TransactionSerializer(
-            data=request.data
-        )
+        serializer = transaction_serializer.TransactionSerializer(data=request.data)
         if serializer.is_valid():
             new_transaction = Transaction(
                 release_date=serializer.validated_data['release_date'],
@@ -130,16 +118,10 @@ class TransactionsList(APIView):
                 user=serializer.validated_data['user'],
                 installment=None,
             )
-            db_transaction = transaction_services.create_transaction(
-                new_transaction
-            )
-            serializer = transaction_serializer.TransactionSerializer(
-                db_transaction
-            )
+            db_transaction = transaction_services.create_transaction(new_transaction)
+            serializer = transaction_serializer.TransactionSerializer(db_transaction)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(
-            {'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST
-        )
+        return Response({'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class TransactionsByYear(APIView):
@@ -148,13 +130,9 @@ class TransactionsByYear(APIView):
     """
 
     def get(self, request, year):
-        transactions = transaction_services.get_transactions_by_year(
-            year, request.user
-        )
+        transactions = transaction_services.get_transactions_by_year(year, request.user)
         if transactions:
-            serializer = transaction_serializer.TransactionSerializer(
-                transactions, many=True
-            )
+            serializer = transaction_serializer.TransactionSerializer(transactions, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             raise Http404
@@ -170,9 +148,7 @@ class LastTwelveTransactionsByYearAndMonth(APIView):
             year, month, request.user
         )
         if transactions:
-            serializer = transaction_serializer.TransactionSerializer(
-                transactions, many=True
-            )
+            serializer = transaction_serializer.TransactionSerializer(transactions, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             raise Http404
@@ -199,9 +175,7 @@ class ImportTransactions(APIView):
         if serializer.is_valid():
             try:
                 file_handler = file_handler_services.FileHandler(request)
-                return Response(
-                    file_handler.transactions, status=status.HTTP_200_OK
-                )
+                return Response(file_handler.transactions, status=status.HTTP_200_OK)
             except ObjectDoesNotExist:
                 if request.data['account'] and not request.data['card']:
                     error_message = f'Não existe uma conta com o id {request.data["account"]}.'

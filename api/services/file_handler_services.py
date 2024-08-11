@@ -212,16 +212,12 @@ class FileHandler:
         try:
             if self.account:
                 if self.account.file_handler_conf:
-                    self.__file_conf = json.loads(
-                        self.account.file_handler_conf
-                    )
+                    self.__file_conf = json.loads(self.account.file_handler_conf)
             if self.card:
                 if self.card.file_handler_conf:
                     self.__file_conf = json.loads(self.card.file_handler_conf)
         except JSONDecodeError as message:
-            self.__error_message = (
-                f'Erro ao ler a propriedade file_handler_conf: {message}.'
-            )
+            self.__error_message = f'Erro ao ler a propriedade file_handler_conf: {message}.'
             raise ValueError(self.error_message)
 
         if not self.__file_conf:
@@ -301,9 +297,7 @@ class FileHandler:
             elif ';' in first_row:
                 delimiter = ';'
             else:
-                self.__error_message = (
-                    'O arquivo não tem um delimitador válido ("," ou ";").'
-                )
+                self.__error_message = 'O arquivo não tem um delimitador válido ("," ou ";").'
                 raise ValueError(self.error_message)
 
             reader = csv.reader(csv_file, delimiter=delimiter)
@@ -316,7 +310,9 @@ class FileHandler:
             elif header_size == 4:
                 plus = 1
             else:
-                self.__error_message = f'Tamanho de cabeçalho inválido: {header_size}. Tamanhos esperados: 3 e 4'
+                self.__error_message = (
+                    f'Tamanho de cabeçalho inválido: {header_size}. Tamanhos esperados: 3 e 4'
+                )
                 raise ValueError(self.error_message)
 
             if file_header == conf_header:
@@ -329,13 +325,9 @@ class FileHandler:
                             'account': self.account.id if self.account else None,
                             'card': self.card.id if self.card else None,
                             'category': self.__handle_category(row[1]),
-                            'subcategory': self.__handle_subcategory(
-                                row[1 + plus]
-                            ),
+                            'subcategory': self.__handle_subcategory(row[1 + plus]),
                             'type': self.__handle_type(row[2 + plus]),
-                            'description': self.__handle_description(
-                                row[1 + plus]
-                            ),
+                            'description': self.__handle_description(row[1 + plus]),
                             'value': self.__handle_value(row[2 + plus]),
                         }
                         print(transaction)
@@ -347,10 +339,14 @@ class FileHandler:
 
                         self.transactions.append(transaction)
                     else:
-                        self.__error_message = 'Arquivo com linha vazia. Remova a linha vazia e tente novamente'
+                        self.__error_message = (
+                            'Arquivo com linha vazia. Remova a linha vazia e tente novamente'
+                        )
                         raise ValueError(self.error_message)
             else:
-                self.__error_message = f'O cabeçalho do arquivo é inválido: {file_header}. Cabeçalho esperado: {conf_header}.'
+                self.__error_message = (
+                    f'O cabeçalho do arquivo é inválido: {file_header}. Cabeçalho esperado: {conf_header}.'
+                )
                 raise ValueError(self.error_message)
 
     def __handle_date(self, date):
@@ -377,19 +373,21 @@ class FileHandler:
 
     def __handle_category(self, file_description):
         """
-        Identifica a categoria associada a uma descrição de arquivo com base nas configurações da conta 
+        Identifica a categoria associada a uma descrição de arquivo com base nas configurações da conta
         ou cartão (file_handler_conf).
 
         Parameters:
         - file_description: A descrição do arquivo a ser processada.
 
         Returns:
-        O ID da categoria associada à descrição do arquivo, ou a primeira parte da descrição se 
+        O ID da categoria associada à descrição do arquivo, ou a primeira parte da descrição se
         nenhuma correspondência for encontrada.
         """
 
         # Para aproveitar o FOR, vamos cadastras as categorias na mensagem de erro
-        self.__error_message = f'Categoria não encontrada a partir da descrição: {file_description}. Categorias válidas: '
+        self.__error_message = (
+            f'Categoria não encontrada a partir da descrição: {file_description}. Categorias válidas: '
+        )
         for category in self.file_conf['categories']:
             self.__error_message += f'{category["word"]}. '
             if category['word'] in file_description:
@@ -398,19 +396,21 @@ class FileHandler:
 
     def __handle_subcategory(self, file_description):
         """
-        Identifica a subcategoria associada a uma descrição de arquivo com base nas configurações 
+        Identifica a subcategoria associada a uma descrição de arquivo com base nas configurações
         da conta ou cartão (file_handler_conf).
 
         Parameters:
         - file_description: A descrição do arquivo a ser processada.
 
         Returns:
-        O ID da subcategoria associada à descrição do arquivo, ou a primeira parte da descrição se 
+        O ID da subcategoria associada à descrição do arquivo, ou a primeira parte da descrição se
         nenhuma correspondência for encontrada.
         """
 
         # Para aproveitar o FOR, vamos cadastras as subcategorias na mensagem de erro
-        self.__error_message = f'Subcategoria não encontrada a partir da descrição: {file_description}. Subtegorias válidas: '
+        self.__error_message = (
+            f'Subcategoria não encontrada a partir da descrição: {file_description}. Subtegorias válidas: '
+        )
         for subcategory in self.file_conf['subcategories']:
             self.__error_message += f'{subcategory["word"]}. '
             if subcategory['word'] in file_description:
@@ -419,7 +419,7 @@ class FileHandler:
 
     def __handle_type(self, value):
         """
-        Determina o tipo de lançamento (entrada ou saída) com base no valor (positivo ou negativo) 
+        Determina o tipo de lançamento (entrada ou saída) com base no valor (positivo ou negativo)
         invertendo esses valores no caso do cartão.
 
         Parameters:
@@ -452,9 +452,7 @@ class FileHandler:
 
         for description in self.file_conf['description']:
             if description['word'] in file_description:
-                return file_description.split(description['delimiter'])[
-                    -1
-                ].upper()
+                return file_description.split(description['delimiter'])[-1].upper()
         return file_description.split('-')[-1].title()
 
     def __handle_value(self, value):

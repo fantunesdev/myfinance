@@ -9,27 +9,19 @@ from api.services import category_services
 class CategoryList(APIView):
     def get(self, request):
         categories = category_services.get_categories(request.user)
-        serializer = category_serializer.CategorySerializer(
-            categories, many=True
-        )
+        serializer = category_serializer.CategorySerializer(categories, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class CategoryDetails(APIView):
     def get(self, request, category_id):
-        category = category_services.get_category_by_id(
-            category_id, request.user
-        )
+        category = category_services.get_category_by_id(category_id, request.user)
         serializer = category_serializer.CategorySerializer(category)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class CategoryType(APIView):
     def get(self, request, type):
-        categories = category_services.get_categories_by_type(
-            type, request.user
-        )
-        serializer = category_serializer.CategorySerializer(
-            categories, many=True
-        )
+        categories = category_services.get_categories_by_type(type, request.user)
+        serializer = category_serializer.CategorySerializer(categories, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

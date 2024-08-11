@@ -22,11 +22,7 @@ class CardForm(forms.ModelForm):
             'description': forms.TextInput(attrs={'class': 'form-control'}),
             'limits': forms.NumberInput(attrs={'class': 'form-control'}),
             'account': forms.Select(attrs={'class': 'form-control'}),
-            'expiration_day': forms.NumberInput(
-                attrs={'class': 'form-control'}
-            ),
+            'expiration_day': forms.NumberInput(attrs={'class': 'form-control'}),
             'closing_day': forms.NumberInput(attrs={'class': 'form-control'}),
-            'file_handler_conf': forms.Textarea(
-                attrs={'class': 'form-control textarea'}
-            ),
+            'file_handler_conf': forms.Textarea(attrs={'class': 'form-control textarea'}),
         }

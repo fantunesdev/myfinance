@@ -24,9 +24,7 @@ def get_invoice_by_year_and_month(card, year, month, user):
     Raises:
     Http404: Se nenhuma fatura for encontrada para o cartão, ano e mês fornecidos.
     """
-    invoice = invoice_services.get_invoice_by_card_year_and_month(
-        card, year, month, user
-    )
+    invoice = invoice_services.get_invoice_by_card_year_and_month(card, year, month, user)
     if invoice:
         return invoice
     raise Http404

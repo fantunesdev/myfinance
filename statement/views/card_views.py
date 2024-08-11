@@ -4,10 +4,7 @@ from django.shortcuts import redirect, render
 from statement.entities.card import Card
 from statement.forms.card_form import CardForm
 from statement.forms.general_forms import ExclusionForm
-from statement.repositories.templatetags_repository import (
-    set_menu_templatetags,
-    set_templatetags,
-)
+from statement.repositories.templatetags_repository import set_menu_templatetags, set_templatetags
 from statement.services import account_services, card_services
 
 
@@ -40,9 +37,7 @@ def create_card(request):
 @login_required
 def update_card(request, id):
     old_card = card_services.get_card_by_id(id, request.user)
-    card_form = CardForm(
-        request.POST or None, request.FILES or None, instance=old_card
-    )
+    card_form = CardForm(request.POST or None, request.FILES or None, instance=old_card)
     if card_form.is_valid():
         new_card = Card(
             flag=card_form.cleaned_data['flag'],
@@ -75,6 +70,4 @@ def delete_card(request, id):
     set_menu_templatetags(request.user, templatetags)
     templatetags['card'] = card
     templatetags['exclusion_form'] = exclusion_form
-    return render(
-        request, 'card/exclusion_confirmation_card.html', templatetags
-    )
+    return render(request, 'card/exclusion_confirmation_card.html', templatetags)

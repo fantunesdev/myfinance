@@ -9,9 +9,7 @@ today = timezone.localtime(timezone.now()).strftime('%Y-%m-%d')
 class InstallmentForm(TransactionForm):
     payment_date = forms.DateField(
         required=False,
-        widget=forms.DateInput(
-            format='%Y-%m-%d', attrs={'type': 'date', 'class': 'form-control'}
-        ),
+        widget=forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date', 'class': 'form-control'}),
     )
 
     paid = forms.IntegerField(

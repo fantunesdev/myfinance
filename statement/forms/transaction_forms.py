@@ -73,37 +73,25 @@ class TransactionForm(forms.ModelForm):
             'subcategory': forms.Select(attrs={'class': 'form-control'}),
             'description': forms.TextInput(attrs={'class': 'form-control'}),
             'value': forms.NumberInput(attrs={'class': 'form-control'}),
-            'installments_number': forms.NumberInput(
-                attrs={'class': 'form-control'}
-            ),
+            'installments_number': forms.NumberInput(attrs={'class': 'form-control'}),
             'paid': forms.NumberInput(attrs={'class': 'form-control'}),
             'currency': forms.Select(attrs={'class': 'form-control'}),
-            'observation': forms.Textarea(
-                attrs={'class': 'form-control textarea'}
-            ),
+            'observation': forms.Textarea(attrs={'class': 'form-control textarea'}),
         }
 
 
 class TransactionExpenseForm(TransactionForm):
     def __init__(self, user, *args, **kwargs):
         super(TransactionExpenseForm, self).__init__(*args, **kwargs)
-        self.fields['category'].queryset = Category.objects.filter(
-            user=user, type='saida'
-        )
-        self.fields['subcategory'].queryset = Subcategory.objects.filter(
-            user=user
-        )
+        self.fields['category'].queryset = Category.objects.filter(user=user, type='saida')
+        self.fields['subcategory'].queryset = Subcategory.objects.filter(user=user)
 
 
 class TransactionRevenueForm(TransactionForm):
     def __init__(self, user, *args, **kwargs):
         super(TransactionRevenueForm, self).__init__(*args, **kwargs)
-        self.fields['category'].queryset = Category.objects.filter(
-            user=user, type='entrada'
-        )
-        self.fields['subcategory'].queryset = Subcategory.objects.filter(
-            user=user
-        )
+        self.fields['category'].queryset = Category.objects.filter(user=user, type='entrada')
+        self.fields['subcategory'].queryset = Subcategory.objects.filter(user=user)
 
 
 class UpdateTransactionForm(TransactionForm):

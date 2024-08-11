@@ -2,14 +2,10 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 
 from statement.entities.portion import Portion
-from statement.forms.portion_form import PortionForm
 from statement.forms.general_forms import ExclusionForm
-from statement.repositories.templatetags_repository import (
-    set_menu_templatetags,
-    set_templatetags,
-)
-from statement.services import dream_services
-from statement.services import portion_services
+from statement.forms.portion_form import PortionForm
+from statement.repositories.templatetags_repository import set_menu_templatetags, set_templatetags
+from statement.services import dream_services, portion_services
 
 
 @login_required
@@ -78,6 +74,4 @@ def delete_portion(request, id_dream, id):
     set_menu_templatetags(request.user, templatetags)
     templatetags['portion'] = portion
     templatetags['exclusion_form'] = exclusion_form
-    return render(
-        request, 'portion/exclusion_confirmation_portion.html', templatetags
-    )
+    return render(request, 'portion/exclusion_confirmation_portion.html', templatetags)

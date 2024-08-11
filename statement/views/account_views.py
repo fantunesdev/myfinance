@@ -5,10 +5,7 @@ from statement.entities.account import Account
 from statement.forms.account_form import AccountForm
 from statement.forms.general_forms import ExclusionForm
 from statement.repositories import account_repository
-from statement.repositories.templatetags_repository import (
-    set_menu_templatetags,
-    set_templatetags,
-)
+from statement.repositories.templatetags_repository import set_menu_templatetags, set_templatetags
 from statement.services import account_services
 
 
@@ -53,9 +50,7 @@ def update_account(request, id):
             home_screen=account_form.cleaned_data['home_screen'],
             user=request.user,
         )
-        account_repository.set_home_screen(
-            old_account.id, new_account.home_screen, request.user
-        )
+        account_repository.set_home_screen(old_account.id, new_account.home_screen, request.user)
         account_services.update_account(old_account, new_account)
         return redirect('setup_settings')
     templatetags = set_templatetags()
@@ -76,6 +71,4 @@ def delete_account(request, id):
     set_menu_templatetags(request.user, templatetags)
     templatetags['exclusion_form'] = exclusion_form
     templatetags['account'] = account
-    return render(
-        request, 'account/exclusion_confirmation_account.html', templatetags
-    )
+    return render(request, 'account/exclusion_confirmation_account.html', templatetags)

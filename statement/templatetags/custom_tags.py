@@ -1,10 +1,10 @@
 from datetime import date
+
 from dateutil.relativedelta import relativedelta
 from django import template
 from django.utils.formats import number_format
 
-from statement.services import dream_services
-from statement.services import portion_services
+from statement.services import dream_services, portion_services
 
 register = template.Library()
 
@@ -22,6 +22,7 @@ def get_remaining_value_for_dream(dream_id, dream_value, user):
     remaining_value = portion_services.calculate_remaining_value(dream_id, dream_value, user)
     formatted_total = number_format(remaining_value, decimal_pos=2, force_grouping=True)
     return f'R$ {formatted_total}'
+
 
 @register.simple_tag
 def calcule_remaining_installment_value(dream_id, dream_value, dream_limit_date, user):

@@ -33,15 +33,13 @@ def create_transaction(transaction):
 
 
 def get_transactions(user):
-    return Transaction.objects.filter(user=user, home_screen=True).order_by(
-        'payment_date'
-    )
+    return Transaction.objects.filter(user=user, home_screen=True).order_by('payment_date')
 
 
 def get_transactions_by_year(year, user):
-    return Transaction.objects.filter(
-        payment_date__year=year, user=user, home_screen=True
-    ).order_by('payment_date')
+    return Transaction.objects.filter(payment_date__year=year, user=user, home_screen=True).order_by(
+        'payment_date'
+    )
 
 
 def get_last_twelve_months_transactions_by_year_and_month(year, month, user):
@@ -76,9 +74,7 @@ def get_fixed_transactions_by_year_and_month(year, month, user):
 
 
 def get_transactions_by_description(description, user):
-    return Transaction.objects.filter(
-        description__icontains=description, user=user
-    )
+    return Transaction.objects.filter(description__icontains=description, user=user)
 
 
 def get_transaction_by_id(id, user):
