@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'login',
     'rest_framework',
     'api',
+    'django_q',
 ]
 
 MIDDLEWARE = [
@@ -174,4 +175,15 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.FormParser',
         'rest_framework.parsers.MultiPartParser',
     ],
+}
+
+Q_CLUSTER = {
+    'name': 'Django Q',
+    'workers': 4,
+    'recycle': 500,
+    'timeout': 90,
+    'retry': 120,
+    'queue_limit': 50,
+    'bulk': 10,
+    'orm': 'default',
 }

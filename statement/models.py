@@ -163,3 +163,41 @@ class Portion(models.Model):
     value = models.FloatField()
     dream = models.ForeignKey(Dream, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.PROTECT)
+
+
+class Index(models.Model):
+    """
+    Representa um índice financeiro utilizado para cálculos de rendimento.
+
+    Atributos:
+        name (CharField): Nome do índice financeiro (ex: CDI, SELIC).
+        date (DateField): Data em que o índice foi registrado ou atualizado.
+        rate (FloatField): Valor da taxa do índice na data especificada, geralmente expresso em percentual.
+    """
+
+    name = models.CharField(max_length=100)
+    date = models.DateField()
+    rate = models.FloatField()
+
+
+class FixedIncome(models.Model):
+    """
+    Representa um ativo de renda fixa no sistema financeiro.
+
+    Atributos:
+        account: Referência ao modelo 'Account', representando a conta associada ao investimento.
+        principal: Valor principal investido.
+        investment_date (DateField): Data em que o investimento foi realizado.
+        maturity_date (DateField): Data de vencimento do investimento.
+        index: Referência ao modelo 'Index', representando o índice ao qual a taxa está vinculada (ex: CDI).
+        contractual_rate: Taxa contratada do investimento, expressa como uma porcentagem.
+        user: Referência ao modelo 'User', indicando o usuário que fez o investimento.
+    """
+
+    account = models.ForeignKey(Account, on_delete=models.PROTECT)
+    principal = models.FloatField()
+    investment_date = models.DateField()
+    maturity_date = models.DateField()
+    index = models.ForeignKey(Index, on_delete=models.PROTECT)
+    contractual_rate = models.FloatField()
+    user = models.ForeignKey(User, on_delete=models.PROTECT)
