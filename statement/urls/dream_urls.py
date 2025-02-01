@@ -6,6 +6,7 @@ from statement.views.portion_views import *
 urlpatterns = [
     path('cadastrar/', create_dream, name='create_dream'),
     path('', list_dreams, name='list_dreams'),
+    path('<str:status>/', list_dreams, name='list_dreams'),
     path('<int:id>', detail_dream, name='detail_dream'),
     path('editar/<int:id>/', update_dream, name='update_dream'),
     path('remover/<int:id>/', delete_dream, name='delete_dream'),

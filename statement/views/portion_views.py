@@ -50,11 +50,11 @@ def update_portion(request, id_dream, id):
         new_portion = Portion(
             date=portion_form.cleaned_data['date'],
             value=portion_form.cleaned_data['value'],
-            dream=portion_form.cleaned_data['dream'],
+            dream=dream,
             user=request.user,
         )
         portion_services.update_portion(old_portion, new_portion)
-        return redirect('list_portions')
+        return redirect('detail_dream', dream.id)
     templatetags = set_templatetags()
     set_menu_templatetags(request.user, templatetags)
     templatetags['dream'] = dream

@@ -36,6 +36,8 @@
                             {% if old_dream %}
                             <a href="{% url 'create_portion' old_dream.id %}"><input type="button" value="Cadastrar Depósito" class="btn btn-primary"></a>
                             {% endif %}
+
+                            {% if not 'sonhos/cadastrar/' in request.path %}
                             <table class="table" id="statement-table">
                                 <thead>
                                     <tr>
@@ -57,6 +59,7 @@
                                     {% endfor %}
                                 </tbody>
                             </table>
+                            {% endif %}
                         </div>
                 </div>
                 <div class="box-footer">

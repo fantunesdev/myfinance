@@ -536,8 +536,6 @@ td a:hover {
     color: #999;
 }
 
-
-
 .box-max-width-400 {
     max-width: 400px;
 }
@@ -680,6 +678,18 @@ td a:hover {
 
 .mt-10 {
     margin-top: 10px;
+}
+
+.mt-20 {
+    margin-top: 20px;
+}
+
+.mt-30 {
+    margin-top: 30px;
+}
+
+.mt-40{
+    margin-top: 40x;
 }
 
 .ml-10 {
@@ -885,6 +895,10 @@ option {
 
 a {
     color: #ccc;
+}
+
+.decoration-none {
+    text-decoration: none;
 }
 
 .padding-left-10 {

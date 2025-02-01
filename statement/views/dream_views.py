@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.http import Http404
 from django.shortcuts import redirect, render
 
 from statement.entities.dream import Dream
@@ -32,8 +33,77 @@ def create_dream(request):
 
 
 @login_required
-def list_dreams(request):
-    dreams = dream_services.list_dreams(request.user)
+def list_dreams(request, status=None):
+    """
+    Exibe uma lista de sonhos do usuário, filtrados por status (ativos, passados ou todos).
+    
+    Args:
+        request (HttpRequest): O objeto da requisição, contendo os dados do usuário autenticado.
+        status (str, opcional): O status dos sonhos a serem exibidos ('active', 'past' ou 'all').
+    
+    Returns:
+        HttpResponse: A resposta HTTP com a renderização do template 'dream/get_dreams.html'.
+    
+    Levanta:
+        Http404: Se o parâmetro 'status' for inválido.
+    """
+    print(status)
+    if status == 'ativos' or status is None:
+        dreams = dream_services.list_active_dreams(request.user)
+    elif status == 'inativos':
+        dreams = dream_services.list_past_dreams(request.user)
+    elif status == 'todos':
+        dreams = dream_services.list_dreams(request.user)
+    else:
+        raise Http404("Status inválido")
+    templatetags = set_templatetags()
+    templatetags['dreams'] = dreams
+    set_menu_templatetags(request.user, templatetags)
+    return render(request, 'dream/get_dreams.html', templatetags)
+
+
+@login_required
+def list_active_dreams(request):
+    """
+    Exibe uma lista de sonhos ativos (cuja data limite é maior do que hoje) para o usuário autenticado.
+    
+    Esta view recupera os sonhos do usuário autenticado utilizando o serviço 
+    `dream_services.list_dreams` e os adiciona ao contexto, juntamente com outros dados 
+    necessários para a renderização da página.
+    
+    Args:
+        request (HttpRequest): O objeto da requisição, contendo os dados do usuário autenticado 
+        e o contexto da solicitação.
+    
+    Returns:
+        HttpResponse: A resposta HTTP contendo a renderização do template `dream/get_dreams.html` 
+        com os dados necessários.
+    """
+    dreams = dream_services.list_active_dreams(request.user)
+    templatetags = set_templatetags()
+    templatetags['dreams'] = dreams
+    set_menu_templatetags(request.user, templatetags)
+    return render(request, 'dream/get_dreams.html', templatetags)
+
+
+@login_required
+def list_past_dreams(request):
+    """
+    Exibe uma lista de sonhos ativos (cuja data limite é maior do que hoje) para o usuário autenticado.
+    
+    Esta view recupera os sonhos do usuário autenticado utilizando o serviço 
+    `dream_services.list_dreams` e os adiciona ao contexto, juntamente com outros dados 
+    necessários para a renderização da página.
+    
+    Args:
+        request (HttpRequest): O objeto da requisição, contendo os dados do usuário autenticado 
+        e o contexto da solicitação.
+    
+    Returns:
+        HttpResponse: A resposta HTTP contendo a renderização do template `dream/get_dreams.html` 
+        com os dados necessários.
+    """
+    dreams = dream_services.list_past_dreams(request.user)
     templatetags = set_templatetags()
     templatetags['dreams'] = dreams
     set_menu_templatetags(request.user, templatetags)
