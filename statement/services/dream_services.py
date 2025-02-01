@@ -48,7 +48,7 @@ def list_active_dreams(user):
     Returns:
         QuerySet: Um conjunto de objetos `Dream` que ainda não venceram.
     """
-    today = timezone.now() 
+    today = timezone.now()
     return Dream.objects.filter(user=user, limit_date__gte=today)
 
 
