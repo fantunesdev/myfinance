@@ -10,6 +10,7 @@ urlpatterns = [
     path('categorias/', include('statement.urls.category_urls')),
     path('contas/', include('statement.urls.account_urls')),
     path('despesas_fixas/', include('statement.urls.fixed_expenses_urls')),
+    path('indices/', include('statement.urls.index_urls')),
     path('parcelamento/', include('statement.urls.installment_urls')),
     path('subcategorias/', include('statement.urls.subcategory_urls')),
     path(

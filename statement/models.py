@@ -174,26 +174,44 @@ class Portion(models.Model):
 
 class Index(models.Model):
     """
-    Representa um índice financeiro utilizado para cálculos de rendimento.
+    Indice financeiro utilizado para cálculos de rendimento.
 
     Atributos:
         name (CharField): Nome do índice financeiro (ex: CDI, SELIC).
+    """
+
+    description = models.CharField(max_length=100)
+    bcb_id = models.IntegerField(null=True, blank=True)
+    first_date = models.DateField(null=True, blank=True)
+
+    def __str__(self):
+        return self.description
+
+class IndexHistoricalSeries(models.Model):
+    """
+    Série histórica um índice financeiro utilizado para cálculos de rendimento.
+
+    Atributos:
+        index (CharField): Nome do índice financeiro (ex: CDI, SELIC).
         date (DateField): Data do índice.
         rate (FloatField): Valor da taxa do índice na data especificada, geralmente expresso em percentual.
     """
 
-    name = models.CharField(max_length=100)
+    index = models.ForeignKey(Index, on_delete=models.PROTECT)
     date = models.DateField()
     rate = models.FloatField()
+
+    def __str__(self):
+        return self.index.description
 
 
 class FixedIncome(models.Model):
     """
-    Representa um ativo de renda fixa no sistema financeiro.
+    Um tipo de ativo de renda fixa no sistema financeiro.
 
     Atributos:
         account (Account): Referência ao modelo 'Account', representando a conta associada ao investimento.
-        principal (FloatFied): Valor principal investido.
+        principal (FloatField): Valor principal investido.
         investment_date (DateField): Data em que o investimento foi realizado.
         maturity_date (DateField): Data de vencimento do investimento.
         index: (Index) Referência ao modelo 'Index', representando o índice ao qual a taxa está vinculada (ex: CDI).

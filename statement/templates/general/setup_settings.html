@@ -72,7 +72,7 @@
         </div>
         <div class="box box-primary">
             <div class="box-header">
-                <h3 class="box-title">Listar Bancos</h3>
+                <h3 class="box-title">Bancos</h3>
             </div>
             <div class="box-body">
                 <a href="{% url 'create_bank' %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
@@ -105,7 +105,7 @@
         </div>
         <div class="box box-primary">
             <div class="box-header">
-                <h3 class="box-title">Listar Contas</h3>
+                <h3 class="box-title">Contas</h3>
             </div>
             <div class="box-body">
                 <a href="{% url 'create_account' %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
@@ -148,7 +148,7 @@
         </div>
         <div class="box box-primary">
             <div class="box-header">
-                <h3 class="box-title">Listar Cartões de Crédito</h3>
+                <h3 class="box-title">Cartões de Crédito</h3>
             </div>
             <div class="box-body">
                 <a href="{% url 'create_card' %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
@@ -191,7 +191,7 @@
         </div>
         <div class="box box-primary">
             <div class="box-header">
-                <h3 class="box-title">Listar Categorias de Entrada</h3>
+                <h3 class="box-title">Categorias de Entrada</h3>
             </div>
             <div class="box-body">
                 <a href="{% url 'create_category' %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
@@ -227,7 +227,7 @@
 
         <div class="box box-primary">
             <div class="box-header">
-                <h3 class="box-title">Listar Sub-Categorias de Entrada</h3>
+                <h3 class="box-title">Sub-Categorias de Entrada</h3>
             </div>
             <div class="box-body">
                 <a href="{% url 'create_subcategory' %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
@@ -260,7 +260,7 @@
         </div>
         <div class="box box-primary">
             <div class="box-header">
-                <h3 class="box-title">Listar Categorias de Saída</h3>
+                <h3 class="box-title">Categorias de Saída</h3>
             </div>
             <div class="box-body">
                 <a href="{% url 'create_category' %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
@@ -295,7 +295,7 @@
         </div>
         <div class="box box-primary">
             <div class="box-header">
-                <h3 class="box-title">Listar Sub-Categorias de Saída</h3>
+                <h3 class="box-title">Sub-Categorias de Saída</h3>
             </div>
             <div class="box-body">
                 <a href="{% url 'create_subcategory' %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
@@ -328,7 +328,7 @@
         </div>
         <div class="box box-primary">
             <div class="box-header">
-                <h3 class="box-title">Listar Bandeiras</h3>
+                <h3 class="box-title">Bandeiras</h3>
             </div>
             <div class="box-body">
                 <a href="{% url 'create_flag' %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
@@ -355,6 +355,35 @@
             </div>
             <div class="box-footer">
                 <span>Total de ítens listados: {{ flags.count }}</span>
+            </div>
+        </div>
+        <div class="box box-primary">
+            <div class="box-header">
+                <h3 class="box-title">Índices Financeiros</h3>
+            </div>
+            <div class="box-body">
+                <a href="{% url 'create_index' %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Descrição</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for index in indexes %}
+                        <tr>
+                            <td><a href="#">{{ index.description }}</a></td>
+                            <td><a href="#">{{ index.bcb_id }}</a></td>
+                            <td><a href="#">{{ index.first_date | date:"d/m/Y" }}</a></td>
+                            <td><a href="{% url 'update_index' index.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="box-footer">
+                <span>Total de ítens listados: {{ indexes.count }}</span>
             </div>
         </div>
     {% endblock %}
