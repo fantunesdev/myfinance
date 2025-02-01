@@ -45,6 +45,11 @@
                         {% endfor %}
                     </tbody>
                 </table>
+                {% if 'inativos' in request.path %}
+                    <a href="{% url 'list_dreams' %}" class="decoration-none"><p class="mt-30 font-14">Ver todos</p></a>
+                {% else %}
+                    <a href="{% url 'list_dreams' 'inativos' %}" class="decoration-none"><p class="mt-30 font-14">Ver inativos</p></a>
+                {% endif %}
             </div>
             <div class="box-footer">
                 <span>Total de ítens listados: {{ dreams.count }}</span>

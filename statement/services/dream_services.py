@@ -1,3 +1,5 @@
+from django.utils import timezone
+
 from statement.models import Dream
 
 
@@ -13,6 +15,35 @@ def create_dream(dream):
 
 def list_dreams(user):
     return Dream.objects.filter(user=user)
+
+
+def list_active_dreams(user):
+    """
+    Retorna todos os sonhos ativos de um usuário (data maior que a data atual).
+    
+    Args:
+        user (User): O usuário cujos sonhos estão sendo filtrados.
+    
+    Returns:
+        QuerySet: Um conjunto de objetos `Dream` que ainda não venceram.
+    """
+    today = timezone.now()  # Pega a data e hora atuais com fuso horário
+    return Dream.objects.filter(user=user, limit_date__gt=today)
+
+
+def list_past_dreams(user):
+    """
+    Retorna todos os sonhos que já foram alcançados o que não estão mais ativos 
+    (data menor que a data atual).
+    
+    Args:
+        user (User): O usuário cujos sonhos estão sendo filtrados.
+    
+    Returns:
+        QuerySet: Um conjunto de objetos `Dream` que já venceram.
+    """
+    today = timezone.now()  # Pega a data e hora atuais com fuso horário
+    return Dream.objects.filter(user=user, limit_date__lt=today)
 
 
 def list_dream_by_id(id, user):
