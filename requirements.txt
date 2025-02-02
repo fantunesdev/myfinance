@@ -7,7 +7,7 @@ certifi==2023.7.22
 cffi==1.15.1
 chardet==5.2.0
 charset-normalizer==3.2.0
-click==8.1.7
+click==8.1.8
 cryptography==41.0.3
 defusedxml==0.7.1
 Django==4.2.5
@@ -18,20 +18,19 @@ djangorestframework==3.14.0
 djangorestframework-simplejwt==5.3.0
 et-xmlfile==1.1.0
 flake8==4.0.1
-gunicorn==22.0.0
+gunicorn==23.0.0
 hvac==1.2.1
 idna==3.4
-isort==5.13.2
+isort==6.0.0
 mccabe==0.6.1
--e git+https://github.com/fantunesdev/myfinance@e0d26848818c6b0a569418c91b04680f49541080#egg=myfinance
 mypy-extensions==1.0.0
 mysqlclient==2.2.0
 oauthlib==3.2.2
 openpyxl==3.1.2
-packaging==24.1
+packaging==24.2
 pathspec==0.12.1
 Pillow==10.0.1
-platformdirs==4.2.0
+platformdirs==4.3.6
 psycopg2==2.9.7
 pycodestyle==2.8.0
 pycparser==2.21
@@ -50,7 +49,7 @@ six==1.16.0
 social-auth-app-django==5.3.0
 social-auth-core==4.4.2
 sqlparse==0.4.4
-tomli==2.0.1
-types-python-dateutil==2.9.0.20240316
+tomli==2.2.1
+types-python-dateutil==2.9.0.20241206
 urllib3==2.0.4
 wcwidth==0.2.13
