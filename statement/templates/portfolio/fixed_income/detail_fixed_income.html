@@ -1,0 +1,46 @@
+{% extends "index.html" %}
+{% load  custom_filters %}
+
+    {% block title %}Exclusão de ativo de renda fixa{% endblock title %}
+
+    {% block content %}
+        <div class="box box-primary">
+            <form method="post">
+                <div class="box-title">
+                    <h3>
+                        Atenção! Você está prestes a excluir o ativo abaixo
+                    </h3>
+                </div>
+                <div class="box-body">
+                    <p>Banco: <b>{{ fixed_income_asset.account.bank }}</b></p>
+                    <p>Valor Investido: <b>R$ {{ fixed_income_asset.principal | floatformat:2 }}</b></p>
+                    <p>Data de Investimento: <b>{{ fixed_income_asset.investment_date | date:"d/m/Y" }}</b></p>
+                    <p>Data de Vencimento: <b>R$ {{ fixed_income_asset.maturity_date | date:"d/m/Y" }}</b></p>
+                    <p>Taxa Contratada: <b>{{ fixed_income_asset.contractual_rate }}% do(a) {{ fixed_income_asset.index.description }}</b></p>
+                    <br>
+                    {% if 'remover' in request.path %}
+                    <div class="btn-danger">
+                        <p>
+                        {% csrf_token %}
+                        {{ exclusion_form }}
+                        Sim, desejo excluir e estou ciente de que esta operação é irreversível.
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="box-footer">
+                    <form method="post">
+                        {% csrf_token %}
+                        <a href="{{request.META.HTTP_REFERER}}"><input type="button" value="Voltar" class="btn btn-primary"></a>
+                        {% if 'remover' in request.path %}
+                            <input type="submit" value="Excluir" class="btn btn-danger">
+                        {% else %}
+                            <a href="{% url 'delete_fixed_income' fixed_income_asset.id %}"><input type="button" value="Excluir" class="btn btn-primary"></a>
+                        {% endif %}
+                    </form>
+                </div>
+            </form>
+
+        </div>
+
+    {% endblock content %}

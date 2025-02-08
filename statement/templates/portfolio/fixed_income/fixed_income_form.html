@@ -1,0 +1,64 @@
+{% extends 'index.html' %}
+
+    {% block title %}
+        {% spaceless %}
+            {% if 'renda_fixa/cadastrar/' in request.path %}
+                Cadastrar Ativo de Renda Fixa
+            {% else %}
+                Editar Ativo de Renda Fixa
+            {% endif %}
+        {% endspaceless %}
+    {% endblock %}
+
+    {% block content %}
+        <div class="box box-primary">
+            <div class="box-header">
+
+                <h3 class="box-title">
+                    {% spaceless %}
+                        {% if 'renda_fixa/cadastrar/' in request.path %}
+                            Cadastrar Ativo de Renda Fixa
+                        {% else %}
+                            Editar Ativo de Renda Fixa
+                        {% endif %}
+                    {% endspaceless %}
+                </h3>
+            </div>
+            <form method="post" enctype="multipart/form-data">
+                <div class="box-body">
+                        {% csrf_token %}
+
+                        {{ fixed_income_form.account.errors }}
+                        <label for="id_type">Conta</label>
+                        {{ fixed_income_form.account }}
+
+                        {{ fixed_income_form.principal.errors }}
+                        <label for="id_type">Valor Principal</label>
+                        {{ fixed_income_form.principal }}
+
+                        {{ fixed_income_form.investment_date.errors }}
+                        <label for="id_type">Data de Investimento</label>
+                        {{ fixed_income_form.investment_date }}
+
+                        {{ fixed_income_form.maturity_date.errors }}
+                        <label for="id_type">Data de Vencimento</label>
+                        {{ fixed_income_form.maturity_date }}
+
+                        {{ fixed_income_form.index.errors }}
+                        <label for="id_type">Índice</label>
+                        {{ fixed_income_form.index }}
+
+                        {{ fixed_income_form.contractual_rate.errors }}
+                        <label for="id_type">Porcentagem</label>
+                        {{ fixed_income_form.contractual_rate }}
+                </div>
+                <div class="box-footer">
+                    <input class="btn btn-primary" type="submit" name="Cadastrar">
+                    <a href="{{request.META.HTTP_REFERER}}" class="btn btn-info">Voltar</a>
+                    {% if 'categorias/editar' in request.path %}
+                    <a href="{% url 'delete_category' old_category.id %}"><input type="button" value="Excluir" class="btn btn-danger"></a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    {% endblock content %}
