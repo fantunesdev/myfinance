@@ -60,7 +60,9 @@ class Account(models.Model):
     user = models.ForeignKey(User, on_delete=models.PROTECT)
 
     def __str__(self):
-        return self.bank.description
+        type = self.type.description
+        first_letters = ''.join([word[0] for word in type.split()])
+        return f'{self.bank.description} ({first_letters})'
 
 
 class Flag(models.Model):

@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 
-from statement.forms.fixed_income_form import FixedIncomeForm
+from statement.forms.portfolio.fixed_income.fixed_income_form import FixedIncomeForm
 from statement.forms.general_forms import ExclusionForm
 from statement.models import FixedIncome
 from statement.repositories.templatetags_repository import set_menu_templatetags, set_templatetags
@@ -27,7 +27,6 @@ def create_fixed_income(request):
             return redirect('list_fixed_income')
     else:
         fixed_income_form = FixedIncomeForm()
-        print(fixed_income_form)
     template_tags = set_templatetags()
     set_menu_templatetags(request.user, template_tags)
     template_tags['fixed_income_form'] = fixed_income_form
