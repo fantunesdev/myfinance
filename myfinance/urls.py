@@ -26,11 +26,12 @@ urlpatterns = [
     path('', get_current_month_transactions),
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
+    path('login/', login_user, name='login_user'),
+    path('logout/', logout_user, name='logout_user'),
+    path('carteira/', include('statement.urls.portfolio.portfolio_urls')),
     path('relatorio_financeiro/', include('statement.urls.statement_urls')),
     path('sonhos/', include('statement.urls.dream_urls')),
     path('usuarios/', include('login.urls')),
-    path('login/', login_user, name='login_user'),
-    path('logout/', logout_user, name='logout_user'),
 ]
 
 if settings.DEBUG:

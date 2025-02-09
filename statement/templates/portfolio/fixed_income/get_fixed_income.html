@@ -1,0 +1,54 @@
+{% extends 'index.html' %}
+{% load static %}
+{% load custom_filters %}
+{% load custom_tags %}
+
+    {% block title %}Renda Fixa{% endblock %}
+
+    {% block content %}
+        
+        <div class="box box-primary">
+            <div class="box-header">
+                <h3 class="box-title">Renda Fixa</h3>
+            </div>
+            <div class="box-body" id="statement-box">
+                <table class="table" id="statement-table">
+                    <thead>
+                        <tr>
+                            <th>Conta</th>
+                            <th>Instrumento</th>
+                            <th>Valor Investido</th>
+                            <th>Data de Investimento</th>
+                            <th>Data de Vencimento</th>
+                            <th>Taxa Contratada</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <a href="{% url 'create_fixed_income' %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
+                        {% for fixed_income_asset in fixed_income_assets %}
+                        <tr>
+                            <td>{{ fixed_income_asset.account }}</td>
+                            <td>{{ fixed_income_asset.security }}</td>
+                            <td>{{ fixed_income_asset.principal | floatformat:2 }}</td>
+                            <td>{{ fixed_income_asset.investment_date | date:"d/m/Y" }}</td>
+                            <td>{{ fixed_income_asset.maturity_date | date:"d/m/Y" }}</td>
+                            <td>{{ fixed_income_asset.contractual_rate | floatformat:0 }}% {{ fixed_income_asset.index }}</td>
+                            <td>
+                                <a href="{% url 'detail_fixed_income' fixed_income_asset.id %}"><i class="fa-solid fa-file-lines action-icon"></i></a>
+                                <a href="{% url 'update_fixed_income' fixed_income_asset.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
+                                <a href="{% url 'delete_fixed_income' fixed_income_asset.id %}"><i class="fa-solid fa-trash action-icon"></i></a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="box-footer">
+                <span>Total de itens listados: {{ fixed_income_assets.count }}</span>
+            </div>
+        </div>
+    {% endblock %}
+
+    {% block scripts %}
+    {% endblock %}

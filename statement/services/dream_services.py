@@ -1,5 +1,7 @@
 from django.utils import timezone
 
+from django.utils import timezone
+
 from statement.models import Dream
 
 
@@ -25,6 +27,16 @@ def create_dream(dream):
 
 
 def list_dreams(user):
+
+    """
+    Retorna todos os sonhos de um usuário.
+    
+    Args:
+        user (User): O usuário cujos sonhos estão sendo filtrados.
+    
+    Returns:
+        QuerySet: Um conjunto de objetos `Dream` que ainda não venceram.
+    """
 
     """
     Retorna todos os sonhos de um usuário.
@@ -81,10 +93,36 @@ def list_dream_by_id(id, user):
     Raises:
         DoesNotExist: Se o sonho com o id fornecido não for encontrado ou não pertencer ao usuário.
     """
+    """
+    Retorna um sonho por id, filtrado pelo usuário.
+
+    Args:
+        id (int): Chave primária do sonho a ser recuperado.
+        user (User): O usuário cujos sonhos estão sendo filtrados.
+
+    Returns:
+        Dream: O objeto Dream correspondente ao id fornecido, se existir e pertencer ao usuário.
+        
+    Raises:
+        DoesNotExist: Se o sonho com o id fornecido não for encontrado ou não pertencer ao usuário.
+    """
     return Dream.objects.get(id=id, user=user)
 
 
 def update_dream(old_dream, new_dream):
+    """
+    Atualiza um sonho existente com os novos dados fornecidos.
+
+    Args:
+        old_dream (Dream): O objeto Dream a ser atualizado.
+        new_dream (Dream): O objeto Dream contendo os novos valores para atualização.
+
+    Returns:
+        None: A função realiza a atualização no banco de dados e não retorna nada.
+
+    Raises:
+        IntegrityError: Se a atualização violar alguma restrição de integridade no banco de dados.
+    """
     """
     Atualiza um sonho existente com os novos dados fornecidos.
 
@@ -106,6 +144,18 @@ def update_dream(old_dream, new_dream):
 
 
 def delete_dream(dream):
+    """
+    Deleta um sonho do banco de dados.
+
+    Args:
+        dream (Dream): O objeto Dream a ser deletado.
+
+    Returns:
+        None: A função deleta o sonho e não retorna nada.
+
+    Raises:
+        ProtectedError: Se o sonho estiver protegido por alguma restrição de exclusão no banco de dados (ex.: se existir dependências de integridade referencial).
+    """
     """
     Deleta um sonho do banco de dados.
 

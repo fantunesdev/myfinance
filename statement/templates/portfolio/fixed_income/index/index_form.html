@@ -1,0 +1,52 @@
+{% extends 'index.html' %}
+
+    {% block title %}
+        {% spaceless %}
+            {% if 'indices/cadastrar/' in request.path %}
+                Cadastrar Índice
+            {% else %}
+                Editar Índice
+            {% endif %}
+        {% endspaceless %}
+    {% endblock title %}
+
+    {% block content %}
+        <div class="box box-primary">
+            <div class="box-header">
+                <h3 class="box-title">
+                    {% spaceless %}
+                        {% if 'indices/cadastrar/' in request.path %}
+                            Cadastrar Índice
+                        {% else %}
+                            Editar Índice
+                        {% endif %}
+                    {% endspaceless %}
+                </h3>
+            </div>
+            <form method="post" enctype="multipart/form-data">
+                <div class="box-body">
+                        {% csrf_token %}
+
+                        {{ index_form.description.errors }}
+                        <label for="id_description">Descricao</label>
+                        {{ index_form.description }}
+
+                        {{ index_form.bcb_id.errors }}
+                        <label for="bcb_id">Id do índice no BCB</label>
+                        {{ index_form.bcb_id }}
+
+                        {{ index_form.first_date.errors }}
+                        <label for="id_first_date">Primeira data do Índice</label>
+                        {{ index_form.first_date }}
+                </div>
+                <div class="box-footer">
+                    <input class="btn btn-primary" type="submit" name="Cadastrar">
+                    <a href="{{request.META.HTTP_REFERER}}" class="btn btn-info">Voltar</a>
+                    {% if 'indices/editar/' in request.path %}
+                    {{ old_index }}
+                    {% comment %} <a href="{% url 'delete_index' old_index.id %}"><input type="button" value="Excluir" class="btn btn-danger"></a> {% endcomment %}
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    {% endblock content %}

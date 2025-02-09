@@ -147,6 +147,13 @@ class FixedExpenses(models.Model):
 
 
 class Version(models.Model):
+    """
+    Versão do programa.
+
+    Atributos:
+        version (CharField): A versão do programa. Ex.: v1.0.31.
+        date (DateField): o dia do release da versão.
+    """
     version = models.CharField(max_length=30)
     date = models.DateField()
 
@@ -162,4 +169,83 @@ class Portion(models.Model):
     date = models.DateField()
     value = models.FloatField()
     dream = models.ForeignKey(Dream, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.PROTECT)
+
+
+class Index(models.Model):
+    """
+    Indice financeiro utilizado para cálculos de rendimento.
+
+    Atributos:
+        description (CharField): Nome do índice financeiro (ex: CDI, SELIC).
+        bcb_id (Integer): ID do índice na API do Banco Central do Brasil
+        first_date (Date): Data do primeiro registro do índice
+    """
+
+    description = models.CharField(max_length=100)
+    bcb_id = models.IntegerField(null=True, blank=True)
+    first_date = models.DateField(null=True, blank=True)
+
+    def __str__(self):
+        return self.description
+
+class IndexHistoricalSeries(models.Model):
+    """
+    Série histórica um índice financeiro utilizado para cálculos de rendimento.
+
+    Atributos:
+        index (CharField): Nome do índice financeiro (ex: CDI, SELIC).
+        date (DateField): Data do índice.
+        rate (FloatField): Valor da taxa do índice na data especificada, geralmente expresso em percentual.
+    """
+
+    index = models.ForeignKey(Index, on_delete=models.PROTECT)
+    date = models.DateField()
+    rate = models.FloatField()
+
+    def __str__(self):
+        return self.index.description
+
+
+class FixedIncomeSecurity(models.Model):
+    """
+    Instrumento ou tipo de investimento.
+    
+    Exemplo:
+        CDB - Crédito de Depósito Bancário
+        LCI - Letra de Crédito Imobiliário
+
+    Atributos:
+        description {CharField} - Nome completo do instrumento
+        abbreviation {CharField} - Abreviação do nome do instrumento
+    """
+    description = models.CharField(max_length=255)
+    abbreviation = models.CharField(max_length=10)
+
+    def __str__(self):
+        return self.abbreviation
+
+
+class FixedIncome(models.Model):
+    """
+    Um tipo de ativo de renda fixa no sistema financeiro.
+
+    Atributos:
+        account (Account): Referência ao modelo 'Account', representando a conta associada ao investimento.
+        principal (FloatField): Valor principal investido.
+        security {FloateField}: O instrumento ou tipo de investimento (Ex: CDB, LCI, Tesouro Direto, etc)
+        investment_date (DateField): Data em que o investimento foi realizado.
+        maturity_date (DateField): Data de vencimento do investimento.
+        index: (Index) Referência ao modelo 'Index', representando o índice ao qual a taxa está vinculada (ex: CDI).
+        contractual_rate (FloatField): Taxa contratada do investimento, expressa como uma porcentagem.
+        user (User): Referência ao modelo 'User', indicando o usuário que fez o investimento.
+    """
+
+    account = models.ForeignKey(Account, on_delete=models.PROTECT)
+    principal = models.FloatField()
+    security = models.ForeignKey(FixedIncomeSecurity, on_delete=models.PROTECT)
+    investment_date = models.DateField()
+    maturity_date = models.DateField()
+    index = models.ForeignKey(Index, on_delete=models.PROTECT)
+    contractual_rate = models.FloatField()
     user = models.ForeignKey(User, on_delete=models.PROTECT)

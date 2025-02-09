@@ -66,13 +66,13 @@
                 </table>
             </div>
             <div class="box-footer">
-                <span>Total de ítens listados: {{ fixed_expenses.count }}</span>
+                <span>Total de itens listados: {{ fixed_expenses.count }}</span>
             </div>
         </div>
         </div>
         <div class="box box-primary">
             <div class="box-header">
-                <h3 class="box-title">Listar Bancos</h3>
+                <h3 class="box-title">Bancos</h3>
             </div>
             <div class="box-body">
                 <a href="{% url 'create_bank' %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
@@ -100,12 +100,12 @@
                 </table>
             </div>
             <div class="box-footer">
-                <span>Total de ítens listados: {{ banks.count }}</span>
+                <span>Total de itens listados: {{ banks.count }}</span>
             </div>
         </div>
         <div class="box box-primary">
             <div class="box-header">
-                <h3 class="box-title">Listar Contas</h3>
+                <h3 class="box-title">Contas</h3>
             </div>
             <div class="box-body">
                 <a href="{% url 'create_account' %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
@@ -143,12 +143,12 @@
                 </table>
             </div>
             <div class="box-footer">
-                <span>Total de ítens listados: {{ accounts.count }}</span>
+                <span>Total de itens listados: {{ accounts.count }}</span>
             </div>
         </div>
         <div class="box box-primary">
             <div class="box-header">
-                <h3 class="box-title">Listar Cartões de Crédito</h3>
+                <h3 class="box-title">Cartões de Crédito</h3>
             </div>
             <div class="box-body">
                 <a href="{% url 'create_card' %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
@@ -186,12 +186,12 @@
                 </table>
             </div>
             <div class="box-footer">
-                <span>Total de ítens listados: {{ cards.count }}</span>
+                <span>Total de itens listados: {{ cards.count }}</span>
             </div>
         </div>
         <div class="box box-primary">
             <div class="box-header">
-                <h3 class="box-title">Listar Categorias de Entrada</h3>
+                <h3 class="box-title">Categorias de Entrada</h3>
             </div>
             <div class="box-body">
                 <a href="{% url 'create_category' %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
@@ -221,13 +221,13 @@
                 <p>OBS: Ao editar uma categoria feche todas as abas e janelas em que a aplicação está aberta para atualizar os cookies.</p>
             </div>
             <div class="box-footer">
-                <span>Total de ítens listados: {{ categories.count }}</span>
+                <span>Total de itens listados: {{ categories.count }}</span>
             </div>
         </div>
 
         <div class="box box-primary">
             <div class="box-header">
-                <h3 class="box-title">Listar Sub-Categorias de Entrada</h3>
+                <h3 class="box-title">Sub-Categorias de Entrada</h3>
             </div>
             <div class="box-body">
                 <a href="{% url 'create_subcategory' %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
@@ -255,12 +255,12 @@
                 <p>OBS: Ao editar uma sbucategoria feche todas as abas e janelas em que a aplicação está aberta para atualizar os cookies.</p>
             </div>
             <div class="box-footer">
-                <span>Total de ítens listados: {{ subcategories.count }}</span>
+                <span>Total de itens listados: {{ subcategories.count }}</span>
             </div>
         </div>
         <div class="box box-primary">
             <div class="box-header">
-                <h3 class="box-title">Listar Categorias de Saída</h3>
+                <h3 class="box-title">Categorias de Saída</h3>
             </div>
             <div class="box-body">
                 <a href="{% url 'create_category' %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
@@ -290,12 +290,12 @@
                 <p>OBS: Ao editar uma categoria feche todas as abas e janelas em que a aplicação está aberta para atualizar os cookies.</p>
             </div>
             <div class="box-footer">
-                <span>Total de ítens listados: {{ categories.count }}</span>
+                <span>Total de itens listados: {{ categories.count }}</span>
             </div>
         </div>
         <div class="box box-primary">
             <div class="box-header">
-                <h3 class="box-title">Listar Sub-Categorias de Saída</h3>
+                <h3 class="box-title">Sub-Categorias de Saída</h3>
             </div>
             <div class="box-body">
                 <a href="{% url 'create_subcategory' %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
@@ -323,12 +323,12 @@
                 <p>OBS: Ao editar uma subcategoria feche todas as abas e janelas em que a aplicação está aberta para atualizar os cookies.</p>
             </div>
             <div class="box-footer">
-                <span>Total de ítens listados: {{ subcategories.count }}</span>
+                <span>Total de itens listados: {{ subcategories.count }}</span>
             </div>
         </div>
         <div class="box box-primary">
             <div class="box-header">
-                <h3 class="box-title">Listar Bandeiras</h3>
+                <h3 class="box-title">Bandeiras</h3>
             </div>
             <div class="box-body">
                 <a href="{% url 'create_flag' %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
@@ -354,7 +354,70 @@
                 </table>
             </div>
             <div class="box-footer">
-                <span>Total de ítens listados: {{ flags.count }}</span>
+                <span>Total de itens listados: {{ flags.count }}</span>
+            </div>
+        </div>
+        <div class="box box-primary">
+            <div class="box-header">
+                <h3 class="box-title">Índices Financeiros</h3>
+            </div>
+            <div class="box-body">
+                <a href="{% url 'create_index' %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Descrição</th>
+                            <th>ID no BCB</th>
+                            <th>Data Inicial</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for index in indexes %}
+                        <tr>
+                            <td><a href="#">{{ index.description }}</a></td>
+                            <td><a href="#">{{ index.bcb_id }}</a></td>
+                            <td><a href="#">{{ index.first_date | date:"d/m/Y" }}</a></td>
+                            <td><a href="{% url 'update_index' index.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="box-footer">
+                <span>Total de itens listados: {{ indexes.count }}</span>
+            </div>
+        </div>
+        <div class="box box-primary">
+            <div class="box-header">
+                <h3 class="box-title">Instrumentos de Renda Fixa</h3>
+            </div>
+            <div class="box-body">
+                <a href="{% url 'create_fixed_income_security' %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Descrição</th>
+                            <th>Abreviacão</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for fixed_income_security in fixed_income_securities %}
+                        <tr>
+                            <td><a href="#">{{ fixed_income_security.description }}</a></td>
+                            <td><a href="#">{{ fixed_income_security.abbreviation }}</a></td>
+                            <td>
+                                <a href="{% url 'update_fixed_income_security' fixed_income_security.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
+                                <a href="{% url 'delete_fixed_income_security' fixed_income_security.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="box-footer">
+                <span>Total de itens listados: {{ fixed_income_securities.count }}</span>
             </div>
         </div>
     {% endblock %}
