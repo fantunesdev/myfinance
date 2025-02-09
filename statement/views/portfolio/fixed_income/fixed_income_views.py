@@ -27,6 +27,7 @@ def create_fixed_income(request):
             return redirect('list_fixed_income')
     else:
         fixed_income_form = FixedIncomeForm()
+        print(fixed_income_form)
     template_tags = set_templatetags()
     set_menu_templatetags(request.user, template_tags)
     template_tags['fixed_income_form'] = fixed_income_form
@@ -54,6 +55,16 @@ def list_fixed_income(request):
 
 @login_required
 def detail_fixed_income(request, id):
+    """
+    Detalha o ativo de renda fixa do usuário autenticado.
+
+    Parâmetros:
+        request (HttpRequest): Objeto da requisição HTTP, contendo os dados da requisição
+        id {Integer}: ID do investimento de renda fixa
+
+    Retorna:
+        HttpResponse com a listagem de ativos.
+    """
     fixed_income_asset = FixedIncome.objects.filter(id=id, user=request.user).first()
     templatetags = set_templatetags()
     set_menu_templatetags(request.user, templatetags)
@@ -63,6 +74,16 @@ def detail_fixed_income(request, id):
 
 @login_required
 def update_fixed_income(request, id):
+    """
+    Atualiza o ativo de renda fixa do usuário autenticado.
+
+    Parâmetros:
+        request (HttpRequest): Objeto da requisição HTTP, contendo os dados da requisição
+        id {Integer}: ID do investimento de renda fixa
+
+    Retorna:
+        HttpResponse com a listagem de ativos.
+    """
     old_fixed_income_asset = FixedIncome.objects.filter(id=id, user=request.user).first()
     fixed_income_form = FixedIncomeForm(request.POST or None, instance=old_fixed_income_asset)
     if fixed_income_form.is_valid():
@@ -78,6 +99,16 @@ def update_fixed_income(request, id):
 
 @login_required
 def delete_fixed_income(request, id):
+    """
+    Deleta o ativo de renda fixa do usuário autenticado.
+
+    Parâmetros:
+        request (HttpRequest): Objeto da requisição HTTP, contendo os dados da requisição
+        id {Integer}: ID do investimento de renda fixa
+
+    Retorna:
+        HttpResponse com a listagem de ativos.
+    """
     fixed_income_asset = FixedIncome.objects.filter(id=id, user=request.user).first()
     exclusion_form = ExclusionForm()
     if request.POST.get('confirmation'):

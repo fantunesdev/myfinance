@@ -8,10 +8,11 @@ today = timezone.localtime(timezone.now()).strftime('%Y-%m-%d')
 class FixedIncomeForm(forms.ModelForm):
     class Meta:
         model = FixedIncome
-        fields = ['account', 'principal', 'investment_date', 'maturity_date', 'index', 'contractual_rate']
+        fields = ['account', 'security', 'principal', 'investment_date', 'maturity_date', 'index', 'contractual_rate']
 
         widgets = {
             'account': forms.Select(attrs={'class': 'form-control'}),
+            'security': forms.Select(attrs={'class': 'form-control'}),
             'principal': forms.NumberInput(attrs={'class': 'form-control'}),
             'investment_date': forms.DateInput(
                 format='%Y-%m-%d',

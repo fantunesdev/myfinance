@@ -1,8 +1,9 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
-from statement.services.index_services import IndexServices
+from statement.models import FixedIncomeSecurity
 from statement.repositories.templatetags_repository import set_menu_templatetags, set_templatetags
+from statement.services.index_services import IndexServices
 from statement.services import (
     account_services,
     bank_services,
@@ -28,5 +29,6 @@ def setup_settings(request):
     templatetags['fixed_expenses'] = fixed_expenses_services.get_fixed_expenses(request.user)
     templatetags['indexes'] = IndexServices.all()
     templatetags['subcategories'] = subcategory_services.get_subcategories(request.user)
+    templatetags['fixed_income_securities'] = FixedIncomeSecurity.objects.all()
     
     return render(request, 'general/setup_settings.html', templatetags)

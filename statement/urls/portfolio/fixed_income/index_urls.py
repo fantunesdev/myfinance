@@ -1,6 +1,6 @@
 from django.urls import path
 
-from statement.views.index_views import *
+from statement.views.portfolio.fixed_income.index_views import *
 
 urlpatterns = [
     path('cadastrar/', create_index, name='create_index'),

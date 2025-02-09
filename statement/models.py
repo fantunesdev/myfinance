@@ -177,7 +177,9 @@ class Index(models.Model):
     Indice financeiro utilizado para cálculos de rendimento.
 
     Atributos:
-        name (CharField): Nome do índice financeiro (ex: CDI, SELIC).
+        description (CharField): Nome do índice financeiro (ex: CDI, SELIC).
+        bcb_id (Integer): ID do índice na API do Banco Central do Brasil
+        first_date (Date): Data do primeiro registro do índice
     """
 
     description = models.CharField(max_length=100)
@@ -205,6 +207,25 @@ class IndexHistoricalSeries(models.Model):
         return self.index.description
 
 
+class FixedIncomeSecurity(models.Model):
+    """
+    Instrumento ou tipo de investimento.
+    
+    Exemplo:
+        CDB - Crédito de Depósito Bancário
+        LCI - Letra de Crédito Imobiliário
+
+    Atributos:
+        description {CharField} - Nome completo do instrumento
+        abbreviation {CharField} - Abreviação do nome do instrumento
+    """
+    description = models.CharField(max_length=255)
+    abbreviation = models.CharField(max_length=10)
+
+    def __str__(self):
+        return self.abbreviation
+
+
 class FixedIncome(models.Model):
     """
     Um tipo de ativo de renda fixa no sistema financeiro.
@@ -212,6 +233,7 @@ class FixedIncome(models.Model):
     Atributos:
         account (Account): Referência ao modelo 'Account', representando a conta associada ao investimento.
         principal (FloatField): Valor principal investido.
+        security {FloateField}: O instrumento ou tipo de investimento (Ex: CDB, LCI, Tesouro Direto, etc)
         investment_date (DateField): Data em que o investimento foi realizado.
         maturity_date (DateField): Data de vencimento do investimento.
         index: (Index) Referência ao modelo 'Index', representando o índice ao qual a taxa está vinculada (ex: CDI).
@@ -221,6 +243,7 @@ class FixedIncome(models.Model):
 
     account = models.ForeignKey(Account, on_delete=models.PROTECT)
     principal = models.FloatField()
+    security = models.ForeignKey(FixedIncomeSecurity, on_delete=models.PROTECT)
     investment_date = models.DateField()
     maturity_date = models.DateField()
     index = models.ForeignKey(Index, on_delete=models.PROTECT)

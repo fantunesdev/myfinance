@@ -28,33 +28,13 @@
                 <div class="box-body">
                         {% csrf_token %}
 
-                        {{ fixed_income_form.account.errors }}
-                        <label for="id_type">Conta</label>
-                        {{ fixed_income_form.account }}
+                        {{ security_form.description.errors }}
+                        <label for="id_type">Descrição</label>
+                        {{ security_form.description }}
 
-                        {{ fixed_income_form.principal.errors }}
-                        <label for="id_type">Valor Principal</label>
-                        {{ fixed_income_form.principal }}
-
-                        {{ fixed_income_form.security.errors }}
-                        <label for="id_type">Instrumento</label>
-                        {{ fixed_income_form.security }}
-
-                        {{ fixed_income_form.investment_date.errors }}
-                        <label for="id_type">Data de Investimento</label>
-                        {{ fixed_income_form.investment_date }}
-
-                        {{ fixed_income_form.maturity_date.errors }}
-                        <label for="id_type">Data de Vencimento</label>
-                        {{ fixed_income_form.maturity_date }}
-
-                        {{ fixed_income_form.index.errors }}
-                        <label for="id_type">Índice</label>
-                        {{ fixed_income_form.index }}
-
-                        {{ fixed_income_form.contractual_rate.errors }}
-                        <label for="id_type">Porcentagem</label>
-                        {{ fixed_income_form.contractual_rate }}
+                        {{ security_form.abbreviation.errors }}
+                        <label for="id_type">Abreviação</label>
+                        {{ security_form.abbreviation }}
                 </div>
                 <div class="box-footer">
                     <input class="btn btn-primary" type="submit" name="Cadastrar">

@@ -36,14 +36,15 @@
                         {{ index_form.bcb_id }}
 
                         {{ index_form.first_date.errors }}
-                        <label for="id_first_date">Descricao</label>
+                        <label for="id_first_date">Primeira data do Índice</label>
                         {{ index_form.first_date }}
                 </div>
                 <div class="box-footer">
                     <input class="btn btn-primary" type="submit" name="Cadastrar">
                     <a href="{{request.META.HTTP_REFERER}}" class="btn btn-info">Voltar</a>
                     {% if 'indices/editar/' in request.path %}
-                    <a href="{% url 'delete_index' old_index.id %}"><input type="button" value="Excluir" class="btn btn-danger"></a>
+                    {{ old_index }}
+                    {% comment %} <a href="{% url 'delete_index' old_index.id %}"><input type="button" value="Excluir" class="btn btn-danger"></a> {% endcomment %}
                     {% endif %}
                 </div>
             </form>

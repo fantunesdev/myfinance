@@ -367,6 +367,8 @@
                     <thead>
                         <tr>
                             <th>Descrição</th>
+                            <th>ID no BCB</th>
+                            <th>Data Inicial</th>
                             <th>Ações</th>
                         </tr>
                     </thead>
@@ -384,6 +386,38 @@
             </div>
             <div class="box-footer">
                 <span>Total de itens listados: {{ indexes.count }}</span>
+            </div>
+        </div>
+        <div class="box box-primary">
+            <div class="box-header">
+                <h3 class="box-title">Instrumentos de Renda Fixa</h3>
+            </div>
+            <div class="box-body">
+                <a href="{% url 'create_fixed_income_security' %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Descrição</th>
+                            <th>Abreviacão</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for fixed_income_security in fixed_income_securities %}
+                        <tr>
+                            <td><a href="#">{{ fixed_income_security.description }}</a></td>
+                            <td><a href="#">{{ fixed_income_security.abbreviation }}</a></td>
+                            <td>
+                                <a href="{% url 'update_fixed_income_security' fixed_income_security.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
+                                <a href="{% url 'delete_fixed_income_security' fixed_income_security.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="box-footer">
+                <span>Total de itens listados: {{ fixed_income_securities.count }}</span>
             </div>
         </div>
     {% endblock %}
