@@ -1,5 +1,5 @@
 from django.urls import path
-from api.websockets.consumers import UpdateConsumer
+from api.websockets.consumers.update_consumer import UpdateConsumer
 
 
 websocket_urlpatterns = [
