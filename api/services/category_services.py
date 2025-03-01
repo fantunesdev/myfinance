@@ -7,7 +7,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
 
 from statement.models import Category
-from statement.services import category_services
+from statement.services.category_services import CategoryServices
 
 
 def get_categories(user):
@@ -23,7 +23,7 @@ def get_categories(user):
     Raises:
     Http404: Se nenhuma conta estiver associada ao usuário.
     """
-    categories = category_services.get_categories(user)
+    categories = CategoryServices.get_categories(user)
     if categories:
         return categories
     raise Http404
@@ -44,7 +44,7 @@ def get_category_by_id(id, user):
     Http404: Se a categoria não for encontrada com o ID e usuário fornecidos.
     """
     try:
-        return category_services.get_category_by_id(id, user)
+        return CategoryServices.get_category_by_id(id, user)
     except ObjectDoesNotExist:
         raise Http404
 
@@ -63,7 +63,7 @@ def get_categories_by_type(type, user):
     Raises:
     Http404: Se nenhuma categoria for encontrada com o tipo e usuário fornecidos.
     """
-    categories = Category.objects.filter(type=type, user=user)
+    categories = CategoryServices.get_categories_by_type(type, user)
     if categories:
         return categories
     raise Http404

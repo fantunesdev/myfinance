@@ -1,7 +1,7 @@
 from datetime import date, datetime
 
 import requests
-from django_q.tasks import async_task
+# from django_q.tasks import async_task
 
 from statement.models import Index
 from statement.services.index_services import IndexServices

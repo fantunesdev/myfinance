@@ -1,3 +1,6 @@
+import time
+
+from api.services.websocket_services import send_websocket_update
 from statement.models import Category
 
 
@@ -8,8 +11,8 @@ class CategoryServices:
     Fornece métodos para criar, recuperar, atualizar e apaga categorias
     """
 
-    @staticmethod
-    def create(category_form, user):
+    @classmethod
+    def create(cls, category_form, user):
         """
         Cria uma nova categoria no banco de dados.
 
@@ -23,11 +26,15 @@ class CategoryServices:
         category = category_form.save(commit=False)
         category.user = user
         category.save()
+
+        # Enviando a atualização da lista de categorias para o frontend pelo WebSocket
+        categories = cls.get_categories(user)
+        send_websocket_update('categories', categories)
         return category
 
 
-    @staticmethod
-    def get_categories(user):
+    @classmethod
+    def get_categories(cls, user):
         """ 
         Recupera todas as categorias de um usuário
 
@@ -40,8 +47,8 @@ class CategoryServices:
         return Category.objects.filter(user=user)
 
 
-    @staticmethod
-    def get_categories_by_type(type, user):
+    @classmethod
+    def get_categories_by_type(cls, type, user):
         """
         Recupera todas as categorias por tipo
 
@@ -55,8 +62,8 @@ class CategoryServices:
         return Category.objects.filter(type=type, user=user)
 
 
-    @staticmethod
-    def get_category_by_id(id, user):
+    @classmethod
+    def get_category_by_id(cls, id, user):
         """
         Recupera uma categoria por id
 
@@ -71,8 +78,8 @@ class CategoryServices:
         return categoria
 
 
-    @staticmethod
-    def update(category_form, category):
+    @classmethod
+    def update(cls, category_form, category):
         """
         Atualiza uma categoria existente
 
@@ -89,11 +96,15 @@ class CategoryServices:
         for field in model_fields:
             setattr(category, field, getattr(updated_category, field))
         category.save()
+
+        # Enviando a atualização da lista de categorias para o frontend pelo WebSocket
+        categories = cls.get_categories(category.user)
+        send_websocket_update('categories', categories)
         return category
 
 
-    @staticmethod
-    def delete(category):
+    @classmethod
+    def delete(cls, category):
         """
         Apaga uma categoria existente
 
@@ -101,3 +112,7 @@ class CategoryServices:
             category (Category): A categoria que está sendo apagada
         """
         category.delete()
+
+        # Enviando a atualização da lista de categorias para o frontend pelo WebSocket
+        categories = cls.get_categories(category.user)
+        send_websocket_update('categories', categories)

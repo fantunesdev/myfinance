@@ -28,7 +28,6 @@ def create_fixed_income_security(request):
             return redirect('setup_settings')
     else:
         security_form = FixedIncomeSecurityForm()
-    print(security_form)
     templatetags = set_templatetags()
     set_menu_templatetags(request.user, templatetags)
     templatetags['security_form'] = security_form

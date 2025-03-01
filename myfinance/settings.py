@@ -52,7 +52,7 @@ INSTALLED_APPS = [
     'login',
     'rest_framework',
     'api',
-    'django_q',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -84,7 +84,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'myfinance.wsgi.application'
-
+ASGI_APPLICATION = "myfinance.asgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
@@ -177,13 +177,18 @@ REST_FRAMEWORK = {
     ],
 }
 
-Q_CLUSTER = {
-    'name': 'Django Q',
-    'workers': 4,
-    'recycle': 500,
-    'timeout': 90,
-    'retry': 120,
-    'queue_limit': 50,
-    'bulk': 10,
-    'orm': 'default',
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": "redis://localhost:6379/1",
+    }
+}
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
 }
