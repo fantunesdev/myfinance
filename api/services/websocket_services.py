@@ -1,10 +1,11 @@
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from api.serializers.category_serializer import CategorySerializer
-import json
+from api.serializers.next_month_view_serializer import NextMonthViewSerializer
 
 SERIALIZERS = {
     'categories': CategorySerializer,
+    'next_month_view': NextMonthViewSerializer,
 }
 
 def send_websocket_update(entity_name, data):
@@ -18,7 +19,8 @@ def send_websocket_update(entity_name, data):
 
     # Serializa os dados de acordo com a entidade
     channel_layer = get_channel_layer()
-    serialized_data = serializer_class(data, many=True).data
+    has_many = isinstance(data, (list, tuple))
+    serialized_data = serializer_class(data, many=has_many).data
 
     # Envia a mensagem
     async_to_sync(channel_layer.group_send)(
