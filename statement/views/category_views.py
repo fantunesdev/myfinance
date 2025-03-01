@@ -3,25 +3,26 @@ from django.shortcuts import redirect, render
 
 from ..forms.category_form import CategoryForm
 from ..forms.general_forms import ExclusionForm
-from ..models import Category
 from ..repositories.templatetags_repository import set_menu_templatetags, set_templatetags
-from ..services import account_services, card_services, category_services
+from ..services.category_services import CategoryServices
 
 
 @login_required
 def create_category(request):
+    """
+    Cria uma nova categoria.
+
+    Parâmetros:
+        request (HttpRequest): Requisição HTTP contendo os dados da categoria.
+
+    Retorna:
+        HttpResponseRedirect: Redireciona para 'setup_settings' se a categoria for criada com sucesso.
+        HttpResponse: Renderiza o formulário de criação de categoria caso os dados sejam inválidos ou a requisição seja GET.
+    """
     if request.method == 'POST':
         category_form = CategoryForm(request.POST, request.FILES)
         if category_form.is_valid():
-            new_category = Category(
-                type=category_form.cleaned_data['type'],
-                description=category_form.cleaned_data['description'],
-                color=category_form.cleaned_data['color'],
-                icon=category_form.cleaned_data['icon'],
-                ignore=category_form.cleaned_data['ignore'],
-                user=request.user,
-            )
-            category_services.create_category(new_category)
+            CategoryServices.create(category_form, request.user)
             return redirect('setup_settings')
     else:
         category_form = CategoryForm()
@@ -33,18 +34,21 @@ def create_category(request):
 
 @login_required
 def update_category(request, id):
-    old_category = category_services.get_category_by_id(id, request.user)
+    """
+    Atualiza uma categoria existente.
+
+    Parâmetros:
+        request (HttpRequest): Requisição HTTP contendo os dados da categoria.
+        id (int): ID da categoria a ser atualizada.
+
+    Retorna:
+        HttpResponseRedirect: Redireciona para 'setup_settings' se a categoria for atualizada com sucesso.
+        HttpResponse: Renderiza o formulário de edição caso os dados sejam inválidos ou a requisição seja GET.
+    """
+    old_category = CategoryServices.get_category_by_id(id, request.user)
     category_form = CategoryForm(request.POST or None, request.FILES or None, instance=old_category)
     if category_form.is_valid():
-        new_category = Category(
-            type=category_form.cleaned_data['type'],
-            description=category_form.cleaned_data['description'],
-            color=category_form.cleaned_data['color'],
-            icon=category_form.cleaned_data['icon'],
-            ignore=category_form.cleaned_data['ignore'],
-            user=request.user,
-        )
-        category_services.update_category(old_category, new_category)
+        CategoryServices.update(category_form, old_category)
         return redirect('setup_settings')
     templatetags = set_templatetags()
     set_menu_templatetags(request.user, templatetags)
@@ -55,9 +59,20 @@ def update_category(request, id):
 
 @login_required
 def delete_category(request, id):
-    category = category_services.get_category_by_id(id, request.user)
+    """
+    Exclui uma categoria existente.
+
+    Parâmetros:
+        request (HttpRequest): Requisição HTTP de confirmação de exclusão.
+        id (int): ID da categoria a ser excluída.
+
+    Retorna:
+        HttpResponseRedirect: Redireciona para 'setup_settings' se a categoria for excluída com sucesso.
+        HttpResponse: Renderiza a página de confirmação de exclusão caso a requisição seja GET.
+    """
+    category = CategoryServices.get_category_by_id(id, request.user)
     if request.method == 'POST':
-        category_services.delete_category(category)
+        CategoryServices.delete(category)
         return redirect('setup_settings')
     templatetags = set_templatetags()
     set_menu_templatetags(request.user, templatetags)
