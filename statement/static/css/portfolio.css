@@ -1,0 +1,52 @@
+.dashboard-items-row {
+    display: flex;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.dashboard-item {
+    text-align: center;
+    padding: 20px;
+    color: azure;
+    font-family: Ubuntu;
+    flex: 1;
+    margin: 0 10px;
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-decoration: none;
+}
+
+.dashboard-item p {
+    margin: 10px 0;
+    color: azure;
+}
+
+.dashboard-item p:first-child {
+    font-size: 16px;
+}
+
+.dashboard-item p:last-child {
+    font-weight: bold;
+    font-size: 24px;
+}
+
+.dashboard-item:hover {
+    background-color: #181818;
+    transition: background-color 0.3s ease;
+}
+
+#statement-box {
+    display: block;
+}
+
+@media (max-width: 600px) {
+    .dashboard-items-row {
+        flex-direction: column;
+    }
+
+    .dashboard-item {
+        margin: 10px 0;
+    }
+}

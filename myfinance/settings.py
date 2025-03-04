@@ -29,14 +29,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ['SECRET_KEY']
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ['DEBUG']
+DEBUG = os.getenv('DEBUG')
 
-ALLOWED_HOSTS = eval(os.environ['HOSTS'])
-CORS_ALLOWED_ORIGINS = eval(os.getenv('CORS_ALLOWED_ORIGINS'))
-CSRF_TRUSTED_ORIGINS = eval(os.getenv('CSRF_TRUSTED_ORIGINS'))
+ALLOWED_HOSTS = os.getenv('HOSTS').split(',')
+CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS').split(',')
+CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS').split(',')
 
 
 # Application definition

@@ -3,32 +3,54 @@
 {% load custom_filters %}
 {% load custom_tags %}
 
-    {% block title %}Carteira{% endblock %}
+{% block title %}Carteira{% endblock %}
+
+    {% block styles %}<link rel="stylesheet" href="{% static 'css/portfolio.css' %}">{% endblock %}
 
     {% block content %}
-        
-        <div class="box box-primary">
-            <div class="box-header">
-                <h3 class="box-title">Carteira</h3>
-            </div>
-            <div class="box-body" id="statement-box">
-                <a href="{% url 'list_fixed_income' %}">Renda Fixa: R$ (Total Renda Fixa)</a><br>
-                <a href="get_fixed_income">Renda Variável: R$ (Total Renda Variável)</a><br>
-                <a href="get_fixed_income">Criptomoedas: R$ (Total Criptomoedas)</a><br>
-                <p>Patrimônio Total: R$ (Patrimônio total)</p>
 
-                <br><br>
-                <h3>Desenvolver dashbord clicável com</h3>
-                <ul>
-                    <li>Trazer o valor total dos investimentos</li>
-                    <li>Gráfico de rosca com porcentagem em reda fixa e em renda variável</li>
-                    <li>Gráfico de área com os investimentos dos últimos doze meses</li>
-                </ul>
-            </div>
-            <div class="box-footer">
-                <span>Total de itens listados: </span>
-            </div>
+    <div class="box box-primary box-max-width-2000 v-center-div">
+        <div class="box-header">
+            <h3 class="box-title">Carteira</h3>
         </div>
+        <div class="box-body" id="statement-box">
+
+            <div class="dashboard-items-row">
+                <a href="{% url 'list_fixed_income' %}" class="dashboard-item">
+                    <p>Renda Fixa</p>
+                    <p>{{ total_fixed_income | to_reais }}</p>
+                </a>
+            
+                <a href="get_fixed_income" class="dashboard-item">
+                    <p>Renda Variável</p>
+                    <p>{{ total_variable_income | to_reais }}</p>
+                </a>
+            
+                <a href="get_fixed_income" class="dashboard-item">
+                    <p>Criptomoedas</p>
+                    <p>{{ total_cryptocurrencies | to_reais }}</p>
+                </a>
+            
+                <a class="dashboard-item">
+                    <p>Patrimônio Total</p>
+                    <p>{{ total_amount | to_reais }}</p>
+                </a>
+            </div>
+
+            <br><br>
+            <h3>Desenvolver dashbord clicável com</h3>
+            <ul>
+                <li>Gráfico de rosca com porcentagem em reda fixa e em renda variável</li>
+                <li>Gráfico de área com os investimentos dos últimos doze meses</li>
+                <li>Ao clicar em Patrimônio Total, o gráfico de rosca pode mudar entre Renda Fixa e Renda Variável ou Renda Fixa, Ações e Crypto</li>
+            </ul>
+        </div>
+        <div class="box-footer">
+            <span>Total de itens listados: </span>
+        </div>
+    </div>
+    <style>
+    </style>
     {% endblock %}
 
     {% block scripts %}

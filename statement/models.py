@@ -251,3 +251,6 @@ class FixedIncome(models.Model):
     index = models.ForeignKey(Index, on_delete=models.PROTECT)
     contractual_rate = models.FloatField()
     user = models.ForeignKey(User, on_delete=models.PROTECT)
+
+    class Meta:
+        ordering = ['investment_date']
