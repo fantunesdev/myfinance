@@ -30,7 +30,7 @@
                         <tr>
                             <td>{{ fixed_income_asset.account }}</td>
                             <td>{{ fixed_income_asset.security }}</td>
-                            <td>{{ fixed_income_asset.principal | floatformat:2 }}</td>
+                            <td>{{ fixed_income_asset.principal | to_reais }}</td>
                             <td>{{ fixed_income_asset.investment_date | date:"d/m/Y" }}</td>
                             <td>{{ fixed_income_asset.maturity_date | date:"d/m/Y" }}</td>
                             <td>{{ fixed_income_asset.contractual_rate | floatformat:0 }}% {{ fixed_income_asset.index }}</td>
