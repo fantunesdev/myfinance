@@ -211,7 +211,7 @@ def add_month(transaction, repetition):
     return transaction.payment_date
 
 
-def calculate_total_revenue_expenses(transactions):
+def calculate_total_revenue_expenses(transactions, year, month):
     """
     Calcula o total de receita, despesas, pagamentos com cartão, pagamentos em dinheiro e
     despesas fixas.
@@ -246,6 +246,7 @@ def calculate_total_revenue_expenses(transactions):
 
                 # Contagem das despesas fixas
                 if transaction.fixed:
+                    print(f'{transaction.description}: {transaction.value}')
                     fixed += transaction.value
 
                 # Contagem total de gastos
@@ -255,7 +256,9 @@ def calculate_total_revenue_expenses(transactions):
         else:   # Entradas
             revenue += transaction.value
     if transactions:
-        fixed_expenses = fixed_expenses_services.get_fixed_expenses(transactions[0].user)
+        user = transactions[0].user
+        fixed_expenses = fixed_expenses_services.get_fixed_expenses_by_year_and_month(year, month, user)
         for fixed_expense in fixed_expenses:
+            print(f'{fixed_expense.description}: {fixed_expense.value}')
             fixed += fixed_expense.value
     return revenue, expenses, cards, cash, fixed

@@ -144,7 +144,7 @@ def get_transactions_by_description(request, description):
     year = datetime.today().year
     month = datetime.today().month
     transactions = transaction_services.get_transactions_by_description(description, request.user)
-    revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(transactions)
+    revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(transactions, year, month)
     templatetags = set_templatetags()
     set_dashboard_templatetags(templatetags, revenue, expenses, cards, cash, fixed)
     set_transaction_navigation_templatetags(templatetags, year, month)
@@ -170,7 +170,7 @@ def get_transactions_by_year(request, year):
         HttpResponse: Uma resposta HTTP que renderiza a página de lançamentos do ano especificado.
     """
     transactions = transaction_services.get_transactions_by_year(year, request.user)
-    revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(transactions)
+    revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(transactions, year, 1)
     templatetags = set_templatetags()
     set_dashboard_templatetags(templatetags, revenue, expenses, cards, cash, fixed)
     set_transaction_navigation_templatetags(templatetags, year)
@@ -194,10 +194,12 @@ def get_current_month_transactions(request):
         HttpResponse: Uma resposta HTTP que renderiza a página de lançamentos do mês atual.
     """
     current_month = next_month_view_repository.get_current_month(request.user)
+    year = current_month.year
+    month = current_month.month
     transactions = transaction_services.get_transactions_by_year_and_month(
-        year=current_month.year, month=current_month.month, user=request.user
+        year=year, month=month, user=request.user
     )
-    revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(transactions)
+    revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(transactions, year, month)
     templatetags = set_templatetags()
     set_dashboard_templatetags(templatetags, revenue, expenses, cards, cash, fixed)
     set_transaction_navigation_templatetags(templatetags, current_month)
@@ -227,7 +229,7 @@ def get_transactions_by_year_and_month(request, year, month):
         mês especificados.
     """
     transactions = transaction_services.get_transactions_by_year_and_month(year, month, request.user)
-    revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(transactions)
+    revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(transactions, year, month)
     templatetags = set_templatetags()
     set_dashboard_templatetags(templatetags, revenue, expenses, cards, cash, fixed)
     set_transaction_navigation_templatetags(templatetags, year, month)
@@ -256,7 +258,7 @@ def get_fixed_transactions_by_year_and_month(request, year, month):
     """
     transactions = transaction_services.get_fixed_transactions_by_year_and_month(year, month, request.user)
     fixed_expenses = fixed_expenses_services.get_fixed_expenses_by_year_and_month(year, month, request.user)
-    revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(transactions)
+    revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(transactions, year, month)
     templatetags = set_templatetags()
     set_dashboard_templatetags(templatetags, revenue, expenses, cards, cash, fixed)
     set_transaction_navigation_templatetags(templatetags, year, month)

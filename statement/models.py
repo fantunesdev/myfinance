@@ -147,6 +147,9 @@ class FixedExpenses(models.Model):
     value = models.FloatField(default=0)
     user = models.ForeignKey(User, on_delete=models.PROTECT)
 
+    def __str__(self):
+        return self.description
+
 
 class Version(models.Model):
     """
