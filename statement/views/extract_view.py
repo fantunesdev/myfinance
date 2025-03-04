@@ -18,7 +18,7 @@ def get_extract_by_account(request, account_id):
 @login_required
 def get_extract_by_account_and_year(request, account_id, year):
     transactions = extract_services.get_extract_by_account_and_year(account_id, year, request.user)
-    revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(transactions)
+    revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(transactions, year, 1)
     templatetags = set_templatetags()
     set_dashboard_templatetags(templatetags, revenue, expenses, cards, cash, fixed)
     set_transaction_navigation_templatetags(templatetags, year)
@@ -30,10 +30,12 @@ def get_extract_by_account_and_year(request, account_id, year):
 @login_required
 def get_current_month_extract_by_account(request, account_id):
     current_month = date.today()
+    month = current_month.month
+    year = current_month.year
     transactions = extract_services.get_extract_by_account_year_and_month(
-        account_id, current_month.year, current_month.month, request.user
+        account_id, year, month, request.user
     )
-    revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(transactions)
+    revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(transactions, year, month)
     templatetags = set_templatetags()
     set_dashboard_templatetags(templatetags, revenue, expenses, cards, cash, fixed)
     set_transaction_navigation_templatetags(templatetags, current_month)
@@ -51,7 +53,7 @@ def get_extract_by_account_year_and_month(request, account_id, year, month):
     transactions = extract_services.get_extract_by_account_year_and_month(
         account_id, year, month, request.user
     )
-    revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(transactions)
+    revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(transactions, year, month)
     templatetags = set_templatetags()
     set_dashboard_templatetags(templatetags, revenue, expenses, cards, cash, fixed)
     set_transaction_navigation_templatetags(templatetags, year, month)

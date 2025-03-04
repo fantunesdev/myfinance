@@ -10,7 +10,7 @@ from statement.services import extract_services, invoice_services
 @login_required
 def get_invoice_by_account(request, card_id):
     templatetags = set_templatetags()
-    templatetags['transactions'] = invoice_services.get_extract_by_account(card_id, request.user)
+    # templatetags['transactions'] = invoice_services.get_extract_by_account(card_id, request.user)
     set_menu_templatetags(request.user, templatetags)
     return render(request, 'transaction/get_transactions.html', templatetags)
 
@@ -18,7 +18,7 @@ def get_invoice_by_account(request, card_id):
 @login_required
 def get_invoice_by_account_and_year(request, card_id, year):
     transactions = extract_services.get_extract_by_account_and_year(card_id, year, request.user)
-    revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(transactions)
+    revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(transactions, year, 1)
     templatetags = set_templatetags()
     set_dashboard_templatetags(templatetags, revenue, expenses, cards, cash, fixed)
     set_transaction_navigation_templatetags(templatetags, year)
@@ -30,10 +30,12 @@ def get_invoice_by_account_and_year(request, card_id, year):
 @login_required
 def get_current_month_invoice_by_card(request, card_id):
     current_month = date.today()
+    year = current_month.year
+    month = current_month.month
     transactions = invoice_services.get_invoice_by_card_year_and_month(
-        card_id, current_month.year, current_month.month, request.user
+        card_id, year, month, request.user
     )
-    revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(transactions)
+    revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(transactions, year, month)
     templatetags = set_templatetags()
     set_dashboard_templatetags(templatetags, revenue, expenses, cards, cash, fixed)
     set_transaction_navigation_templatetags(templatetags, current_month)
@@ -49,7 +51,7 @@ def get_current_month_invoice_by_card(request, card_id):
 @login_required
 def get_invoice_by_card_year_and_month(request, card_id, year, month):
     transactions = invoice_services.get_invoice_by_card_year_and_month(card_id, year, month, request.user)
-    revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(transactions)
+    revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(transactions, year, month)
     templatetags = set_templatetags()
     set_dashboard_templatetags(templatetags, revenue, expenses, cards, cash, fixed)
     set_transaction_navigation_templatetags(templatetags, year, month)

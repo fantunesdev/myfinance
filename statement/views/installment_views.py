@@ -14,7 +14,9 @@ from statement.services import installment_services, transaction_installment_ser
 def detail_installment(request, id):
     installment = installment_services.get_installment_by_id(id, request.user)
     transactions = transaction_installment_services.get_transaction_by_installment(installment)
-    revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(transactions)
+    year = transactions[0].release_date.year
+    month = transactions[0].release_date.month
+    revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(transactions, year, month)
     templatetags = set_templatetags()
     set_dashboard_templatetags(templatetags, revenue, expenses, cards, cash, fixed)
     set_menu_templatetags(request.user, templatetags)
