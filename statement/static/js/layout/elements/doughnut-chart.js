@@ -4,13 +4,12 @@ export function drawDoughnutChart(dataset, label, onClickCallback, select) {
         type: 'doughnut',
         data: {
             labels: dataset.names,
-            backgroundColor: 'rgba(0, 0, 0, 1)',
             datasets: [{
                 label: label,
                 data: dataset.values,
                 backgroundColor: dataset.colors,
                 borderWidth: 4,
-                borderColor: 'rgba(50, 50, 50, 0.2)',
+                borderColor: 'rgba(12, 12, 12, 0.2)',
                 hoverOffset: 4
             }]
         },

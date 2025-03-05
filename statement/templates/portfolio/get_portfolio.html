@@ -5,7 +5,10 @@
 
 {% block title %}Carteira{% endblock %}
 
-    {% block styles %}<link rel="stylesheet" href="{% static 'css/portfolio.css' %}">{% endblock %}
+    {% block styles %}
+        <link rel="stylesheet" href="{% static 'css/portfolio.css' %}">
+        <link rel="stylesheet" href="{% static 'css/dashboards.css' %}">
+    {% endblock %}
 
     {% block content %}
 
@@ -14,7 +17,14 @@
             <h3 class="box-title">Carteira</h3>
         </div>
         <div class="box-body" id="statement-box">
-
+            <div class="dashboard">
+                <div class="line">
+                    <canvas id="line-chart" width="40" height="15"></canvas>
+                </div>
+                <div class="doughnut">
+                    <canvas id="donnut-chart" style="width: 20%;" height="15"></canvas>
+                </div>
+            </div>
             <div class="dashboard-items-row">
                 <a href="{% url 'list_fixed_income' %}" class="dashboard-item">
                     <p>Renda Fixa</p>
@@ -36,22 +46,13 @@
                     <p>{{ total_amount | to_reais }}</p>
                 </a>
             </div>
-
-            <br><br>
-            <h3>Desenvolver dashbord clicável com</h3>
-            <ul>
-                <li>Gráfico de rosca com porcentagem em reda fixa e em renda variável</li>
-                <li>Gráfico de área com os investimentos dos últimos doze meses</li>
-                <li>Ao clicar em Patrimônio Total, o gráfico de rosca pode mudar entre Renda Fixa e Renda Variável ou Renda Fixa, Ações e Crypto</li>
-            </ul>
         </div>
         <div class="box-footer">
-            <span>Total de itens listados: </span>
         </div>
     </div>
-    <style>
-    </style>
     {% endblock %}
 
     {% block scripts %}
+        <script src="{% static 'js/pages/portfolio-page.js' %}" type="module"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.0/dist/chart.min.js"></script>
     {% endblock %}
