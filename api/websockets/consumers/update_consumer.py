@@ -1,10 +1,16 @@
+import json
+
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
 
 class UpdateConsumer(AsyncJsonWebsocketConsumer):
+    """
+    Consumer responsável por gerenciar a comunicação WebSocket para enviar atualizações aos 
+    clientes conectados.
+    """
     async def connect(self):
         """
-        Aceita a conexão WebSocket e adiciona o cliente a um grupo.
+        Aceita a conexão WebSocket e adiciona o cliente ao grupo "updates".
         """
         await self.channel_layer.group_add("updates", self.channel_name)
         await self.accept()
@@ -17,6 +23,7 @@ class UpdateConsumer(AsyncJsonWebsocketConsumer):
 
     async def send_websocket_update(self, event):  # Alterado o nome
         """
-        Envia a mensagem para os clientes conectados.
+        Envia a atualização para os clientes conectados.
         """
-        await self.send(text_data=event)
+        text_data = json.dumps(event)
+        await self.send(text_data=text_data)
