@@ -2,6 +2,10 @@
 console.log('Script carregado.');
 
 function connectWebSocket() {
+    const wsProtocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+    const wsHost = window.location.hostname;
+    const wsPort = wsHost === 'localhost' ? "8765" : '';
+    const wsEndpoint = "/ws/";
     /** @todo remover debuuging */
     console.log('Chamando connectWebSocket()...');
 
@@ -10,7 +14,7 @@ function connectWebSocket() {
         return;
     }
 
-    window.socket = new WebSocket('ws://localhost:8765/ws/');
+    window.socket = new WebSocket(`${wsProtocol}${wsHost}:${wsPort}${wsEndpoint}`);
     /** @todo remover debuuging */
     console.log('WebSocket criado:', window.socket);
 
