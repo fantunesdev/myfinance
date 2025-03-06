@@ -246,7 +246,6 @@ def calculate_total_revenue_expenses(transactions, year, month):
 
                 # Contagem das despesas fixas
                 if transaction.fixed:
-                    print(f'{transaction.description}: {transaction.value}')
                     fixed += transaction.value
 
                 # Contagem total de gastos
@@ -259,6 +258,5 @@ def calculate_total_revenue_expenses(transactions, year, month):
         user = transactions[0].user
         fixed_expenses = fixed_expenses_services.get_fixed_expenses_by_year_and_month(year, month, user)
         for fixed_expense in fixed_expenses:
-            print(f'{fixed_expense.description}: {fixed_expense.value}')
             fixed += fixed_expense.value
     return revenue, expenses, cards, cash, fixed
