@@ -4,7 +4,6 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
 
 from statement.models import Version
-from statement.services import category_services
 
 
 def get_defaults():

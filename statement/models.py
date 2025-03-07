@@ -10,7 +10,6 @@ class Category(models.Model):
     color = models.CharField(max_length=7, null=True, blank=True)
     icon = models.CharField(max_length=100, null=True, blank=True)
     ignore = models.BooleanField(blank=True)
-    user = models.ForeignKey(User, on_delete=models.PROTECT)
 
     def __str__(self):
         return self.description

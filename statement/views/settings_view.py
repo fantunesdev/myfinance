@@ -3,7 +3,7 @@ from django.shortcuts import render
 
 from statement.models import FixedIncomeSecurity
 from statement.repositories.templatetags_repository import set_menu_templatetags, set_templatetags
-from statement.services.category_services import CategoryServices
+from statement.services.category_service import CategoryService
 from statement.services.index_services import IndexServices
 from statement.services import (
     account_services,
@@ -28,7 +28,7 @@ def setup_settings(request):
     templatetags['banks'] = bank_services.get_banks()
     templatetags['flags'] = flag_services.get_flags()
     templatetags['cards'] = card_services.get_cards(request.user)
-    templatetags['categories'] = CategoryServices.get_categories(request.user)
+    templatetags['categories'] = CategoryService.get_all()
     templatetags['fixed_expenses'] = fixed_expenses_services.get_fixed_expenses(request.user)
     templatetags['indexes'] = IndexServices.all()
     templatetags['subcategories'] = subcategory_services.get_subcategories(request.user)

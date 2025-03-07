@@ -4,7 +4,7 @@ from django.shortcuts import redirect, render
 from ..forms.category_form import CategoryForm
 from ..forms.general_forms import ExclusionForm
 from ..repositories.templatetags_repository import set_menu_templatetags, set_templatetags
-from ..services.category_services import CategoryServices
+from ..services.category_service import CategoryService
 
 
 @login_required
@@ -22,7 +22,7 @@ def create_category(request):
     if request.method == 'POST':
         category_form = CategoryForm(request.POST, request.FILES)
         if category_form.is_valid():
-            CategoryServices.create(category_form, request.user)
+            CategoryService.create(category_form)
             return redirect('setup_settings')
     else:
         category_form = CategoryForm()
@@ -45,10 +45,10 @@ def update_category(request, id):
         HttpResponseRedirect: Redireciona para 'setup_settings' se a categoria for atualizada com sucesso.
         HttpResponse: Renderiza o formulário de edição caso os dados sejam inválidos ou a requisição seja GET.
     """
-    old_category = CategoryServices.get_category_by_id(id, request.user)
+    old_category = CategoryService.get_by_id(id)
     category_form = CategoryForm(request.POST or None, request.FILES or None, instance=old_category)
     if category_form.is_valid():
-        CategoryServices.update(category_form, old_category)
+        CategoryService.update(category_form, old_category)
         return redirect('setup_settings')
     templatetags = set_templatetags()
     set_menu_templatetags(request.user, templatetags)
@@ -70,9 +70,9 @@ def delete_category(request, id):
         HttpResponseRedirect: Redireciona para 'setup_settings' se a categoria for excluída com sucesso.
         HttpResponse: Renderiza a página de confirmação de exclusão caso a requisição seja GET.
     """
-    category = CategoryServices.get_category_by_id(id, request.user)
+    category = CategoryService.get_by_id(id)
     if request.method == 'POST':
-        CategoryServices.delete(category)
+        CategoryService.delete(category)
         return redirect('setup_settings')
     templatetags = set_templatetags()
     set_menu_templatetags(request.user, templatetags)
