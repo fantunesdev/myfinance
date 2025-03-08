@@ -700,8 +700,18 @@ td a:hover {
     margin-right: 10px;
 }
 
+.mt-10 {
+    margin-top: 10px;
+}
+
 .mt-15 {
     margin-top: 15px;
+}
+.mt-20 {
+    margin-top: 20px;
+}
+.mt-25 {
+    margin-top: 25px;
 }
 
 .ml-15 {
@@ -726,6 +736,22 @@ td a:hover {
 
 .mr-25 {
     margin-right: 25px;
+}
+
+.mb-10 {
+    margin-bottom: 10px;
+}
+
+.mb-15 {
+    margin-bottom: 15px;
+}
+
+.mb-20 {
+    margin-bottom: 20px;
+}
+
+.mb-25 {
+    margin-bottom: 25px;
 }
 
 /* FIM ALINHAMENTOS HORIZONTAIS E VERTICAIS */
@@ -794,7 +820,6 @@ td a:hover {
     border: 1px solid #404040;
     color: #ccc;
     font-family: Ubuntu;
-
 }
 
 .form-input {

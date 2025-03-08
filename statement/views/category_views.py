@@ -4,7 +4,7 @@ from django.shortcuts import redirect, render
 from ..forms.category_form import CategoryForm
 from ..forms.general_forms import ExclusionForm
 from ..repositories.templatetags_repository import set_menu_templatetags, set_templatetags
-from ..services.category_service import CategoryService
+from ..services.category import CategoryService
 
 
 @login_required

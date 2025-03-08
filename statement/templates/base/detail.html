@@ -1,0 +1,52 @@
+{% extends "index.html" %}
+{% load custom_tags %}
+
+    {% block title %}Exclusão da categoria {{ category.description }}{% endblock %}
+
+    {% block content %}
+        <div class="box box-primary">
+            <form method="post">
+                <div class="box-title">
+                    <h3>
+                        Atenção! Você está prestes excluir a seguinte {{ class_title }}. Esta operação é irreversível!
+                    </h3>
+                </div>
+                <div class="box-body">
+                    <div class="mb-25">
+                        {{instance_atts}}
+                        {% for key, value in instance_attrs.items %}
+                        <p class="font-16">{{ key | capitalize_first }}: 
+                            {% if key == 'color' %}
+                                <i class="fa-solid fa-circle" style="color: {{ value }};"></i>
+                            {% elif key == 'icon' %}
+                                <i class="{{ value }}"></i>
+                            {% else %}
+                                <strong>{{ value }}</strong>
+                            {% endif %}
+                        </p>
+                        {% endfor %}
+                    </div>
+                    {% if 'remover' in request.path %}
+                        <div class="btn btn-danger">
+                            <p>
+                            {% csrf_token %}
+                            {{ exclusion_form }}
+                            Sim, desejo excluir e estou ciente de que esta operação é irreversível.
+                            </p>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="box-footer">
+                    <form method="post">
+                        {% csrf_token %}
+                        <a href="{{request.META.HTTP_REFERER}}"><input type="button" value="Voltar" class="btn btn-primary"></a>
+                        {% if 'remover' in request.path %}
+                            <input type="submit" value="Excluir" class="btn btn-danger">
+                        {% endif %}
+                    </form>
+                </div>
+            </form>
+
+        </div>
+
+    {% endblock %}

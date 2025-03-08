@@ -3,7 +3,7 @@ from django.shortcuts import render
 
 from statement.models import FixedIncomeSecurity
 from statement.repositories.templatetags_repository import set_menu_templatetags, set_templatetags
-from statement.services.category_service import CategoryService
+from statement.services.category import CategoryService
 from statement.services.index_services import IndexServices
 from statement.services import (
     account_services,

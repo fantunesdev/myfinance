@@ -49,3 +49,12 @@ def calculate_remaining_months(dream):
         difference_months = dream.limit_date.month - today.month
         return diference_months_in_years + difference_months
     return 0
+
+@register.filter
+def capitalize_first(value):
+    """
+    Capitaliza apenas a primeira letra de cada palavra.
+    """
+    if isinstance(value, str):
+        return value.capitalize()  # Primeira letra maiúscula, as outras minúsculas
+    return value
