@@ -256,3 +256,53 @@ class FixedIncome(models.Model):
 
     class Meta:
         ordering = ['investment_date']
+
+class Ticker(models.Model):
+    """Representa um ticker de ativo financeiro."""
+    description = models.CharField(max_length=255)
+    code = models.CharField(max_length=10)
+
+    def __str__(self):
+        return self.code
+
+    class Meta:
+        ordering = ['description']
+
+class Sector(models.Model):
+    """Representa um setor de mercado."""
+    description = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.description
+
+    class Meta:
+        ordering = ['description']
+
+class VariableIncome(models.Model):
+    """Representa um ativo de renda variável."""
+    CHOICES = [('active', 'Ativo'), ('sold', 'Vendido')]
+
+    account = models.ForeignKey(Account, on_delete=models.PROTECT)
+    ticker = models.ForeignKey(Ticker, on_delete=models.PROTECT)
+    user = models.ForeignKey(User, on_delete=models.PROTECT)
+
+    def __str__(self):
+        return self.ticker.code
+
+    class Meta:
+        ordering = ['ticker__code']
+
+class AssetTransaction(models.Model):
+    """Representa uma transação de ativo."""
+    CHOICES = [('buy', 'Compra'), ('sell', 'Venda')]
+
+    variable_income = models.ForeignKey(VariableIncome, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField()
+    value = models.DecimalField(max_digits=10, decimal_places=2)
+    transaction_type = models.CharField(max_length=10, choices=CHOICES)
+    date = models.DateField()
+    broker_fee = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    capital_gain_tax = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+
+    class Meta:
+        ordering = ['date']

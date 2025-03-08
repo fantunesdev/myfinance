@@ -5,6 +5,8 @@ from statement.models import FixedIncomeSecurity
 from statement.repositories.templatetags_repository import set_menu_templatetags, set_templatetags
 from statement.services.category import CategoryService
 from statement.services.index_services import IndexServices
+from statement.services.portfolio.variable_income.sector import SectorService
+from statement.services.portfolio.variable_income.ticker import TickerService
 from statement.services import (
     account_services,
     bank_services,
@@ -30,7 +32,13 @@ def setup_settings(request):
     templatetags['cards'] = card_services.get_cards(request.user)
     templatetags['categories'] = CategoryService.get_all()
     templatetags['fixed_expenses'] = fixed_expenses_services.get_fixed_expenses(request.user)
+
+    # Renda Fixa
     templatetags['indexes'] = IndexServices.all()
     templatetags['subcategories'] = subcategory_services.get_subcategories(request.user)
     templatetags['fixed_income_securities'] = FixedIncomeSecurity.objects.all()
+
+    # Renda Variável
+    templatetags['sectors'] = SectorService.get_all()
+    templatetags['tickers'] = TickerService.get_all()
     return render(request, 'general/setup_settings.html', templatetags)

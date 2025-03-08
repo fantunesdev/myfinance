@@ -31,12 +31,12 @@
                     <p>{{ total_fixed_income | to_reais }}</p>
                 </a>
             
-                <a href="get_fixed_income" class="dashboard-item">
+                <a href="{% url 'get_variable_income' %}" class="dashboard-item">
                     <p>Renda Variável</p>
                     <p>{{ total_variable_income | to_reais }}</p>
                 </a>
             
-                <a href="get_fixed_income" class="dashboard-item">
+                <a href="{% url 'list_fixed_income' %}" class="dashboard-item">
                     <p>Criptomoedas</p>
                     <p>{{ total_cryptocurrencies | to_reais }}</p>
                 </a>

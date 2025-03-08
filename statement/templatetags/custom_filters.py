@@ -49,3 +49,9 @@ def bool_to_portuguese(boolean):
     if boolean:
         return 'Sim'
     return 'Não'
+
+
+@register.filter
+def get_fields(instance):
+    """Retorna uma lista de tuplas (campo, valor) da instância do modelo."""
+    return [(field.name, getattr(instance, field.name)) for field in instance._meta.fields]
