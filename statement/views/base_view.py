@@ -4,7 +4,6 @@ from datetime import date
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 from django.utils.decorators import method_decorator
-from django.utils.translation import activate
 
 from statement.forms.general_forms import ExclusionForm
 from statement.services import account_services, card_services
@@ -16,6 +15,7 @@ class BaseView:
     """
     class_has_user = False
     class_title = False
+    column_names = []
     form_class = None
     model = None
     service = None
@@ -26,7 +26,7 @@ class BaseView:
         Inicializador da classe
         """
         self.templatetags = {}
-        self.snake_case_classname = self.classname_to_snake_case()
+        self.snake_case_classname = self.pascal_to_snake()
 
     def _get_user(self, request):
         """
@@ -60,8 +60,9 @@ class BaseView:
         instances = self.service.get_all(user)
         specific_content = {
             'instances': instances,
+            'fields': list(map(lambda item: item[0], self.form_class().fields.items())),
         }
-        return self.render_form(request, None, 'list.html', specific_content)
+        return self.render_form(request, None, 'base/list.html', specific_content)
 
     @method_decorator(login_required)
     def get_by_id(self, request, id):
@@ -87,7 +88,6 @@ class BaseView:
             return redirect(self.redirect_url)
         specific_content = {
             'old_instance': instance,
-            'delete_url': f'delete_{self.snake_case_classname}',
         }
         return self.render_form(request, form, 'base/form.html', specific_content)
 
@@ -100,14 +100,9 @@ class BaseView:
         if request.method == 'POST':
             self.service.delete(instance)
             return redirect(self.redirect_url)
-        instance_attrs = {
-            key: value
-            for key, value in instance.__dict__.items()
-            if not key.startswith('_')
-        }
         specific_content = {
             'exclusion_form': ExclusionForm(),
-            'instance_attrs': instance_attrs,
+            'instance': instance,
         }
         return self.render_form(request, None, 'base/detail.html', specific_content)
 
@@ -136,9 +131,18 @@ class BaseView:
             'extracts': account_services.get_accounts(user),
             'invoices': card_services.get_cards(user),
             'class_title': self.class_title,
-            'snake_case_classname': self.snake_case_classname
+            'snake_case_classname': self.snake_case_classname,
+            'create_url': f'create_{self.snake_case_classname}',
+            'get_all_url': f'get_all_{self.snake_case_classname}',
+            'detail_url': f'detail_{self.snake_case_classname}',
+            'update_url': f'update_{self.snake_case_classname}',
+            'delete_url': f'delete_{self.snake_case_classname}',
+            'column_names': self.column_names,
         }
 
-    def classname_to_snake_case(self):
+    def pascal_to_snake(self):
+        """
+        Transforma um nome de PascalCase para snake_case
+        """
         classname = self.model.__name__
         return re.sub(r'(?<!^)(?=[A-Z])', '_', classname).lower()
