@@ -18,7 +18,7 @@ class BaseView:
     form_class = None
     model = None
     service = None
-    settings_list = {
+    actions_list = {
         'column_names': [],
         'create': False,
         'delete': False,
@@ -27,6 +27,13 @@ class BaseView:
         'update': False,
     }
     redirect_url = None
+    template_is_global = {
+        'create': True,
+        'delete': True,
+        'detail': True,
+        'get_all': True,
+        'update': True,
+    }
 
     def __init__(self):
         """
@@ -34,7 +41,8 @@ class BaseView:
         """
         self.templatetags = {}
         self.snake_case_classname = self.pascal_to_snake()
-        self.settings_list = self.settings_list.copy()
+        self.actions_list = self.actions_list.copy()
+        self.template_is_global = self.template_is_global.copy()
 
     def _get_user(self, request):
         """
@@ -60,7 +68,8 @@ class BaseView:
         specific_content = {
             'create': True,
         }
-        return self.render_form(request, form, 'base/form.html', specific_content)
+        template = self.set_template_by_global_status('create')
+        return self.render_form(request, form, template, specific_content)
 
     @method_decorator(login_required)
     def get_all(self, request):
@@ -73,7 +82,8 @@ class BaseView:
             'instances': instances,
             'fields': list(map(lambda item: item[0], self.form_class().fields.items())),
         }
-        return self.render_form(request, None, 'base/list.html', specific_content)
+        template = self.set_template_by_global_status('get_all')
+        return self.render_form(request, None, template, specific_content)
 
     @method_decorator(login_required)
     def detail(self, request, id):
@@ -85,7 +95,8 @@ class BaseView:
         specific_content = {
             'instance': instance,
         }
-        return self.render_form(request, None, 'base/detail.html', specific_content)
+        template = self.set_template_by_global_status('detail')
+        return self.render_form(request, None, template, specific_content)
 
     @method_decorator(login_required)
     def update(self, request, id):
@@ -101,7 +112,8 @@ class BaseView:
             'old_instance': instance,
             'update': True,
         }
-        return self.render_form(request, form, 'base/form.html', specific_content)
+        template = self.set_template_by_global_status('update')
+        return self.render_form(request, form, template, specific_content)
 
     @method_decorator(login_required)
     def delete(self, request, id):
@@ -117,7 +129,8 @@ class BaseView:
             'exclusion_form': ExclusionForm(),
             'instance': instance,
         }
-        return self.render_form(request, None, 'base/detail.html', specific_content)
+        template = self.set_template_by_global_status('delete')
+        return self.render_form(request, None, template, specific_content)
 
     def render_form(self, request, form, template, specific_content=False):
         """
@@ -151,7 +164,7 @@ class BaseView:
                 'update': f'update_{self.snake_case_classname}',
                 'delete': f'delete_{self.snake_case_classname}',
             },
-            'settings_list': self.settings_list,
+            'actions_list': self.actions_list,
         }
 
     def pascal_to_snake(self):
@@ -160,3 +173,18 @@ class BaseView:
         """
         classname = self.model.__name__
         return re.sub(r'(?<!^)(?=[A-Z])', '_', classname).lower()
+
+    def set_template_by_global_status(self, method):
+        """
+        Seta o template de acordo com o status global de cada método
+        """
+        template = {
+            'create': 'form.html',
+            'delete': 'detail.html',
+            'detail': 'detail.html',
+            'get_all': 'list.html',
+            'update': 'form.html',
+        }
+        if self.template_is_global[method]:
+            return f'base/{template[method]}'
+        return f'{self.snake_case_classname}/{template[method]}'

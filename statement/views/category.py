@@ -8,7 +8,7 @@ class CategoryView(BaseView):
     View responsável pela gestão das categorias
     """
     class_has_user = False
-    class_title = 'categoria'
+    class_title = 'Categoria'
     form_class = CategoryForm
     model = Category
     service = CategoryService

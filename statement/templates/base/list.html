@@ -3,29 +3,39 @@
 {% load custom_filters %}
 {% load custom_tags %}
 
+    {# Customização de estilos #}
     {% block styles %}
-        <link rel="stylesheet" href="{% static 'css/dashboards.css' %}">
+
     {% endblock %}
 
-    {% block title %}Renda Fixa{% endblock %}
+    {% block title %}{{ class_title }}{% endblock %}
 
     {% block content %}
+        {# Customizações de menu de navegação #}
+        {% block navigation %}
+
+        {% endblock %}
+        {# Customizações de dashboards #}
+        {% block dashboard %}
+
+        {% endblock%}
+        {# #}
     <div class="box box-primary">
         <div class="box-header">
-                <h3 class="box-title">Renda Fixa</h3>
+                <h3 class="box-title">{{ class_title }}</h3>
             </div>
             <div class="box-body" id="statement-box">
                 <table class="table" id="statement-table">
                     <thead>
                         <tr>
-                            {% for column in settings_list.column_names %}
+                            {% for column in actions_list.column_names %}
                                 <th>{{ column }}</th>
                             {% endfor %}
                             <th>Ações</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% if settings_list.create %}
+                        {% if actions_list.create %}
                             <a href="{% url urls.create %}">
                                 <input type="button" value="Cadastrar" class="btn btn-primary">
                             </a>
@@ -38,17 +48,17 @@
                                     {% endif %}
                                 {% endfor %}
                                 <td>
-                                    {% if settings_list.detail %}
+                                    {% if actions_list.detail %}
                                         <a href="{% url urls.detail instance.id %}">
                                             <i class="fa-solid fa-file-lines action-icon"></i>
                                         </a>
                                     {% endif%}
-                                    {% if settings_list.update %}
+                                    {% if actions_list.update %}
                                         <a href="{% url urls.update instance.id %}">
                                             <i class="fa-solid fa-pen-to-square action-icon"></i>
                                         </a>
                                     {% endif%}
-                                    {% if settings_list.delete %}
+                                    {% if actions_list.delete %}
                                         <a href="{% url urls.delete instance.id %}">
                                             <i class="fa-solid fa-trash action-icon"></i>
                                         </a>
@@ -65,6 +75,7 @@
         </div>
     {% endblock %}
 
+    {# Customização de scripts #}
     {% block scripts %}
         
     {% endblock %}
