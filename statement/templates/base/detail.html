@@ -2,14 +2,26 @@
 {% load custom_filters %}
 {% load custom_tags %}
 
-    {% block title %}Exclusão da categoria {{ category.description }}{% endblock %}
+    {% block title %}
+        {% spaceless %}
+            {% if delete %}
+                Exclusão
+            {% else %}
+                Detalhamento
+            {% endif %}
+        {% endspaceless %}
+    {% endblock %}
 
     {% block content %}
         <div class="box box-primary">
             <form method="post">
                 <div class="box-title">
                     <h3>
+                    {% if delete %}
                         Atenção! Você está prestes excluir a seguinte {{ class_title }}. Esta operação é irreversível!
+                    {% else %}
+                        Detalhamento {{ class_title }}
+                    {% endif %}
                     </h3>
                 </div>
                 <div class="box-body">
@@ -26,7 +38,7 @@
                             </p>
                         {% endfor %}
                     </div>
-                    {% if 'remover' in request.path %}
+                    {% if delete %}
                         <div class="btn btn-danger">
                             <p>
                             {% csrf_token %}

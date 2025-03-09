@@ -18,16 +18,18 @@
                 <table class="table" id="statement-table">
                     <thead>
                         <tr>
-                            {% for column in column_names %}
+                            {% for column in settings_list.column_names %}
                                 <th>{{ column }}</th>
                             {% endfor %}
                             <th>Ações</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <a href="{% url create_url %}">
-                            <input type="button" value="Cadastrar" class="btn btn-primary">
-                        </a>
+                        {% if settings_list.create %}
+                            <a href="{% url urls.create %}">
+                                <input type="button" value="Cadastrar" class="btn btn-primary">
+                            </a>
+                        {% endif %}
                         {% for instance in instances %}
                             <tr>
                                 {% for key, value in instance|get_fields %}
@@ -36,12 +38,21 @@
                                     {% endif %}
                                 {% endfor %}
                                 <td>
-                                    <a href="{% url update_url instance.id %}">
-                                        <i class="fa-solid fa-pen-to-square action-icon"></i>
-                                    </a>
-                                    <a href="{% url delete_url instance.id %}">
-                                        <i class="fa-solid fa-trash action-icon"></i>
-                                    </a>
+                                    {% if settings_list.detail %}
+                                        <a href="{% url urls.detail instance.id %}">
+                                            <i class="fa-solid fa-file-lines action-icon"></i>
+                                        </a>
+                                    {% endif%}
+                                    {% if settings_list.update %}
+                                        <a href="{% url urls.update instance.id %}">
+                                            <i class="fa-solid fa-pen-to-square action-icon"></i>
+                                        </a>
+                                    {% endif%}
+                                    {% if settings_list.delete %}
+                                        <a href="{% url urls.delete instance.id %}">
+                                            <i class="fa-solid fa-trash action-icon"></i>
+                                        </a>
+                                    {% endif%}
                                 </td>
                             </tr>
                         {% endfor %}

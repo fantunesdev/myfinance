@@ -1,6 +1,3 @@
-from django.contrib.auth.decorators import login_required
-from django.utils.decorators import method_decorator
-
 from statement.forms.portfolio.variable_income.variable_income import VariableIncomeForm
 from statement.models import VariableIncome
 from statement.services.portfolio.variable_income.variable_income import VariableIncomeService
@@ -14,3 +11,16 @@ class VariableIncomeView(BaseView):
     model = VariableIncome
     service = VariableIncomeService
     redirect_url = 'get_variable_income'
+
+    def __init__(self):
+        """
+        Atualiza o dicionário settings_list sem sobrescrever toda a estrutura da classe base.
+        """
+        super().__init__()
+        self.settings_list.update({
+            'column_names': ['Conta', 'Papel'],
+            'create': True,
+            'delete': True,
+            'get_all': True,
+            'update': True,
+        })

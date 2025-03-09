@@ -15,7 +15,7 @@
             <div class="box-header">
                 <h3 class="box-title">
                     {% spaceless %}
-                        {% if 'cadastrar' in request.path %}
+                        {% if create %}
                             Cadastrar {{ class_title }}
                         {% else %}
                             Editar {{ class_title }}
@@ -44,8 +44,8 @@
                 <div class="box-footer">
                     <input class="btn btn-primary" type="submit" name="submit" value="Salvar">
                     <a href="{{ request.META.HTTP_REFERER }}" class="btn btn-info">Voltar</a>
-                    {% if 'editar' in request.path %}
-                        <a href="{% url delete_url old_instance.id %}">
+                    {% if update %}
+                        <a href="{% url urls.delete old_instance.id %}">
                             <input type="button" value="Excluir" class="btn btn-danger">
                         </a>
                     {% endif %}

@@ -15,10 +15,17 @@ class BaseView:
     """
     class_has_user = False
     class_title = False
-    column_names = []
     form_class = None
     model = None
     service = None
+    settings_list = {
+        'column_names': [],
+        'create': False,
+        'delete': False,
+        'detail': False,
+        'get_all': False,
+        'update': False,
+    }
     redirect_url = None
 
     def __init__(self):
@@ -27,6 +34,7 @@ class BaseView:
         """
         self.templatetags = {}
         self.snake_case_classname = self.pascal_to_snake()
+        self.settings_list = self.settings_list.copy()
 
     def _get_user(self, request):
         """
@@ -49,7 +57,10 @@ class BaseView:
                 return redirect(self.redirect_url)
         else:
             form = self.form_class()
-        return self.render_form(request, form, 'base/form.html')
+        specific_content = {
+            'create': True,
+        }
+        return self.render_form(request, form, 'base/form.html', specific_content)
 
     @method_decorator(login_required)
     def get_all(self, request):
@@ -65,7 +76,7 @@ class BaseView:
         return self.render_form(request, None, 'base/list.html', specific_content)
 
     @method_decorator(login_required)
-    def get_by_id(self, request, id):
+    def detail(self, request, id):
         """
         Retorna uma instância específica do modelo.
         """
@@ -74,7 +85,7 @@ class BaseView:
         specific_content = {
             'instance': instance,
         }
-        return self.render_form(request, None, 'detail.html', specific_content)
+        return self.render_form(request, None, 'base/detail.html', specific_content)
 
     @method_decorator(login_required)
     def update(self, request, id):
@@ -88,6 +99,7 @@ class BaseView:
             return redirect(self.redirect_url)
         specific_content = {
             'old_instance': instance,
+            'update': True,
         }
         return self.render_form(request, form, 'base/form.html', specific_content)
 
@@ -101,6 +113,7 @@ class BaseView:
             self.service.delete(instance)
             return redirect(self.redirect_url)
         specific_content = {
+            'delete': True,
             'exclusion_form': ExclusionForm(),
             'instance': instance,
         }
@@ -131,13 +144,14 @@ class BaseView:
             'extracts': account_services.get_accounts(user),
             'invoices': card_services.get_cards(user),
             'class_title': self.class_title,
-            'snake_case_classname': self.snake_case_classname,
-            'create_url': f'create_{self.snake_case_classname}',
-            'get_all_url': f'get_all_{self.snake_case_classname}',
-            'detail_url': f'detail_{self.snake_case_classname}',
-            'update_url': f'update_{self.snake_case_classname}',
-            'delete_url': f'delete_{self.snake_case_classname}',
-            'column_names': self.column_names,
+            'urls': {
+                'create': f'create_{self.snake_case_classname}',
+                'get_all': f'get_all_{self.snake_case_classname}',
+                'detail': f'detail_{self.snake_case_classname}',
+                'update': f'update_{self.snake_case_classname}',
+                'delete': f'delete_{self.snake_case_classname}',
+            },
+            'settings_list': self.settings_list,
         }
 
     def pascal_to_snake(self):
