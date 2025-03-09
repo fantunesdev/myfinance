@@ -4,6 +4,9 @@ from statement.services.portfolio.variable_income.variable_income import Variabl
 from statement.views.base_view import BaseView
 
 class VariableIncomeView(BaseView):
+    """
+    View responsável pela gestão da Renda Variável
+    """
     class_has_user = True
     class_title = 'Renda Variável'
     column_names = ['Conta', 'Papel']
@@ -18,9 +21,5 @@ class VariableIncomeView(BaseView):
         """
         super().__init__()
         self.actions_list.update({
-            'column_names': ['Conta', 'Papel'],
-            'create': True,
-            'delete': True,
-            'get_all': True,
-            'update': True,
+            'detail': False,
         })

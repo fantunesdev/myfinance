@@ -4,6 +4,7 @@ from django.shortcuts import render
 from statement.models import FixedIncomeSecurity
 from statement.repositories.templatetags_repository import set_menu_templatetags, set_templatetags
 from statement.services.category import CategoryService
+from statement.services.subcategory import SubcategoryService
 from statement.services.index_services import IndexServices
 from statement.services.portfolio.variable_income.sector import SectorService
 from statement.services.portfolio.variable_income.ticker import TickerService
@@ -14,7 +15,6 @@ from statement.services import (
     fixed_expenses_services,
     flag_services,
     next_month_view_services,
-    subcategory_services,
 )
 
 
@@ -31,11 +31,11 @@ def setup_settings(request):
     templatetags['flags'] = flag_services.get_flags()
     templatetags['cards'] = card_services.get_cards(request.user)
     templatetags['categories'] = CategoryService.get_all()
+    templatetags['subcategories'] = SubcategoryService.get_all()
     templatetags['fixed_expenses'] = fixed_expenses_services.get_fixed_expenses(request.user)
 
     # Renda Fixa
     templatetags['indexes'] = IndexServices.all()
-    templatetags['subcategories'] = subcategory_services.get_subcategories(request.user)
     templatetags['fixed_income_securities'] = FixedIncomeSecurity.objects.all()
 
     # Renda Variável

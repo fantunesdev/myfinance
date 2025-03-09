@@ -15,16 +15,16 @@ class BaseView:
     """
     class_has_user = False
     class_title = False
+    column_names = [],
     form_class = None
     model = None
     service = None
     actions_list = {
-        'column_names': [],
-        'create': False,
-        'delete': False,
-        'detail': False,
-        'get_all': False,
-        'update': False,
+        'create': True,
+        'delete': True,
+        'detail': True,
+        'get_all': True,
+        'update': True,
     }
     redirect_url = None
     template_is_global = {

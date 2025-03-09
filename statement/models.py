@@ -18,7 +18,6 @@ class Category(models.Model):
 class Subcategory(models.Model):
     description = models.CharField(max_length=30)
     category = models.ForeignKey(Category, on_delete=models.PROTECT)
-    user = models.ForeignKey(User, on_delete=models.PROTECT)
 
     def __str__(self):
         return self.description
