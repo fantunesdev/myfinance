@@ -342,7 +342,6 @@ def update_transaction(request, id):
             else new_transaction.card.home_screen
         )
         new_transaction.home_screen = home_screen
-        validate_new_account_balance(old_transaction, new_transaction, old_transaction_copy)
         if transaction_form.cleaned_data['installment_option'] == 'parcelar':
             installment_repository.validate_installment(old_transaction_copy, new_transaction)
             return redirect('get_current_month_transactions')

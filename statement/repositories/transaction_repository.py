@@ -5,8 +5,8 @@ from dateutil.relativedelta import relativedelta
 
 from statement.entities.installment import Installment
 from statement.forms.transaction_forms import *
+from statement.services.core.account import AccountService
 from statement.services import (
-    account_services,
     fixed_expenses_services,
     installment_services,
     transaction_services,
@@ -28,107 +28,6 @@ def validate_form_by_type(type, *args):
     if type == 'entrada':
         return TransactionRevenueForm(*args)
     return TransactionExpenseForm(*args)
-
-
-def validate_account_balance(transaction):
-    """
-    Valida e atualiza o saldo da conta associada ao lançamento.
-
-    Esta função verifica se o lançamento está associada a uma conta e, se estiver, atualiza o
-    saldo da conta de acordo com o tipo de lançamento.
-
-    Args:
-        transaction (Transaction): O lançamento para validar e atualizar o saldo da conta.
-
-    Returns:
-        None
-    """
-    if transaction.account:
-        if transaction.type == 'entrada':
-            deposit(transaction.account, transaction.value)
-        else:
-            withdraw(transaction.account, transaction.value)
-
-
-def validate_account_balance_when_delete_transaction(transaction):
-    """
-    Valida e atualiza o saldo da conta ao excluir umo lançamento.
-
-    Esta função verifica se o lançamento está associada a uma conta e, se estiver, atualiza
-    o saldo da conta ao excluir o lançamento, revertendo o valor correspondente.
-
-    Args:
-        transaction (Transaction): O lançamento a ser excluída e a conta associada para atualizar
-        o saldo.
-
-    Returns:
-        None
-    """
-    if transaction.account:
-        if transaction.type == 'entrada':
-            withdraw(transaction.account, transaction.value)
-        else:
-            deposit(transaction.account, transaction.value)
-
-
-def validate_new_account_balance(old_transaction, new_transaction, old_transaction_copy):
-    """
-    Valida e atualiza o saldo da conta ao editar umo lançamento.
-
-    Esta função verifica se as transações antigas e novas estão associadas a uma conta e, se
-    estiverem, atualiza o saldo da conta com base nas alterações realizadas.
-
-    Args:
-        old_transaction (Transaction): O lançamento original antes da edição.
-        new_transaction (Transaction): O lançamento editada.
-        old_transaction_copy (Transaction): Uma cópia do lançamento original para manipulação
-        do saldo.
-
-    Returns:
-        None
-    """
-    if new_transaction.account:
-        if old_transaction.type == 'entrada':
-            withdraw(old_transaction_copy.account, old_transaction_copy.value)
-            if old_transaction_copy.account == new_transaction.account:
-                new_transaction.account.balance = old_transaction_copy.account.balance
-            deposit(new_transaction.account, new_transaction.value)
-        else:
-            if old_transaction_copy.card:
-                account = account_services.get_account_by_id(new_transaction.account.id, new_transaction.user)
-                old_transaction_copy.account = account
-            deposit(old_transaction_copy.account, old_transaction_copy.value)
-            if old_transaction_copy.account == new_transaction.account:
-                new_transaction.account.balance = old_transaction_copy.account.balance
-            withdraw(new_transaction.account, new_transaction.value)
-
-
-def withdraw(account, value):
-    """
-    Realiza uma retirada do valor especificado da conta.
-
-    Args:
-        account (Account): A conta da qual deseja-se retirar o valor.
-        value (float): O valor a ser retirado da conta.
-
-    Returns:
-        None
-    """
-    account_services.withdraw(account, value)
-
-
-def deposit(account, value):
-    """
-    Realiza um depósito do valor especificado na conta.
-
-    Args:
-        account (Account): A conta na qual deseja-se depositar o valor.
-        value (float): O valor a ser depositado na conta.
-
-    Returns:
-        None
-    """
-    account_services.deposit(account, value)
 
 
 def validate_installment(transaction):

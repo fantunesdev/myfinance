@@ -9,7 +9,8 @@ from rest_framework.views import APIView
 from api.serializers import file_handler_serializer, transaction_serializer
 from api.services import file_handler_services, transaction_services
 from statement.entities.transaction import Transaction
-from statement.services import currency_services, transaction_services
+from statement.services.core.currency import CurrencyService
+from statement.services import transaction_services
 
 
 class TransactionByYearAndMonth(APIView):
@@ -109,7 +110,7 @@ class TransactionsList(APIView):
                 paid=0,
                 fixed=False,
                 annual=False,
-                currency=currency_services.get_currency_by_id('BRL'),
+                currency=CurrencyService.get_by_id('BRL'),
                 observation=None,
                 remember=False,
                 type=serializer.validated_data['type'],

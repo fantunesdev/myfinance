@@ -6,7 +6,7 @@ para interagir com o banco de dados e fornecer suas respectivas funcionalidades.
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
 
-from statement.services.category import CategoryService
+from statement.services.core.category import CategoryService
 
 
 def get_categories(user):

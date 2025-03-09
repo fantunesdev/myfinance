@@ -10,7 +10,8 @@ from json import JSONDecodeError
 
 from django.conf import settings
 
-from statement.services import account_services, card_services
+from statement.services.core.account import AccountService
+from statement.services.core.card import CardService
 
 
 class FileHandler:
@@ -151,7 +152,7 @@ class FileHandler:
         try:
             account = request.data['account']
             user = request.user
-            return account_services.get_account_by_id(account, user)
+            return AccountService.get_by_id(account, user)
         except ValueError:
             return None
 
@@ -168,7 +169,7 @@ class FileHandler:
         try:
             card = request.data['card']
             user = request.user
-            return card_services.get_card_by_id(card, user)
+            return CardService.get_by_id(card, user)
         except ValueError:
             return None
 

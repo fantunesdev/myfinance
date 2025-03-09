@@ -1,6 +1,6 @@
 import json
 
-from statement.services import card_services
+from statement.services.core.card import CardService
 
 
 class Transaction:
@@ -81,6 +81,6 @@ class Transaction:
 
     def set_payment_date(self):
         if self.card:
-            self.card = card_services.get_card_by_id(self.card)
+            self.card = CardService.get_by_id(self.card)
             return
         return self.release_date

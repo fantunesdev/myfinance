@@ -6,7 +6,8 @@ from django.shortcuts import redirect, render
 from django.utils.decorators import method_decorator
 
 from statement.forms.general_forms import ExclusionForm
-from statement.services import account_services, card_services
+from statement.services.core.account import AccountService
+from statement.services.core.card import CardService
 
 
 class BaseView:
@@ -154,8 +155,8 @@ class BaseView:
             'current_year': date.today().year,
             'current_month': date.today().month,
             'year_month': date.today(),
-            'extracts': account_services.get_accounts(user),
-            'invoices': card_services.get_cards(user),
+            'extracts': CardService.get_all(user),
+            'invoices': AccountService.get_all(user),
             'class_title': self.class_title,
             'urls': {
                 'create': f'create_{self.snake_case_classname}',

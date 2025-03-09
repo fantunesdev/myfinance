@@ -1,6 +1,6 @@
 from django.urls import path
 
-from statement.views.category import CategoryView
+from statement.views.core.category import CategoryView
 
 category_view = CategoryView()
 

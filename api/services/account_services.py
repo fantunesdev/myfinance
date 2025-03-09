@@ -6,7 +6,7 @@ para interagir com o banco de dados e fornecer suas respectivas funcionalidades.
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
 
-from statement.services import account_services
+from statement.services.core.account import AccountService
 
 
 def get_accounts(user):
@@ -22,7 +22,7 @@ def get_accounts(user):
     Raises:
     Http404: Se nenhuma conta estiver associada ao usuário.
     """
-    accounts = account_services.get_accounts(user)
+    accounts = AccountService.get_all(user)
     if accounts:
         return accounts
     else:
@@ -44,6 +44,6 @@ def get_account_by_id(id, user):
     Http404: Se a conta não for encontrada com o ID e usuário fornecidos.
     """
     try:
-        return account_services.get_account_by_id(id, user)
+        return AccountService.get_by_id(id, user)
     except ObjectDoesNotExist:
         return Http404

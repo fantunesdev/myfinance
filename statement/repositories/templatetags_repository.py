@@ -2,7 +2,8 @@ from datetime import date
 
 from dateutil.relativedelta import relativedelta
 
-from statement.services import account_services, card_services
+from statement.services.core.account import AccountService
+from statement.services.core.card import CardService
 
 
 def set_templatetags():
@@ -37,8 +38,8 @@ def set_menu_templatetags(user, dictionary):
     Returns:
         None
     """
-    dictionary['extracts'] = account_services.get_accounts(user)
-    dictionary['invoices'] = card_services.get_cards(user)
+    dictionary['extracts'] = AccountService.get_all(user)
+    dictionary['invoices'] = CardService.get_all(user)
 
 
 def set_transaction_navigation_templatetags(dictionary, *args):

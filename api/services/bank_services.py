@@ -6,7 +6,7 @@ para interagir com o banco de dados e fornecer suas respectivas funcionalidades.
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
 
-from statement.services import bank_services
+from statement.services.core.bank import BankService
 
 
 def get_banks():
@@ -22,7 +22,7 @@ def get_banks():
     Raises:
     Http404: Se nenhum banco estiver associado ao usuário.
     """
-    banks = bank_services.get_banks()
+    banks = BankService.get_all()
     if banks:
         return banks
     return Http404
@@ -47,6 +47,6 @@ def get_bank_by_id(id):
     Http404: Se o banco não for encontrado com o ID e usuário fornecidos.
     """
     try:
-        return bank_services.get_bank_by_id(id)
+        return BankService.get_by_id(id)
     except ObjectDoesNotExist:
         return Http404

@@ -1,12 +1,15 @@
 from django.urls import path
 
-from statement.views.card_views import *
+from statement.views.core.card import CardView
 from statement.views.invoice_view import *
 
+card_view = CardView()
+
 urlpatterns = [
-    path('cadastrar/', create_card, name='create_card'),
-    path('editar/<int:id>/', update_card, name='update_card'),
-    path('remover/<int:id>/', delete_card, name='delete_card'),
+    path('cadastrar/', card_view.create, name='create_card'),
+    path('editar/<int:id>/', card_view.update, name='update_card'),
+    path('remover/<int:id>/', card_view.delete, name='delete_card'),
+    
     path(
         'mes_atual/',
         get_current_month_invoice_by_card,

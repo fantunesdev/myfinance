@@ -1,6 +1,6 @@
-from statement.forms.category import CategoryForm
+from statement.forms.core.category import CategoryForm
 from statement.models import Category
-from statement.services.category import CategoryService
+from statement.services.core.category import CategoryService
 from statement.views.base_view import BaseView
 
 class CategoryView(BaseView):

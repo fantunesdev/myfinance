@@ -6,10 +6,10 @@ para interagir com o banco de dados e fornecer suas respectivas funcionalidades.
 from django.http import Http404
 
 from statement.models import Subcategory
-from statement.services import subcategory_services
+from statement.services.core.subcategory import SubcategoryService
 
 
-def get_subcategories(user):
+def get_subcategories():
     """
     Obtém todas as subcategorias associadas a um usuário.
 
@@ -22,13 +22,13 @@ def get_subcategories(user):
     Raises:
     Http404: Se nenhuma conta estiver associada ao usuário.
     """
-    subcategories = subcategory_services.get_subcategories(user)
+    subcategories = SubcategoryService.get_all()
     if subcategories:
         return subcategories
     raise Http404
 
 
-def get_subcategories_by_category(category_id, user):
+def get_subcategories_by_category(category_id):
     """
     Obtém todas as subcategorias associadas a uma categoria específica de um usuário.
 
@@ -42,7 +42,7 @@ def get_subcategories_by_category(category_id, user):
     Raises:
     Http404: Se nenhuma subcategoria for encontrada para a categoria e usuário fornecidos.
     """
-    subcategories = Subcategory.objects.select_related('category').filter(category=category_id, user=user)
+    subcategories = SubcategoryService.get_by_category(category_id)
     if subcategories:
         return subcategories
     raise Http404

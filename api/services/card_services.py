@@ -6,7 +6,7 @@ para interagir com o banco de dados e fornecer suas respectivas funcionalidades.
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
 
-from statement.services import card_services
+from statement.services.core.card import CardService
 
 
 def get_cards(user):
@@ -22,7 +22,7 @@ def get_cards(user):
     Raises:
     Http404: Se nenhum cartão estiver associado ao usuário.
     """
-    cards = card_services.get_cards(user)
+    cards = CardService.get_all(user)
     if cards:
         return cards
     raise Http404
@@ -43,6 +43,6 @@ def get_card_by_id(card_id, user):
     Http404: Se o cartão não for encontrado com o ID e usuário fornecidos.
     """
     try:
-        return card_services.get_card_by_id(card_id, user)
+        return CardService.get_by_id(card_id, user)
     except ObjectDoesNotExist:
         raise Http404

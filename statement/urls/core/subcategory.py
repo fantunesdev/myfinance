@@ -1,6 +1,6 @@
 from django.urls import path
 
-from statement.views.subcategory import SubcategoryView
+from statement.views.core.subcategory import SubcategoryView
 
 subcategory_view = SubcategoryView()
 
