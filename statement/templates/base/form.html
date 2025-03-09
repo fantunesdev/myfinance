@@ -28,7 +28,7 @@
                     {% csrf_token %}
                     {% for field in form %}
                         {% if 'checkbox' in field.field.widget.input_type %}
-                            <div class="form-check mt-20">
+                            <div class="form-check mt-20 mb-20">
                                 {{ field }}
                                 <label for="{{ field.id_for_label }}">{{ field.label }}</label>
                             </div>

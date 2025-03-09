@@ -1,4 +1,4 @@
-from statement.forms.subcategory_form import SubcategoryForm
+from statement.forms.core.subcategory import SubcategoryForm
 from statement.models import Subcategory
 from statement.services.core.subcategory import SubcategoryService
 from statement.views.base_view import BaseView

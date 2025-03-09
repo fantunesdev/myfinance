@@ -47,7 +47,6 @@ def update_index(request, id):
         HttpResponse com o formulário ou redireciona para `list_fixed_income`.
     """
     old_index = IndexServices.get(id=id)
-    print(old_index)
     index_form = IndexForm(request.POST or None, request.FILES or None, instance=old_index)
     if index_form.is_valid():
         index_form.save()
