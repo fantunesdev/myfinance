@@ -83,15 +83,15 @@ class TransactionForm(forms.ModelForm):
 class TransactionExpenseForm(TransactionForm):
     def __init__(self, user, *args, **kwargs):
         super(TransactionExpenseForm, self).__init__(*args, **kwargs)
-        self.fields['category'].queryset = Category.objects.filter(user=user, type='saida')
-        self.fields['subcategory'].queryset = Subcategory.objects.filter(user=user)
+        self.fields['category'].queryset = Category.objects.filter(type='saida')
+        self.fields['subcategory'].queryset = Subcategory.objects.all()
 
 
 class TransactionRevenueForm(TransactionForm):
     def __init__(self, user, *args, **kwargs):
         super(TransactionRevenueForm, self).__init__(*args, **kwargs)
-        self.fields['category'].queryset = Category.objects.filter(user=user, type='entrada')
-        self.fields['subcategory'].queryset = Subcategory.objects.filter(user=user)
+        self.fields['category'].queryset = Category.objects.filter(type='entrada')
+        self.fields['subcategory'].queryset = Subcategory.objects.all()
 
 
 class UpdateTransactionForm(TransactionForm):

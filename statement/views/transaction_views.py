@@ -65,7 +65,6 @@ def create_transaction(request, type):
                 transaction.account.home_screen if transaction.account else transaction.card.home_screen
             )
             transaction.home_screen = home_screen
-            validate_account_balance(transaction)
             validate_installment(transaction)
             return redirect('get_current_month_transactions')
         else:
