@@ -1,5 +1,6 @@
 /statement/static/admin/
 /statement/static/rest_framework/
+/statement/migrations/*
 /static/
 /media/img/*
 /media/uploads/*
