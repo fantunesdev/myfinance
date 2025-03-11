@@ -4,8 +4,8 @@ class BaseService:
     """
     model = None
     user_field = 'user'
-    related_service = None
-    related_class_field = None
+    parent_service = None
+    parent_class_field = None
 
     @classmethod
     def create(cls, form, user=None, id=None):
@@ -14,9 +14,8 @@ class BaseService:
         """
         instance = form.save(commit=False)
         instance = cls.verify_user_field(instance, user)
-        print(id)
-        if cls.related_class_field:
-            instance = cls.add_related_instance(instance, id)
+        if cls.parent_class_field:
+            instance = cls.add_parent_instance(instance, id)
         instance.save()
         return instance
 
@@ -65,13 +64,13 @@ class BaseService:
         return instance
 
     @classmethod
-    def add_related_instance(cls, instance, id):
+    def add_parent_instance(cls, instance, id):
         """
         Atribui uma instância relacionada, se houver
         """
-        if cls.related_class_field and hasattr(cls.model, cls.related_class_field):
-            related_instance = cls.related_service.get_by_id(id, instance.user)
-            setattr(instance, cls.related_class_field, related_instance)
+        if cls.parent_class_field and hasattr(cls.model, cls.parent_class_field):
+            parent_instance = cls.parent_service.get_by_id(id, instance.user)
+            setattr(instance, cls.parent_class_field, parent_instance)
         return instance
 
     @classmethod

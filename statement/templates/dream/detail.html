@@ -51,8 +51,8 @@
                                 <td>{{ portion.date | date:"d/m/Y" }}</td>
                                 <td>{{ portion.value| to_reais}}</td>
                                 <td>
-                                    <a href="{% url 'update_portion' instance.id portion.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
-                                    {% comment %} <a href="{% url 'delete_portion' portion.id %}"><i class="fa-solid fa-trash action-icon"></i></a> {% endcomment %}
+                                    <a href="{% url 'update_portion' portion.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
+                                    <a href="{% url 'delete_portion' portion.id %}"><i class="fa-solid fa-trash action-icon"></i></a>
                                 </td>
                             </tr>
                             {% endfor %}

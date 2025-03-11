@@ -40,6 +40,9 @@
                             </div>
                         {% endif %}
                     {% endfor %}
+                    {% block child_model %}
+                    
+                    {% endblock%}
                 </div>
                 <div class="box-footer">
                     <input class="btn btn-primary" type="submit" name="submit" value="Salvar">

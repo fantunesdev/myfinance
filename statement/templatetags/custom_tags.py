@@ -4,7 +4,6 @@ from dateutil.relativedelta import relativedelta
 from django import template
 from django.utils.formats import number_format
 
-from statement.services import dream_services
 from statement.services.dream.portion import PortionService
 
 register = template.Library()

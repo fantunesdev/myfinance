@@ -63,7 +63,7 @@ class BaseView:
             form = self.class_form(request.POST, request.FILES)
             if form.is_valid():
                 kwargs = {'form': form, 'user': user}
-                if self.service.related_class_field:
+                if self.service.parent_class_field:
                     kwargs['id'] = id
                 self.service.create(**kwargs)
                 return redirect(self.redirect_url)
@@ -114,9 +114,11 @@ class BaseView:
         if form.is_valid():
             self.service.update(form, instance)
             return redirect(self.redirect_url)
+        additional_context = self.add_context_on_detail(request, instance)
         specific_content = {
             'old_instance': instance,
             'update': True,
+            **additional_context,
         }
         template = self.set_template_by_global_status('update')
         return self.render_form(request, form, template, specific_content)

@@ -28,6 +28,7 @@ class DreamView(BaseView):
         self.template_is_global.update({
             'detail': False,
             'get_all': False,
+            'update': False,
         })
 
     @method_decorator(login_required)

@@ -7,8 +7,8 @@ class PortionService(BaseService):
     """Serviço para gerenciar operações relacionadas ao modelo Portion."""
     model = Portion
     user_field = 'user'
-    related_service = DreamService
-    related_class_field = 'dream'
+    parent_service = DreamService
+    parent_class_field = 'dream'
 
     @classmethod
     def get_portions_by_dream(cls, dream, user):
