@@ -19,25 +19,25 @@
                     <h3>
                     {% spaceless %}
                         {% if 'remover' in request.path %}
-                            Atenção! Você está prestes a movimentação {{ dream.description }} do dia
-                            {{ dream.release_date }}. Esta operação é irreversível.
+                            Atenção! Você está prestes a movimentação {{ instance.description }} do dia
+                            {{ instance.release_date }}. Esta operação é irreversível.
                         {% else %}
-                            {{ dream.description }}
+                            {{ instance.description }}
                         {% endif %}
                     {% endspaceless %}
                     </h3>
                 </div>
                 <div class="box-body">
-                    <p style="font-size: 18px;">Descrição: <b>{{ dream.description }}</b></p>
-                    <p style="font-size: 18px;">Valor Total: <b>{{ dream.value|to_reais }}</b></p>
-                    <p style="font-size: 18px;">Acumulado: <b>{% get_cumulative_total_for_dream dream.id request.user %}</b></p>
-                    <p style="font-size: 18px;">Valor Restante: <b>{% get_remaining_value_for_dream dream.id dream.value request.user %}</b></p>
-                    <p style="font-size: 18px;">Data Limite: <b>{{ dream.limit_date }}</b></p>
-                    <p style="font-size: 18px;">Meses Restantes: <b>{% calculate_remaining_months dream %}</b></p>
-                    <p style="font-size: 18px;">Valor das Parcelas: <b>{% calcule_remaining_installment_value dream.id dream.value dream.limit_date request.user %}</b></p>
+                    <p style="font-size: 18px;">Descrição: <b>{{ instance.description }}</b></p>
+                    <p style="font-size: 18px;">Valor Total: <b>{{ instance.value|to_reais }}</b></p>
+                    <p style="font-size: 18px;">Acumulado: <b>{% get_cumulative_total_for_dream instance.id request.user %}</b></p>
+                    <p style="font-size: 18px;">Valor Restante: <b>{% get_remaining_value_for_dream instance.id instance.value request.user %}</b></p>
+                    <p style="font-size: 18px;">Data Limite: <b>{{ instance.limit_date }}</b></p>
+                    <p style="font-size: 18px;">Meses Restantes: <b>{% calculate_remaining_months instance %}</b></p>
+                    <p style="font-size: 18px;">Valor das Parcelas: <b>{% calcule_remaining_installment_value instance.id instance.value instance.limit_date request.user %}</b></p>
 
                     <br><br>
-                    <a href="{% url 'create_portion' dream.id %}"><input type="button" value="Cadastrar Depósito" class="btn btn-primary"></a>
+                    <a href="{% url 'create_portion' instance.id %}"><input type="button" value="Cadastrar Depósito" class="btn btn-primary"></a>
                     <table class="table" id="statement-table">
                         <thead>
                             <tr>
@@ -46,15 +46,14 @@
                                 <th>Ações</th>
                             </tr>
                         </thead>
-                        <tbody>
                             {% for portion in portions %}
                             <tr>
-                            <td>{{ portion.date | date:"d/m/Y" }}</td>
-                            <td>{{ portion.value| to_reais}}</td>
-                            <td>
-                                <a href="{% url 'update_portion' dream.id portion.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
-                                <a href="{% url 'delete_portion' dream.id portion.id %}"><i class="fa-solid fa-trash action-icon"></i></a>
-                            </td>
+                                <td>{{ portion.date | date:"d/m/Y" }}</td>
+                                <td>{{ portion.value| to_reais}}</td>
+                                <td>
+                                    <a href="{% url 'update_portion' instance.id portion.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
+                                    {% comment %} <a href="{% url 'delete_portion' portion.id %}"><i class="fa-solid fa-trash action-icon"></i></a> {% endcomment %}
+                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -76,7 +75,7 @@
                     {% csrf_token %}
                     <input type="submit" value="Excluir" class="btn btn-danger">
                     {% else %}
-                    <a href="{% url 'update_dream' dream.id %}" class="btn btn-primary">Editar</a>
+                    <a href="{% url 'update_dream' instance.id %}" class="btn btn-primary">Editar</a>
                     {% endif %}
                 </div>
             </form>

@@ -9,7 +9,7 @@ class SubcategoryView(BaseView):
     """
     class_has_user = True
     class_title = 'Subcategoria'
-    form_class = SubcategoryForm
+    class_form = SubcategoryForm
     model = Subcategory
     service = SubcategoryService
     redirect_url = 'setup_settings'

@@ -1,13 +1,13 @@
 from django import forms
 from django.utils import timezone
 
+from statement.forms.base_form import BaseForm
 from statement.models import Dream
 
-today = timezone.localtime(timezone.now()).strftime('%Y-%m-%d')
 
-
-class DreamForm(forms.ModelForm):
+class DreamForm(BaseForm):
     class Meta:
+        today = timezone.now()
         model = Dream
         fields = [
             'description',
@@ -15,8 +15,8 @@ class DreamForm(forms.ModelForm):
             'limit_date',
         ]
         widgets = {
-            'description': forms.TextInput(attrs={'class': 'form-control'}),
-            'value': forms.NumberInput(attrs={'class': 'form-control'}),
+            'description': forms.TextInput(),
+            'value': forms.NumberInput(),
             'limit_date': forms.DateInput(
                 format='%Y-%m-%d',
                 attrs={

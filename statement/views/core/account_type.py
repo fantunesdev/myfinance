@@ -9,7 +9,7 @@ class AccountTypeView(BaseView):
     """
     class_has_user = True
     class_title = 'Tipo de Conta'
-    form_class = AccountTypeForm
+    class_form = AccountTypeForm
     model = AccountType
     service = AccountTypeService
     redirect_url = 'setup_settings'

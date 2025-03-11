@@ -6,7 +6,7 @@ from statement.views.base_view import BaseView
 class SectorView(BaseView):
     class_has_user = False
     class_title = 'setor'
-    form_class = SectorForm
+    class_form = SectorForm
     model = Sector
     service = SectorService
     redirect_url = 'setup_settings'

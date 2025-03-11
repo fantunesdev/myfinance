@@ -1,0 +1,63 @@
+{% extends 'index.html' %}
+{% load static %}
+{% load custom_filters %}
+{% load custom_tags %}
+
+    {% block title %}Sonhos{% endblock %}
+
+    {% block content %}
+        
+        <div class="box box-primary">
+            <div class="box-header">
+                <h3 class="box-title">Sonhos</h3>
+            </div>
+            <div class="box-body" id="statement-box">
+                <table class="table" id="statement-table">
+                    <thead>
+                        <tr>
+                            <th>Descrição</th>
+                            <th>Valor Total</th>
+                            <th>Acumulado</th>
+                            <th>Valor Restante</th>
+                            <th>Data Limite</th>
+                            <th>Meses Restantes</th>
+                            <th>Valor das Parcelas</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <a href="{% url urls.create %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
+                        {% for instance in instances %}
+                        <tr>
+                            <td>{{ instance.description }}</td>
+                            <td>{{ instance.value | to_reais }}</td>
+                            <td>{% get_cumulative_total_for_dream instance.id request.user.id %}</td>
+                            <td>{% get_remaining_value_for_dream instance.id instance.value request.user.id %}</td>
+                            <td>{{ instance.limit_date | date:'d/m/Y' }}</td>
+                            <td>{% calculate_remaining_months instance %}</td>
+                            <td>{% calcule_remaining_installment_value instance.id instance.value instance.limit_date request.user.id %}</td>
+                            <td>
+                                <a href="{% url urls.detail instance.id %}"><i class="fa-solid fa-file-lines action-icon"></i></a>
+                                <a href="{% url urls.update instance.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
+                                <a href="{% url urls.delete instance.id %}"><i class="fa-solid fa-trash action-icon"></i></a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% if 'inativos' in request.path %}
+                    <a href="{% url 'get_dreams' %}" class="decoration-none"><p class="mt-30 font-14">Ver todos</p></a>
+                {% elif 'todos' in request.path %}
+                    <a href="{% url 'get_dreams_by_status' 'ativos' %}" class="decoration-none"><p class="mt-30 font-14">Ver ativos</p></a>
+                {% else %}
+                    <a href="{% url 'get_dreams_by_status' 'inativos' %}" class="decoration-none"><p class="mt-30 font-14">Ver inativos</p></a>
+                {% endif %}
+            </div>
+            <div class="box-footer">
+                <span>Total de itens listados: {{ dreams.count }}</span>
+            </div>
+        </div>
+    {% endblock %}
+
+    {% block scripts %}
+    {% endblock %}

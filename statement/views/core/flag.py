@@ -9,7 +9,7 @@ class FlagView(BaseView):
     """
     class_has_user = True
     class_title = 'Bandeira'
-    form_class = FlagForm
+    class_form = FlagForm
     model = Flag
     service = FlagService
     redirect_url = 'setup_settings'

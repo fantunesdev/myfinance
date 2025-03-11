@@ -14,12 +14,6 @@ class BaseView:
     """
     Classe base para views com operações CRUD padrão.
     """
-    class_has_user = False
-    class_title = False
-    column_names = [],
-    form_class = None
-    model = None
-    service = None
     actions_list = {
         'create': True,
         'delete': True,
@@ -27,7 +21,13 @@ class BaseView:
         'get_all': True,
         'update': True,
     }
+    class_has_user = False
+    class_title = False
+    column_names = [],
+    class_form = None
+    model = None
     redirect_url = None
+    service = None
     template_is_global = {
         'create': True,
         'delete': True,
@@ -54,18 +54,21 @@ class BaseView:
         return None
 
     @method_decorator(login_required)
-    def create(self, request):
+    def create(self, request, id=None):
         """
         Cria uma nova instância do modelo.
         """
         user = self._get_user(request)
         if request.method == 'POST':
-            form = self.form_class(request.POST, request.FILES)
+            form = self.class_form(request.POST, request.FILES)
             if form.is_valid():
-                self.service.create(form, user)
+                kwargs = {'form': form, 'user': user}
+                if self.service.related_class_field:
+                    kwargs['id'] = id
+                self.service.create(**kwargs)
                 return redirect(self.redirect_url)
         else:
-            form = self.form_class()
+            form = self.class_form()
         specific_content = {
             'create': True,
         }
@@ -81,7 +84,7 @@ class BaseView:
         instances = self.service.get_all(user)
         specific_content = {
             'instances': instances,
-            'fields': list(map(lambda item: item[0], self.form_class().fields.items())),
+            'fields': list(map(lambda item: item[0], self.class_form().fields.items())),
         }
         template = self.set_template_by_global_status('get_all')
         return self.render_form(request, None, template, specific_content)
@@ -93,8 +96,10 @@ class BaseView:
         """
         user = self._get_user(request)
         instance = self.service.get_by_id(id, user)
+        additional_context = self.add_context_on_detail(request, instance)
         specific_content = {
             'instance': instance,
+            **additional_context,
         }
         template = self.set_template_by_global_status('detail')
         return self.render_form(request, None, template, specific_content)
@@ -105,7 +110,7 @@ class BaseView:
         Atualiza uma instância existente do modelo.
         """
         instance = self.service.get_by_id(id)
-        form = self.form_class(request.POST or None, request.FILES or None, instance=instance)
+        form = self.class_form(request.POST or None, request.FILES or None, instance=instance)
         if form.is_valid():
             self.service.update(form, instance)
             return redirect(self.redirect_url)
@@ -189,3 +194,9 @@ class BaseView:
         if self.template_is_global[method]:
             return f'base/{template[method]}'
         return f'{self.snake_case_classname}/{template[method]}'
+
+    def add_context_on_detail(self, request, instance):
+        """
+        Permite que subclasses adicionem dados extras ao contexto.
+        """
+        return {}

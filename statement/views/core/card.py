@@ -9,7 +9,7 @@ class CardView(BaseView):
     """
     class_has_user = True
     class_title = 'Cartão'
-    form_class = CardForm
+    class_form = CardForm
     model = Card
     service = CardService
     redirect_url = 'setup_settings'

@@ -4,14 +4,19 @@ class BaseService:
     """
     model = None
     user_field = 'user'
+    related_service = None
+    related_class_field = None
 
     @classmethod
-    def create(cls, form, user=None):
+    def create(cls, form, user=None, id=None):
         """
         Cria e salva uma instância do modelo.
         """
         instance = form.save(commit=False)
         instance = cls.verify_user_field(instance, user)
+        print(id)
+        if cls.related_class_field:
+            instance = cls.add_related_instance(instance, id)
         instance.save()
         return instance
 
@@ -60,6 +65,16 @@ class BaseService:
         return instance
 
     @classmethod
+    def add_related_instance(cls, instance, id):
+        """
+        Atribui uma instância relacionada, se houver
+        """
+        if cls.related_class_field and hasattr(cls.model, cls.related_class_field):
+            related_instance = cls.related_service.get_by_id(id, instance.user)
+            setattr(instance, cls.related_class_field, related_instance)
+        return instance
+
+    @classmethod
     def filter_by_user(cls, user, id=None):
         """
         Filtra instâncias pelo usuário e, opcionalmente, pelo ID.
@@ -67,7 +82,7 @@ class BaseService:
         filters = {}
 
         if id:
-            filters['id'] = id
+            filters['id'] = id 
 
         if cls.user_field and hasattr(cls.model, cls.user_field) and user:
             filters[cls.user_field] = user

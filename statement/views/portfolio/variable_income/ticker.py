@@ -6,7 +6,7 @@ from statement.views.base_view import BaseView
 class TickerView(BaseView):
     class_has_user = False
     class_title = 'papel'
-    form_class = TickerForm
+    class_form = TickerForm
     model = Ticker
     service = TickerService
     redirect_url = 'setup_settings'

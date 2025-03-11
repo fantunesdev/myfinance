@@ -9,7 +9,7 @@ class CategoryView(BaseView):
     """
     class_has_user = False
     class_title = 'Categoria'
-    form_class = CategoryForm
+    class_form = CategoryForm
     model = Category
     service = CategoryService
     redirect_url = 'setup_settings'

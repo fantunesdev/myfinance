@@ -9,7 +9,7 @@ class BankView(BaseView):
     """
     class_has_user = True
     class_title = 'Banco'
-    form_class = BankForm
+    class_form = BankForm
     model = Bank
     service = BankService
     redirect_url = 'setup_settings'

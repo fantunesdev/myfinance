@@ -10,7 +10,7 @@ class VariableIncomeView(BaseView):
     class_has_user = True
     class_title = 'Renda Variável'
     column_names = ['Conta', 'Papel']
-    form_class = VariableIncomeForm
+    class_form = VariableIncomeForm
     model = VariableIncome
     service = VariableIncomeService
     redirect_url = 'get_variable_income'

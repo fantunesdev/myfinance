@@ -9,7 +9,7 @@ class AccountView(BaseView):
     """
     class_has_user = True
     class_title = 'Conta'
-    form_class = AccountForm
+    class_form = AccountForm
     model = Account
     service = AccountService
     redirect_url = 'setup_settings'

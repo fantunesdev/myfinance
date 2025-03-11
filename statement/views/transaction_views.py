@@ -374,7 +374,6 @@ def delete_transaction(request, id):
     exclusion_form = ExclusionForm()
     if request.POST.get('confirmation'):
         transaction_services.delete_transaction(transaction)
-        validate_account_balance_when_delete_transaction(transaction)
         return redirect('get_current_month_transactions')
     templatetags = set_templatetags()
     templatetags['exclusion_form'] = exclusion_form
