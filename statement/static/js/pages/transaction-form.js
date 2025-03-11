@@ -60,7 +60,7 @@ async function changePaymentDateInput() {
 
 
 async function changeSubcategoriesInput(categoryId) {
-    const subcategories = await services.getRelatedResource('categories', 'subcategories', categoryId);
+    const subcategories = await services.getChildrenResource('categories', 'subcategories', categoryId);
 
     selectInput.renderOptions(selects.subcategory, subcategories);
 }

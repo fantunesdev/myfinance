@@ -114,22 +114,22 @@ export async function getSpecificResource(model, id) {
 /**
  * Consulta na API uma instância específica de um modelo relacionado a outro modelo com base no ID. Por exemplo, a subcategoria de uma categoria.
  * @param {string} model - O nome do modelo.
- * @param {string} related - O nome do modelo relacionado ao primeiro modelo.
+ * @param {string} child - O nome do modelo relacionado ao primeiro modelo.
  * @param {string} id - O ID da instância.
  * @returns - Um objeto literal com todas as informações da instância.
  */
-export async function getRelatedResource(model, related, id) {
-    const sessionData = sessionStorage.getItem(`${model}-${id}-${related}`);
+export async function getChildrenResource(model, child, id) {
+    const sessionData = sessionStorage.getItem(`${model}-${id}-${child}`);
     if (sessionData) {
         return JSON.parse(sessionData);
     }
 
-    const url = `/api/${model}/${id}/${related}`,
+    const url = `/api/${model}/${id}/${child}`,
         response = await fetch(url),
         data = await response.json(),
         sessionStorageData = JSON.stringify(data);
 
-    sessionStorage.setItem(`${model}-${id}-${related}`, sessionStorageData);
+    sessionStorage.setItem(`${model}-${id}-${child}`, sessionStorageData);
     return data;
 }
 
