@@ -5,7 +5,7 @@ from statement.views.base_view import BaseView
 
 class CardView(BaseView):
     """
-    View responsável pela gestão das categorias
+    View responsável pela gestão dos cartões
     """
     class_has_user = True
     class_title = 'Cartão'

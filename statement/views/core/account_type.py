@@ -5,7 +5,7 @@ from statement.views.base_view import BaseView
 
 class AccountTypeView(BaseView):
     """
-    View responsável pela gestão das categorias
+    View responsável pela gestão dos tipos de contas
     """
     class_has_user = True
     class_title = 'Tipo de Conta'
