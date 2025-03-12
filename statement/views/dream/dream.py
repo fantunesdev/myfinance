@@ -42,7 +42,7 @@ class DreamView(BaseView):
         specific_content = {
             'instances': dreams
         }
-        return self.render_form(request, None, 'dream/list.html', specific_content)
+        return self._render(request, None, 'dream/list.html', specific_content)
 
     def add_context_on_detail(self, request, instance):
         return {

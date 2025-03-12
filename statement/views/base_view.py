@@ -62,7 +62,7 @@ class BaseView:
             'create': True, # Define o comportamento do template (create ou update)
         }
         template = self.set_template_by_global_status('create')
-        return self.render_form(request, form, template, specific_content)
+        return self._render(request, form, template, specific_content)
 
     @method_decorator(login_required)
     def get_all(self, request):
@@ -76,7 +76,7 @@ class BaseView:
             'fields': list(map(lambda item: item[0], self.class_form().fields.items())),
         }
         template = self.set_template_by_global_status('get_all')
-        return self.render_form(request, None, template, specific_content)
+        return self._render(request, None, template, specific_content)
 
     @method_decorator(login_required)
     def detail(self, request, id):
@@ -91,7 +91,7 @@ class BaseView:
             **additional_context,
         }
         template = self.set_template_by_global_status('detail')
-        return self.render_form(request, None, template, specific_content)
+        return self._render(request, None, template, specific_content)
 
     @method_decorator(login_required)
     def update(self, request, id):
@@ -110,7 +110,7 @@ class BaseView:
             **additional_context,
         }
         template = self.set_template_by_global_status('update')
-        return self.render_form(request, form, template, specific_content)
+        return self._render(request, form, template, specific_content)
 
     @method_decorator(login_required)
     def delete(self, request, id):
@@ -127,7 +127,7 @@ class BaseView:
             'instance': instance,
         }
         template = self.set_template_by_global_status('delete')
-        return self.render_form(request, None, template, specific_content)
+        return self._render(request, None, template, specific_content)
 
     def _get_user(self, request):
         """
@@ -137,7 +137,7 @@ class BaseView:
             return request.user
         return None
 
-    def render_form(self, request, form, template, specific_content=False):
+    def _render(self, request, form, template, specific_content=False):
         """
         Renderiza o formulário com o contexto necessário.
         """
