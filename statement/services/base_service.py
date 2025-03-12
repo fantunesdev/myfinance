@@ -14,8 +14,6 @@ class BaseService:
         """
         instance = form.save(commit=False)
         instance = cls.verify_user_field(instance, user)
-        if cls.parent_class_field:
-            instance = cls.add_parent_instance(instance, id)
         instance.save()
         return instance
 
@@ -61,16 +59,6 @@ class BaseService:
         """
         if cls.user_field and hasattr(cls.model, cls.user_field):
             setattr(instance, cls.user_field, user)
-        return instance
-
-    @classmethod
-    def add_parent_instance(cls, instance, id):
-        """
-        Atribui uma instância relacionada, se houver
-        """
-        if cls.parent_class_field and hasattr(cls.model, cls.parent_class_field):
-            parent_instance = cls.parent_service.get_by_id(id, instance.user)
-            setattr(instance, cls.parent_class_field, parent_instance)
         return instance
 
     @classmethod

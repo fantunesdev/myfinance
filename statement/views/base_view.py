@@ -45,14 +45,6 @@ class BaseView:
         self.actions_list = self.actions_list.copy()
         self.template_is_global = self.template_is_global.copy()
 
-    def _get_user(self, request):
-        """
-        Retorna o usuário da requisição, se necessário.
-        """
-        if self.class_has_user:
-            return request.user
-        return None
-
     @method_decorator(login_required)
     def create(self, request, id=None):
         """
@@ -62,15 +54,12 @@ class BaseView:
         if request.method == 'POST':
             form = self.class_form(request.POST, request.FILES)
             if form.is_valid():
-                kwargs = {'form': form, 'user': user}
-                if self.service.parent_class_field:
-                    kwargs['id'] = id
-                self.service.create(**kwargs)
+                self.service.create(form=form, user=user, id=id)
                 return redirect(self.redirect_url)
         else:
             form = self.class_form()
         specific_content = {
-            'create': True,
+            'create': True, # Define o comportamento do template (create ou update)
         }
         template = self.set_template_by_global_status('create')
         return self.render_form(request, form, template, specific_content)
@@ -139,6 +128,14 @@ class BaseView:
         }
         template = self.set_template_by_global_status('delete')
         return self.render_form(request, None, template, specific_content)
+
+    def _get_user(self, request):
+        """
+        Retorna o usuário da requisição, se necessário.
+        """
+        if self.class_has_user:
+            return request.user
+        return None
 
     def render_form(self, request, form, template, specific_content=False):
         """

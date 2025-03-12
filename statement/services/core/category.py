@@ -9,7 +9,7 @@ class CategoryService(BaseService):
     user_field = None
 
     @classmethod
-    def create(cls, form, user=None):
+    def create(cls, form, user=None, id=None):
         category = super().create(form)
         cls.send_category_update()
         return category

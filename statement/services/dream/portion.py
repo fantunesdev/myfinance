@@ -11,6 +11,13 @@ class PortionService(BaseService):
     parent_class_field = 'dream'
 
     @classmethod
+    def create(cls, form, user=None, id=None):
+        if id:
+            instance = form.save(commit=False)
+            instance.dream = DreamService.get_by_id(id, user=user)
+        return super().create(form, user, id)
+
+    @classmethod
     def get_portions_by_dream(cls, dream, user):
         return Portion.objects.filter(dream=dream, user=user)
 
