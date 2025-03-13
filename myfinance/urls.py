@@ -20,10 +20,12 @@ from django.urls import include, path
 
 from login.views import *
 from myfinance import settings
-from statement.views.transaction_views import get_current_month_transactions
+from statement.views.core.transaction import TransactionView
+
+transaction_view = TransactionView()
 
 urlpatterns = [
-    path('', get_current_month_transactions),
+    path('', transaction_view.get_current_month),
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
     path('login/', login_user, name='login_user'),
