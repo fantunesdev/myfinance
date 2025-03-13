@@ -44,7 +44,7 @@ class DreamView(BaseView):
         }
         return self._render(request, None, 'dream/list.html', specific_content)
 
-    def add_context_on_detail(self, request, instance):
+    def _add_context_on_detail(self, request, instance):
         return {
             'portions': PortionService.get_portions_by_dream(instance.id, request.user),
         }

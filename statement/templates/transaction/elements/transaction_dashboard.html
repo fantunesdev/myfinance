@@ -17,7 +17,7 @@
                     <div class="expenses">
                         <canvas id="expenses-bar-chart" width="40" height="15"></canvas>
                         <br>
-                        <b class="font-16">Total de gastos: {{ expenses | to_reais }}</b>
+                        <b class="font-16">Total de gastos: {{ dashboard.expenses | to_reais }}</b>
                     </div>
                     <div class="revenue-expenses">
                         <canvas id="amount-doughnut-chart"></canvas>
@@ -26,25 +26,25 @@
                         <canvas id="revenue-doughnut-chart"></canvas>
                     </div>
                     <div class="revenue-expenses-number">
-                        {% if difference < 0 %}
-                        <b class="font-16 red">{{ difference | to_reais }}</b>
+                        {% if dashboard.difference < 0 %}
+                        <b class="font-16 red">{{ dashboard.difference | to_reais }}</b>
                         {% else %}
-                        <b class="font-16 green">{{ difference | to_reais }}</b>
+                        <b class="font-16 green">{{ dashboard.difference | to_reais }}</b>
                         {% endif %}
                     </div>
                     <a href="{% url 'get_fixed_transactions_by_year_and_month' year_month|date:'Y' year_month|date:'m' %}">
-                        <div class="fixed">
+                        <div class="dashboard.fixed">
                             <h3>Gastos Fixos</h3>
-                            <b class="font-16">{{ fixed | to_reais }}</b>
+                            <b class="font-16">{{ dashboard.fixed | to_reais }}</b>
                         </div>
                     </a>
                     <div class="cash">
                         <h3>À vista</h3>
-                        <b class="font-16">{{ cash | to_reais }}</b>
+                        <b class="font-16">{{ dashboard.cash | to_reais }}</b>
                     </div>
                     <div class="card">
                         <h3>Cartão</h3>
-                        <b class="font-16">{{ cards | to_reais }}</b>
+                        <b class="font-16">{{ dashboard.card | to_reais }}</b>
                     </div>
                 </div>
             </div>

@@ -107,6 +107,7 @@ class Installment(models.Model):
 
 class Transaction(models.Model):
     TYPE_CHOICES = (('entrada', 'Entrada'), ('saida', 'Saída'))
+
     release_date = models.DateField()
     payment_date = models.DateField()
     account = models.ForeignKey(Account, on_delete=models.PROTECT, null=True, blank=True)
@@ -130,6 +131,9 @@ class Transaction(models.Model):
 
     def __str__(self):
         return self.description
+    
+    class Meta:
+        ordering = ['release_date']
 
 
 class NextMonthView(models.Model):

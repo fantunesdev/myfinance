@@ -1,11 +1,10 @@
-
         <div class="navigation-div">
-            <a href="{% url 'get_transactions_by_year_and_month' previous_month|date:'Y' previous_month|date:'m' %}"><i class="fa-solid fa-backward-step"></i></a>
+            <a href="{% url 'get_transactions_by_year_and_month' navigation.previous|date:'Y' navigation.previous|date:'m' %}"><i class="fa-solid fa-backward-step"></i></a>
                 <a class="nav-btn">
-                    {{ navigation_form.month }}
+                    {{ navigation.form.month }}
                 </a>
                 <a class="nav-btn mr-5">
-                    {{ navigation_form.year }} 
+                    {{ navigation.form.year }} 
                 </a>
-            <a class="nav-btn" href="{% url 'get_transactions_by_year_and_month' next_month|date:'Y' next_month|date:'m'  %}"><i class="fa-solid fa-forward-step"></i></a>
+            <a class="nav-btn" href="{% url 'get_transactions_by_year_and_month' navigation.next|date:'Y' navigation.next|date:'m'  %}"><i class="fa-solid fa-forward-step"></i></a>
         </div>

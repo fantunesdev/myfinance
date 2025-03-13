@@ -1,0 +1,179 @@
+{% extends 'index.html' %}
+{% load static %}
+
+    {% block title %}Cadastrar movimentacao{% endblock title %}
+
+    {% block content %}
+        <div class="box box-primary">
+            <div class="box-header">
+                {% if tipo == 'entrada' and movimentacao_antiga %}
+                <h3 class="box-title">Editar Entrada</h3>
+                {% elif tipo == 'saida' and movimentacao_antiga %}
+                <h3 class="box-title">Editar Saída</h3>
+                {% elif tipo == 'entrada' and not movimentacao_antiga %}
+                <h3 class="box-title">Cadastrar Entrada</h3>
+                {% elif tipo == 'saida' and not movimentacao_antiga %}
+                <h3 class="box-title">Cadastrar Saída</h3>
+                {% endif %}
+            </div>
+            <form method="post" enctype="multipart/form-data">
+                <div class="box-body">
+                        {% csrf_token %}
+                        <div class="form-input">
+                            <label for="id_payment_method">Meio de Pagamento</label>
+                            {{ form.payment_method }}
+                        </div>
+
+                        <div class="form-input">
+                            <div id="div-account">
+                                <label for="id_account">Conta</label>
+                                {{ form.account }}
+                                {{ form.account.errors }}
+                            </div>
+                            <div id="div-card">
+                                <label for="id_card">Cartao</label>
+                                {{ form.card }}
+                                {{ form.card.errors }}
+                            </div>
+                        </div>
+
+                        {% if 'editar' in request.path %}
+                        <div class="form-input">
+                            <label for="id_type">Tipo</label>
+                            {{ form.type }}
+                            {{ form.type.errors }}
+                        </div>
+                        {% endif %}
+
+                        <div class="form-input">
+                            <label for="id_release_date">Data do Lançamento</label>
+                            {{ form.release_date }}
+                            {{ form.release_date.errors }}
+                        </div>
+
+                        <div class="form-input">
+                            <label for="id_payment_date">Data de Efetivação</label>
+                            {{ form.payment_date }}
+                            {{ form.payment_date.errors }}
+                        </div>
+
+                        <div class="form-input">
+                            <label for="id_category">Categoria</label>
+                            {{ form.category }}
+                            {{ form.category.errors }}
+                        </div>
+
+                        <div class="form-input">
+                            <label for="id_subcategory">Sub Categoria</label>
+                            {{ form.subcategory }}
+                            {{ form.subcategory.errors }}
+                        </div>
+
+                        <div class="form-input">
+                            <label for="id_description">Descrição</label>
+                            {{ form.description }}
+                            {{ form.description.errors }}
+                        </div>
+
+                        <div class="form-input">
+                            <label for="id_value">Valor</label>
+                            {{ form.value }}
+                            {{ form.value.errors }}
+                        </div>
+
+                        <div class="toggled" id="div-fuel">
+                            <h3 id="div-fuel-toggler" class="cursor-pointer">Módulo Combustível -</h3>
+                            <div class="form-input">
+                                <label for="id_price">Preço</label>
+                                <input type="number" name="id_price" id="id_price" class="form-control" step="any">
+                            </div>
+    
+                            <div class="form-input">
+                                <label for="id_km">Quilômetros</label>
+                                <input type="number" name="id_km" id="id_km" class="form-control" step="any">
+                            </div>
+                        </div>
+                        <br>
+
+                        <h3 id="btn-installment" class="cursor-pointer">Parcelamento +</h3>
+
+                        <div id="div-installment" class="toggled">
+                            {% if 'editar' in request.path %}
+                            <div class="form-input">
+                                <label for="id_installment_option">Você deseja:</label>
+                                {{ form.installment_option }}
+                            </div>
+                            {% endif %}
+                            <br>
+                            <div class="form-input">
+                                <label for="id_numero_parcelas">Número de Parcelas</label>
+                                {{ form.installments_number }}
+                                {{ form.installments_number.errors }}
+                            </div>
+
+                            <div class="form-input">
+                                <label for="id_paid">Pagas</label>
+                                {{ form.paid }}
+                                {{ form.paid.errors }}
+                            </div>
+                            <br>
+                        </div>
+
+                        <h3 id="btn-other-options" class="cursor-pointer">Outras Opções +</h3>
+
+                        <div id="div-other-options" class="toggled">
+                            <br>
+                            <div class="form-input">
+                                {{ form.fixed }}
+                                <label for="id_fixed">Fixa</label>
+                                {{ form.fixed.errors }}
+                            </div>
+
+                            <div class="form-input">
+                                {{ form.annual }}
+                                <label for="id_annual">Anual</label>
+                                {{ form.annual.errors }}
+                            </div>
+
+                            <div class="form-input">
+                                <label for="id_currency">Moeda</label>
+                                {{ form.currency }}
+                                {{ form.currency.errors }}
+                            </div>
+
+                            <div class="form-input">
+                                <label for="id_observation">Observações</label>
+                                {{ form.observation }}
+                                {{ form.observation.errors }}
+                            </div>
+
+                            <div class="form-input">
+                                {{ form.remember }}
+                                {{ form.remember.errors }}
+                                <label for="id_remember">Lembrar</label>
+                            </div>
+
+                            <div class="form-input">
+                                {{ form.effected }}
+                                {{ form.effected.errors }}
+                                <label for="id_effected">Efetivado</label>
+                            </div>
+                            <br>
+                        </div>
+
+
+                </div>
+                <div class="box-footer">
+                    <input class="btn btn-primary" type="submit" name="Cadastrar">
+                    <a href="{{request.META.HTTP_REFERER}}" class="btn btn-info">Voltar</a>
+                    {% if 'editar' in request.path %}
+                    <a href="{% url urls.delete old_instance.id %}"><input type="button" value="Excluir" class="btn btn-danger"></a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    {% endblock %}
+
+    {% block scripts %}
+    <script src="{% static 'js/pages/transaction-form.js' %}" type="module"></script>
+    {% endblock %}
