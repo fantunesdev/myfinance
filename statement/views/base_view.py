@@ -41,7 +41,7 @@ class BaseView:
         Inicializador da classe
         """
         self.templatetags = {}
-        self.snake_case_classname = self.pascal_to_snake()
+        self.snake_case_classname = self._pascal_to_snake()
         self.actions_list = self.actions_list.copy()
         self.template_is_global = self.template_is_global.copy()
 
@@ -61,7 +61,7 @@ class BaseView:
         specific_content = {
             'create': True, # Define o comportamento do template (create ou update)
         }
-        template = self.set_template_by_global_status('create')
+        template = self._set_template_by_global_status('create')
         return self._render(request, form, template, specific_content)
 
     @method_decorator(login_required)
@@ -75,7 +75,7 @@ class BaseView:
             'instances': instances,
             'fields': list(map(lambda item: item[0], self.class_form().fields.items())),
         }
-        template = self.set_template_by_global_status('get_all')
+        template = self._set_template_by_global_status('get_all')
         return self._render(request, None, template, specific_content)
 
     @method_decorator(login_required)
@@ -85,12 +85,12 @@ class BaseView:
         """
         user = self._get_user(request)
         instance = self.service.get_by_id(id, user)
-        additional_context = self.add_context_on_detail(request, instance)
+        additional_context = self._add_context_on_detail(request, instance)
         specific_content = {
             'instance': instance,
             **additional_context,
         }
-        template = self.set_template_by_global_status('detail')
+        template = self._set_template_by_global_status('detail')
         return self._render(request, None, template, specific_content)
 
     @method_decorator(login_required)
@@ -103,13 +103,13 @@ class BaseView:
         if form.is_valid():
             self.service.update(form, instance)
             return redirect(self.redirect_url)
-        additional_context = self.add_context_on_detail(request, instance)
+        additional_context = self._add_context_on_detail(request, instance)
         specific_content = {
             'old_instance': instance,
             'update': True,
             **additional_context,
         }
-        template = self.set_template_by_global_status('update')
+        template = self._set_template_by_global_status('update')
         return self._render(request, form, template, specific_content)
 
     @method_decorator(login_required)
@@ -126,7 +126,7 @@ class BaseView:
             'exclusion_form': ExclusionForm(),
             'instance': instance,
         }
-        template = self.set_template_by_global_status('delete')
+        template = self._set_template_by_global_status('delete')
         return self._render(request, None, template, specific_content)
 
     def _get_user(self, request):
@@ -172,14 +172,14 @@ class BaseView:
             'actions_list': self.actions_list,
         }
 
-    def pascal_to_snake(self):
+    def _pascal_to_snake(self):
         """
         Transforma um nome de PascalCase para snake_case
         """
         classname = self.model.__name__
         return re.sub(r'(?<!^)(?=[A-Z])', '_', classname).lower()
 
-    def set_template_by_global_status(self, method):
+    def _set_template_by_global_status(self, method):
         """
         Seta o template de acordo com o status global de cada método
         """
@@ -194,7 +194,7 @@ class BaseView:
             return f'base/{template[method]}'
         return f'{self.snake_case_classname}/{template[method]}'
 
-    def add_context_on_detail(self, request, instance):
+    def _add_context_on_detail(self, request, instance):
         """
         Permite que subclasses adicionem dados extras ao contexto.
         """
