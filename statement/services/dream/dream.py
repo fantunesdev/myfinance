@@ -1,11 +1,12 @@
 from django.utils import timezone
 
-from statement.services.base_service import BaseService
 from statement.models import Dream
+from statement.services.base_service import BaseService
 
 
 class DreamService(BaseService):
     """Serviço para gerenciar operações relacionadas ao modelo Dream."""
+
     model = Dream
     user_field = 'user'
     today = timezone.now()

@@ -3,6 +3,7 @@ from django.shortcuts import render
 
 from statement.models import FixedIncomeSecurity
 from statement.repositories.templatetags_repository import set_menu_templatetags, set_templatetags
+from statement.services import fixed_expenses_services, next_month_view_services
 from statement.services.core.account import AccountService
 from statement.services.core.bank import BankService
 from statement.services.core.card import CardService
@@ -12,10 +13,6 @@ from statement.services.core.subcategory import SubcategoryService
 from statement.services.index_services import IndexServices
 from statement.services.portfolio.variable_income.sector import SectorService
 from statement.services.portfolio.variable_income.ticker import TickerService
-from statement.services import (
-    fixed_expenses_services,
-    next_month_view_services,
-)
 
 
 @login_required

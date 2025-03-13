@@ -1,8 +1,8 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 
-from statement.forms.portfolio.fixed_income.fixed_income_security_form import FixedIncomeSecurityForm
 from statement.forms.general_forms import ExclusionForm
+from statement.forms.portfolio.fixed_income.fixed_income_security_form import FixedIncomeSecurityForm
 from statement.models import FixedIncomeSecurity
 from statement.repositories.templatetags_repository import set_menu_templatetags, set_templatetags
 
@@ -34,7 +34,6 @@ def create_fixed_income_security(request):
     return render(request, 'portfolio/fixed_income/security/security_form.html', templatetags)
 
 
-
 @login_required
 def update_fixed_income_security(request, id):
     """
@@ -55,7 +54,7 @@ def update_fixed_income_security(request, id):
     templatetags = set_templatetags()
     set_menu_templatetags(request.user, templatetags)
     templatetags['security_form'] = security_form
-    return render(request, 'portfolio/fixed_income/security/security_form.html', templatetags)   
+    return render(request, 'portfolio/fixed_income/security/security_form.html', templatetags)
 
 
 @login_required

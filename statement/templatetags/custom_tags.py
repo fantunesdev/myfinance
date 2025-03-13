@@ -50,6 +50,7 @@ def calculate_remaining_months(dream):
         return diference_months_in_years + difference_months
     return 0
 
+
 @register.filter
 def capitalize_first(value):
     """

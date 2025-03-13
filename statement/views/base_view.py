@@ -14,6 +14,7 @@ class BaseView:
     """
     Classe base para views com operações CRUD padrão.
     """
+
     actions_list = {
         'create': True,
         'delete': True,
@@ -23,7 +24,7 @@ class BaseView:
     }
     class_has_user = False
     class_title = False
-    column_names = [],
+    column_names = ([],)
     class_form = None
     model = None
     redirect_url = None
@@ -59,7 +60,7 @@ class BaseView:
         else:
             form = self.class_form()
         specific_content = {
-            'create': True, # Define o comportamento do template (create ou update)
+            'create': True,  # Define o comportamento do template (create ou update)
         }
         template = self._set_template_by_global_status('create')
         return self._render(request, form, template, specific_content)

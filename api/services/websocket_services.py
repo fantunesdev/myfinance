@@ -12,6 +12,7 @@ SERIALIZERS = {
     'next_month_view': NextMonthViewSerializer,
 }
 
+
 def send_websocket_update(entity_name, data):
     """
     Envia uma atualização via WebSocket para os clientes conectados.

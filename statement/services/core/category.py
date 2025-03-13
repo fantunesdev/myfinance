@@ -1,10 +1,11 @@
 from api.services.websocket_services import send_websocket_update
-from statement.services.base_service import BaseService
 from statement.models import Category
+from statement.services.base_service import BaseService
 
 
 class CategoryService(BaseService):
     """Serviço para gerenciar operações relacionadas ao modelo Category."""
+
     model = Category
     user_field = None
 

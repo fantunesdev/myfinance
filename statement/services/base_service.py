@@ -2,6 +2,7 @@ class BaseService:
     """
     Classe base para manipulação de operações CRUD comuns em modelos.
     """
+
     model = None
     user_field = 'user'
     parent_service = None
@@ -69,7 +70,7 @@ class BaseService:
         filters = {}
 
         if id:
-            filters['id'] = id 
+            filters['id'] = id
 
         if cls.user_field and hasattr(cls.model, cls.user_field) and user:
             filters[cls.user_field] = user

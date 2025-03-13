@@ -7,8 +7,10 @@ from statement.models import VariableIncome
 
 class VariableIncomeForm(BaseForm):
     """Formulário para o modelo VariableIncome."""
+
     class Meta:
         """Metadados do formulário."""
+
         model = VariableIncome
         fields = ['account', 'ticker']
         widgets = {

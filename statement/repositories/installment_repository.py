@@ -80,9 +80,7 @@ def validate_installment(old_transaction, new_transaction):
             old_transaction.installment = installment_db
         update_installment([old_transaction], new_transaction)
     elif remove_installment:
-        transactions = transaction_installment_services.get_transaction_by_installment(
-            old_transaction.installment
-        )
+        transactions = transaction_installment_services.get_transaction_by_installment(old_transaction.installment)
         update_installment(transactions, new_transaction)
     else:
         transaction_services.update_transaction(old_transaction, new_transaction)

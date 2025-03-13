@@ -3,19 +3,20 @@ from datetime import datetime
 
 from django.db.models import Q
 
-from statement.services.base_service import BaseService
 from statement.models import FixedExpenses
+from statement.services.base_service import BaseService
 
 
 class FixedExpensesService(BaseService):
     """Serviço para gerenciar operações relacionadas ao modelo FixedExpenses."""
+
     model = FixedExpenses
     user_field = 'user'
 
     @classmethod
     def get_by_filter(cls, **kwargs):
         """
-        Retorna as despesas fixas filtradas 
+        Retorna as despesas fixas filtradas
         """
         return cls.model.objects.filter(**kwargs)
 

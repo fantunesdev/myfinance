@@ -7,10 +7,12 @@ from statement.models import Category
 
 class CategoryForm(BaseForm):
     """Formulário para o modelo Category."""
+
     ignore = forms.BooleanField(required=False)
 
     class Meta:
         """Metadados do formulário."""
+
         model = Category
         fields = ['type', 'description', 'color', 'icon', 'ignore']
         widgets = {

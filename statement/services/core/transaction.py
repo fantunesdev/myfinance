@@ -3,12 +3,13 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from django.db.models import Q
 
-from statement.services.base_service import BaseService
 from statement.models import Transaction
+from statement.services.base_service import BaseService
 
 
 class TransactionService(BaseService):
     """Serviço para gerenciar operações relacionadas ao modelo Transaction."""
+
     model = Transaction
     user_field = 'user'
 
@@ -24,7 +25,7 @@ class TransactionService(BaseService):
     @classmethod
     def get_by_filter(cls, order=None, **kwargs):
         """
-        Obtém os lançamentos de acordo com filtros passados em um dicionário. Podendo ordenar por 
+        Obtém os lançamentos de acordo com filtros passados em um dicionário. Podendo ordenar por
         algum campo selecionado.
         """
         transactions = Transaction.objects.filter(**kwargs)

@@ -1,21 +1,24 @@
 from datetime import date
+
 from dateutil.relativedelta import relativedelta
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 from django.utils.decorators import method_decorator
 from django.utils.timezone import now
 
-from statement.forms.core.transaction import TransactionForm, TransactionExpenseForm, TransactionRevenueForm
+from statement.forms.core.transaction import TransactionExpenseForm, TransactionForm, TransactionRevenueForm
 from statement.forms.general_forms import NavigationForm
 from statement.models import Transaction
 from statement.services.core.fixed_expenses import FixedExpensesService
 from statement.services.core.transaction import TransactionService
 from statement.views.base_view import BaseView
 
+
 class TransactionView(BaseView):
     """
     View responsável pela gestão dos lançamentos
     """
+
     class_has_user = True
     class_title = 'Lançamento'
     class_form = TransactionForm
@@ -28,13 +31,15 @@ class TransactionView(BaseView):
         Atualiza o dicionário template_is_global sem sobrescrever toda a estrutura da classe base.
         """
         super().__init__()
-        self.template_is_global.update({
-            'create': False,
-            'delete': False,
-            'get_all': False,
-            'detail': False,
-            'update': False,
-        })
+        self.template_is_global.update(
+            {
+                'create': False,
+                'delete': False,
+                'get_all': False,
+                'detail': False,
+                'update': False,
+            }
+        )
 
     def create(self, request, type, id=None):
         """

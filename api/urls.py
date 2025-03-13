@@ -6,9 +6,9 @@ from api.views.card_views import *
 from api.views.category_views import *
 from api.views.default_views import *
 from api.views.extract_views import *
-from api.views.portfolio.fixed_income_views import *
 from api.views.invoice_views import *
 from api.views.next_month_view_view import NextMonthView
+from api.views.portfolio.fixed_income_views import *
 from api.views.subcategoy_views import *
 from api.views.transaction_views import *
 
@@ -40,7 +40,6 @@ urlpatterns = [
     path('transactions/', TransactionsList.as_view(), name='transactions-list'),
     path('subcategories/', SubcategoryList.as_view(), name='subcategory-list'),
     path('defaults/', Defaults.as_view(), name='defaults'),
-
     # Portfolio
-    path('fixed-income/progression/', FixedIncomeProgressionList.as_view(), name='fixed_income_progression')
+    path('fixed-income/progression/', FixedIncomeProgressionList.as_view(), name='fixed_income_progression'),
 ]

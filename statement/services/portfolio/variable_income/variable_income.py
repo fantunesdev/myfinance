@@ -4,8 +4,10 @@ from statement.models import VariableIncome
 from statement.services.base_service import BaseService
 from statement.services.portfolio.variable_income.asset_transaction import AssetTransactionService
 
+
 class VariableIncomeService(BaseService):
     """Serviço para gerenciar operações relacionadas ao modelo VariableIncome."""
+
     model = VariableIncome
     field_user = 'user'
 
@@ -18,7 +20,7 @@ class VariableIncomeService(BaseService):
         if bought_quantety > 0:
             return 'active'
         return 'sold'
-    
+
     @staticmethod
     def get_averange_buy_vaule(variable_income):
         today = datetime.date.today()

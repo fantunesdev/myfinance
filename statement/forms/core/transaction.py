@@ -1,16 +1,17 @@
 from django import forms
 from django.utils import timezone
 
+from statement.forms.base_form import BaseForm
 from statement.models import Transaction
 from statement.services.core.category import CategoryService
 from statement.services.core.subcategory import SubcategoryService
-from statement.forms.base_form import BaseForm
 
 today = timezone.localtime(timezone.now()).strftime('%Y-%m-%d')
 
 
 class TransactionForm(BaseForm):
     """Formulário para o modelo Transaction."""
+
     type = forms.ChoiceField(
         label='Tipo',
         choices=(('entrada', 'Entrada'), ('saida', 'Saída')),
@@ -31,6 +32,7 @@ class TransactionForm(BaseForm):
 
     class Meta:
         """Metadados do formulário."""
+
         model = Transaction
         fields = '__all__'
         exclude = ['type', 'user']
@@ -43,6 +45,7 @@ class TransactionForm(BaseForm):
 
 class TransactionTypeForm(TransactionForm):
     """Classe base para filtrar categorias por tipo."""
+
     transaction_type = None
 
     def __init__(self, user, *args, **kwargs):
@@ -54,16 +57,19 @@ class TransactionTypeForm(TransactionForm):
 
 class TransactionExpenseForm(TransactionTypeForm):
     """Formulário para despesas"""
+
     transaction_type = 'saida'
 
 
 class TransactionRevenueForm(TransactionTypeForm):
     """Formulário para entradas"""
+
     transaction_type = 'entrada'
 
 
 class UpdateTransactionForm(TransactionForm):
     """Formulário de update"""
+
     INSTALLMENT_CHOICES = (
         ('editar', 'Editar este registro sem alterar o número de parcelas'),
         ('parcelar', 'Adicionar ou remover parcelas'),

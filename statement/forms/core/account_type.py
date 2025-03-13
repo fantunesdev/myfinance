@@ -4,7 +4,9 @@ from statement.models import AccountType
 
 class AccountTypeForm(BaseForm):
     """Formulário para o modelo AccountType."""
+
     class Meta:
         """Metadados do formulário."""
+
         model = AccountType
         fields = '__all__'

@@ -1,8 +1,10 @@
-from django.db.models import Sum
-from decimal import Decimal
 from datetime import datetime
+from decimal import Decimal
+
+from django.db.models import Sum
 
 from statement.models import FixedIncome
+
 
 class FixedIncomeService:
     @staticmethod
@@ -10,10 +12,10 @@ class FixedIncomeService:
         """
         Retorna a progressão dos investimentos para um determinado usuário,
         considerando os vencimentos.
-        
+
         Args:
             user (User): O usuário da requisição
-            
+
         Returns:
             QuerySet: QuerySet com as datas, investimentos diários e montante total
         """
@@ -37,11 +39,13 @@ class FixedIncomeService:
             current_total = running_total - Decimal(matured)
 
             # Adiciona à lista de resultados
-            result.append({
-                'date': date.strftime('%Y-%m-%d'),
-                'daily_investment': float(daily_amount),
-                'total_amount': float(current_total)
-            })
+            result.append(
+                {
+                    'date': date.strftime('%Y-%m-%d'),
+                    'daily_investment': float(daily_amount),
+                    'total_amount': float(current_total),
+                }
+            )
 
         return result
 
@@ -49,18 +53,21 @@ class FixedIncomeService:
     def get_total_amount(user):
         """
         Retorna o montante total atual de investimentos ativos para um usuário.
-        
+
         Args:
             user (User): O usuário da requisição
-            
+
         Returns:
             float: Montante total atual
         """
 
         current_date = datetime.now().date()
 
-        return FixedIncome.objects.filter(
-            user=user,
-            investment_date__lte=current_date, # less than or equal
-            maturity_date__gt=current_date, # greater than
-        ).aggregate(total=Sum('principal'))['total'] or 0
+        return (
+            FixedIncome.objects.filter(
+                user=user,
+                investment_date__lte=current_date,  # less than or equal
+                maturity_date__gt=current_date,  # greater than
+            ).aggregate(total=Sum('principal'))['total']
+            or 0
+        )

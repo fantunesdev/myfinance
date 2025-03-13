@@ -1,11 +1,14 @@
 from decimal import Decimal
+
 from django.db.models import Sum
 
 from statement.models import AssetTransaction
 from statement.services.base_service import BaseService
 
+
 class AssetTransactionService(BaseService):
     """Serviço para gerenciar operações relacionadas ao modelo AssetTransaction."""
+
     model = AssetTransaction
     field_user = 'user'
 

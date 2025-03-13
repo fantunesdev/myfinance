@@ -5,12 +5,8 @@ from dateutil.relativedelta import relativedelta
 
 from statement.entities.installment import Installment
 from statement.forms.transaction_forms import *
+from statement.services import fixed_expenses_services, installment_services, transaction_services
 from statement.services.core.account import AccountService
-from statement.services import (
-    fixed_expenses_services,
-    installment_services,
-    transaction_services,
-)
 
 
 def validate_form_by_type(type, *args):
@@ -133,9 +129,7 @@ def calculate_total_revenue_expenses(transactions, year, month):
     fixed = 0
     for transaction in transactions:
         if transaction.type == 'saida':   # Saídas
-            if (
-                not transaction.category.ignore
-            ):   # Contabiliza apenas os lançamentos das categorias não ignoradas.
+            if not transaction.category.ignore:   # Contabiliza apenas os lançamentos das categorias não ignoradas.
                 # Despesas com cartão
                 if transaction.card:
                     cards += transaction.value

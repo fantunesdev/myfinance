@@ -1,10 +1,11 @@
+from statement.models import Portion
 from statement.services.base_service import BaseService
 from statement.services.dream.dream import DreamService
-from statement.models import Portion
 
 
 class PortionService(BaseService):
     """Serviço para gerenciar operações relacionadas ao modelo Portion."""
+
     model = Portion
     user_field = 'user'
     parent_service = DreamService

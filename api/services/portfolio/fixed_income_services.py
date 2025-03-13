@@ -7,6 +7,7 @@ class FixedIncomeServices:
     """
     Service responsável por recuperar os dados registrados no banco
     """
+
     @classmethod
     def get_investment_progression(cls, user):
         """

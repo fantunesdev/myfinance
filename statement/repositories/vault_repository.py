@@ -20,9 +20,7 @@ def export_postgre_credentials():
         try:
             client = hvac.Client(url=os.environ['URL'])
             os.environ['POSTGRESQL_USER'] = client.kv.v1.read_secret('postgresql/user')['data']['user']
-            os.environ['POSTGRESQL_PASSWORD'] = client.kv.v1.read_secret('postgresql/password')['data'][
-                'password'
-            ]
+            os.environ['POSTGRESQL_PASSWORD'] = client.kv.v1.read_secret('postgresql/password')['data']['password']
             break
         except hvac.exceptions.VaultDown:
             os.system('vaultctl -u')

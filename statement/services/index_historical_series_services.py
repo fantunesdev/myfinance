@@ -1,27 +1,28 @@
-import requests
-
 from collections import defaultdict
 from datetime import date, datetime
 from types import SimpleNamespace
 from typing import Any
 
+import requests
+
 from statement.models import IndexHistoricalSeries
+
 
 class IndexHistoricalSeriesServices(IndexHistoricalSeries):
     """
     Classe de serviços para séries históricas de índices.
     """
-    
+
     def __init__(self, index: object, *args: Any, **kwargs: Any) -> None:
         """
-        Inicializa uma instância da classe IndexHistoricalSeriesServices, 
+        Inicializa uma instância da classe IndexHistoricalSeriesServices,
         repassando os argumentos fornecidos para a classe pai (IndexHistoricalSeries).
-        
+
         Args:
             index_name (str): Nome do índice.
             *args (Any): Argumentos posicionais a serem passados para o modelo Index.
             **kwargs (Any): Argumentos nomeados a serem passados para o modelo Index.
-        
+
         Raises:
             ValueError: Se 'index_name' não for fornecido.
         """
@@ -54,7 +55,7 @@ class IndexHistoricalSeriesServices(IndexHistoricalSeries):
             QuerySet: Um QuerySet contendo os objetos Index que correspondem aos filtros fornecidos.
         """
         return IndexHistoricalSeriesServices.objects.filter(**kwargs)
-    
+
     def fetch_index(self, **kwargs) -> Any:
         """
         Busca a série histórica de um índice financeiro entre datas específicas.
@@ -90,7 +91,7 @@ class IndexHistoricalSeriesServices(IndexHistoricalSeries):
 
         # Instanciar o SimpleNamespace
         selected_index = SimpleNamespace(**available_indices[index_name])
-        
+
         initial_date = kwargs.get('initial_date', None)
         final_date = kwargs.get('final_date', None)
 
@@ -114,11 +115,11 @@ class IndexHistoricalSeriesServices(IndexHistoricalSeries):
         if response.status_code == 200:
             return response.json()
 
-        raise ConnectionAbortedError(f"Erro ao tentar se conectar à API: {str(requests.RequestException)}")
-    
+        raise ConnectionAbortedError(f'Erro ao tentar se conectar à API: {str(requests.RequestException)}')
+
     def update_index_historical_series(self, **kwargs):
         index_series = self.fetch_index()
-            
+
         # Processar os dados para obter valores mensais
         monthly_data = defaultdict(list)
 
@@ -132,15 +133,11 @@ class IndexHistoricalSeriesServices(IndexHistoricalSeries):
 
         # Calcular o valor mensal (pode ser a média ou o último valor)
         monthly_averages = {
-            f"{year}-{month:02d}-01": sum(values) / len(values)  # Média dos valores
+            f'{year}-{month:02d}-01': sum(values) / len(values)  # Média dos valores
             for (year, month), values in monthly_data.items()
         }
 
         # Exibir os resultados
         for date, average in monthly_averages.items():
-            new_rate = IndexHistoricalSeries.objects.create(
-                date=date,
-                rate=average,
-                index=self.index
-            )
+            new_rate = IndexHistoricalSeries.objects.create(date=date, rate=average, index=self.index)
             new_rate.save()

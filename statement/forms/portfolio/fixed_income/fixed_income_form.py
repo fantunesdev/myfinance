@@ -5,6 +5,7 @@ from statement.models import Account, FixedIncome
 
 today = timezone.localtime(timezone.now()).strftime('%Y-%m-%d')
 
+
 class FixedIncomeForm(forms.ModelForm):
     """
     Formulário para criação e de investimentos de renda fixa.
@@ -28,16 +29,17 @@ class FixedIncomeForm(forms.ModelForm):
 
         Define o modelo e os campos a serem incluídos no formulário.
         """
+
         model = FixedIncome
         fields = [
-            'account', 
-            'security', 
-            'principal', 
-            'investment_date', 
-            'maturity_date', 
-            'index', 
-            'contractual_rate', 
-            'days'
+            'account',
+            'security',
+            'principal',
+            'investment_date',
+            'maturity_date',
+            'index',
+            'contractual_rate',
+            'days',
         ]
 
         widgets = {
@@ -61,4 +63,4 @@ class FixedIncomeForm(forms.ModelForm):
             ),
             'index': forms.Select(attrs={'class': 'form-control'}),
             'contractual_rate': forms.NumberInput(attrs={'class': 'form-control'}),
-            }
+        }

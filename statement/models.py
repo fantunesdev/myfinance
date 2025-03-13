@@ -131,7 +131,7 @@ class Transaction(models.Model):
 
     def __str__(self):
         return self.description
-    
+
     class Meta:
         ordering = ['release_date']
 
@@ -161,6 +161,7 @@ class Version(models.Model):
         version (CharField): A versão do programa. Ex.: v1.0.31.
         date (DateField): o dia do release da versão.
     """
+
     version = models.CharField(max_length=30)
     date = models.DateField()
 
@@ -196,6 +197,7 @@ class Index(models.Model):
     def __str__(self):
         return self.description
 
+
 class IndexHistoricalSeries(models.Model):
     """
     Série histórica um índice financeiro utilizado para cálculos de rendimento.
@@ -217,7 +219,7 @@ class IndexHistoricalSeries(models.Model):
 class FixedIncomeSecurity(models.Model):
     """
     Instrumento ou tipo de investimento.
-    
+
     Exemplo:
         CDB - Crédito de Depósito Bancário
         LCI - Letra de Crédito Imobiliário
@@ -226,6 +228,7 @@ class FixedIncomeSecurity(models.Model):
         description {CharField} - Nome completo do instrumento
         abbreviation {CharField} - Abreviação do nome do instrumento
     """
+
     description = models.CharField(max_length=255)
     abbreviation = models.CharField(max_length=10)
 
@@ -260,8 +263,10 @@ class FixedIncome(models.Model):
     class Meta:
         ordering = ['investment_date']
 
+
 class Ticker(models.Model):
     """Representa um ticker de ativo financeiro."""
+
     description = models.CharField(max_length=255)
     code = models.CharField(max_length=10)
 
@@ -271,8 +276,10 @@ class Ticker(models.Model):
     class Meta:
         ordering = ['description']
 
+
 class Sector(models.Model):
     """Representa um setor de mercado."""
+
     description = models.CharField(max_length=255)
 
     def __str__(self):
@@ -281,8 +288,10 @@ class Sector(models.Model):
     class Meta:
         ordering = ['description']
 
+
 class VariableIncome(models.Model):
     """Representa um ativo de renda variável."""
+
     CHOICES = [('active', 'Ativo'), ('sold', 'Vendido')]
 
     account = models.ForeignKey(Account, on_delete=models.PROTECT)
@@ -295,8 +304,10 @@ class VariableIncome(models.Model):
     class Meta:
         ordering = ['ticker__code']
 
+
 class AssetTransaction(models.Model):
     """Representa uma transação de ativo."""
+
     CHOICES = [('buy', 'Compra'), ('sell', 'Venda')]
 
     variable_income = models.ForeignKey(VariableIncome, on_delete=models.CASCADE)

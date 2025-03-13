@@ -3,6 +3,7 @@ from statement.models import Sector
 from statement.services.portfolio.variable_income.sector import SectorService
 from statement.views.base_view import BaseView
 
+
 class SectorView(BaseView):
     class_has_user = False
     class_title = 'setor'

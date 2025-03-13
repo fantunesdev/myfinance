@@ -311,9 +311,7 @@ class FileHandler:
             elif header_size == 4:
                 plus = 1
             else:
-                self.__error_message = (
-                    f'Tamanho de cabeçalho inválido: {header_size}. Tamanhos esperados: 3 e 4'
-                )
+                self.__error_message = f'Tamanho de cabeçalho inválido: {header_size}. Tamanhos esperados: 3 e 4'
                 raise ValueError(self.error_message)
 
             if file_header == conf_header:
@@ -340,9 +338,7 @@ class FileHandler:
 
                         self.transactions.append(transaction)
                     else:
-                        self.__error_message = (
-                            'Arquivo com linha vazia. Remova a linha vazia e tente novamente'
-                        )
+                        self.__error_message = 'Arquivo com linha vazia. Remova a linha vazia e tente novamente'
                         raise ValueError(self.error_message)
             else:
                 self.__error_message = (

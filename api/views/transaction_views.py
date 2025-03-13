@@ -9,8 +9,8 @@ from rest_framework.views import APIView
 from api.serializers import file_handler_serializer, transaction_serializer
 from api.services import file_handler_services, transaction_services
 from statement.entities.transaction import Transaction
-from statement.services.core.currency import CurrencyService
 from statement.services import transaction_services
+from statement.services.core.currency import CurrencyService
 
 
 class TransactionByYearAndMonth(APIView):

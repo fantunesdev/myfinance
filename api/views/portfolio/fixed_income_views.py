@@ -9,6 +9,7 @@ class FixedIncomeProgressionList(APIView):
     """
     Classe responsável pela construção das views dos investimentos de renda fixa
     """
+
     def get(self, request):
         """
         Obtém a progressão dos investimentos de renda ixa

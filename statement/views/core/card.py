@@ -3,10 +3,12 @@ from statement.models import Card
 from statement.services.core.card import CardService
 from statement.views.base_view import BaseView
 
+
 class CardView(BaseView):
     """
     View responsável pela gestão dos cartões
     """
+
     class_has_user = True
     class_title = 'Cartão'
     class_form = CardForm

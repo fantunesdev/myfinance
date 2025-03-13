@@ -84,16 +84,12 @@ class FileHandlerSerializer:
         - Define __error_message com uma mensagem apropriada em caso de validação falha.
         """
         if not self.file[0]:
-            self.__error_message = (
-                'Era esperado receber um arquivo. Por favor, selecione um arquivo e tente novamente.'
-            )
+            self.__error_message = 'Era esperado receber um arquivo. Por favor, selecione um arquivo e tente novamente.'
             return False
         elif not self.account[0] and not self.card[0]:
             self.__error_message = 'Era esperado receber uma conta ou um cartão. Por favor, selecione uma conta ou cartão e tente novamente.'
             return False
         elif not self.user:
-            self.__error_message = (
-                'Era esperado receber um usuário. Por favor, selecione um usuário e tente novamente.'
-            )
+            self.__error_message = 'Era esperado receber um usuário. Por favor, selecione um usuário e tente novamente.'
         else:
             return True

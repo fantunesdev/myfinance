@@ -32,27 +32,21 @@ def get_current_month_extract_by_account(request, account_id):
     current_month = date.today()
     month = current_month.month
     year = current_month.year
-    transactions = extract_services.get_extract_by_account_year_and_month(
-        account_id, year, month, request.user
-    )
+    transactions = extract_services.get_extract_by_account_year_and_month(account_id, year, month, request.user)
     revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(transactions, year, month)
     templatetags = set_templatetags()
     set_dashboard_templatetags(templatetags, revenue, expenses, cards, cash, fixed)
     set_transaction_navigation_templatetags(templatetags, current_month)
     set_menu_templatetags(request.user, templatetags)
     templatetags['transactions'] = transactions
-    templatetags['navigation_form'] = NavigationForm(
-        initial={'year': current_month.year, 'month': current_month.month}
-    )
+    templatetags['navigation_form'] = NavigationForm(initial={'year': current_month.year, 'month': current_month.month})
     templatetags['account'] = account_services.get_account_by_id(account_id, request.user)
     return render(request, 'transaction/get_transactions.html', templatetags)
 
 
 @login_required
 def get_extract_by_account_year_and_month(request, account_id, year, month):
-    transactions = extract_services.get_extract_by_account_year_and_month(
-        account_id, year, month, request.user
-    )
+    transactions = extract_services.get_extract_by_account_year_and_month(account_id, year, month, request.user)
     revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(transactions, year, month)
     templatetags = set_templatetags()
     set_dashboard_templatetags(templatetags, revenue, expenses, cards, cash, fixed)

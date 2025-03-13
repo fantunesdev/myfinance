@@ -10,9 +10,7 @@ from statement.services import next_month_view_services
 @login_required
 def update_next_month_view(request):
     old_next_month_view = next_month_view_services.get_next_month_view_by_user(request.user)
-    form_next_month_view = next_month_view_form.NextMonthViewForm(
-        request.POST or None, instance=old_next_month_view
-    )
+    form_next_month_view = next_month_view_form.NextMonthViewForm(request.POST or None, instance=old_next_month_view)
     if form_next_month_view.is_valid():
         new_next_month_view = NextMonthView(
             day=form_next_month_view.cleaned_data['day'],

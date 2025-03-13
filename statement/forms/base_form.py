@@ -1,9 +1,11 @@
 from django import forms
 
+
 class BaseForm(forms.ModelForm):
     """
     Formulário base para reutilização de lógica comum entre os forms.
     """
+
     def __init__(self, *args, **kwargs):
         """
         Reescreve o inicializador da classe para adicionar a classe form-control no input

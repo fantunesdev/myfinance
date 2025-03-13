@@ -32,18 +32,14 @@ def get_current_month_invoice_by_card(request, card_id):
     current_month = date.today()
     year = current_month.year
     month = current_month.month
-    transactions = invoice_services.get_invoice_by_card_year_and_month(
-        card_id, year, month, request.user
-    )
+    transactions = invoice_services.get_invoice_by_card_year_and_month(card_id, year, month, request.user)
     revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(transactions, year, month)
     templatetags = set_templatetags()
     set_dashboard_templatetags(templatetags, revenue, expenses, cards, cash, fixed)
     set_transaction_navigation_templatetags(templatetags, current_month)
     set_menu_templatetags(request.user, templatetags)
     templatetags['transactions'] = transactions
-    templatetags['navigation_form'] = NavigationForm(
-        initial={'year': current_month.year, 'month': current_month.month}
-    )
+    templatetags['navigation_form'] = NavigationForm(initial={'year': current_month.year, 'month': current_month.month})
     templatetags['card'] = card_services.get_card_by_id(card_id, request.user)
     return render(request, 'transaction/get_transactions.html', templatetags)
 

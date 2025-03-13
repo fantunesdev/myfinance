@@ -44,9 +44,7 @@ def create_transaction(request, type):
                 user=request.user,
                 installment=None,
             )
-            home_screen = (
-                transaction.account.home_screen if transaction.account else transaction.card.home_screen
-            )
+            home_screen = transaction.account.home_screen if transaction.account else transaction.card.home_screen
             transaction.home_screen = home_screen
             validate_installment(transaction)
             return redirect('get_current_month_transactions')
@@ -112,18 +110,14 @@ def get_current_month_transactions(request):
     current_month = next_month_view_repository.get_current_month(request.user)
     year = current_month.year
     month = current_month.month
-    transactions = transaction_services.get_transactions_by_year_and_month(
-        year=year, month=month, user=request.user
-    )
+    transactions = transaction_services.get_transactions_by_year_and_month(year=year, month=month, user=request.user)
     revenue, expenses, cards, cash, fixed = calculate_total_revenue_expenses(transactions, year, month)
     templatetags = set_templatetags()
     set_dashboard_templatetags(templatetags, revenue, expenses, cards, cash, fixed)
     set_transaction_navigation_templatetags(templatetags, current_month)
     set_menu_templatetags(request.user, templatetags)
     templatetags['transactions'] = transactions
-    templatetags['navigation_form'] = NavigationForm(
-        initial={'year': current_month.year, 'month': current_month.month}
-    )
+    templatetags['navigation_form'] = NavigationForm(initial={'year': current_month.year, 'month': current_month.month})
     return render(request, 'transaction/get_transactions.html', templatetags)
 
 
@@ -159,9 +153,7 @@ def detail_transaction(request, id):
     transaction = transaction_services.get_transaction_by_id(id, request.user)
     templatetags = set_templatetags()
     if transaction.installment:
-        transactions = transaction_installment_services.get_transaction_by_installment(
-            transaction.parcelamento
-        )
+        transactions = transaction_installment_services.get_transaction_by_installment(transaction.parcelamento)
         templatetags['transactions'] = transactions
     templatetags['transaction'] = transaction
     set_menu_templatetags(request.user, templatetags)
@@ -197,9 +189,7 @@ def update_transaction(request, id):
             installment=old_transaction.installment,
         )
         home_screen = (
-            new_transaction.account.home_screen
-            if new_transaction.account
-            else new_transaction.card.home_screen
+            new_transaction.account.home_screen if new_transaction.account else new_transaction.card.home_screen
         )
         new_transaction.home_screen = home_screen
         if transaction_form.cleaned_data['installment_option'] == 'parcelar':

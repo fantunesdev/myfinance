@@ -1,10 +1,10 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 
-from statement.forms.portfolio.fixed_income.index_form import IndexForm
 from statement.forms.general_forms import ExclusionForm
-from statement.services.index_services import IndexServices
+from statement.forms.portfolio.fixed_income.index_form import IndexForm
 from statement.repositories.templatetags_repository import set_menu_templatetags, set_templatetags
+from statement.services.index_services import IndexServices
 
 
 @login_required

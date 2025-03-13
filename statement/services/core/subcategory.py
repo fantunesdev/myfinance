@@ -1,9 +1,10 @@
-from statement.services.base_service import BaseService
 from statement.models import Subcategory
+from statement.services.base_service import BaseService
 
 
 class SubcategoryService(BaseService):
     """Serviço para gerenciar operações relacionadas ao modelo Subcategory."""
+
     model = Subcategory
 
     @staticmethod

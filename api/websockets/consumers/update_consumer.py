@@ -5,14 +5,15 @@ from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
 class UpdateConsumer(AsyncJsonWebsocketConsumer):
     """
-    Consumer responsável por gerenciar a comunicação WebSocket para enviar atualizações aos 
+    Consumer responsável por gerenciar a comunicação WebSocket para enviar atualizações aos
     clientes conectados.
     """
+
     async def connect(self):
         """
         Aceita a conexão WebSocket e adiciona o cliente ao grupo "updates".
         """
-        await self.channel_layer.group_add("updates", self.channel_name)
+        await self.channel_layer.group_add('updates', self.channel_name)
         await self.accept()
 
     async def disconnect(self, code):
