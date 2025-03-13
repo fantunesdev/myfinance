@@ -19,7 +19,7 @@ class TransactionService(BaseService):
         Sobrescreve o método 'create' da classe mãe redefinindo o atributo home_screen
         """
         instance = form.save(commit=False)
-        instance.home_screen = cls.set_home_screen(instance)
+        instance.home_screen = cls._set_home_screen(instance)
         return super().create(form, user=user)
 
     @classmethod
@@ -47,7 +47,7 @@ class TransactionService(BaseService):
         ).order_by('release_date')
 
     @staticmethod
-    def set_home_screen(instance):
+    def _set_home_screen(instance):
         """
         Seta o atributo home_screen.
 
