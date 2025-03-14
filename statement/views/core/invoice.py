@@ -1,20 +1,20 @@
-from statement.services.core.account import AccountService
+from statement.services.core.card import CardService
 from statement.views.core.transaction import TransactionView
 
 
-class ExtractView(TransactionView):
+class InvoiceView(TransactionView):
     """
-    View responsável pela gestão dos lançamentos (extract) filtrados por account.
+    View responsável pela gestão dos lançamentos (invoices) filtrados por card.
 
-    ExtractView é uma sub-view de TransactionsView e por isso não tem services e templates próprios. Os únicos 
+    InvoiceView é uma sub-view de TransactionsView e por isso não tem services e templates próprios. Os únicos 
     templates customizáveis para essa view são o dashboard e o navigation
     """
 
-    class_title = 'Extrato'
+    class_title = 'Fatura'
 
     def __init__(self):
         super().__init__()
-        self._account_id = None
+        self._card_id = None
         self._instance = None
 
     def get_current_month(self, request, id):
@@ -23,19 +23,19 @@ class ExtractView(TransactionView):
 
     def get_by_year_and_month(self, request, id, year, month):
         """
-        Sobrescreve a função base passando account_id extraído da URL.
+        Sobrescreve a função base passando card_id extraído da URL.
         """
-        self._account_id = id
+        self._card_id = id
         return super().get_by_year_and_month(request, year, month)
 
     def _set_additional_filters(self, **kwargs):
         """
-        Sobrescreve a classe mães configurando o filtro adicional de account_id.
+        Sobrescreve a classe mães configurando o filtro adicional de card_id.
         """
-        if self._account_id is not None:
-            account = AccountService.get_by_id(self._account_id)
-            self._instance = account
-            return {'account': account}
+        if self._card_id:
+            card = CardService.get_by_id(self._card_id)
+            self._instance = card
+            return {'card': card}
         return {}
 
     def _set_specific_cotext(self, instances, year, month):

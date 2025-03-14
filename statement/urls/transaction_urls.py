@@ -17,5 +17,5 @@ urlpatterns = [
     path('remover/<int:id>', transaction_view.delete, name='delete_transaction'),
     path('pesquisa/descricao/<str:description>', transaction_view.get_by_description, name='get_transactions_by_description'),
     path('contas/<int:id>/extrato/', include('statement.urls.core.extract')),
-    path('cartoes/<int:card_id>/fatura/', include('statement.urls.invoice_urls')),
+    path('cartoes/<int:id>/fatura/', include('statement.urls.core.invoice')),
 ]

@@ -1,3 +1,8 @@
+"""
+Extract é uma sub-view de TransactionsView e por isso não tem services e templates próprios. Os únicos templates
+customizáveis para essa view são o dashboard e o navigation
+"""
+
 from django.urls import path
 
 from statement.views.core.extract import ExtractView

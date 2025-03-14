@@ -5,15 +5,16 @@ para interagir com o banco de dados e fornecer suas respectivas funcionalidades.
 
 from django.http import Http404
 
-from statement.services import invoice_services
+from statement.services.core.card import CardService
+from statement.services.core.transaction import TransactionService
 
 
-def get_invoice_by_year_and_month(card, year, month, user):
+def get_invoice_by_year_and_month(card_id, year, month, user):
     """
     Obtém a fatura associada a um cartão para um ano e mês específicos.
 
     Parameters:
-    - card: O ID do cartão para o qual a fatura será recuperada.
+    - card_id: O ID do cartão para o qual a fatura será recuperada.
     - year: O ano para o qual a fatura será recuperada.
     - month: O mês para o qual a fatura será recuperada.
     - user: O usuário associado ao cartão.
@@ -24,7 +25,14 @@ def get_invoice_by_year_and_month(card, year, month, user):
     Raises:
     Http404: Se nenhuma fatura for encontrada para o cartão, ano e mês fornecidos.
     """
-    invoice = invoice_services.get_invoice_by_card_year_and_month(card, year, month, user)
+    kwargs = {
+        'payment_date__year': year,
+        'payment_date__month': month,
+        'user': user,
+        'account': CardService.get_by_id(card_id),
+        'home_screen': True,
+    }
+    invoice = TransactionService.get_by_filter(**kwargs)
     if invoice:
         return invoice
     raise Http404

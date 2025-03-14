@@ -3,7 +3,11 @@ Para mais informações sobre formatação de data, consultar a documentação:
 https://docs.djangoproject.com/en/4.2/ref/templates/builtins/#date
 {% endcomment %}
 
-        <a href="{% url 'get_invoice_by_card_year_and_month' card.id previous_month|date:'Y' previous_month|date:'m' %}"><i class="fa-solid fa-backward-step"></i></a>
-        <a class="nav-btn">{{ navigation_form.month }}</a>
-        <a class="nav-btn mr-5">{{ navigation_form.year }}</a>
-        <a href="{% url 'get_invoice_by_card_year_and_month' card.id next_month|date:'Y' next_month|date:'m'  %}"><i class="fa-solid fa-forward-step"></i></a>
+<a href="{% url 'get_invoice_by_card_year_and_month' instance.id navigation.previous|date:'Y' navigation.previous|date:'m' %}"><i class="fa-solid fa-backward-step"></i></a>
+<a class="nav-btn">
+    {{ navigation.form.month }}
+</a>
+<a class="nav-btn mr-5">
+    {{ navigation.form.year }} 
+</a>
+<a href="{% url 'get_invoice_by_card_year_and_month' instance.id navigation.next|date:'Y' navigation.next|date:'m'  %}"><i class="fa-solid fa-forward-step"></i></a>
