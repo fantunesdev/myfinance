@@ -37,6 +37,11 @@ class DreamView(BaseView):
 
     @method_decorator(login_required)
     def get_by_status(self, request, status):
+        """
+        Obtem sonhos de acordo com o status.
+
+        Status não é um atributo do model, ele é definido pela data atual.
+        """
         if status == 'ativos':
             dreams = self.service.get_active_dreams(request.user)
         elif status == 'inativos':
@@ -46,7 +51,7 @@ class DreamView(BaseView):
         specific_content = {'instances': dreams}
         return self._render(request, None, 'dream/list.html', specific_content)
 
-    def _add_context_on_detail(self, request, instance):
+    def _add_context_on_templatetags(self, request, instance):
         return {
             'portions': PortionService.get_portions_by_dream(instance.id, request.user),
         }

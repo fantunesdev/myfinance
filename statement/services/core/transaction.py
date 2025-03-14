@@ -23,6 +23,15 @@ class TransactionService(BaseService):
         return super().create(form, user=user)
 
     @classmethod
+    def update(cls, form, instance):
+        """
+        Sobrescreve o método 'update' da classe mãe redefinindo o atributo home_screen
+        """
+        instance = form.save(commit=False)
+        instance.home_screen = cls._set_home_screen(instance)
+        return super().update(form, instance)
+
+    @classmethod
     def get_by_filter(cls, order=None, **kwargs):
         """
         Obtém os lançamentos de acordo com filtros passados em um dicionário. Podendo ordenar por

@@ -40,24 +40,11 @@ class TransactionView(BaseView):
                 'update': False,
             }
         )
+        self._type = None
 
     def create(self, request, type, id=None):
-        """
-        Define o formulário correto antes de chamar a base_view.
-        """
-        user = self._get_user(request)
-
-        if request.method == 'POST':
-            form = self._get_form(type, request.POST, request.FILES, user=user)
-            if form.is_valid():
-                self.service.create(form=form, user=user, id=id)
-                return redirect(self.redirect_url)
-        else:
-            form = self._get_form(type, user=user)
-
-        specific_content = {'create': True}
-        template = self._set_template_by_global_status('create')
-        return self._render(request, form, template, specific_content)
+        self._type = type
+        return super().create(request, id)
 
     @method_decorator(login_required)
     def get_current_month(self, request):
@@ -110,16 +97,6 @@ class TransactionView(BaseView):
         template = self._set_template_by_global_status('get_all')
         specific_context = {'instances': instances}
         return self._render(request, None, template, specific_context)
-
-    def _get_form(self, type, *args, **kwargs):
-        """
-        Retorna o formulário correto baseado no tipo da transação.
-        """
-        user = kwargs.pop('user', None)
-
-        if type == 'entrada':
-            return TransactionRevenueForm(user, *args, **kwargs)
-        return TransactionExpenseForm(user, *args, **kwargs)
 
     def _get_current_month(self):
         """
@@ -195,6 +172,22 @@ class TransactionView(BaseView):
                 'revenue': revenue,
             }
         }
+
+    def _set_form(self, request, instance):
+        """
+        Permite que subclasses customizem o formulário
+        """
+        match self._context:
+            case 'create':
+                if request.method == 'POST':
+                    return TransactionForm(request.POST, request.FILES or None)
+                if self._type == 'entrada':
+                    return TransactionRevenueForm(request)
+                return TransactionExpenseForm(request)
+            case 'update':
+                return self.class_form(request.POST or None, request.FILES or None, instance=instance)
+            case _:
+                raise KeyError
 
     def set_navigation_templatetags(self, year, month):
         """

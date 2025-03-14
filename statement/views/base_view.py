@@ -26,6 +26,7 @@ class BaseView:
     class_title = False
     column_names = ([],)
     class_form = None
+    default_form = True
     model = None
     redirect_url = None
     service = None
@@ -45,20 +46,25 @@ class BaseView:
         self.snake_case_classname = self._pascal_to_snake()
         self.actions_list = self.actions_list.copy()
         self.template_is_global = self.template_is_global.copy()
+        self._context = ''
 
     @method_decorator(login_required)
     def create(self, request, id=None):
         """
         Cria uma nova instância do modelo.
         """
+        self._context = 'create'
         user = self._get_user(request)
         if request.method == 'POST':
-            form = self.class_form(request.POST, request.FILES)
+            form = self._set_form(request, instance=None)
             if form.is_valid():
                 self.service.create(form=form, user=user, id=id)
                 return redirect(self.redirect_url)
+            else:
+                print('deu ruim')
+                print(form.errors)
         else:
-            form = self.class_form()
+            form = self._set_form(request, instance=None)
         specific_content = {
             'create': True,  # Define o comportamento do template (create ou update)
         }
@@ -70,6 +76,7 @@ class BaseView:
         """
         Retorna todas as instâncias do modelo.
         """
+        self._context = 'get_all'
         user = self._get_user(request)
         instances = self.service.get_all(user)
         specific_content = {
@@ -84,9 +91,10 @@ class BaseView:
         """
         Retorna uma instância específica do modelo.
         """
+        self._context = 'detail'
         user = self._get_user(request)
         instance = self.service.get_by_id(id, user)
-        additional_context = self._add_context_on_detail(request, instance)
+        additional_context = self._add_context_on_templatetags(request, instance)
         specific_content = {
             'instance': instance,
             **additional_context,
@@ -99,12 +107,17 @@ class BaseView:
         """
         Atualiza uma instância existente do modelo.
         """
+
+        self._context = 'update'
         instance = self.service.get_by_id(id)
-        form = self.class_form(request.POST or None, request.FILES or None, instance=instance)
+        form = self._set_form(request, instance)
         if form.is_valid():
             self.service.update(form, instance)
             return redirect(self.redirect_url)
-        additional_context = self._add_context_on_detail(request, instance)
+        else:
+            print('deu ruim')
+            print(form.errors)
+        additional_context = self._add_context_on_templatetags(request, instance)
         specific_content = {
             'old_instance': instance,
             'update': True,
@@ -118,14 +131,17 @@ class BaseView:
         """
         Exclui uma instância do modelo.
         """
+        self._context = 'delete'
         instance = self.service.get_by_id(id)
         if request.method == 'POST':
             self.service.delete(instance)
             return redirect(self.redirect_url)
+        additional_context = self._add_context_on_templatetags(request, instance)
         specific_content = {
             'delete': True,
             'exclusion_form': ExclusionForm(),
             'instance': instance,
+            **additional_context,
         }
         template = self._set_template_by_global_status('delete')
         return self._render(request, None, template, specific_content)
@@ -195,8 +211,22 @@ class BaseView:
             return f'base/{template[method]}'
         return f'{self.snake_case_classname}/{template[method]}'
 
-    def _add_context_on_detail(self, request, instance):
+    def _add_context_on_templatetags(self, request, instance):
         """
         Permite que subclasses adicionem dados extras ao contexto.
         """
         return {}
+
+    def _set_form(self, request, instance):
+        """
+        Permite que subclasses customizem o formulário
+        """
+        match self._context:
+            case 'create':
+                if request.method == 'POST':
+                    return self.class_form(request.POST, request.FILES or None)
+                return self.class_form()
+            case 'update':
+                return self.class_form(request.POST or None, request.FILES or None, instance=instance)
+            case _:
+                raise KeyError
