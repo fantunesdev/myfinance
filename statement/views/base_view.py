@@ -58,10 +58,11 @@ class BaseView:
         if request.method == 'POST':
             form = self._set_form(request, instance=None)
             if form.is_valid():
+                self._custom_actions(form=form, instance=None)
                 self.service.create(form=form, user=user, id=id)
                 return redirect(self.redirect_url)
             else:
-                print('deu ruim')
+                print('Formulário inválido:')
                 print(form.errors)
         else:
             form = self._set_form(request, instance=None)
@@ -112,11 +113,9 @@ class BaseView:
         instance = self.service.get_by_id(id)
         form = self._set_form(request, instance)
         if form.is_valid():
+            self._custom_actions(form=form, instance=instance)
             self.service.update(form, instance)
             return redirect(self.redirect_url)
-        else:
-            print('deu ruim')
-            print(form.errors)
         additional_context = self._add_context_on_templatetags(request, instance)
         specific_content = {
             'old_instance': instance,
@@ -134,6 +133,7 @@ class BaseView:
         self._context = 'delete'
         instance = self.service.get_by_id(id)
         if request.method == 'POST':
+            self._custom_actions(form=None, instance=instance)
             self.service.delete(instance)
             return redirect(self.redirect_url)
         additional_context = self._add_context_on_templatetags(request, instance)
@@ -230,3 +230,8 @@ class BaseView:
                 return self.class_form(request.POST or None, request.FILES or None, instance=instance)
             case _:
                 raise KeyError
+
+    def _custom_actions(self, form, instance):
+        """
+        Permite que a classe filha customize ações ao criar, atualizar ou deletar
+        """
