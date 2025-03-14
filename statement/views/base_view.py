@@ -160,8 +160,8 @@ class BaseView:
             'current_year': date.today().year,
             'current_month': date.today().month,
             'year_month': date.today(),
-            'extracts': CardService.get_all(user),
-            'invoices': AccountService.get_all(user),
+            'extracts': AccountService.get_all(user),
+            'invoices': CardService.get_all(user),
             'class_title': self.class_title,
             'urls': {
                 'create': f'create_{self.snake_case_classname}',

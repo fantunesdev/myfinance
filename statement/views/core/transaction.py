@@ -73,6 +73,7 @@ class TransactionView(BaseView):
         View responsável por exibir os lançamentos de um ano e mês específicos.
         """
         filters = self._set_monthly_filter_by_date_attr('payment', request.user, year, month, home_screen=True)
+        filters.update(self._set_additional_filters())
         instances = self.service.get_by_filter(**filters)
         template = self._set_template_by_global_status('get_all')
         specific_context = self._set_specific_cotext(instances, year, month)
@@ -128,12 +129,21 @@ class TransactionView(BaseView):
         return [today.year, today.month]
 
     def _set_monthly_filter_by_date_attr(self, attr, user, year, month, **extra_filters):
+        """
+        Seta os filtros por data, seja payment_date ou release_date.
+        """
         return {
             f'{attr}_date__year': year,
             f'{attr}_date__month': month,
             'user': user,
             **extra_filters,
         }
+
+    def _set_additional_filters(self, **kwargs):
+        """
+        Método que permite subclasses adicionarem filtros específicos.
+        """
+        return {}
 
     def _set_specific_cotext(self, instances, year, month):
         return {
