@@ -51,6 +51,9 @@ django-extensions = "^3.2.3"
 [tool.poetry.group.dev.dependencies]
 blue = "^0.9.1"
 isort = "^5.13.2"
+pytest = "^8.3.5"
+pytest-django = "^4.10.0"
+pytest-mock = "^3.14.0"
 
 [build-system]
 requires = ["poetry-core"]
@@ -58,3 +61,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.blue]
 line-lenght = 120
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "myfinance.settings"
+python_files = ["test_*.py", "*_test.py", "tests.py"]
