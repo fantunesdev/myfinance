@@ -1,0 +1,67 @@
+{% extends "index.html" %}
+{% load static %}
+{% load custom_filters %}
+
+    {% block title %}
+        {% if 'remover' in request.path %}
+            Excluir Movimentação
+        {% else %}
+            Detalhar Movimentacao
+        {% endif  %}
+    {% endblock title %}
+
+    {% block content %}
+
+        <div class="box box-primary">
+            <form method="post">
+                <div class="box-title">
+                    <h3>
+                        {% if 'remover' in request.path %}
+                            Atenção! Você está prestes a excluir as movimentações abaixo. Esta operação é irreversível.
+                        {% elif 'editar' in request.path %}
+                            {{ transactions.first.description }}
+                        {% endif %}
+                    </h3>
+                </div>
+                <div class="box-body">
+                    <div class="box-description">
+                        <p style="font-size: 18px;">Descrição: <b>{{ transactions.first.description }}.</b></p>
+                        <p style="font-size: 18px;">Valor Total: <b>{{ transactions | total_amount }}.</b></p>
+                        <p style="font-size: 18px;">Value da parcela: <b>{{ transactions.first.currency.symbol }} {{ transactions.first.value|floatformat:2 }}.</b></p>
+                        <p style="font-size: 18px;">Número de Parcelas: <b>{{ transactions.first.installments_number }}.</b></p>
+                        <p style="font-size: 18px;">Categoria: <b>{{ transactions.first.category }}</b></p>
+                        <p style="font-size: 18px;">Sub-Categoria: <b>{{ transactions.first.subcategory }}</b></p>
+                        <p style="font-size: 18px;">Tipo: <b>{{ transactions.first.type }}.</b></p>
+                        
+                        {% if transactions.first.observation %}
+                        <p style="font-size: 18px;">Observações:</p>
+                        <div class="box-observation">
+                            {{ transactions.first.observation | linebreaks }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <br>
+                    <a href="{% url 'advance_installments' instance.id %}" class="btn btn-primary">Adiantar Parcelas</a>
+                    <br><br>
+                    {# A tabela foi colocada num template separado para poder ser reaproveitada pelo form.html #}
+                    {% include 'installment/list.html' %}
+                    <br>
+                </div>
+                <div class="box-footer">
+                    {% csrf_token %}
+                    <a href="{{request.META.HTTP_REFERER}}"><input type="button" value="Voltar" class="btn btn-primary"></a>
+                    {% if 'remover' in request.path %}
+                        <input type="submit" value="Excluir Movimentações" class="btn btn-danger">
+                    {% else %}
+                    <a href="{% url 'update_installment' transactions.first.installment.id %}" class="btn btn-primary">Editar</a>
+                    <a href="{% url 'delete_installment' transactions.first.installment.id %}" class="btn btn-danger">Remover</a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+
+    {% endblock content %}
+
+    {% block scripts %}
+    <script src="{% static 'js/pages/transaction-form.js' %}" type="module"></script>
+    {% endblock %}

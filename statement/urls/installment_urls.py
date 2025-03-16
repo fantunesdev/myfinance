@@ -1,15 +1,18 @@
 from django.urls import path
 
+from statement.views.core.installment import InstallmentView
 from statement.views.installment_views import *
 
+installment_view = InstallmentView()
+
 urlpatterns = [
-    path('<int:id>/', detail_installment, name='detail_installment'),
-    path('editar/<int:id>/', update_installment, name='update_installment'),
+    path('<int:id>/', installment_view.detail, name='detail_installment'),
+    path('editar/<int:id>/', installment_view.update, name='update_installment'),
     path(
         'adiantar_parcelas/<int:id>/',
         advance_installments,
         name='advance_installments',
     ),
-    path('remover/<int:id>/', delete_installment, name='delete_installment'),
+    path('remover/<int:id>/', installment_view.delete, name='delete_installment'),
     path('remover/parcela/<int:id>/', delete_parcel, name='delete_parcel'),
 ]

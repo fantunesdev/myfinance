@@ -1,0 +1,30 @@
+{% load static %}
+{% load custom_filters %}
+
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Parcela</th>
+                                    <th>Data de Lançamento</th>
+                                    <th>Data de Efetivação</th>
+                                    <th>Description</th>
+                                    <th>Value</th>
+                                    <th>Editar</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for i in transactions %}
+                                <tr>
+                                    <td>{{ i.paid }}</td>
+                                    <td>{{ i.release_date }}</td>
+                                    <td>{{ i.payment_date }}</td>
+                                    <td>{{ i.description }}</td>
+                                    <td>{{ i.currency.symbol }} {{ i.value | floatformat:2 }}</td>
+                                    <td>
+                                        <a href="{% url 'update_transaction' i.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
+                                        <a href="{% url 'delete_parcel' i.id %}"><i class="fa-solid fa-trash action-icon"></i></a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>

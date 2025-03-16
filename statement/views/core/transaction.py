@@ -9,6 +9,7 @@ from django.utils.timezone import now
 from statement.forms.core.transaction import TransactionExpenseForm, TransactionForm, TransactionRevenueForm
 from statement.forms.general_forms import NavigationForm
 from statement.models import Transaction
+from statement.services.core.installment import InstallmentService
 from statement.services.core.fixed_expenses import FixedExpensesService
 from statement.services.core.transaction import TransactionService
 from statement.views.base_view import BaseView
@@ -119,6 +120,11 @@ class TransactionView(BaseView):
     def _set_additional_filters(self, **kwargs):
         """
         Método que permite subclasses adicionarem filtros específicos.
+
+        :kwargs (dict): Os filtros para o select.
+
+        :seealso: Consulte os atributos do modelo em statement/models.py
+        :seealso: https://docs.djangoproject.com/en/4.2/ref/models/querysets/#filter
         """
         return {}
 
@@ -187,11 +193,31 @@ class TransactionView(BaseView):
             case 'update':
                 return self.class_form(request.POST or None, request.FILES or None, instance=instance)
             case _:
-                raise KeyError
+                raise ValueError('Sem contexto definido.')
+
+    def _custom_actions(self, request, form, instance):
+        """
+        Sobrescreve o método da classe mãe para adicionar ações depois que as ações de create, update ou delete 
+        são executadas.
+
+        :request (django.http.HttpRequest): - Informações sobre o cabeçalho, método e outros dados da requisição.
+        :form (ModelForm): O formulário do modelo da instância.
+        :instance: A instância criada, atualizada ou removida no banco de dados.
+        """
+        match self._context:
+            case 'create':
+                if instance.installments_number > 0:
+                    user = self._get_user(request)
+                    installment = InstallmentService.create(form=form, user=user, transaction=instance)
+                    instance.installment = installment
+                    InstallmentService.add_installments(instance)
 
     def set_navigation_templatetags(self, year, month):
         """
         Seta as templatetags para o menu superior de navegação por mês e ano.
+        
+        :year (int): Ano.
+        :month (int): Mês.
         """
         year_month = date(year, month, 1)
         next_month = year_month + relativedelta(months=1)

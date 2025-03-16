@@ -30,7 +30,12 @@ class ExtractView(TransactionView):
 
     def _set_additional_filters(self, **kwargs):
         """
-        Sobrescreve a classe mães configurando o filtro adicional de account_id.
+        Sobrescreve a classe mãe configurando o filtro adicional de account_id.
+
+        :kwargs (dict): Os filtros para o select.
+
+        :seealso: Consulte os atributos do modelo em statement/models.py
+        :seealso: https://docs.djangoproject.com/en/4.2/ref/models/querysets/#filter
         """
         if self._account_id is not None:
             account = AccountService.get_by_id(self._account_id)

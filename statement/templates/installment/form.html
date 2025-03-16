@@ -1,0 +1,161 @@
+{% extends "index.html" %}
+{% load static %}
+{% load custom_filters %}
+
+    {% spaceless %}
+        {% block title %}
+            Editar Parcelamento
+        {% endblock title %}
+    {% endspaceless %}
+
+    {% block content %}
+    novo
+        <div class="box box-primary">
+            <form method="post">
+                <div class="box-title">
+                    <h3>
+                        Editando {{ transactions.first.description }}
+                    </h3>
+                </div>
+                <div class="box-body">
+                    <div class="box-description">
+                        <p style="font-size: 18px;">Descrição: <b>{{ transactions.first.description }}.</b></p>
+                        <p style="font-size: 18px;">Valor Total: <b>{{ transactions | total_amount }}.</b></p>
+                        <p style="font-size: 18px;">Value da parcela: <b>{{ transactions.first.currency.symbol }} {{ transactions.first.value|floatformat:2 }}.</b></p>
+                        <p style="font-size: 18px;">Número de Parcelas: <b>{{ transactions.first.installments_number }}.</b></p>
+                        <p style="font-size: 18px;">Categoria: <b>{{ transactions.first.category }}</b></p>
+                        <p style="font-size: 18px;">Sub-Categoria: <b>{{ transactions.first.subcategory }}</b></p>
+                        <p style="font-size: 18px;">Tipo: <b>{{ transactions.first.type }}.</b></p>
+                        
+                        {% if transactions.first.observation %}
+                        <p style="font-size: 18px;">Observações:</p>
+                        <div class="box-observation">
+                            {{ transactions.first.observation | linebreaks }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% if 'editar' in request.path %}
+                    {% elif 'remover' in request.path %}
+                    {% else %}
+                    <br>
+                    <a href="{% url 'advance_installments' installment.id %}" class="btn btn-primary">Adiantar Parcelas</a>
+                    <br><br>
+                    {% endif %}
+                    {# A tabela foi colocada num template separado para poder ser reaproveitada pelo form.html #}
+                    {% include 'installment/list.html' %}
+                    <br>
+                    {% if 'editar' in request.path %}
+
+                    {% csrf_token %}
+                    <label for="id_release_date">Data do Lançamento</label>
+                    {{ form.release_date }}
+                    {{ form.release_date.errors }}
+
+                    {% if form.reorder_release_dates %}
+                    <label for="id_reorder_release_dates">Reordenar as Datas de Lançamento</label>
+                    {{ form.reorder_release_dates }}
+                    {% endif %}
+
+                    <label for="id_installments_number">Número de Parcelas</label>
+                    {{ form.installments_number }}
+                    {{ form.installments_number.errors }}
+
+                    <label for="id_category">Categoria</label>
+                    {{ form.category }}
+                    {{ form.category.errors }}
+
+                    <label for="id_subcategory">Sub-Categoria</label>
+                    {{ form.subcategory }}
+                    {{ form.subcategory.errors }}
+
+                    <label for="id_description">Descrição</label>
+                    {{ form.description }}
+                    {{ form.description.errors }}
+
+                    <label for="id_value">Valor</label>
+                    {{ form.value }}
+                    {{ form.value.errors }}
+                    <br>
+
+                    <h3 id="btn-other-options" class="cursor-pointer">Outras Opções +</h3>
+
+                    <div id="div-other-options" class="toggled">
+                        <br>
+                         <label for="id_payment_method">Meio de Pagamento</label>
+                    {{ form.payment_method }}
+
+                    <div id="conta-cartao">
+                        <label for="id_accoun">Conta</label>
+                        {{ form.account }}
+                        {{ form.account.errors }}
+
+                        <label for="id_card">Card</label>
+                        {{ form.card }}
+                        {{ form.card.errors }}
+                    </div>
+
+                    <label for="id_type">Tipo</label>
+                    {{ form.type }}
+                    {{ form.type.errors }}
+
+                        {{ form.fixed }}
+                        <label for="id_fixed">Fixa</label><br><br>
+                        {{ form.fixed.errors }}
+
+                        {{ form.annual }}
+                        <label for="id_annual">Anual</label><br><br>
+                        {{ form.annual.errors }}
+
+                        <label for="id_currency">Moeda</label>
+                        {{ form.currency }}
+                        {{ form.currency.errors }}
+
+                        <label for="id_observation">Observações</label>
+                        {{ form.observation }}
+                        {{ form.observation.errors }}
+
+                        {{ form.remember }}
+                        <label for="id_remember">Lembrar</label><br><br>
+                        {{ form.remember.errors }}
+
+                        {{ form.effected }}
+                        <label for="id_effected">Efetivado</label><br><br>
+                        {{ form.effected.errors }}
+
+                        {{ form.home_screen }}
+                        <label for="id_home_screen">Tela Inicial</label><br><br>
+                        {{ form.home_screen.errors }}
+                        <br>
+                    </div>
+                    {% endif %}
+                    {% if 'remover' in request.path %}
+                    <br>
+                    <div class="btn-danger">
+                        <p>
+                        {% csrf_token %}
+                        {{ exclusion_form }}
+                        Sim, desejo excluir e estou ciente de que esta operação é irreversível.
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="box-footer">
+                    {% csrf_token %}
+                    <a href="{{request.META.HTTP_REFERER}}"><input type="button" value="Voltar" class="btn btn-primary"></a>
+                    {% if 'remover' in request.path %}
+                    <input type="submit" value="Excluir Movimentações" class="btn btn-danger">
+                    {% elif 'editar' in request.path %}
+                    <input type="submit" value="Editar Movimentações" class="btn btn-primary">
+                    {% else %}
+                    <a href="{% url 'update_installment' transactions.first.installment.id %}" class="btn btn-primary">Editar</a>
+                    <a href="{% url 'delete_installment' transactions.first.installment.id %}" class="btn btn-danger">Remover</a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+
+    {% endblock content %}
+
+    {% block scripts %}
+    <script src="{% static 'js/pages/transaction-form.js' %}" type="module"></script>
+    {% endblock %}

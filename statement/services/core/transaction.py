@@ -1,11 +1,10 @@
-from datetime import datetime
+from datetime import datetime, date
 
 from dateutil.relativedelta import relativedelta
 from django.db.models import Q
 
 from statement.models import Transaction
 from statement.services.base_service import BaseService
-
 
 class TransactionService(BaseService):
     """Serviço para gerenciar operações relacionadas ao modelo Transaction."""
@@ -61,8 +60,30 @@ class TransactionService(BaseService):
         Seta o atributo home_screen.
 
         Ou Transaction tem uma instância de account, ou tem uma instância de card. Se a instância
-        account for setada, seta home_screeen de acordo com o que está definido na
+        account for setada, seta home_screeen de acordo com o que está definido na conta ou no cartão.
+
+        :instance: Uma instância do model Transaction
         """
         if instance.account:
             return instance.account.home_screen
         return instance.card.home_screen
+
+    @staticmethod
+    def set_card_release_date(transaction):
+        """
+        Seta uma data de vencimento para uma transação de acordo com o fechamento e o vencimento do cartão
+
+        :transaction: Uma instância do model Transaction
+        """
+        if transaction.card:
+            payment_date = date(
+                transaction.release_date.year,
+                transaction.release_date.month,
+                transaction.card.expiration_day,
+            )
+            if transaction.release_date.day >= transaction.card.closing_day:
+                payment_date += relativedelta(months=1)
+            return payment_date
+        else:
+            message = f'Nenhum cartão setado para o lançamento {transaction.description} com o id {transaction.id}.'
+            raise ValueError(message)

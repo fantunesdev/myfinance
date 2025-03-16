@@ -58,8 +58,8 @@ class BaseView:
         if request.method == 'POST':
             form = self._set_form(request, instance=None)
             if form.is_valid():
-                self._custom_actions(form=form, instance=None)
-                self.service.create(form=form, user=user, id=id)
+                instance = self.service.create(form=form, user=user, id=id)
+                self._custom_actions(request=request, form=form, instance=instance)
                 return redirect(self.redirect_url)
             else:
                 print('Formulário inválido:')
@@ -113,7 +113,7 @@ class BaseView:
         instance = self.service.get_by_id(id)
         form = self._set_form(request, instance)
         if form.is_valid():
-            self._custom_actions(form=form, instance=instance)
+            self._custom_actions(request=request, form=form, instance=instance)
             self.service.update(form, instance)
             return redirect(self.redirect_url)
         additional_context = self._add_context_on_templatetags(request, instance)
@@ -133,7 +133,7 @@ class BaseView:
         self._context = 'delete'
         instance = self.service.get_by_id(id)
         if request.method == 'POST':
-            self._custom_actions(form=None, instance=instance)
+            self._custom_actions(request=request, form=None, instance=instance)
             self.service.delete(instance)
             return redirect(self.redirect_url)
         additional_context = self._add_context_on_templatetags(request, instance)
@@ -229,9 +229,13 @@ class BaseView:
             case 'update':
                 return self.class_form(request.POST or None, request.FILES or None, instance=instance)
             case _:
-                raise KeyError
+                raise ValueError('Sem contexto definido.')
 
-    def _custom_actions(self, form, instance):
+    def _custom_actions(self, request, form, instance):
         """
         Permite que a classe filha customize ações ao criar, atualizar ou deletar
+
+        :request (django.http.HttpRequest): - Informações sobre o cabeçalho, método e outros dados da requisição.
+        :form (ModelForm): O formulário do modelo da instância.
+        :instance: A instância criada, atualizada ou removida no banco de dados.
         """
