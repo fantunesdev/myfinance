@@ -29,11 +29,16 @@ def handle_image(value):
 
 
 @register.filter(name='total_amount')
-def total_amount(transaction):
+def total_amount(transactions):
+    """
+    Retorna o valor total de uma lista de lançamentos.
+
+    :transactions (list): Lista de lançamentos
+    """
     total = 0
-    for i in transaction:
-        total += i.value
-    return f'{transaction[0].currency.symbol} {total:_.2f}'.replace('.', ',').replace('_', '.')
+    for transaction in transactions:
+        total += transaction.value
+    return f'{transactions[0].currency.symbol} {total:_.2f}'.replace('.', ',').replace('_', '.')
 
 
 @register.filter(name='paid_installments')

@@ -108,7 +108,6 @@ class BaseView:
         """
         Atualiza uma instância existente do modelo.
         """
-
         self._context = 'update'
         instance = self.service.get_by_id(id)
         form = self._set_form(request, instance)
@@ -144,6 +143,7 @@ class BaseView:
             **additional_context,
         }
         template = self._set_template_by_global_status('delete')
+        print(template)
         return self._render(request, None, template, specific_content)
 
     def _get_user(self, request):
@@ -187,6 +187,7 @@ class BaseView:
                 'delete': f'delete_{self.snake_case_classname}',
             },
             'actions_list': self.actions_list,
+            'context': self._context,
         }
 
     def _pascal_to_snake(self):

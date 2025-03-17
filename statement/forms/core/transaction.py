@@ -35,7 +35,7 @@ class TransactionForm(BaseForm):
 
         model = Transaction
         fields = '__all__'
-        exclude = ['type', 'user']
+        exclude = ['user']
         widgets = {
             'release_date': forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date', 'value': today}),
             'payment_date': forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date', 'value': today}),
@@ -50,6 +50,9 @@ class TransactionTypeForm(TransactionForm):
 
     def __init__(self, user, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self.fields.pop('type', None)
+
         if self.transaction_type:
             self.fields['category'].queryset = CategoryService.get_by_type(self.transaction_type)
         self.fields['subcategory'].queryset = SubcategoryService.get_all()

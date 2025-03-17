@@ -33,12 +33,37 @@ class InstallmentView(BaseView):
         self._first_transaction = None
 
     def update(self, request, id):
+        self._first_transaction = self._get_transaction(request, id)
+        return super().update(request, id)
+
+
+    def _get_transactions(self, request, id):
+        """
+        Obtém as parcelas de um parcelamento.
+
+        :request (django.http.HttpRequest): - Informações sobre o cabeçalho, método e outros dados da requisição.
+        :id (int): A chave primária do parcelamento
+        """
         kwargs = {
             'installment': id,
             'user': request.user,
         }
-        self._first_transaction = TransactionService.get_by_filter(**kwargs).first()
-        return super().update(request, id)
+        transactions = TransactionService.get_by_filter(**kwargs)
+        return transactions
+
+    def _get_transaction(self, request, id):
+        """
+        Obtém as parcelas de um parcelamento.
+
+        :request (django.http.HttpRequest): - Informações sobre o cabeçalho, método e outros dados da requisição.
+        :id (int): A chave primária do parcelamento
+        """
+        kwargs = {
+            'installment': id,
+            'user': request.user,
+        }
+        transactions = TransactionService.get_by_filter(first=True, **kwargs)
+        return transactions
 
     def _add_context_on_templatetags(self, request, instance):
         return {
@@ -51,8 +76,16 @@ class InstallmentView(BaseView):
         """
         return InstallmentForm(request.POST or None, instance=self._first_transaction)
 
-    def _custom_actions(self, form, instance):
+    def _custom_actions(self, request, form, instance):
         """
-        Customiza ações
+        Sobrescreve o método da classe mãe para adicionar ações depois que as ações de create, update ou delete 
+        são executadas.
+
+        :request (django.http.HttpRequest): - Informações sobre o cabeçalho, método e outros dados da requisição.
+        :form (ModelForm): O formulário do modelo da instância.
+        :instance: A instância criada, atualizada ou removida no banco de dados.
         """
-        reorder_dates = form.cleaned_data['']
+        match self._context:
+            case 'update':
+                transactions = self._get_transactions(request, instance.id)
+                InstallmentService.update_installment_plan(request, form, transactions)

@@ -31,11 +31,13 @@ class TransactionService(BaseService):
         return super().update(form, instance)
 
     @classmethod
-    def get_by_filter(cls, order=None, **kwargs):
+    def get_by_filter(cls, order=None, first=False, **kwargs):
         """
         Obtém os lançamentos de acordo com filtros passados em um dicionário. Podendo ordenar por
         algum campo selecionado.
         """
+        if first:
+            return Transaction.objects.filter(**kwargs).first()
         transactions = Transaction.objects.filter(**kwargs)
         if order:
             return transactions.order_by(order)
@@ -82,7 +84,7 @@ class TransactionService(BaseService):
                 transaction.card.expiration_day,
             )
             if transaction.release_date.day >= transaction.card.closing_day:
-                payment_date += relativedelta(months=1)
+                payment_date += relativedelta(months=2)
             return payment_date
         else:
             message = f'Nenhum cartão setado para o lançamento {transaction.description} com o id {transaction.id}.'
