@@ -1,8 +1,9 @@
 import pytest
+
 from datetime import date, datetime, timedelta
-from statement.utils.datetime import DateTimeUtils
 from django.utils import timezone
 
+from statement.utils.datetime import DateTimeUtils
 
 class TestDateTimeUtils:
     """
@@ -30,7 +31,7 @@ class TestDateTimeUtils:
         Testa a adição de um mês a um objeto date.
         """
         base_date = date(2025, 3, 14)
-        new_date = DateTimeUtils.add_month(base_date, 1)
+        new_date = DateTimeUtils.add_months(base_date, 1)
         expected_date = date(2025, 4, 14)
         assert new_date == expected_date
 
@@ -39,7 +40,7 @@ class TestDateTimeUtils:
         Testa a adição de um mês a um objeto datetime.
         """
         base_datetime = datetime(2025, 3, 14)
-        new_datetime = DateTimeUtils.add_month(base_datetime, 1)
+        new_datetime = DateTimeUtils.add_months(base_datetime, 1)
         expected_datetime = datetime(2025, 4, 14)
         assert new_datetime == expected_datetime
 
@@ -48,14 +49,14 @@ class TestDateTimeUtils:
         Testa a adição de um mês a uma string formatada como 'YYYY-MM-DD'.
         """
         base_date_str = '2025-03-14'
-        new_date = DateTimeUtils.add_month(base_date_str, 1)
+        new_date = DateTimeUtils.add_months(base_date_str, 1)
         expected_date = '2025-04-14'
         assert new_date == expected_date
 
     def test_add_month_invalid_format(self):
         """
-        Verifica se o método add_month() lança um ValueError quando um formato de entrada inválido
+        Verifica se o método add_months() lança um ValueError quando um formato de entrada inválido
         é fornecido para o número de meses a adicionar.
         """
         with pytest.raises(ValueError):
-            DateTimeUtils.add_month("2025-03-14", 1.5)
+            DateTimeUtils.add_months("2025-03-14", 1.5)
