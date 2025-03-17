@@ -1,4 +1,8 @@
-from statement.forms.core.installment import InstallmentForm
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import redirect
+from django.utils.decorators import method_decorator
+
+from statement.forms.core.installment import InstallmentForm, AdvanceInstallmentForm
 from statement.models import Installment
 from statement.services.core.installment import InstallmentService
 from statement.services.core.transaction import TransactionService
@@ -35,6 +39,26 @@ class InstallmentView(BaseView):
     def update(self, request, id):
         self._first_transaction = self._get_transaction(request, id)
         return super().update(request, id)
+
+    @method_decorator(login_required)
+    def advance_transactions(self, request, id):
+        user = self._get_user(request)
+        installment = self.service.get_by_id(id, user)
+        transactions = TransactionService.get_by_filter(installment=installment)
+        print(transactions)
+        if request.method == 'POST':
+            form = AdvanceInstallmentForm(request.POST)
+            if form.is_valid():
+                InstallmentService.advance_transactions(form, transactions)
+                return redirect(self.redirect_url)
+            else:
+                print(form.errors)
+        else:
+            form = AdvanceInstallmentForm()
+        specific_content = {
+            'transactions': transactions
+        }
+        return self._render(request, form, 'installment/advance.html', specific_content)
 
 
     def _get_transactions(self, request, id):

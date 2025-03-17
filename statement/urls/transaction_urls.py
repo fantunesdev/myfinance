@@ -18,4 +18,5 @@ urlpatterns = [
     path('pesquisa/descricao/<str:description>', transaction_view.get_by_description, name='get_transactions_by_description'),
     path('contas/<int:id>/extrato/', include('statement.urls.core.extract')),
     path('cartoes/<int:id>/fatura/', include('statement.urls.core.invoice')),
+    path('parcelamento/', include('statement.urls.core.installment')),
 ]

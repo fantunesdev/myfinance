@@ -1,0 +1,26 @@
+{% extends "index.html" %}
+{% load static %}
+{% load custom_filters %}
+
+    {% block title %}
+    Adiantar parcelas
+    {% endblock title %}
+
+    {% block content %}
+    <div class="box">
+        <form method="post">
+            {% csrf_token %}
+            <div class="box-title">
+                <h3>Adiantar Parcelas</h3>
+            </div>
+            <div class="box-body">
+                {# A tabela foi colocada num template separado para poder ser reaproveitada pelo form.html #}
+                {% include 'installment/list.html' %}
+                {{ form }}
+            </div>
+            <div class="box-footer">
+                <input type="submit" class="btn btn-primary">
+            </div>
+        </form>
+    </div>
+    {% endblock %}

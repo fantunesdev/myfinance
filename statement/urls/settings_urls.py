@@ -12,7 +12,6 @@ urlpatterns = [
     path('categorias/', include('statement.urls.core.category')),
     path('subcategorias/', include('statement.urls.core.subcategory')),
     path('despesas_fixas/', include('statement.urls.fixed_expenses_urls')),
-    path('parcelamento/', include('statement.urls.installment_urls')),
     # Renda Fixa
     path('indices/', include('statement.urls.portfolio.fixed_income.index_urls')),
     path('visualizacao_proximo_mes/', include('statement.urls.next_month_view_url')),

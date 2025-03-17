@@ -1,4 +1,5 @@
-import copy, datetime
+import copy
+import datetime
 
 from statement.forms.core.transaction import TransactionForm
 from statement.models import Installment
@@ -196,3 +197,26 @@ class InstallmentService(BaseService):
             transaction_form = cls._set_transaction_form(form, transaction)
             last_transaction = TransactionService.update(transaction_form, transaction)
         return last_transaction
+
+    @classmethod
+    def advance_transactions(cls, form, installments):
+        """
+        Avança uma quantidade de parcelas a partir de uma data
+        """
+        advanced = 0
+        not_advanced = 0
+        quantity = form.cleaned_data['quantity']
+        initial_date = form.cleaned_data['initial_date']
+        next_expiration = CardService.set_processing_date(installments.first().card, initial_date)
+        for transaction in installments:
+            if transaction.payment_date > initial_date:
+                if advanced < quantity:
+                    transaction.payment_date = next_expiration
+                    form_transaction = TransactionForm(instance=transaction)
+                    TransactionService.update(form_transaction, transaction)
+                    advanced += 1
+                else:
+                    not_advanced += 1
+                    transaction.payment_date = DateTimeUtils.add_months(next_expiration, not_advanced)
+                    form_transaction = TransactionForm(instance=transaction)
+                    TransactionService.update(form_transaction, transaction)
