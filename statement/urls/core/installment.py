@@ -1,7 +1,6 @@
 from django.urls import path
 
 from statement.views.core.installment import InstallmentView
-from statement.views.installment_views import *
 
 installment_view = InstallmentView()
 

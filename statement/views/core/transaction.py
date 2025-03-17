@@ -7,7 +7,7 @@ from django.utils.decorators import method_decorator
 from django.utils.timezone import now
 
 from statement.forms.core.transaction import TransactionExpenseForm, TransactionForm, TransactionRevenueForm
-from statement.forms.general_forms import NavigationForm
+from statement.forms.general_forms import NavigationForm, UploadFileForm
 from statement.models import Transaction
 from statement.services.core.installment import InstallmentService
 from statement.services.core.fixed_expenses import FixedExpensesService
@@ -98,6 +98,14 @@ class TransactionView(BaseView):
         template = self._set_template_by_global_status('get_all')
         specific_context = {'instances': instances}
         return self._render(request, None, template, specific_context)
+
+    @method_decorator(login_required)
+    def import_transactions(self, request):
+        """
+        Página que faz o upload para o carregamento de lançamentos
+        """
+        form = UploadFileForm(request.user)
+        self._render(request, form, 'transaction/import.html')
 
     def _get_current_month(self):
         """
