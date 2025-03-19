@@ -6,7 +6,7 @@ para interagir com o banco de dados e fornecer suas respectivas funcionalidades.
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
 
-from statement.services import next_month_view_services
+from statement.services.next_month_view import NextMonthViewService
 
 
 def get_next_month_view(user):
@@ -23,6 +23,6 @@ def get_next_month_view(user):
     Http404: Se nenhuma configuração de visualização do próximo mês for encontrada para o usuário.
     """
     try:
-        return next_month_view_services.get_next_month_view_by_user(user)
+        return NextMonthViewService.get_all(user).first()
     except ObjectDoesNotExist:
         raise Http404

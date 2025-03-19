@@ -1,6 +1,6 @@
 from django.http import Http404
 
-from statement.services.portfolio.fixed_income_services import FixedIncomeService
+from statement.services.portfolio.fixed_income.fixed_income import FixedIncomeService
 
 
 class FixedIncomeServices:

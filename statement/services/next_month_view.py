@@ -7,3 +7,7 @@ class NextMonthViewService(BaseService):
 
     model = NextMonthView
     user_field = 'user'
+
+    @classmethod
+    def create(cls, **kwargs):
+        cls.model.objects.create(**kwargs)
