@@ -6,8 +6,8 @@ from statement.services.core.category import CategoryService
 from statement.services.core.subcategory import SubcategoryService
 from statement.utils.datetime import DateTimeUtils
 
-
 today = DateTimeUtils.today()
+
 
 class TransactionForm(BaseForm):
     """Formulário para o modelo Transaction."""

@@ -28,9 +28,6 @@ def send_websocket_update(entity_name, data):
     serialized_data = serializer_class(data, many=has_many).data
 
     # Cria e envia a mensagem
-    message = {
-        'type': 'send_websocket_update',
-        'data': {entity_name: serialized_data}
-    }
+    message = {'type': 'send_websocket_update', 'data': {entity_name: serialized_data}}
 
     async_to_sync(channel_layer.group_send)('updates', message)

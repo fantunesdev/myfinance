@@ -1,10 +1,9 @@
-
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 
 from statement.forms.general_forms import NavigationForm
-from statement.views.base_view import BaseView
 from statement.utils.datetime import DateTimeUtils
+from statement.views.base_view import BaseView
 
 
 class DashboardView(BaseView):

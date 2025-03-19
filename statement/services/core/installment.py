@@ -29,9 +29,9 @@ class InstallmentService(BaseService):
             raise ValueError("A instância de 'Transaction' é obrigatória para criar um Installment.")
 
         installment = Installment.objects.create(
-            release_date = transaction.release_date,
-            description = transaction.description,
-            user = user,
+            release_date=transaction.release_date,
+            description=transaction.description,
+            user=user,
         )
         cls._set_installments_plan(installment, transaction)
         return installment
@@ -98,11 +98,7 @@ class InstallmentService(BaseService):
         :transaction (models.Transaction): Uma instância do model Transaction.
         :value (float): O valor a ser atualizado.
         """
-        data = {
-            'value': transaction.value,
-            'paid': transaction.paid,
-            'installment': transaction.installment
-        }
+        data = {'value': transaction.value, 'paid': transaction.paid, 'installment': transaction.installment}
         if transaction.card:
             data['release_date'] = transaction.release_date
         cls.patch(transaction, data)

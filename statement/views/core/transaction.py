@@ -8,11 +8,11 @@ from django.utils.timezone import now
 from statement.forms.core.transaction import TransactionExpenseForm, TransactionForm, TransactionRevenueForm
 from statement.forms.general_forms import NavigationForm, UploadFileForm
 from statement.models import Transaction
-from statement.services.core.installment import InstallmentService
 from statement.services.core.fixed_expenses import FixedExpensesService
+from statement.services.core.installment import InstallmentService
 from statement.services.core.transaction import TransactionService
-from statement.views.base_view import BaseView
 from statement.utils.datetime import DateTimeUtils
+from statement.views.base_view import BaseView
 
 
 class TransactionView(BaseView):
@@ -207,7 +207,7 @@ class TransactionView(BaseView):
 
     def _custom_actions(self, request, form, instance):
         """
-        Sobrescreve o método da classe mãe para adicionar ações depois que as ações de create, update ou delete 
+        Sobrescreve o método da classe mãe para adicionar ações depois que as ações de create, update ou delete
         são executadas.
 
         :request (django.http.HttpRequest): - Informações sobre o cabeçalho, método e outros dados da requisição.
@@ -224,11 +224,10 @@ class TransactionView(BaseView):
                     user = self._get_user(request)
                     InstallmentService.create(form=form, user=user, transaction=instance)
 
-
     def set_navigation_templatetags(self, year, month):
         """
         Seta as templatetags para o menu superior de navegação por mês e ano.
-        
+
         :year (int): Ano.
         :month (int): Mês.
         """

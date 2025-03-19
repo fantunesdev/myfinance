@@ -3,8 +3,8 @@ from django import forms
 from statement.models import Portion
 from statement.utils.datetime import DateTimeUtils
 
-
 today = DateTimeUtils.today()
+
 
 class PortionForm(forms.ModelForm):
     class Meta:

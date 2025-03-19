@@ -1,10 +1,10 @@
 from django import forms
 
-from statement.utils.datetime import DateTimeUtils
 from statement.forms.core.transaction import TransactionForm
-
+from statement.utils.datetime import DateTimeUtils
 
 today = DateTimeUtils.today()
+
 
 class InstallmentForm(TransactionForm):
     payment_date = forms.DateField(

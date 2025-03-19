@@ -1,11 +1,11 @@
 from django import forms
 
-from statement.utils.datetime import DateTimeUtils
 from statement.forms.base_form import BaseForm
 from statement.models import FixedIncome
-
+from statement.utils.datetime import DateTimeUtils
 
 today = DateTimeUtils.today()
+
 
 class FixedIncomeForm(BaseForm):
     """Formulário para o modelo FixedIncome."""

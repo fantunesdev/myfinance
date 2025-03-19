@@ -3,15 +3,15 @@ from django.utils.decorators import method_decorator
 
 from statement.models import FixedIncomeSecurity
 from statement.services.core.account import AccountService
-from statement.services.next_month_view import NextMonthViewService
-from statement.services.core.fixed_expenses import FixedExpensesService
 from statement.services.core.bank import BankService
 from statement.services.core.card import CardService
 from statement.services.core.category import CategoryService
+from statement.services.core.fixed_expenses import FixedExpensesService
 from statement.services.core.flag import FlagService
 from statement.services.core.subcategory import SubcategoryService
-from statement.services.portfolio.fixed_income.security import FixedIncomeSecurityService
+from statement.services.next_month_view import NextMonthViewService
 from statement.services.portfolio.fixed_income.index import IndexService
+from statement.services.portfolio.fixed_income.security import FixedIncomeSecurityService
 from statement.services.portfolio.variable_income.sector import SectorService
 from statement.services.portfolio.variable_income.ticker import TickerService
 from statement.views.base_view import BaseView

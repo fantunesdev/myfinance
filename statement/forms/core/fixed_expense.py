@@ -4,8 +4,8 @@ from statement.forms.base_form import BaseForm
 from statement.models import FixedExpenses
 from statement.utils.datetime import DateTimeUtils
 
-
 today = DateTimeUtils.today()
+
 
 class FixedExpensesForm(BaseForm):
     class Meta:

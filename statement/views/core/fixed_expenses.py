@@ -1,4 +1,3 @@
-
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 
@@ -6,8 +5,8 @@ from statement.forms.core.fixed_expenses import FixedExpensesForm
 from statement.models import FixedExpenses
 from statement.services.core.fixed_expenses import FixedExpensesService
 from statement.services.core.transaction import TransactionService
-from statement.views.core.transaction import TransactionView
 from statement.utils.datetime import DateTimeUtils
+from statement.views.core.transaction import TransactionView
 
 
 class FixedExpensesView(TransactionView):

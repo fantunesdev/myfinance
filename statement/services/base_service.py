@@ -1,6 +1,7 @@
 from django.db import transaction
 from django.forms.models import model_to_dict
 
+
 class BaseService:
     """
     Classe base para manipulação de operações CRUD comuns em modelos.
@@ -63,7 +64,7 @@ class BaseService:
         :param data: Dicionário contendo os campos e valores a serem atualizados.
         """
         if not isinstance(data, dict):
-            raise ValueError("Os dados devem ser um dicionário.")
+            raise ValueError('Os dados devem ser um dicionário.')
 
         for field, value in data.items():
             if hasattr(instance, field):

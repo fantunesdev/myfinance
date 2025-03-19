@@ -1,7 +1,7 @@
 from django.urls import include, path
 
-from statement.views.core.transaction import TransactionView
 from statement.views.core.fixed_expenses import FixedExpensesView
+from statement.views.core.transaction import TransactionView
 
 transaction_view = TransactionView()
 fixed_expenses_view = FixedExpensesView()

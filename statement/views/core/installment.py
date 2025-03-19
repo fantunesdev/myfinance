@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 from django.utils.decorators import method_decorator
 
-from statement.forms.core.installment import InstallmentForm, AdvanceInstallmentForm
+from statement.forms.core.installment import AdvanceInstallmentForm, InstallmentForm
 from statement.models import Installment
 from statement.services.core.installment import InstallmentService
 from statement.services.core.transaction import TransactionService
@@ -20,7 +20,6 @@ class InstallmentView(BaseView):
     model = Installment
     service = InstallmentService
     redirect_url = 'get_current_month_transactions'
-
 
     def __init__(self):
         """
@@ -55,11 +54,8 @@ class InstallmentView(BaseView):
                 print(form.errors)
         else:
             form = AdvanceInstallmentForm()
-        specific_content = {
-            'transactions': transactions
-        }
+        specific_content = {'transactions': transactions}
         return self._render(request, form, 'installment/advance.html', specific_content)
-
 
     def _get_transactions(self, request, id):
         """
@@ -90,9 +86,7 @@ class InstallmentView(BaseView):
         return transactions
 
     def _add_context_on_templatetags(self, request, instance):
-        return {
-            'transactions': TransactionService.get_by_filter(installment=instance)
-        }
+        return {'transactions': TransactionService.get_by_filter(installment=instance)}
 
     def _set_form(self, request, instance):
         """
@@ -102,7 +96,7 @@ class InstallmentView(BaseView):
 
     def _custom_actions(self, request, form, instance):
         """
-        Sobrescreve o método da classe mãe para adicionar ações depois que as ações de create, update ou delete 
+        Sobrescreve o método da classe mãe para adicionar ações depois que as ações de create, update ou delete
         são executadas.
 
         :request (django.http.HttpRequest): - Informações sobre o cabeçalho, método e outros dados da requisição.

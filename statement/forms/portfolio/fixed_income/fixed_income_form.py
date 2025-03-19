@@ -12,15 +12,11 @@ class FixedIncomeForm(forms.ModelForm):
 
     Inclui os campos do modelo FixedIncome e adiciona o campo extra days
     """
-    days = forms.IntegerField(
-        required=False,
-        widget=forms.NumberInput(attrs={'class': 'form-control date-input'})
-    )
+
+    days = forms.IntegerField(required=False, widget=forms.NumberInput(attrs={'class': 'form-control date-input'}))
 
     account = forms.ModelChoiceField(
-        queryset=Account.objects.filter(type_id=3),
-        required=True,
-        widget=forms.Select(attrs={'class': 'form-control'})
+        queryset=Account.objects.filter(type_id=3), required=True, widget=forms.Select(attrs={'class': 'form-control'})
     )
 
     class Meta:

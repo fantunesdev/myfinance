@@ -6,7 +6,7 @@ class InvoiceView(TransactionView):
     """
     View responsável pela gestão dos lançamentos (invoices) filtrados por card.
 
-    InvoiceView é uma sub-view de TransactionsView e por isso não tem services e templates próprios. Os únicos 
+    InvoiceView é uma sub-view de TransactionsView e por isso não tem services e templates próprios. Os únicos
     templates customizáveis para essa view são o dashboard e o navigation
     """
 

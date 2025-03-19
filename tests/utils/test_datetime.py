@@ -1,9 +1,10 @@
-import pytest
-
 from datetime import date, datetime, timedelta
+
+import pytest
 from django.utils import timezone
 
 from statement.utils.datetime import DateTimeUtils
+
 
 class TestDateTimeUtils:
     """
@@ -59,4 +60,4 @@ class TestDateTimeUtils:
         é fornecido para o número de meses a adicionar.
         """
         with pytest.raises(ValueError):
-            DateTimeUtils.add_months("2025-03-14", 1.5)
+            DateTimeUtils.add_months('2025-03-14', 1.5)

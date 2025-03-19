@@ -1,10 +1,11 @@
-from datetime import datetime, date
+from datetime import date, datetime
 
 from dateutil.relativedelta import relativedelta
 from django.db.models import Q
 
 from statement.models import Transaction
 from statement.services.base_service import BaseService
+
 
 class TransactionService(BaseService):
     """Serviço para gerenciar operações relacionadas ao modelo Transaction."""

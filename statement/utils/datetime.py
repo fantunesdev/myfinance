@@ -1,6 +1,8 @@
-from datetime import datetime, date
+from datetime import date, datetime
+
 from dateutil.relativedelta import relativedelta
 from django.utils import timezone
+
 
 class DateTimeUtils:
     @staticmethod
@@ -27,7 +29,7 @@ class DateTimeUtils:
     @classmethod
     def add_months(cls, date_value, months: int):
         """
-        Adiciona um número de meses a uma data, levando em consideração que a data pode vir de um form (string) 
+        Adiciona um número de meses a uma data, levando em consideração que a data pode vir de um form (string)
         ou de um model do Django (datetime.date ou datetime.datetime).
 
         :param date: Data a ser modificada (str, datetime.date ou datetime.datetime)
@@ -52,6 +54,6 @@ class DateTimeUtils:
         :string_date: Uma string de data no formato %Y-%m-%d
         """
         try:
-            return timezone.datetime.strptime(string_date, "%Y-%m-%d").date()
+            return timezone.datetime.strptime(string_date, '%Y-%m-%d').date()
         except ValueError as e:
             raise ValueError(f'Formato de data inválido. Use "YYYY-MM-DD". Erro: {e}') from e

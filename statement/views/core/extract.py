@@ -6,7 +6,7 @@ class ExtractView(TransactionView):
     """
     View responsável pela gestão dos lançamentos (extract) filtrados por account.
 
-    ExtractView é uma sub-view de TransactionsView e por isso não tem services e templates próprios. Os únicos 
+    ExtractView é uma sub-view de TransactionsView e por isso não tem services e templates próprios. Os únicos
     templates customizáveis para essa view são o dashboard e o navigation
     """
 
