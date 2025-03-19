@@ -1,10 +1,10 @@
 from django import forms
-from django.utils import timezone
 
 from statement.models import Portion
+from statement.utils.datetime import DateTimeUtils
 
-today = timezone.localtime(timezone.now()).strftime('%Y-%m-%d')
 
+today = DateTimeUtils.today()
 
 class PortionForm(forms.ModelForm):
     class Meta:

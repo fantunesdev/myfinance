@@ -1,31 +1,31 @@
 from django import forms
 
-from statement.utils.datetime import DateTimeUtils
+from statement.forms.base_form import BaseForm
 from statement.models import FixedExpenses
+from statement.utils.datetime import DateTimeUtils
 
 
 today = DateTimeUtils.today()
 
-class FixedExpensesForm(forms.ModelForm):
+class FixedExpensesForm(BaseForm):
     class Meta:
         model = FixedExpenses
-        fields = ['start_date', 'end_date', 'description', 'value']
+        fields = '__all__'
+        exclude = ['user']
         widgets = {
             'start_date': forms.DateInput(
                 format='%Y-%m-%d',
                 attrs={
                     'type': 'date',
                     'value': today,
-                    'class': 'form-control date-input',
+                    'class': 'date-input',
                 },
             ),
             'end_date': forms.DateInput(
                 format='%Y-%m-%d',
                 attrs={
                     'type': 'date',
-                    'class': 'form-control date-input',
+                    'class': 'date-input',
                 },
             ),
-            'description': forms.TextInput(attrs={'class': 'form-control'}),
-            'value': forms.NumberInput(attrs={'class': 'form-control'}),
         }

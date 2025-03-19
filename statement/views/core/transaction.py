@@ -2,7 +2,6 @@ from datetime import date
 
 from dateutil.relativedelta import relativedelta
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect
 from django.utils.decorators import method_decorator
 from django.utils.timezone import now
 
@@ -13,6 +12,7 @@ from statement.services.core.installment import InstallmentService
 from statement.services.core.fixed_expenses import FixedExpensesService
 from statement.services.core.transaction import TransactionService
 from statement.views.base_view import BaseView
+from statement.utils.datetime import DateTimeUtils
 
 
 class TransactionView(BaseView):
@@ -64,7 +64,7 @@ class TransactionView(BaseView):
         filters.update(self._set_additional_filters())
         instances = self.service.get_by_filter(**filters)
         template = self._set_template_by_global_status('get_all')
-        specific_context = self._set_specific_cotext(instances, year, month)
+        specific_context = self._set_specific_context(instances, year, month)
         return self._render(request, None, template, specific_context)
 
     @method_decorator(login_required)
@@ -136,11 +136,13 @@ class TransactionView(BaseView):
         """
         return {}
 
-    def _set_specific_cotext(self, instances, year, month):
+    def _set_specific_context(self, instances, year, month, **kwargs):
         return {
             'instances': instances,
             **self._set_dashboard_templatetags(instances, year, month),
             **self.set_navigation_templatetags(year, month),
+            'year_month': DateTimeUtils.date(year, month, 1),
+            **kwargs,
         }
 
     def _set_dashboard_templatetags(self, instances, year, month):

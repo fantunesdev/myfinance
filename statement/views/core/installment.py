@@ -11,7 +11,7 @@ from statement.views.base_view import BaseView
 
 class InstallmentView(BaseView):
     """
-    View responsável pela gestão das contas
+    View responsável pela gestão dos parcelamentos
     """
 
     class_has_user = True

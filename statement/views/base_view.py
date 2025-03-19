@@ -175,7 +175,6 @@ class BaseView:
         self.templatetags = {
             'current_year': date.today().year,
             'current_month': date.today().month,
-            'year_month': date.today(),
             'extracts': AccountService.get_all(user),
             'invoices': CardService.get_all(user),
             'class_title': self.class_title,
@@ -194,8 +193,9 @@ class BaseView:
         """
         Transforma um nome de PascalCase para snake_case
         """
-        classname = self.model.__name__
-        return re.sub(r'(?<!^)(?=[A-Z])', '_', classname).lower()
+        if self.model:
+            classname = self.model.__name__
+            return re.sub(r'(?<!^)(?=[A-Z])', '_', classname).lower()
 
     def _set_template_by_global_status(self, method):
         """

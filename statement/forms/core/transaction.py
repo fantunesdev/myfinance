@@ -1,13 +1,13 @@
 from django import forms
-from django.utils import timezone
 
 from statement.forms.base_form import BaseForm
 from statement.models import Transaction
 from statement.services.core.category import CategoryService
 from statement.services.core.subcategory import SubcategoryService
+from statement.utils.datetime import DateTimeUtils
 
-today = timezone.localtime(timezone.now()).strftime('%Y-%m-%d')
 
+today = DateTimeUtils.today()
 
 class TransactionForm(BaseForm):
     """Formulário para o modelo Transaction."""

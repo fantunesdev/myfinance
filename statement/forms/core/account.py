@@ -7,16 +7,8 @@ from statement.models import Account
 class AccountForm(BaseForm):
     class Meta:
         model = Account
-        fields = [
-            'bank',
-            'branch',
-            'number',
-            'balance',
-            'limits',
-            'type',
-            'home_screen',
-            'file_handler_conf',
-        ]
+        fields = '__all__'
+        exclude = ['user']
         widgets = {
             'bank': forms.Select(),
             'branch': forms.TextInput(),

@@ -17,6 +17,13 @@ class DateTimeUtils:
         """
         return timezone.localtime(timezone.now())
 
+    @staticmethod
+    def date(year, month, day):
+        """
+        Retorna uma data na timezone da aplicação
+        """
+        return timezone.make_aware(datetime(year, month, day, 0, 0, 0))
+
     @classmethod
     def add_months(cls, date_value, months: int):
         """

@@ -1,7 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 
-from statement.repositories.templatetags_repository import set_menu_templatetags, set_templatetags
 from statement.services.portfolio.fixed_income_services import FixedIncomeService
 
 

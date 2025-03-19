@@ -29,7 +29,7 @@ def get_invoice_by_year_and_month(card_id, year, month, user):
         'payment_date__year': year,
         'payment_date__month': month,
         'user': user,
-        'account': CardService.get_by_id(card_id),
+        'card': CardService.get_by_id(card_id),
         'home_screen': True,
     }
     invoice = TransactionService.get_by_filter(**kwargs)

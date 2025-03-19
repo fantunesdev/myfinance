@@ -43,7 +43,7 @@ class ExtractView(TransactionView):
             return {'account': account}
         return {}
 
-    def _set_specific_cotext(self, instances, year, month):
+    def _set_specific_context(self, instances, year, month):
         return {
             'instances': instances,
             **self._set_dashboard_templatetags(instances, year, month),

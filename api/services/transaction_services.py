@@ -5,7 +5,7 @@ para interagir com o banco de dados e fornecer suas respectivas funcionalidades.
 
 from django.http import Http404
 
-from statement.services import transaction_services
+from statement.services.core.transaction import TransactionService
 
 
 def get_transactions(user):
@@ -21,7 +21,7 @@ def get_transactions(user):
     Raises:
     Http404: Se nenhuma conta estiver associada ao usuário.
     """
-    transactions = transaction_services.get_transactions(user)
+    transactions = TransactionService.get_all(user)
     if transactions:
         return transactions
     raise Http404
@@ -41,7 +41,7 @@ def get_transactions_by_year(year, user):
     Raises:
     Http404: Se nenhum lançamento for encontrado para o ano e usuário fornecidos.
     """
-    transactions = transaction_services.get_transactions_by_year(year, user)
+    transactions = TransactionService.get_by_filter(payment_date__year=year, user=user)
     if transactions:
         return transactions
     raise Http404
@@ -62,7 +62,7 @@ def get_transactions_by_year_and_month(year, month, user):
     Raises:
     Http404: Se nenhum lançamento for encontrado para o ano, mês e usuário fornecidos.
     """
-    transactions = transaction_services.get_transactions_by_year_and_month(year, month, user)
+    transactions = TransactionService.get_by_filter(payment_date__year=year, payment_date__month=month, user=user)
     if transactions:
         return transactions
     raise Http404
