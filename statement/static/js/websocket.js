@@ -1,13 +1,18 @@
-/** @todo remover debuuging */
-console.log('Script carregado.');
+const DEBUG = true
+
+if (DEBUG) {
+    console.log('Script carregado.');
+}
 
 function connectWebSocket() {
     const wsProtocol = window.location.protocol === "https:" ? "wss://" : "ws://";
     const wsHost = window.location.hostname;
     const wsPort = wsHost === 'localhost' ? "8765" : '';
     const wsEndpoint = "/ws/";
-    /** @todo remover debuuging */
-    console.log('Chamando connectWebSocket()...');
+    
+    if (DEBUG) {
+        console.log('Chamando connectWebSocket()...');
+    }
 
     if (window.socket && window.socket.readyState === WebSocket.OPEN) {
         console.log('WebSocket já está conectado.');
@@ -15,17 +20,21 @@ function connectWebSocket() {
     }
 
     window.socket = new WebSocket(`${wsProtocol}${wsHost}:${wsPort}${wsEndpoint}`);
-    /** @todo remover debuuging */
-    console.log('WebSocket criado:', window.socket);
+
+    if (DEBUG) {
+        console.log('WebSocket criado:', window.socket);
+    }
 
     window.socket.onopen = function () {
-        /** @todo remover debuuging */
-        console.log('WebSocket conectado.');
+        if (DEBUG) {
+            console.log('WebSocket conectado.');
+        }
     };
 
     window.socket.onmessage = function (event) {
-        /** @todo remover debuuging */
-        console.log('Mensagem recebida.');
+        if (DEBUG) {
+            console.log('Mensagem recebida.');
+        }
         
         try {
             const data = JSON.parse(event.data);
@@ -34,8 +43,9 @@ function connectWebSocket() {
                 const [key, value] = Object.entries(data.data)[0];
     
                 sessionStorage.setItem(key, JSON.stringify(value))
-                /** @todo remover debuuging */
-                console.log(`Atualizando sessionStorage para ${key}`);
+                if (DEBUG) {
+                    console.log(`Atualizando sessionStorage para ${key}`);
+                }
             } else {
                 console.warn('Mensagem WebSocket sem dados válidos:', data);
             }
@@ -45,8 +55,9 @@ function connectWebSocket() {
     };
 
     window.socket.onclose = function () {
-        /** @todo remover debuuging */
-        console.log('WebSocket desconectado.');
+        if (DEBUG) {
+            console.log('WebSocket desconectado.');
+        }
     };
 
     window.socket.onerror = function (error) {
@@ -57,8 +68,8 @@ function connectWebSocket() {
 
 connectWebSocket();
 
-/** @todo remover debuuging */
-// Testando se o WebSocket foi criado corretamente após 3 segundos
-setTimeout(() => {
-    console.log('Após 3 segundos:', window.socket);
-}, 3000);
+if (DEBUG) {
+    setTimeout(() => {
+        console.log('Após 3 segundos:', window.socket);
+    }, 3000);
+}

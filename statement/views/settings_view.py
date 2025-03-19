@@ -1,7 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 
-from statement.models import FixedIncomeSecurity
 from statement.services.core.account import AccountService
 from statement.services.core.bank import BankService
 from statement.services.core.card import CardService
