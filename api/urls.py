@@ -11,7 +11,13 @@ from api.views.invoice_views import InvoiceByCardYearAndMonth
 from api.views.next_month_view_view import NextMonthView
 from api.views.portfolio.fixed_income_views import FixedIncomeProgressionList
 from api.views.subcategoy_views import SubcategoriesByCategory, SubcategoryList
-from api.views.transaction_views import TransactionsList, TransactionYear, TransactionByYearAndMonth, ImportTransactions, TransactionView
+from api.views.transaction_views import (
+    ImportTransactions,
+    TransactionByYearAndMonth,
+    TransactionsList,
+    TransactionView,
+    TransactionYear,
+)
 
 authentication_view = AuthenticationView()
 transaction_view = TransactionView()

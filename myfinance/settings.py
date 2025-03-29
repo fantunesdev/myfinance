@@ -38,7 +38,7 @@ ALLOWED_HOSTS = os.getenv('HOSTS').split(',')
 CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS').split(',')
 CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS').split(',')
 
-ALGORITHM = "HS256"
+ALGORITHM = 'HS256'
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES'))
 
 # Application definition

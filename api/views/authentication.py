@@ -6,13 +6,14 @@ import json
 import uuid
 from datetime import timedelta
 
+from django.conf import settings
 from django.contrib.auth import authenticate
 from django.http import JsonResponse
-from jose import jwt
-from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
+from jose import jwt
 
 from statement.utils.datetime import DateTimeUtils
+
 
 class AuthenticationView:
     """
@@ -44,7 +45,7 @@ class AuthenticationView:
         Cria um token de autenticação para o usuário conectado.
         """
         payload = {
-            'user_id': user.id,  # Mantenha apenas um campo para o ID do usuário
+            'user_id': user.id,
             'username': user.username,
             'token_type': 'access',
             'exp': DateTimeUtils.now() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),

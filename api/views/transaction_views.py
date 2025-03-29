@@ -10,14 +10,15 @@ from api.serializers import file_handler_serializer, transaction_serializer
 from api.serializers.transaction_serializer import TransactionSerializer
 from api.services import file_handler_services, transaction_services
 from statement.entities.transaction import Transaction
-from statement.services.core.transaction import TransactionService
 from statement.services.core.currency import CurrencyService
+from statement.services.core.transaction import TransactionService
 
 
 class TransactionView:
     """
     Classe responsável pela view dos lançamentos
     """
+
     def get_all(self, request):
         """
         Obtém todos os lançamentos de um usuário logado.
@@ -25,6 +26,7 @@ class TransactionView:
         transactions = TransactionService.get_all(user=request.user)
         serializer = TransactionSerializer(transactions, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 class TransactionByYearAndMonth(APIView):
     """
