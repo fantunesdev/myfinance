@@ -15,7 +15,7 @@ export async function getTransactionsByYearAndMonth(year, month) {
             url = `/api/transactions/accounts/${accountId}/year/${year}/month/${month}/`;
         } else if (path.includes('cartoes')) {
         cardId = path.split('/')[3];
-        url = `/api/transactions/card/${cardId}/year/${year}/month/${month}/`;
+        url = `/api/transactions/cards/${cardId}/year/${year}/month/${month}/`;
         } else {
             url = `/api/transactions/year/${year}/month/${month}/`;
         }

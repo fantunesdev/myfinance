@@ -3,6 +3,7 @@ Autentificação
 """
 
 import json
+import uuid
 from datetime import timedelta
 
 from django.contrib.auth import authenticate
@@ -43,8 +44,11 @@ class AuthenticationView:
         Cria um token de autenticação para o usuário conectado.
         """
         payload = {
-            'user_id': user.id,
+            'user_id': user.id,  # Mantenha apenas um campo para o ID do usuário
             'username': user.username,
-            'exp': DateTimeUtils.now() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+            'token_type': 'access',
+            'exp': DateTimeUtils.now() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
+            'iat': DateTimeUtils.now(),
+            'jti': str(uuid.uuid4()),
         }
         return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
