@@ -58,13 +58,10 @@ class TransactionView(BaseView):
             'payment_date__year': year
         }
 
-        # Adiciona o mês aos filtros apenas se for fornecido
         if month:
             kwargs['payment_date__month'] = month
-
         if account:
             kwargs['account'] = AccountService.get_by_id(account)
-
         if card:
             kwargs['card'] = CardService.get_by_id(card)
 
