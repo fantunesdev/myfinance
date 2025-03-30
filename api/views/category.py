@@ -3,10 +3,10 @@ from rest_framework.decorators import action
 from rest_framework import status
 
 from api.views.base_view import BaseView
-from api.serializers.category import CategorySerializer
-from api.serializers.subcategory import SubcategorySerializer
+from api.serializers.base_serializer import BaseSerializer
 from statement.services.core.category import CategoryService
 from statement.views.core.category import CategoryView as StatementView
+from statement.models import Category
 
 from rest_framework.response import Response
 
@@ -16,9 +16,9 @@ class CategoryView(BaseView):
     Classe que gerencia a view das categorias na API.
     """
 
-    class_has_user = True
+    model = Category
     service = CategoryService
-    serializer = CategorySerializer
+    serializer = BaseSerializer
     statement_view = StatementView
 
     @action(detail=False, methods=['get'], url_path='type/(?P<type>\w+)')
@@ -31,9 +31,7 @@ class CategoryView(BaseView):
         categories = self.service.get_by_type(type)
         if not categories:
             return Response({"detail": "Categorias não encontradas."}, status=status.HTTP_404_NOT_FOUND)
-
-        serializer = self.serializer(categories, many=True)
-        return Response({'categories': serializer.data}, status=status.HTTP_200_OK)
+        return self._serialize_and_return(categories)
 
     @action(detail=True, methods=['get'], url_path='subcategories')
     def get_subcategories(self, request, pk=None):
@@ -46,5 +44,4 @@ class CategoryView(BaseView):
         subcategories = subcategories = category.subcategories.all()
         if not subcategories:
             return Response({"detail": "Subcategorias não encontradas."}, status=status.HTTP_404_NOT_FOUND)
-        serializer = SubcategorySerializer(subcategories, many=True)
-        return Response({'subcategories': serializer.data}, status=status.HTTP_200_OK)
+        return self._serialize_and_return(subcategories)
