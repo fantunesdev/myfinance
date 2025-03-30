@@ -4,7 +4,7 @@ from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.db.models import QuerySet
 
-from api.serializers.category_serializer import CategorySerializer
+from api.serializers.category import CategorySerializer
 from api.serializers.next_month_view_serializer import NextMonthViewSerializer
 
 SERIALIZERS = {
