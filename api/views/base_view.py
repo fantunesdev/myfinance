@@ -1,7 +1,8 @@
 from django.db.models import QuerySet
-from rest_framework.viewsets import ViewSet
-from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.viewsets import ViewSet
+
 
 class BaseView(ViewSet):
     """
@@ -40,7 +41,7 @@ class BaseView(ViewSet):
             serializer = self._get_serializer(instance)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
-            return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'detail': str(e)}, status=status.HTTP_404_NOT_FOUND)
 
     def _get_serializer(self, *args, **kwargs):
         """

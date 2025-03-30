@@ -1,5 +1,5 @@
-from api.views.base_view import BaseView
 from api.serializers.base_serializer import BaseSerializer
+from api.views.base_view import BaseView
 from statement.models import Card
 from statement.services.core.card import CardService
 from statement.views.core.card import CardView as StatementView

@@ -1,5 +1,5 @@
-from api.views.base_view import BaseView
 from api.serializers.base_serializer import BaseSerializer
+from api.views.base_view import BaseView
 from statement.models import Account
 from statement.services.core.account import AccountService
 from statement.views.core.account import AccountView as StatementView

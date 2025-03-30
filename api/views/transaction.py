@@ -2,13 +2,13 @@ from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from api.views.base_view import BaseView
 from api.serializers.transaction import TransactionSerializer
-from statement.services.core.transaction import TransactionService
+from api.views.base_view import BaseView
+from statement.models import Transaction
 from statement.services.core.account import AccountService
 from statement.services.core.card import CardService
+from statement.services.core.transaction import TransactionService
 from statement.views.core.transaction import TransactionView as StatementView
-from statement.models import Transaction
 
 
 class TransactionView(BaseView):

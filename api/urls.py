@@ -1,16 +1,16 @@
-from django.urls import path, include
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from django.urls import include, path
 from rest_framework.routers import DefaultRouter
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
+from api.views.account import AccountView
 from api.views.authentication import AuthenticationView
+from api.views.bank import BankView
+from api.views.card import CardView
+from api.views.category import CategoryView
 from api.views.default_views import Defaults
 from api.views.next_month_view_view import NextMonthView
 from api.views.portfolio.fixed_income_views import FixedIncomeProgressionList
 from api.views.subcategory import SubcategoryView
-from api.views.account import AccountView
-from api.views.bank import BankView
-from api.views.card import CardView
-from api.views.category import CategoryView
 from api.views.transaction import TransactionView
 
 authentication_view = AuthenticationView()
