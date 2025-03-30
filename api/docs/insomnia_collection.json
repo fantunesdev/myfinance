@@ -1,13 +1,13 @@
 {
   "_type": "export",
   "__export_format": 4,
-  "__export_date": "2025-03-29T12:33:36.738Z",
+  "__export_date": "2025-03-30T18:43:53.694Z",
   "__export_source": "insomnia.desktop.app:v10.3.1",
   "resources": [
     {
-      "_id": "req_e97001d01b554b138018c129cf60b64e",
-      "parentId": "wrk_71abb0f2cc3645d7836b9e3b0b3bdf9c",
-      "modified": 1743251558224,
+      "_id": "req_56c03064a77145f787a4d63197f980f7",
+      "parentId": "wrk_5fcafab75bb74c56ab64357332400168",
+      "modified": 1743252869632,
       "created": 1743194078753,
       "url": "http://localhost:8000/api/token/",
       "name": "auth",
@@ -23,6 +23,7 @@
         { "name": "User-Agent", "value": "insomnia/10.3.1" }
       ],
       "authentication": { "type": "bearer", "token": "", "disabled": true },
+      "preRequestScript": "(async function() {\n    // Obtém o corpo da resposta\n    const response = await insomnia.response.getBody();\n    const json = JSON.parse(response);\n\n    // Ajuste a chave conforme o JSON retornado pelo seu backend\n    const token = json.token;\n\t\tenvironment.set('token', token);\n    // Salva o token na variável de ambiente do Insomnia\n    if (token) {\n        await insomnia.env.set(\"token\", token);\n    }\n})();\n",
       "metaSortKey": -1743191679131,
       "isPrivate": false,
       "pathParameters": [],
@@ -35,19 +36,19 @@
       "_type": "request"
     },
     {
-      "_id": "wrk_71abb0f2cc3645d7836b9e3b0b3bdf9c",
+      "_id": "wrk_5fcafab75bb74c56ab64357332400168",
       "parentId": null,
-      "modified": 1743250838517,
-      "created": 1743194078750,
+      "modified": 1743252029287,
+      "created": 1743252029287,
       "name": "myfinance_api",
       "description": "",
       "scope": "collection",
       "_type": "workspace"
     },
     {
-      "_id": "req_c39a715880bd4d6ca402a55372dba360",
-      "parentId": "fld_13489a79312a43c495144c769cab4459",
-      "modified": 1743248492308,
+      "_id": "req_c9dc00e9c9994005b6ea9604c8d9c75e",
+      "parentId": "fld_3cfbf58533904712b54237403f527c39",
+      "modified": 1743252891492,
       "created": 1743248215693,
       "url": "http://localhost:8000/api/accounts/",
       "name": "get_accounts",
@@ -69,7 +70,7 @@
           "disabled": false
         }
       ],
-      "authentication": { "type": "bearer", "token": "{{ token }}" },
+      "authentication": { "type": "bearer", "token": "{{token}}" },
       "metaSortKey": -1743248339605,
       "isPrivate": false,
       "pathParameters": [],
@@ -82,8 +83,8 @@
       "_type": "request"
     },
     {
-      "_id": "fld_13489a79312a43c495144c769cab4459",
-      "parentId": "fld_f57799d9d95d4d199daa898e673fd243",
+      "_id": "fld_3cfbf58533904712b54237403f527c39",
+      "parentId": "fld_e99cfdcb781a489a9bcdf8bbf64587a0",
       "modified": 1743248657638,
       "created": 1743248331838,
       "name": "accounts",
@@ -95,8 +96,8 @@
       "_type": "request_group"
     },
     {
-      "_id": "fld_f57799d9d95d4d199daa898e673fd243",
-      "parentId": "wrk_71abb0f2cc3645d7836b9e3b0b3bdf9c",
+      "_id": "fld_e99cfdcb781a489a9bcdf8bbf64587a0",
+      "parentId": "wrk_5fcafab75bb74c56ab64357332400168",
       "modified": 1743248316494,
       "created": 1743248255394,
       "name": "resources",
@@ -108,8 +109,8 @@
       "_type": "request_group"
     },
     {
-      "_id": "req_0187f58dd18a477e9570b76bf7afcdc9",
-      "parentId": "fld_13489a79312a43c495144c769cab4459",
+      "_id": "req_05ece6c8e7ba479686409a0566a5a48d",
+      "parentId": "fld_3cfbf58533904712b54237403f527c39",
       "modified": 1743248497217,
       "created": 1743248473537,
       "url": "http://localhost:8000/api/accounts/1",
@@ -145,8 +146,8 @@
       "_type": "request"
     },
     {
-      "_id": "req_1a6e7f28678b4691b7b08848997ae0b4",
-      "parentId": "fld_624cd93faf39443d88bb139741c038f9",
+      "_id": "req_cfa74a1054a64161813f7303cd2ae8e7",
+      "parentId": "fld_91571a680cb34fc3a8fe5d12da6ad11e",
       "modified": 1743248602161,
       "created": 1743248536972,
       "url": "http://localhost:8000/api/banks/",
@@ -182,8 +183,8 @@
       "_type": "request"
     },
     {
-      "_id": "fld_624cd93faf39443d88bb139741c038f9",
-      "parentId": "fld_f57799d9d95d4d199daa898e673fd243",
+      "_id": "fld_91571a680cb34fc3a8fe5d12da6ad11e",
+      "parentId": "fld_e99cfdcb781a489a9bcdf8bbf64587a0",
       "modified": 1743248583957,
       "created": 1743248528666,
       "name": "banks",
@@ -195,8 +196,8 @@
       "_type": "request_group"
     },
     {
-      "_id": "req_2f6dc4d2d03d4ed8abda8e24e3bb1b87",
-      "parentId": "fld_624cd93faf39443d88bb139741c038f9",
+      "_id": "req_863989e7a94440e58d44fedad3d075c6",
+      "parentId": "fld_91571a680cb34fc3a8fe5d12da6ad11e",
       "modified": 1743248614292,
       "created": 1743248612776,
       "url": "http://localhost:8000/api/banks/1",
@@ -232,8 +233,8 @@
       "_type": "request"
     },
     {
-      "_id": "req_4f85a23431704003af2ffdefdb8053b6",
-      "parentId": "fld_46601036e4bf479597ed220e43eee96e",
+      "_id": "req_4fa3934ba2d6424ab597f4cb64982170",
+      "parentId": "fld_c91119bfd1d44b77aa23fff1ecf923bb",
       "modified": 1743248724149,
       "created": 1743248689924,
       "url": "http://localhost:8000/api/cards/",
@@ -269,8 +270,8 @@
       "_type": "request"
     },
     {
-      "_id": "fld_46601036e4bf479597ed220e43eee96e",
-      "parentId": "fld_f57799d9d95d4d199daa898e673fd243",
+      "_id": "fld_c91119bfd1d44b77aa23fff1ecf923bb",
+      "parentId": "fld_e99cfdcb781a489a9bcdf8bbf64587a0",
       "modified": 1743248689923,
       "created": 1743248689923,
       "name": "cards",
@@ -282,8 +283,8 @@
       "_type": "request_group"
     },
     {
-      "_id": "req_c6e187f8b7c24d64b396440ee3270bb8",
-      "parentId": "fld_46601036e4bf479597ed220e43eee96e",
+      "_id": "req_e36f962024da428595dade427d99f664",
+      "parentId": "fld_c91119bfd1d44b77aa23fff1ecf923bb",
       "modified": 1743248729187,
       "created": 1743248689924,
       "url": "http://localhost:8000/api/cards/1",
@@ -319,8 +320,8 @@
       "_type": "request"
     },
     {
-      "_id": "req_9b75b1208b39455f9d9cafd8a3820020",
-      "parentId": "fld_3a573372ed9840e2baf7cd93fcf5adc6",
+      "_id": "req_774ef45902aa413d82ffaa1676d828b6",
+      "parentId": "fld_4f63ccf02caf4dbb96124cb4d084ddc6",
       "modified": 1743248766802,
       "created": 1743248061756,
       "url": "http://localhost:8000/api/categories/",
@@ -356,8 +357,8 @@
       "_type": "request"
     },
     {
-      "_id": "fld_3a573372ed9840e2baf7cd93fcf5adc6",
-      "parentId": "fld_f57799d9d95d4d199daa898e673fd243",
+      "_id": "fld_4f63ccf02caf4dbb96124cb4d084ddc6",
+      "parentId": "fld_e99cfdcb781a489a9bcdf8bbf64587a0",
       "modified": 1743248398860,
       "created": 1743248398860,
       "name": "categories",
@@ -369,8 +370,119 @@
       "_type": "request_group"
     },
     {
-      "_id": "req_9e8979f5c99a4971987d21ac31cf4d19",
-      "parentId": "fld_ef0a6a1a1fcb4aba9a2d849ce068f19a",
+      "_id": "req_57895267f13e476993d79b82658f454f",
+      "parentId": "fld_4f63ccf02caf4dbb96124cb4d084ddc6",
+      "modified": 1743351157082,
+      "created": 1743351153694,
+      "url": "http://localhost:8000/api/categories/1",
+      "name": "get_category",
+      "description": "",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "User-Agent",
+          "value": "insomnia/10.3.1",
+          "id": "pair_2be13c980f7748e88833ea3d5b34103b"
+        },
+        {
+          "id": "pair_60ece41d331d464ab5e102b5460c314b",
+          "name": "key",
+          "value": "{{token}}",
+          "description": "",
+          "disabled": false
+        }
+      ],
+      "authentication": { "type": "bearer", "token": "{{ token }}" },
+      "metaSortKey": -1743248401282,
+      "isPrivate": false,
+      "pathParameters": [],
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_ebfe5a9feba64294b6a31e7546bc6174",
+      "parentId": "fld_4f63ccf02caf4dbb96124cb4d084ddc6",
+      "modified": 1743349059293,
+      "created": 1743348577164,
+      "url": "http://localhost:8000/api/categories/type/entrada",
+      "name": "get_categories_by_type",
+      "description": "",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "User-Agent",
+          "value": "insomnia/10.3.1",
+          "id": "pair_2be13c980f7748e88833ea3d5b34103b"
+        },
+        {
+          "id": "pair_60ece41d331d464ab5e102b5460c314b",
+          "name": "key",
+          "value": "{{token}}",
+          "description": "",
+          "disabled": false
+        }
+      ],
+      "authentication": { "type": "bearer", "token": "{{ token }}" },
+      "metaSortKey": -1743248396709,
+      "isPrivate": false,
+      "pathParameters": [],
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_87fc9efc96444dad9ed2b34d44ade84c",
+      "parentId": "fld_4f63ccf02caf4dbb96124cb4d084ddc6",
+      "modified": 1743350688822,
+      "created": 1743348507506,
+      "url": "http://localhost:8000/api/categories/1/subcategories",
+      "name": "get_categorie_subcategories",
+      "description": "",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "User-Agent",
+          "value": "insomnia/10.3.1",
+          "id": "pair_2be13c980f7748e88833ea3d5b34103b"
+        },
+        {
+          "id": "pair_60ece41d331d464ab5e102b5460c314b",
+          "name": "key",
+          "value": "{{token}}",
+          "description": "",
+          "disabled": false
+        }
+      ],
+      "authentication": { "type": "bearer", "token": "{{ token }}" },
+      "metaSortKey": -1743248387563,
+      "isPrivate": false,
+      "pathParameters": [],
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_524ebbe7a0a044dda43c885fad1ef9c7",
+      "parentId": "fld_c619f025310f4c3493f95b136376f6b2",
       "modified": 1743248816268,
       "created": 1743245529002,
       "url": "http://localhost:8000/api/transactions/",
@@ -406,8 +518,8 @@
       "_type": "request"
     },
     {
-      "_id": "fld_ef0a6a1a1fcb4aba9a2d849ce068f19a",
-      "parentId": "fld_f57799d9d95d4d199daa898e673fd243",
+      "_id": "fld_c619f025310f4c3493f95b136376f6b2",
+      "parentId": "fld_e99cfdcb781a489a9bcdf8bbf64587a0",
       "modified": 1743248749723,
       "created": 1743248361809,
       "name": "transactions",
@@ -419,8 +531,45 @@
       "_type": "request_group"
     },
     {
-      "_id": "req_f7e3a4ce734247bf9ef6f6fdf8b80917",
-      "parentId": "fld_ef0a6a1a1fcb4aba9a2d849ce068f19a",
+      "_id": "req_892d24ef9da243e98a27664ba76f00d0",
+      "parentId": "fld_c619f025310f4c3493f95b136376f6b2",
+      "modified": 1743356566506,
+      "created": 1743356562002,
+      "url": "http://localhost:8000/api/transactions/1",
+      "name": "get_transaction",
+      "description": "",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "User-Agent",
+          "value": "insomnia/10.3.1",
+          "id": "pair_2be13c980f7748e88833ea3d5b34103b"
+        },
+        {
+          "id": "pair_60ece41d331d464ab5e102b5460c314b",
+          "name": "key",
+          "value": "{{token}}",
+          "description": "",
+          "disabled": false
+        }
+      ],
+      "authentication": { "type": "bearer", "token": "{{ token }}" },
+      "metaSortKey": -1743248361854.5,
+      "isPrivate": false,
+      "pathParameters": [],
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_d81aff2a3f1347e587fd0250cb131c2e",
+      "parentId": "fld_c619f025310f4c3493f95b136376f6b2",
       "modified": 1743248876321,
       "created": 1743248840631,
       "url": "http://localhost:8000/api/transactions/year/2025",
@@ -456,8 +605,8 @@
       "_type": "request"
     },
     {
-      "_id": "req_29bba21d778b4bbcb2c762697676bebc",
-      "parentId": "fld_ef0a6a1a1fcb4aba9a2d849ce068f19a",
+      "_id": "req_f2be2c2bdca84e98924f24963f5114eb",
+      "parentId": "fld_c619f025310f4c3493f95b136376f6b2",
       "modified": 1743248895547,
       "created": 1743248888859,
       "url": "http://localhost:8000/api/transactions/year/2025/month/1",
@@ -493,8 +642,8 @@
       "_type": "request"
     },
     {
-      "_id": "req_0a0ffdcc754c43479287862b984f346d",
-      "parentId": "fld_ef0a6a1a1fcb4aba9a2d849ce068f19a",
+      "_id": "req_b5bbe2979d654b26ae6713dbee5b0ba1",
+      "parentId": "fld_c619f025310f4c3493f95b136376f6b2",
       "modified": 1743248943845,
       "created": 1743248920897,
       "url": "http://localhost:8000/api/transactions/accounts/1/year/2025/month/1",
@@ -530,8 +679,8 @@
       "_type": "request"
     },
     {
-      "_id": "req_a01f6ad3d0f044aeb64541ab67bc503b",
-      "parentId": "fld_ef0a6a1a1fcb4aba9a2d849ce068f19a",
+      "_id": "req_463132873f17487e8f4909ae71b0af23",
+      "parentId": "fld_c619f025310f4c3493f95b136376f6b2",
       "modified": 1743249014761,
       "created": 1743248955165,
       "url": "http://localhost:8000/api/transactions/cards/1/year/2025/month/1",
@@ -567,9 +716,9 @@
       "_type": "request"
     },
     {
-      "_id": "req_01e242012325462e9eb73478b64f5c64",
-      "parentId": "fld_643c8010cf784250ab179aa14cf702aa",
-      "modified": 1743248827169,
+      "_id": "req_548bf0da28b547c8a035ca29926c8344",
+      "parentId": "fld_957bf0ab90cb48fd9744b8428237aed3",
+      "modified": 1743343121463,
       "created": 1743248080692,
       "url": "http://localhost:8000/api/subcategories/",
       "name": "get_subcategories",
@@ -604,8 +753,8 @@
       "_type": "request"
     },
     {
-      "_id": "fld_643c8010cf784250ab179aa14cf702aa",
-      "parentId": "fld_f57799d9d95d4d199daa898e673fd243",
+      "_id": "fld_957bf0ab90cb48fd9744b8428237aed3",
+      "parentId": "fld_e99cfdcb781a489a9bcdf8bbf64587a0",
       "modified": 1743248448463,
       "created": 1743248425704,
       "name": "subcategories",
@@ -617,23 +766,64 @@
       "_type": "request_group"
     },
     {
-      "_id": "jar_a816a046599a4d438b066afa67136c6b",
-      "parentId": "wrk_71abb0f2cc3645d7836b9e3b0b3bdf9c",
-      "modified": 1743194078752,
+      "_id": "req_b27362bfa2bd4b7b9470ab317d0d3482",
+      "parentId": "fld_957bf0ab90cb48fd9744b8428237aed3",
+      "modified": 1743343274018,
+      "created": 1743343251926,
+      "url": "http://localhost:8000/api/subcategories/1",
+      "name": "get_subcategory",
+      "description": "",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "User-Agent",
+          "value": "insomnia/10.3.1",
+          "id": "pair_2be13c980f7748e88833ea3d5b34103b"
+        },
+        {
+          "id": "pair_60ece41d331d464ab5e102b5460c314b",
+          "name": "key",
+          "value": "{{token}}",
+          "description": "",
+          "disabled": false
+        }
+      ],
+      "authentication": { "type": "bearer", "token": "{{ token }}" },
+      "metaSortKey": -1743248428155.5,
+      "isPrivate": false,
+      "pathParameters": [],
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "env_b4b3852625daddb197ca0d697b9673827aab8c5a",
+      "parentId": "wrk_5fcafab75bb74c56ab64357332400168",
+      "modified": 1743342068904,
+      "created": 1743252040359,
+      "name": "Base Environment",
+      "data": {},
+      "dataPropertyOrder": {},
+      "color": null,
+      "isPrivate": false,
+      "metaSortKey": 1743252040359,
+      "environmentType": "kv",
+      "_type": "environment"
+    },
+    {
+      "_id": "jar_2ce45361d7fd439abe944dcfc9cf1180",
+      "parentId": "wrk_5fcafab75bb74c56ab64357332400168",
+      "modified": 1743342068904,
       "created": 1743194078752,
       "name": "Default Jar",
       "cookies": [],
       "_type": "cookie_jar"
-    },
-    {
-      "_id": "spc_a681a1c5263b45f59c9272fab452ee79",
-      "parentId": "wrk_71abb0f2cc3645d7836b9e3b0b3bdf9c",
-      "modified": 1743194078756,
-      "created": 1743194078755,
-      "fileName": "myfinance",
-      "contents": "",
-      "contentType": "yaml",
-      "_type": "api_spec"
     }
   ]
 }
