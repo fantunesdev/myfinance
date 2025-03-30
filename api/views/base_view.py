@@ -41,7 +41,7 @@ class BaseView(ViewSet):
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
-    
+
     def _get_serializer(self, *args, **kwargs):
         """
         Sobrescreve o método get_serializer para passar o model dinamicamente.

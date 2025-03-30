@@ -1,15 +1,12 @@
-from django.http import Http404
-from rest_framework.decorators import action
 from rest_framework import status
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from api.views.base_view import BaseView
 from api.serializers.base_serializer import BaseSerializer
 from statement.services.core.category import CategoryService
 from statement.views.core.category import CategoryView as StatementView
 from statement.models import Category
-
-from rest_framework.response import Response
-
 
 class CategoryView(BaseView):
     """
