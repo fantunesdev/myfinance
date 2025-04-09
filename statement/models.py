@@ -4,6 +4,16 @@ from login.models import User
 
 
 class Category(models.Model):
+    """
+    Classe que representa uma categoria de transação.
+
+    Atributos:
+        type (CharField): Tipo da categoria (entrada ou saída).
+        description (CharField): Descrição da categoria.
+        color (CharField): Cor da categoria.
+        icon (CharField): Ícone da categoria.
+        ignore (BooleanField): Se a categoria deve ser ignorada.
+    """
     TYPE_CHOICES = (('entrada', 'Entrada'), ('saida', 'Saída'))
     type = models.CharField(max_length=7, choices=TYPE_CHOICES, default='saida')
     description = models.CharField(max_length=30)
@@ -12,37 +22,75 @@ class Category(models.Model):
     ignore = models.BooleanField(blank=True)
 
     def __str__(self):
+        """Retorna a descrição da categoria."""
         return self.description
 
 
 class Subcategory(models.Model):
+    """
+    Classe que representa uma subcategoria de transação.
+
+    Atributos:
+        description (CharField): Descrição da subcategoria.
+        category (ForeignKey): Categoria à qual a subcategoria pertence.
+    """
     description = models.CharField(max_length=30)
     category = models.ForeignKey(Category, related_name='subcategories', on_delete=models.PROTECT)
 
     def __str__(self):
+        """Retorna a descrição da subcategoria."""
         return self.description
 
     class Meta:
         ordering = ['description']
 
-
 class Bank(models.Model):
+    """
+    Classe que representa um banco.
+
+    Atributos:
+        description (CharField): Descrição do banco.
+        code (CharField): Código do banco.
+        icon (ImageField): Ícone do banco.
+    """
     description = models.CharField(max_length=30)
     code = models.CharField(max_length=10, blank=True, null=True)
     icon = models.ImageField(upload_to='img/', null=True, blank=True)
 
     def __str__(self):
+        """Retorna a descrição do banco."""
         return self.description
 
 
 class AccountType(models.Model):
+    """
+    Classe que representa um tipo de conta.
+
+    Atributos:
+        description (CharField): Descrição do tipo de conta.
+    """
     description = models.CharField(max_length=15)
 
     def __str__(self):
+        """Retorna a descrição do tipo de conta."""
         return self.description
 
 
 class Account(models.Model):
+    """
+    Classe que representa uma conta bancária.
+
+    Atributos:
+        bank (ForeignKey): Banco ao qual a conta pertence.
+        branch (CharField): Agência da conta.
+        number (CharField): Número da conta.
+        balance (FloatField): Saldo da conta.
+        limits (FloatField): Limite da conta.
+        type (ForeignKey): Tipo da conta.
+        home_screen (BooleanField): Se a conta deve aparecer na tela inicial.
+        file_handler_conf (TextField): Configuração do manipulador de arquivos.
+        user (ForeignKey): Usuário que possui a conta.
+    """
     bank = models.ForeignKey(Bank, on_delete=models.PROTECT)
     branch = models.CharField(max_length=10, blank=True, null=True)
     number = models.CharField(max_length=20, blank=True, null=True)
@@ -58,20 +106,45 @@ class Account(models.Model):
     user = models.ForeignKey(User, on_delete=models.PROTECT)
 
     def __str__(self):
+        """Retorna a descrição da conta."""
         type = self.type.description
         first_letters = ''.join([word[0] for word in type.split()])
         return f'{self.bank.description} ({first_letters})'
 
 
 class Flag(models.Model):
+    """
+    Classe que representa uma bandeira de cartão de crédito.
+
+    Atributos:
+        description (CharField): Descrição da bandeira.
+        icon (ImageField): Ícone da bandeira.
+    """
     description = models.CharField(max_length=20)
     icon = models.ImageField(upload_to='img/', null=True, blank=True)
 
     def __str__(self):
+        """Retorna a descrição da bandeira do cartão."""
         return self.description
 
 
 class Card(models.Model):
+    """Classe que representa um cartão de crédito.
+    Atributos:
+        bank (ForeignKey): Banco ao qual o cartão pertence.
+        number (CharField): Número do cartão.
+        limit (FloatField): Limite do cartão.
+        flag (ForeignKey): Bandeira do cartão.
+        icon (ImageField): Ícone do cartão.
+        description (CharField): Descrição do cartão.
+        limits (FloatField): Limite do cartão.
+        account (ForeignKey): Conta associada ao cartão.
+        expiration_day (IntegerField): Dia de vencimento da fatura.
+        closing_day (IntegerField): Dia de fechamento da fatura.
+        home_screen (BooleanField): Se o cartão deve aparecer na tela inicial.
+        file_handler_conf (TextField): Configuração do manipulador de arquivos.
+        user (ForeignKey): Usuário que possui o cartão.
+    """
     flag = models.ForeignKey(Flag, on_delete=models.PROTECT)
     icon = models.ImageField(upload_to='img/', null=True, blank=True)
     description = models.CharField(max_length=30)
@@ -84,28 +157,72 @@ class Card(models.Model):
     user = models.ForeignKey(User, on_delete=models.PROTECT)
 
     def __str__(self):
+        """Retorna a descrição do cartão de crédito."""
         return self.description
 
 
 class Currency(models.Model):
+    """
+    Classe que representa uma moeda.
+
+    Atributos:
+        id (CharField): ID da moeda.
+        description (CharField): Descrição da moeda.
+        symbol (CharField): Símbolo da moeda.
+    """
     id = models.CharField(max_length=3, primary_key=True)
     description = models.CharField(max_length=20)
     symbol = models.CharField(max_length=5)
 
     def __str__(self):
+        """Retorna a descrição da moeda."""
         return self.description
 
 
 class Installment(models.Model):
+    """
+    Classe que representa uma parcela de um pagamento.
+
+    Atributos:
+        release_date (DateField): Data de lançamento da parcela.
+        description (CharField): Descrição da parcela.
+        user (ForeignKey): Usuário que possui a parcela.
+    """
     release_date = models.DateField()
     description = models.CharField(max_length=50)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
+        """Retorna a descrição da parcela."""
         return self.description
 
 
 class Transaction(models.Model):
+    """
+    Classe que representa uma transação financeira.
+
+    Atributos:
+        release_date (DateField): Data de lançamento da transação.
+        payment_date (DateField): Data de pagamento da transação.
+        account (ForeignKey): Conta associada à transação.
+        card (ForeignKey): Cartão associado à transação.
+        category (ForeignKey): Categoria da transação.
+        subcategory (ForeignKey): Subcategoria da transação.
+        description (CharField): Descrição da transação.
+        value (FloatField): Valor da transação.
+        installments_number (IntegerField): Número de parcelas da transação.
+        paid (IntegerField): Número de parcelas pagas.
+        fixed (BooleanField): Se a transação é fixa.
+        annual (BooleanField): Se a transação é anual.
+        currency (ForeignKey): Moeda da transação.
+        observation (TextField): Observação da transação.
+        remember (BooleanField): Se a transação deve ser lembrada.
+        type (CharField): Tipo da transação (entrada ou saída).
+        effected (BooleanField): Se a transação foi efetivada.
+        home_screen (BooleanField): Se a transação deve aparecer na tela inicial.
+        user (ForeignKey): Usuário que possui a transação.
+        installment (ForeignKey): Parcelamento associada à transação.
+    """
     TYPE_CHOICES = (('entrada', 'Entrada'), ('saida', 'Saída'))
 
     release_date = models.DateField()
@@ -130,9 +247,11 @@ class Transaction(models.Model):
     installment = models.ForeignKey(Installment, null=True, blank=True, on_delete=models.CASCADE)
 
     def __str__(self):
+        """Retorna a descrição da transação."""
         return self.description
 
     class Meta:
+        """Ordena as transações pela data de lançamento."""
         ordering = ['release_date']
 
 
@@ -143,6 +262,16 @@ class NextMonthView(models.Model):
 
 
 class FixedExpenses(models.Model):
+    """
+    Classe que representa uma despesa fixa.
+
+    Atributos:
+        start_date (DateField): Data de início da despesa.
+        end_date (DateField): Data de fim da despesa.
+        description (CharField): Descrição da despesa.
+        value (FloatField): Valor da despesa.
+        user (ForeignKey): Usuário que possui a despesa.
+    """
     start_date = models.DateField()
     end_date = models.DateField(blank=True, null=True)
     description = models.CharField(max_length=50)
@@ -167,6 +296,14 @@ class Version(models.Model):
 
 
 class Dream(models.Model):
+    """Classe que representa um sonho.
+
+    Atributos:
+        description (CharField): Descrição do sonho.
+        value (FloatField): Valor do sonho.
+        limit_date (DateField): Data limite para realizar o sonho.
+        user (ForeignKey): Usuário que possui o sonho.
+    """
     description = models.CharField(max_length=70)
     value = models.FloatField()
     limit_date = models.DateField()
@@ -174,6 +311,15 @@ class Dream(models.Model):
 
 
 class Portion(models.Model):
+    """
+    Classe que representa uma parcela de um sonho.
+
+    Atributos:
+        date (DateField): Data da parcela.
+        value (FloatField): Valor da parcela.
+        dream (ForeignKey): Referência ao sonho associado.
+        user (ForeignKey): Usuário que possui a parcela.
+    """
     date = models.DateField()
     value = models.FloatField()
     dream = models.ForeignKey(Dream, on_delete=models.CASCADE)
@@ -265,32 +411,52 @@ class FixedIncome(models.Model):
 
 
 class Ticker(models.Model):
-    """Representa um ticker de ativo financeiro."""
+    """
+    Representa um ticker de ativo financeiro.
+    Atributos:
+        description (CharField): Descrição do ticker.
+        code (CharField): Código do ticker.
+    """
 
     description = models.CharField(max_length=255)
     code = models.CharField(max_length=10)
 
     def __str__(self):
+        """Retorna a descrição do ticker."""
         return self.code
 
     class Meta:
+        """Ordena os tickers pela descrição."""
         ordering = ['description']
 
 
 class Sector(models.Model):
-    """Representa um setor de mercado."""
+    """
+    Representa um setor de mercado.
+    Atributos:
+        description (CharField): Descrição do setor.
+    """
 
     description = models.CharField(max_length=255)
 
     def __str__(self):
+        """Retorna a descrição do setor."""
         return self.description
 
     class Meta:
+        """Ordena os setores pela descrição."""
         ordering = ['description']
 
 
 class VariableIncome(models.Model):
-    """Representa um ativo de renda variável."""
+    """
+    Representa um ativo de renda variável.
+
+    Atributos:
+        account (ForeignKey): Conta associada ao ativo.
+        ticker (ForeignKey): Ticker do ativo.
+        user (ForeignKey): Usuário que possui o ativo.
+    """
 
     CHOICES = [('active', 'Ativo'), ('sold', 'Vendido')]
 
@@ -299,14 +465,27 @@ class VariableIncome(models.Model):
     user = models.ForeignKey(User, on_delete=models.PROTECT)
 
     def __str__(self):
+        """Retorna o código do ticker associado ao ativo."""
         return self.ticker.code
 
     class Meta:
+        """Ordena os ativos pela data de aquisição e pelo código do ticker."""
         ordering = ['ticker__code']
 
 
 class AssetTransaction(models.Model):
-    """Representa uma transação de ativo."""
+    """
+    Representa uma transação de ativo.
+    
+    Atributos:
+        variable_income (ForeignKey): Ativo associado à transação.
+        quantity (PositiveIntegerField): Quantidade de ativos transacionados.
+        value (DecimalField): Valor da transação.
+        transaction_type (CharField): Tipo da transação (compra ou venda).
+        date (DateField): Data da transação.
+        broker_fee (DecimalField): Taxa do corretor associada à transação.
+        capital_gain_tax (DecimalField): Imposto sobre ganho de capital associado à transação.
+    """
 
     CHOICES = [('buy', 'Compra'), ('sell', 'Venda')]
 
@@ -319,4 +498,5 @@ class AssetTransaction(models.Model):
     capital_gain_tax = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
 
     class Meta:
+        """Ordena as transações pela data."""
         ordering = ['date']
