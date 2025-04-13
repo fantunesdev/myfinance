@@ -42,4 +42,5 @@ class CategoryView(BaseView):
         subcategories = subcategories = category.subcategories.all()
         if not subcategories:
             return Response({'detail': 'Subcategorias não encontradas.'}, status=status.HTTP_404_NOT_FOUND)
-        return self._serialize_and_return(subcategories)
+        serializer = self.serializer(subcategories, many=True, model=category.subcategories.model)
+        return Response(serializer.data, status=status.HTTP_200_OK)
