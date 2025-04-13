@@ -54,14 +54,16 @@ async function sendFile() {
     } else if (selects.paymentMethod.value == 2 && !selects.account.value) {
         alert('Selecione uma conta para continuar.');
     } else {
-        const transaction = await services.importTransactions(formData);
+        const transactions = await services.importTransactions(formData);
+        window.myFinance = window.myFinance || {};
+        window.myFinance.importedTransactions = transactions;
         const importError = document.querySelector('#import-error');
-        if (transaction.errors) {
+        if (transactions.errors) {
             importError.classList.remove('toggled');
-            importError.textContent = transaction.errors;
+            importError.textContent = transactions.errors;
         } else {
             importError.classList.add('toggled');
-            renderBox()
+            renderBox(transactions);
         }
     }
 }
@@ -72,9 +74,11 @@ async function sendFile() {
  * Renderiza a tabela de transações importadas.
  * Cada linha da tabela representa uma transação importada.
  * As colunas da tabela são: data, descrição, valor, categoria, subcategoria e conta/cartão.
+ * 
+ * @todo - Dividir a função em funções menores pra facilitar a leitura e manutenção. 
+ * @param {array} transactions - Um array de transações importadas do arquivo da instituição financeira.
  */
-async function renderBox() {
-    const transactions = JSON.parse(sessionStorage.getItem('imported-transactions'));
+async function renderBox(transactions) {
     const categories = await services.getResource('categories');
 
     boxTransactions.classList.remove('toggled');
@@ -115,6 +119,7 @@ async function renderBox() {
 
                 if (key === 'date') {
                     let input = document.createElement('input');
+                    input.id = `${key}_${transaction.id}`;
                     input.type = 'date';
                     input.value = transaction.date;
                     input.classList.add('form-control');
@@ -123,6 +128,7 @@ async function renderBox() {
 
                 if (key === 'category') {
                     let select = document.createElement('select');
+                    select.id = `${key}_${transaction.id}`;
                     select.classList.add('form-control');
 
                     categories.forEach(category => {
@@ -157,6 +163,7 @@ async function renderBox() {
 
                 if (key === 'subcategory') {
                     let select = document.createElement('select');
+                    select.id = `${key}_${transaction.id}`;
                     select.classList.add('form-control');
 
                     const subcategories = await services.getChildrenResource('categories', 'subcategories', transaction.category);
@@ -175,6 +182,7 @@ async function renderBox() {
 
                 if (key === 'description') {
                     let input = document.createElement('input');
+                    input.id = `${key}_${transaction.id}`;
                     input.type = 'text';
                     input.value = transaction.description;
                     input.classList.add('form-control');
@@ -195,20 +203,30 @@ async function renderBox() {
 /**
  * Envia as transações selecionadas para o backend.
  * Faz a validação dos dados e cadastra as transações no banco de dados.
+ * 
+ * @todo - A função está funcional novamente, mas ainda precisa de alguns ajustes.
+ * @todo - 1 - Pegar os valores dos inputs de data, categoria, subcategoria e descrição.
+ * @todo - 2 - O valor está ficando sem ponto flutuante. Ex R: 1000,00 está ficando 100000.
+ * @todo - 3 - É necessário implementar a lógica para verificar se houve alteração entre o valor original (transaction) e o novo valor (formulário).
+ * @todo - 4 - Criar uma nova função para cadastrar o CategorizationFeedback.
+ * @todo - 5 - Dividir a função em funções menores pra facilitar a leitura e manutenção.
+ * 
+ * @param {array} transactions - Um array de transações importadas do arquivo da instituição financeira.
  *
  * @returns - Redireciona para a tela de relatório financeiro.
  */
-async function importTransactions() {
+async function importTransactions(transactions) {
     let transactionsIds = [];
+
     for (let row of transactionRows.children) {
         if (row.firstChild.firstChild.checked) {
             transactionsIds.push(parseInt(row.firstChild.firstChild.id));
         }
     }
-    const transactions = JSON.parse(sessionStorage.getItem('imported-transactions')),
-        paymentMethod = document.querySelector('#id_payment_method'),
-        accountSelect = document.querySelector('#id_account'),
-        cardSelect = document.querySelector('#id_card');
+
+    const paymentMethod = document.querySelector('#id_payment_method');
+    const accountSelect = document.querySelector('#id_account');
+    const cardSelect = document.querySelector('#id_card');
 
     let homeScreen;    
         
@@ -226,25 +244,12 @@ async function importTransactions() {
         if (transactionsIds.includes(transaction.id)) {
             let newTransaction = {
                 'release_date': transaction.date,
-                'payment_date': transaction.date,
                 'account': transaction.account ? transaction.account : null,
                 'card': transaction.card ? transaction.card : null,
                 'category': transaction.category,
                 'subcategory': transaction.subcategory,
                 'description': transaction.description,
                 'value': transaction.value.replace('.', '').replace(',', '.'),
-                'installments_number': transaction.installments_number,
-                'paid': transaction.paid,
-                'fixed': transaction.fixed,
-                'annual': transaction.annual,
-                'currency': transaction.currency,
-                'observation': transaction.observation,
-                'remember': transaction.remember,
-                'type': transaction.type,
-                'effected': transaction.effected,
-                'home_screen': homeScreen,
-                'user': transaction.user,
-                'installment': transaction.installment
             }
             const importError = document.querySelector('#import-error');
             try {
@@ -286,5 +291,6 @@ checkboxCheckAll.addEventListener('change', function() {
 });
 
 sendTransactionsBtn.addEventListener('click', () => {
-    importTransactions();
+    const transactions = window.myFinance.importedTransactions;
+    importTransactions(transactions);
 });

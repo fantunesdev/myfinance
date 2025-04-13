@@ -183,11 +183,8 @@ export async function importTransactions(formData) {
         }
 
     try {
-        const response = await fetch(url, requestOptions),
-            transactions = await response.json(),
-            sessionStorageData = JSON.stringify(transactions);
-        sessionStorage.setItem('imported-transactions', sessionStorageData);
-        return transactions;
+        const response = await fetch(url, requestOptions);
+        return await response.json();
     } catch (error) {
         return error;
     }
