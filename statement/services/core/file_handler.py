@@ -27,6 +27,7 @@ class FileHandlerService:
         self._account = self._set_account(request)
         self._card = self._set_card(request)
         self._token = JWTUtils.generate_token(self._user)
+        self._debug = False
 
     def _set_account(self, request):
         """
@@ -96,9 +97,9 @@ class FileHandlerService:
         """
         uri = os.getenv('TRANSACTION_CLASSIFIER_URL')
         port = os.getenv('TRANSACTION_CLASSIFIER_PORT')
-        endpoint = f'/predict/{self._user.id}'
+        endpoint = f'predict/{self._user.id}'
 
-        url = uri + ':' + port + endpoint
+        url = f'{uri}:{port}/{endpoint}'
 
         headers = {
             'Content-Type': 'application/json',
@@ -106,13 +107,16 @@ class FileHandlerService:
         }
         payload = {
             'description': row['title'],
+            'category': row.get('category', None),
         }
-
-        if row['category']:
-            payload['category'] = row['category']
 
         try:
             response = requests.post(url, headers=headers, json=payload, timeout=10)
+            if self._debug:
+                print(f'URL: {url}')
+                print(f'Payload: {payload}')
+                print(f'Status Code: {response.status_code}')
+                print(f'Response: {response.text}')
             response.raise_for_status()
             return response.json()
         except requests.exceptions.RequestException as e:
