@@ -105,7 +105,7 @@ class TransactionView(BaseView):
         Página que faz o upload para o carregamento de lançamentos
         """
         form = UploadFileForm(request.user)
-        self._render(request, form, 'transaction/import.html')
+        return self._render(request, form, 'transaction/import.html')
 
     def _get_current_month(self):
         """

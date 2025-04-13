@@ -34,7 +34,8 @@ export function selectPaymentMethod() {
 }
 
 /**
- * Envia o arquivo para o servidor, grava o retorno na localStorage e mostra mensagens de erro do backend.
+ * Verifica se o arquivo foi enviado e se o meio de pagamento foi selecionado.
+ * Se tudo estiver correto, envia o arquivo para o backend.
  */
 async function sendFile() {
     const formData = new FormData();
@@ -53,8 +54,8 @@ async function sendFile() {
     } else if (selects.paymentMethod.value == 2 && !selects.account.value) {
         alert('Selecione uma conta para continuar.');
     } else {
-        const transaction = await services.importTransactions(formData),
-            importError = document.querySelector('#import-error');
+        const transaction = await services.importTransactions(formData);
+        const importError = document.querySelector('#import-error');
         if (transaction.errors) {
             importError.classList.remove('toggled');
             importError.textContent = transaction.errors;
@@ -68,19 +69,13 @@ async function sendFile() {
 
 
 /**
- * renderiza as linhas da tabela.
+ * Renderiza a tabela de transações importadas.
+ * Cada linha da tabela representa uma transação importada.
+ * As colunas da tabela são: data, descrição, valor, categoria, subcategoria e conta/cartão.
  */
 async function renderBox() {
-    const transactions = JSON.parse(sessionStorage.getItem('imported-transactions')),
-        accounts = await services.getResource('accounts'),
-        cards = await services.getResource('cards'),
-        subcategories = await services.getResource('subcategories');
-
-    for (let account of accounts) {
-        if (transactions[0].account == account.id) {
-            var bank = await services.getSpecificResource('banks', transactions[0].account);
-        }
-    }
+    const transactions = JSON.parse(sessionStorage.getItem('imported-transactions'));
+    const categories = await services.getResource('categories');
 
     boxTransactions.classList.remove('toggled');
     while (transactionRows.firstChild) {
@@ -96,28 +91,99 @@ async function renderBox() {
         checkbox.id = transaction.id;
         checkboxCell.appendChild(checkbox);
 
+        // Adiciona evento para alterar a opacidade da linha para melhorar a legibilidade
+        checkbox.addEventListener('change', function () {
+            if (this.checked) {
+                newRow.classList.remove('row-disabled');
+            } else {
+                newRow.classList.add('row-disabled');
+            }
+        });
+
+        // Define a classe opaca inicialmente se o checkbox não estiver marcado
+        if (!checkbox.checked) {
+            newRow.classList.add('row-disabled');
+        }
+
         let keys = Object.keys(transaction);
 
         for (let i = 1; i < keys.length; i++) {
-            let newCell = newRow.insertCell();
-            if (keys[i] == 'category') {
-                const categories = await services.getResource('categories');
-                for (let category of categories) {
-                    if (category.id == transaction[keys[i]]) {
-                        newCell.textContent = category.description;
-                    }
+            let key = keys[i];
+
+            if (['date', 'category', 'subcategory', 'description', 'value'].includes(key)) {
+                let newCell = newRow.insertCell();
+
+                if (key === 'date') {
+                    let input = document.createElement('input');
+                    input.type = 'date';
+                    input.value = transaction.date;
+                    input.classList.add('form-control');
+                    newCell.appendChild(input);
                 }
-            } else if (keys[i] == 'account') {
-                newCell.textContent = bank.description;
-            } else if (keys[i] == 'subcategory') {
-                for (let subcategory of subcategories) {
-                    if (subcategory.id == transaction[keys[i]]) {
-                        newCell.textContent = subcategory.description;
-                    }
+
+                if (key === 'category') {
+                    let select = document.createElement('select');
+                    select.classList.add('form-control');
+
+                    categories.forEach(category => {
+                        let option = document.createElement('option');
+                        option.value = category.id;
+                        option.textContent = category.description;
+                        if (category.id === transaction.category) {
+                            option.selected = true;
+                        }
+                        select.appendChild(option);
+                    });
+
+                    // Adiciona o evento onchange para atualizar as subcategorias
+                    select.addEventListener('change', async function () {
+                        const subcategorySelect = newCell.nextSibling.querySelector('select');
+                        const subcategories = await services.getChildrenResource('categories', 'subcategories', select.value);
+
+                        // Limpa as opções existentes no select de subcategorias
+                        subcategorySelect.innerHTML = '';
+
+                        // Adiciona as novas opções de subcategorias
+                        subcategories.forEach(subcategory => {
+                            let option = document.createElement('option');
+                            option.value = subcategory.id;
+                            option.textContent = subcategory.description;
+                            subcategorySelect.appendChild(option);
+                        });
+                    });
+
+                    newCell.appendChild(select);
                 }
-            }
-            else {
-                newCell.textContent = transaction[keys[i]];
+
+                if (key === 'subcategory') {
+                    let select = document.createElement('select');
+                    select.classList.add('form-control');
+
+                    const subcategories = await services.getChildrenResource('categories', 'subcategories', transaction.category);
+                    subcategories.forEach(subcategory => {
+                        let option = document.createElement('option');
+                        option.value = subcategory.id;
+                        option.textContent = subcategory.description;
+                        if (subcategory.id === transaction.subcategory) {
+                            option.selected = true;
+                        }
+                        select.appendChild(option);
+                    });
+
+                    newCell.appendChild(select);
+                }
+
+                if (key === 'description') {
+                    let input = document.createElement('input');
+                    input.type = 'text';
+                    input.value = transaction.description;
+                    input.classList.add('form-control');
+                    newCell.appendChild(input);
+                }
+
+                if (key === 'value') {
+                    newCell.textContent = transaction.value;
+                }
             }
         }
 
@@ -127,13 +193,16 @@ async function renderBox() {
 
 
 /**
- * Envia as transações selecionadas para serem cadastradas no backend.
+ * Envia as transações selecionadas para o backend.
+ * Faz a validação dos dados e cadastra as transações no banco de dados.
+ *
+ * @returns - Redireciona para a tela de relatório financeiro.
  */
 async function importTransactions() {
-    let transacionsIds = [];
+    let transactionsIds = [];
     for (let row of transactionRows.children) {
         if (row.firstChild.firstChild.checked) {
-            transacionsIds.push(parseInt(row.firstChild.firstChild.id));
+            transactionsIds.push(parseInt(row.firstChild.firstChild.id));
         }
     }
     const transactions = JSON.parse(sessionStorage.getItem('imported-transactions')),
@@ -154,7 +223,7 @@ async function importTransactions() {
     let errors = 0;
 
     for (let transaction of transactions) {
-        if (transacionsIds.includes(transaction.id)) {
+        if (transactionsIds.includes(transaction.id)) {
             let newTransaction = {
                 'release_date': transaction.date,
                 'payment_date': transaction.date,
@@ -204,7 +273,15 @@ selects.paymentMethod.addEventListener('change', () => selectPaymentMethod());
 
 checkboxCheckAll.addEventListener('change', function() {
     for (const row of transactionRows.children) {
-        row.children[0].children[0].checked = this.checked;
+        const checkbox = row.children[0].children[0];
+        checkbox.checked = this.checked;
+
+        // Adiciona ou remove a classe 'row-disabled' com base no estado do checkbox
+        if (checkbox.checked) {
+            row.classList.remove('row-disabled');
+        } else {
+            row.classList.add('row-disabled');
+        }
     }
 });
 

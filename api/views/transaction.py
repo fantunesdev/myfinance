@@ -7,6 +7,7 @@ from api.views.base_view import BaseView
 from statement.models import Transaction
 from statement.services.core.account import AccountService
 from statement.services.core.card import CardService
+from statement.services.core.file_handler import FileHandlerService
 from statement.services.core.transaction import TransactionService
 from statement.views.core.transaction import TransactionView as StatementView
 
@@ -72,3 +73,20 @@ class TransactionView(BaseView):
             return Response({'detail': message}, status=status.HTTP_404_NOT_FOUND)
 
         return self._serialize_and_return(transactions)
+
+    @action(detail=False, methods=['post'], url_path='import')
+    def import_transactions(self, request):
+        """
+        Método para importar transações.
+        """
+        file = request.FILES.get('file')
+        if not file:
+            return Response({'detail': 'Arquivo não encontrado.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        file_handler = FileHandlerService(request)
+        transactions = file_handler.read_file()
+
+        if not transactions:
+            return Response({'detail': 'Nenhum lançamento encontrado no arquivo.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(transactions, status=status.HTTP_200_OK)

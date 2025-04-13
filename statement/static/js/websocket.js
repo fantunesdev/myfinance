@@ -1,4 +1,4 @@
-const DEBUG = true
+const DEBUG = false
 
 if (DEBUG) {
     console.log('Script carregado.');
