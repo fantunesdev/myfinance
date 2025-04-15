@@ -42,7 +42,31 @@ class Subcategory(models.Model):
         return self.description
 
     class Meta:
+        """Ordena as subcategorias pela descrição."""
         ordering = ['description']
+
+class CategorizationFeedback(models.Model):
+    """
+    Classe que salva o feedback categorizações feitas pelo Transaction Classifier.
+
+    Atributos:
+        user (User): Usuário que fez o feedback.
+        description (CharField): Descrição da transação.
+        predicted_category_id (ForeignKey): Categoria prevista pelo Transaction Classifier.
+        predicted_subcategory_id (ForeignKey): Subcategoria prevista pelo Transaction Classifier.
+        corrected_description (CharField): Descrição corrigida pelo usuário.
+        corrected_category_id (ForeignKey): Categoria corrigida pelo usuário.
+        corrected_subcategory_id (ForeignKey): Subcategoria corrigida pelo usuário.
+        created_at (DateTimeField): Data e hora em que a categorização foi feita.
+    """
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    description = models.CharField(max_length=255)
+    predicted_category_id = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name='+')
+    predicted_subcategory_id = models.ForeignKey(Subcategory, on_delete=models.SET_NULL, null=True, related_name='+')
+    corrected_description = models.CharField(max_length=255)
+    corrected_category_id = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name='+')
+    corrected_subcategory_id = models.ForeignKey(Subcategory, on_delete=models.SET_NULL, null=True, related_name='+')
+    created_at = models.DateTimeField(auto_now_add=True)
 
 class Bank(models.Model):
     """

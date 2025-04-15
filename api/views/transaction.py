@@ -42,7 +42,7 @@ class TransactionView(BaseView):
         result = super().create(request)
 
         if self.installment_info:
-            return self._handle_installment_creation(result, request.user)
+            return self._handle_installment_creation(result)
 
         return result
 
@@ -137,18 +137,17 @@ class TransactionView(BaseView):
                 pass
 
 
-    def _handle_installment_creation(self, result, user):
+    def _handle_installment_creation(self, result):
         """
         Método auxiliar para criar o parcelamento.
 
         :param result: Resultado da primeira parcela cadastrada no banco.
-        :param user: Usuário que está criando o lançamento.
         :return: Resposta da API com os dados do parcelamento criado.
         """
         transaction = TransactionService.get_by_id(result.data.get('id'))
         installment = InstallmentService.create(
             form=None,
-            user=user,
+            user=transaction.user,
             transaction=transaction,
         )
         serializer = BaseSerializer(installment, model=InstallmentService.model)

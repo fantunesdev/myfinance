@@ -1,5 +1,7 @@
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import QuerySet
 from django.forms import modelform_factory
+from django.http import QueryDict
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
@@ -68,6 +70,54 @@ class BaseView(ViewSet):
             instance = self.service.get_by_id(pk, user)
             serializer = self._get_serializer(instance)
             return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'detail': str(e)}, status=status.HTTP_404_NOT_FOUND)
+
+    def update(self, request, pk=None):
+        """
+        Atualiza uma instância pelo ID.
+
+        :param request: Requisição HTTP com os dados para atualizar a instância.
+        :param pk: ID da instância a ser atualizada.
+        """
+        user = self._set_user(request)
+
+        try:
+            try:
+                instance = self.service.get_by_id(pk, user)
+            except ObjectDoesNotExist:
+                return Response({'detail': 'Instância não encontrada.'}, status=status.HTTP_404_NOT_FOUND)
+
+            # Converte request.data em QueryDict para usar com ModelForm
+            data = QueryDict('', mutable=True)
+            data.update(request.data)
+
+            form_class = modelform_factory(self.model, fields='__all__')
+            form = form_class(data, instance=instance)
+
+            if not form.is_valid():
+                return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            updated_instance = self.service.update(form, instance)
+            serialized_instance = self._get_serializer(updated_instance)
+
+            return Response(serialized_instance.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'detail': str(e)}, status=status.HTTP_404_NOT_FOUND)
+
+    def destroy(self, request, pk=None):
+        """
+        Deleta uma instância pelo ID.
+
+        :param request: Requisição HTTP.
+        :param pk: ID da instância a ser deletada.
+        :return: Response com o status da operação.
+        """
+        user = self._set_user(request)
+        try:
+            instance = self.service.get_by_id(pk, user)
+            self.service.delete(instance)
+            return Response(status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
             return Response({'detail': str(e)}, status=status.HTTP_404_NOT_FOUND)
 

@@ -6,6 +6,7 @@ from api.views.account import AccountView
 from api.views.bank import BankView
 from api.views.card import CardView
 from api.views.category import CategoryView
+from api.views.categorization_feedback import CategorizationFeedbackView
 from api.views.default_views import Defaults
 from api.views.next_month_view_view import NextMonthView
 from api.views.portfolio.fixed_income_views import FixedIncomeProgressionList
@@ -15,6 +16,7 @@ from api.views.transaction import TransactionView
 router = DefaultRouter()
 router.register(r'subcategories', SubcategoryView, basename='subcategory')
 router.register(r'categories', CategoryView, basename='category')
+router.register(r'categorization-feedback', CategorizationFeedbackView, basename='categorization_feedback')
 router.register(r'accounts', AccountView, basename='account')
 router.register(r'banks', BankView, basename='banks')
 router.register(r'cards', CardView, basename='cards')
