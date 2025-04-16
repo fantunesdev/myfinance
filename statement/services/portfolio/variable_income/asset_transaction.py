@@ -16,18 +16,20 @@ class AssetTransactionService(BaseService):
     def calculate_quantity_at_date(variable_income, date):
         """Calcula a quantidade de ações restantes até uma data específica."""
         # Transações de compra
-        bought_quantity = AssetTransaction.objects.filter(
-            variable_income=variable_income,
-            transaction_type='buy',
-            date__lte=date
-        ).aggregate(Sum('quantity'))['quantity__sum'] or 0
+        bought_quantity = (
+            AssetTransaction.objects.filter(
+                variable_income=variable_income, transaction_type='buy', date__lte=date
+            ).aggregate(Sum('quantity'))['quantity__sum']
+            or 0
+        )
 
         # Transações de venda
-        sold_quantity = AssetTransaction.objects.filter(
-            variable_income=variable_income,
-            transaction_type='sell',
-            date__lte=date
-        ).aggregate(Sum('quantity'))['quantity__sum'] or 0
+        sold_quantity = (
+            AssetTransaction.objects.filter(
+                variable_income=variable_income, transaction_type='sell', date__lte=date
+            ).aggregate(Sum('quantity'))['quantity__sum']
+            or 0
+        )
 
         return bought_quantity - sold_quantity
 
@@ -36,16 +38,12 @@ class AssetTransactionService(BaseService):
         """Calcula o preço médio de compra até uma data específica."""
         # Transações de compra
         buy_transactions = AssetTransaction.objects.filter(
-            variable_income=variable_income,
-            transaction_type='buy',
-            date__lte=date
+            variable_income=variable_income, transaction_type='buy', date__lte=date
         )
 
         # Transações de venda
         sell_transactions = AssetTransaction.objects.filter(
-            variable_income=variable_income,
-            transaction_type='sell',
-            date__lte=date
+            variable_income=variable_income, transaction_type='sell', date__lte=date
         )
 
         # Quantidade total comprada até a data

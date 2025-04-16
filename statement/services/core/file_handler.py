@@ -1,14 +1,15 @@
 import csv
 import json
 import os
-import requests
-
 from json.decoder import JSONDecodeError
+
+import requests
 
 from statement.services.core.account import AccountService
 from statement.services.core.card import CardService
 from statement.services.core.category import CategoryService
 from statement.utils.jwt import JWTUtils
+
 
 class FileHandlerService:
     """
@@ -60,7 +61,7 @@ class FileHandlerService:
         """
         if self._extension == 'csv':
             return self._read_csv()
-        raise ValueError("Unsupported file format. Only CSV and JSON are supported.")
+        raise ValueError('Unsupported file format. Only CSV and JSON are supported.')
 
     def _read_csv(self):
         """
@@ -101,10 +102,7 @@ class FileHandlerService:
 
         url = f'{uri}:{port}/{endpoint}'
 
-        headers = {
-            'Content-Type': 'application/json',
-            'Authorization': f'Bearer {self._token}'
-        }
+        headers = {'Content-Type': 'application/json', 'Authorization': f'Bearer {self._token}'}
         payload = {
             'description': row['title'],
             'category': row.get('category', None),

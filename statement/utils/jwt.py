@@ -1,8 +1,8 @@
 """
 Gera um token a partir
 """
-import uuid
 import dataclasses
+import uuid
 from datetime import timedelta
 
 from django.conf import settings

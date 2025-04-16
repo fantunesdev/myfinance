@@ -4,8 +4,8 @@ from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from api.serializers.transaction import TransactionSerializer
 from api.serializers.base_serializer import BaseSerializer
+from api.serializers.transaction import TransactionSerializer
 from api.views.base_view import BaseView
 from statement.models import Transaction
 from statement.services.core.account import AccountService
@@ -14,8 +14,8 @@ from statement.services.core.category import CategoryService
 from statement.services.core.file_handler import FileHandlerService
 from statement.services.core.installment import InstallmentService
 from statement.services.core.transaction import TransactionService
-from statement.views.core.transaction import TransactionView as StatementView
 from statement.utils.datetime import DateTimeUtils
+from statement.views.core.transaction import TransactionView as StatementView
 
 
 class TransactionView(BaseView):
@@ -46,7 +46,6 @@ class TransactionView(BaseView):
 
         return result
 
-
     @action(detail=False, methods=['get'], url_path='year/(?P<year>\d{4})')
     def get_by_year(self, request, year):
         """
@@ -75,7 +74,6 @@ class TransactionView(BaseView):
         """
         return self._get_transactions_by_date(request, card=card_id, year=year, month=month)
 
-
     def _is_installment_but_not_first(self):
         """
         Método auxiliar para verificar se a transação não é a primeira parcela.
@@ -86,7 +84,6 @@ class TransactionView(BaseView):
             return int(self.installment_info.group(0)) == 1
         except (ValueError, AttributeError):
             return False
-
 
     def _process_transaction_request(self, request):
         """
@@ -99,13 +96,15 @@ class TransactionView(BaseView):
         request.data['description'] = self._clean_description(description)
 
         # Monta um dicionário com atributos obrigatórios para o model Transaction
-        request.data.update({
-            'user': request.user.id,
-            'installments_number': self._get_installments_number(description),
-            'paid': 0,
-            'currency': 'BRL',
-            'type': CategoryService.get_by_id(request.data.get('category')).type,
-        })
+        request.data.update(
+            {
+                'user': request.user.id,
+                'installments_number': self._get_installments_number(description),
+                'paid': 0,
+                'currency': 'BRL',
+                'type': CategoryService.get_by_id(request.data.get('category')).type,
+            }
+        )
 
         # Se o lançamento for em uma conta, seta os campos necessários para o processamento
         if request.data.get('account'):
@@ -118,10 +117,12 @@ class TransactionView(BaseView):
             date = DateTimeUtils.string_to_date(request.data.get('release_date'))
             payment_date = CardService.set_processing_date(card, date)
 
-            request.data.update({
-                'card': card.id,
-                'payment_date': payment_date.strftime('%Y-%m-%d'),
-            })
+            request.data.update(
+                {
+                    'card': card.id,
+                    'payment_date': payment_date.strftime('%Y-%m-%d'),
+                }
+            )
 
         # Se for a primeira parcela de um parcelamento, atualiza o valor para o valor total.
         # O valor da parcela será dividido igualmente dentro de InstallmentService.create(),
@@ -135,7 +136,6 @@ class TransactionView(BaseView):
                     request.data['value'] = value * installments_number
             except (ValueError, AttributeError):
                 pass
-
 
     def _handle_installment_creation(self, result):
         """
@@ -152,7 +152,6 @@ class TransactionView(BaseView):
         )
         serializer = BaseSerializer(installment, model=InstallmentService.model)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
 
     def _get_installments_number(self, description):
         """
@@ -171,7 +170,6 @@ class TransactionView(BaseView):
         self.installment_info = installment_match
 
         return installments_tag.split('/')[1]
-
 
     def _clean_description(self, description):
         """
@@ -199,10 +197,7 @@ class TransactionView(BaseView):
         """
         Método auxiliar para obter transações por data.
         """
-        kwargs = {
-            'user': request.user,
-            'payment_date__year': year
-        }
+        kwargs = {'user': request.user, 'payment_date__year': year}
 
         if month:
             kwargs['payment_date__month'] = month

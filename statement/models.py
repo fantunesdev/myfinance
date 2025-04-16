@@ -14,6 +14,7 @@ class Category(models.Model):
         icon (CharField): Ícone da categoria.
         ignore (BooleanField): Se a categoria deve ser ignorada.
     """
+
     TYPE_CHOICES = (('entrada', 'Entrada'), ('saida', 'Saída'))
     type = models.CharField(max_length=7, choices=TYPE_CHOICES, default='saida')
     description = models.CharField(max_length=30)
@@ -34,6 +35,7 @@ class Subcategory(models.Model):
         description (CharField): Descrição da subcategoria.
         category (ForeignKey): Categoria à qual a subcategoria pertence.
     """
+
     description = models.CharField(max_length=30)
     category = models.ForeignKey(Category, related_name='subcategories', on_delete=models.PROTECT)
 
@@ -43,7 +45,9 @@ class Subcategory(models.Model):
 
     class Meta:
         """Ordena as subcategorias pela descrição."""
+
         ordering = ['description']
+
 
 class CategorizationFeedback(models.Model):
     """
@@ -59,6 +63,7 @@ class CategorizationFeedback(models.Model):
         corrected_subcategory_id (ForeignKey): Subcategoria corrigida pelo usuário.
         created_at (DateTimeField): Data e hora em que a categorização foi feita.
     """
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     description = models.CharField(max_length=255)
     predicted_category_id = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name='+')
@@ -67,6 +72,7 @@ class CategorizationFeedback(models.Model):
     corrected_category_id = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name='+')
     corrected_subcategory_id = models.ForeignKey(Subcategory, on_delete=models.SET_NULL, null=True, related_name='+')
     created_at = models.DateTimeField(auto_now_add=True)
+
 
 class Bank(models.Model):
     """
@@ -77,6 +83,7 @@ class Bank(models.Model):
         code (CharField): Código do banco.
         icon (ImageField): Ícone do banco.
     """
+
     description = models.CharField(max_length=30)
     code = models.CharField(max_length=10, blank=True, null=True)
     icon = models.ImageField(upload_to='img/', null=True, blank=True)
@@ -93,6 +100,7 @@ class AccountType(models.Model):
     Atributos:
         description (CharField): Descrição do tipo de conta.
     """
+
     description = models.CharField(max_length=15)
 
     def __str__(self):
@@ -115,6 +123,7 @@ class Account(models.Model):
         file_handler_conf (TextField): Configuração do manipulador de arquivos.
         user (ForeignKey): Usuário que possui a conta.
     """
+
     bank = models.ForeignKey(Bank, on_delete=models.PROTECT)
     branch = models.CharField(max_length=10, blank=True, null=True)
     number = models.CharField(max_length=20, blank=True, null=True)
@@ -144,6 +153,7 @@ class Flag(models.Model):
         description (CharField): Descrição da bandeira.
         icon (ImageField): Ícone da bandeira.
     """
+
     description = models.CharField(max_length=20)
     icon = models.ImageField(upload_to='img/', null=True, blank=True)
 
@@ -169,6 +179,7 @@ class Card(models.Model):
         file_handler_conf (TextField): Configuração do manipulador de arquivos.
         user (ForeignKey): Usuário que possui o cartão.
     """
+
     flag = models.ForeignKey(Flag, on_delete=models.PROTECT)
     icon = models.ImageField(upload_to='img/', null=True, blank=True)
     description = models.CharField(max_length=30)
@@ -194,6 +205,7 @@ class Currency(models.Model):
         description (CharField): Descrição da moeda.
         symbol (CharField): Símbolo da moeda.
     """
+
     id = models.CharField(max_length=3, primary_key=True)
     description = models.CharField(max_length=20)
     symbol = models.CharField(max_length=5)
@@ -212,6 +224,7 @@ class Installment(models.Model):
         description (CharField): Descrição da parcela.
         user (ForeignKey): Usuário que possui a parcela.
     """
+
     release_date = models.DateField()
     description = models.CharField(max_length=50)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -247,6 +260,7 @@ class Transaction(models.Model):
         user (ForeignKey): Usuário que possui a transação.
         installment (ForeignKey): Parcelamento associada à transação.
     """
+
     TYPE_CHOICES = (('entrada', 'Entrada'), ('saida', 'Saída'))
 
     release_date = models.DateField()
@@ -276,6 +290,7 @@ class Transaction(models.Model):
 
     class Meta:
         """Ordena as transações pela data de lançamento."""
+
         ordering = ['release_date']
 
 
@@ -296,6 +311,7 @@ class FixedExpenses(models.Model):
         value (FloatField): Valor da despesa.
         user (ForeignKey): Usuário que possui a despesa.
     """
+
     start_date = models.DateField()
     end_date = models.DateField(blank=True, null=True)
     description = models.CharField(max_length=50)
@@ -328,6 +344,7 @@ class Dream(models.Model):
         limit_date (DateField): Data limite para realizar o sonho.
         user (ForeignKey): Usuário que possui o sonho.
     """
+
     description = models.CharField(max_length=70)
     value = models.FloatField()
     limit_date = models.DateField()
@@ -344,6 +361,7 @@ class Portion(models.Model):
         dream (ForeignKey): Referência ao sonho associado.
         user (ForeignKey): Usuário que possui a parcela.
     """
+
     date = models.DateField()
     value = models.FloatField()
     dream = models.ForeignKey(Dream, on_delete=models.CASCADE)
@@ -451,6 +469,7 @@ class Ticker(models.Model):
 
     class Meta:
         """Ordena os tickers pela descrição."""
+
         ordering = ['description']
 
 
@@ -469,6 +488,7 @@ class Sector(models.Model):
 
     class Meta:
         """Ordena os setores pela descrição."""
+
         ordering = ['description']
 
 
@@ -494,13 +514,14 @@ class VariableIncome(models.Model):
 
     class Meta:
         """Ordena os ativos pela data de aquisição e pelo código do ticker."""
+
         ordering = ['ticker__code']
 
 
 class AssetTransaction(models.Model):
     """
     Representa uma transação de ativo.
-    
+
     Atributos:
         variable_income (ForeignKey): Ativo associado à transação.
         quantity (PositiveIntegerField): Quantidade de ativos transacionados.
@@ -523,4 +544,5 @@ class AssetTransaction(models.Model):
 
     class Meta:
         """Ordena as transações pela data."""
+
         ordering = ['date']

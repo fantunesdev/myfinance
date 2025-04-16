@@ -37,11 +37,9 @@ class SettingsView(BaseView):
             'categories': CategoryService.get_all(),
             'subcategories': SubcategoryService.get_all(),
             'fixed_expenses': FixedExpensesService.get_all(request.user),
-
             # Renda Fixa
             'indexes': IndexService.get_all(request.user),
             'fixed_income_securities': FixedIncomeSecurityService.get_all(request.user),
-
             # Renda Variável
             'sectors': SectorService.get_all(request.user),
             'tickers': TickerService.get_all(request.user),
