@@ -33,12 +33,11 @@ class BaseView(ViewSet):
         :return: Response com os dados da nova instância criada.
         """
         user = self._set_user(request)
-        serializer = self._get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
 
         # Converte o dicionário de dados em um formulário do modelo para reaproveitar a BaseService de Statement
-        form_class = modelform_factory(self.model, fields='__all__')
+        form_class = modelform_factory(self.model, exclude=['user'])
         form = form_class(request.data)
+
         if not form.is_valid():
             return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
         instance = self.service.create(form, user)
