@@ -13,40 +13,42 @@ export function drawLineChart(dataset, label) {
         type: 'line',
         data: {
             labels: dataset.names,
-            datasets: [{
-                label: label,
-                data: dataset.values,
-                backgroundColor: dataset.colors,
-                borderColor: 'rgba(139, 0, 0, 1)',
-                borderWidth: 4,
-                pointRadius: 6
-            }]
+            datasets: [
+                {
+                    label: label,
+                    data: dataset.values,
+                    backgroundColor: dataset.colors,
+                    borderColor: 'rgba(139, 0, 0, 1)',
+                    borderWidth: 4,
+                    pointRadius: 6,
+                },
+            ],
         },
         options: {
             responsive: true,
             scales: {
                 y: {
-                    beginZero: true
-                }
+                    beginZero: true,
+                },
             },
             plugins: {
                 legend: {
-                    display: false
+                    display: false,
                 },
                 title: {
                     display: true,
                     text: label,
                     font: {
                         size: 18,
-                        family: 'Ubuntu'
+                        family: 'Ubuntu',
                     },
-                    color: 'rgba(204,204,204,1)'
-                }
+                    color: 'rgba(204,204,204,1)',
+                },
             },
             animation: {
                 duration: 200,
-            }
-        }
+            },
+        },
     });
 
     return chart;

@@ -1,11 +1,10 @@
-import * as services from "./services.js";
-
+import * as services from './services.js';
 
 export async function getMonthYear() {
     let path = window.location.pathname,
         currentMonth = path.indexOf('mes_atual') >= 0 ? true : false,
         root = path === '/' ? true : false,
-        today = new Date(), 
+        today = new Date(),
         month,
         year;
 
@@ -16,14 +15,17 @@ export async function getMonthYear() {
             month = today.getMonth() + 1;
             year = today.getFullYear();
         } else {
-            month = today.getDate() < nextMonthView.day && nextMonthView.active ? today.getMonth() + 2 : today.getMonth() + 1;
+            month =
+                today.getDate() < nextMonthView.day && nextMonthView.active
+                    ? today.getMonth() + 2
+                    : today.getMonth() + 1;
             year = month <= 12 ? today.getFullYear() : today.getFullYear() + 1;
             month = month === 13 ? 1 : month;
         }
     } else {
         if (path.includes('contas') || path.includes('cartoes')) {
             year = path.split('/')[5];
-            month = path.split('/')[6]
+            month = path.split('/')[6];
         } else {
             year = path.split('/')[2];
             month = path.split('/')[3];
@@ -32,11 +34,10 @@ export async function getMonthYear() {
 
     const yearMonth = [year, month];
 
-    sessionStorage.setItem('year-month', yearMonth)
+    sessionStorage.setItem('year-month', yearMonth);
 
     return yearMonth;
 }
-
 
 /**
  * Monta um relatório que classifica os lançamentos em receitas e despesas calculando o montante total de ambas.
@@ -48,19 +49,19 @@ export function setCategoriesReport(transactions, categories) {
     let revenue = [],
         expenses = [],
         amount = {
-            revenue: 0, 
-            expenses: 0
+            revenue: 0,
+            expenses: 0,
         },
         ignoredCategories = [],
         category;
-    
+
     // Separa as categorias de receitas e de despesas.
     for (category of categories) {
         let object = {
             id: category.id,
             name: category.description,
-            amount: 0
-        }
+            amount: 0,
+        };
 
         if (category.type === 'entrada') {
             revenue.push(object);
@@ -76,42 +77,39 @@ export function setCategoriesReport(transactions, categories) {
     // Classifica os lançamentos como receitas e despesas e calcula o montante total de ambas.
     if (Array.isArray(transactions)) {
         for (let transaction of transactions) {
-    
             for (category of revenue) {
                 if (transaction.category === category.id) {
                     category.amount += transaction.value;
                 }
             }
-            
+
             for (category of expenses) {
                 if (transaction.category === category.id) {
                     category.amount += transaction.value;
                 }
             }
-    
-            
+
             if (transaction.type === 'entrada') {
-                amount.revenue += transaction.value;            
+                amount.revenue += transaction.value;
             } else {
                 if (!ignoredCategories.includes(transaction.category)) {
                     amount.expenses += transaction.value;
                 } else if (transaction.category == 5) {
-                    amount.expenses +=transaction.value;
+                    amount.expenses += transaction.value;
                 }
             }
         }
     }
 
     // Ordena as despesas pelo montante. Os maiores gastos aparecem primeiro.
-    expenses.sort((a, b) => a.amount < b.amount ? 1 : a.amount > b.amount ? -1 : 0);
-    
-    return {revenue, expenses, amount}
-}
+    expenses.sort((a, b) => (a.amount < b.amount ? 1 : a.amount > b.amount ? -1 : 0));
 
+    return { revenue, expenses, amount };
+}
 
 /**
  * Constrói um objeto literal com os dados que serão usados que o ChartJS precisa para montar o gráfico.
- * Obs: Por uma questão de reaproveitamento de código, será necessário passar receitas e despesas separadamente, 
+ * Obs: Por uma questão de reaproveitamento de código, será necessário passar receitas e despesas separadamente,
  * assinalando no parâmetro REVENUE se é o dataset de receitas ou não par alterar a cor do gráfico.
  * @param {Object} report - O objeto literal com as receitas, despesas e seus respectivos montantes.
  * @param {boolean} revenue - Um boleano que discrimina se a classificação é por receitas.
@@ -134,9 +132,8 @@ export function setCategoriesDataset(report, revenue) {
             colors.push(`rgba(139, 0, 0, 1)`);
         }
     }
-    return {names, values, colors}
+    return { names, values, colors };
 }
-
 
 /**
  * Constrói a base de dados que será utilizada pra renderizar o select com as opções para selecionar as categorias.
@@ -151,9 +148,9 @@ export function setCategoriesOptions(report) {
         object = {
             id: i.id,
             description: i.name,
-            amount: i.amount
-        }
-        options.push(object)
+            amount: i.amount,
+        };
+        options.push(object);
     }
     return options;
 }
@@ -166,9 +163,6 @@ export function setCategoriesOptions(report) {
 export function setAmountDataset(amount) {
     let names = ['Entradas', 'Saídas'],
         values = [amount.revenue, amount.expenses],
-        colors = [
-            'rgba(0, 150, 0, 1)',
-            'rgba(139, 0, 0, 1)'
-        ]
-    return {names, values, colors}
+        colors = ['rgba(0, 150, 0, 1)', 'rgba(139, 0, 0, 1)'];
+    return { names, values, colors };
 }

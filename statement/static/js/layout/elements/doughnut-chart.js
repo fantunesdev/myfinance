@@ -4,30 +4,32 @@ export function drawDoughnutChart(dataset, label, onClickCallback, select) {
         type: 'doughnut',
         data: {
             labels: dataset.names,
-            datasets: [{
-                label: label,
-                data: dataset.values,
-                backgroundColor: dataset.colors,
-                borderWidth: 4,
-                borderColor: 'rgba(12, 12, 12, 0.2)',
-                hoverOffset: 4
-            }]
+            datasets: [
+                {
+                    label: label,
+                    data: dataset.values,
+                    backgroundColor: dataset.colors,
+                    borderWidth: 4,
+                    borderColor: 'rgba(12, 12, 12, 0.2)',
+                    hoverOffset: 4,
+                },
+            ],
         },
         options: {
             responsive: true,
             plugins: {
                 legend: {
-                    display: false
+                    display: false,
                 },
                 title: {
                     display: true,
                     text: label,
                     font: {
                         size: 18,
-                        family: 'Ubuntu'
+                        family: 'Ubuntu',
                     },
-                    color: 'rgba(204,204,204,1)'
-                }
+                    color: 'rgba(204,204,204,1)',
+                },
             },
             onClick: (event, elements) => {
                 if (elements.length > 0) {
@@ -42,8 +44,8 @@ export function drawDoughnutChart(dataset, label, onClickCallback, select) {
                     }
                     onClickCallback(select); // Chame a função de callback passando o novo valor de select
                 }
-            }
-        }
+            },
+        },
     };
 
     return new Chart(father, data);

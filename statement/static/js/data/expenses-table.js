@@ -1,7 +1,4 @@
-import * as services from '../data/services.js'
-
 export const columnTitles = ['Data', 'Banco/Cartão', 'Categoria', 'Sub-Categoria', 'Descrição', 'Valor', 'Ações'];
-
 
 export function orderExpensesBySubcategory(transactions, categoryId, expenses) {
     let newTransactions = [];
@@ -20,9 +17,8 @@ export function orderExpensesBySubcategory(transactions, categoryId, expenses) {
         }
     }
 
-    return newTransactions.sort((a, b) => a.order < b.order ? -1 : a.order > b.order ? 1 : 0);
+    return newTransactions.sort((a, b) => (a.order < b.order ? -1 : a.order > b.order ? 1 : 0));
 }
-
 
 export function setData(transaction, transactionAttrs) {
     let data = [],
@@ -31,7 +27,6 @@ export function setData(transaction, transactionAttrs) {
         bank,
         releaseDateFormated = transaction.release_date.split('-').reverse().join('/');
 
-    
     // Column 1 - Release dates data
     data.push(releaseDateFormated);
 
@@ -68,27 +63,31 @@ export function setData(transaction, transactionAttrs) {
     data.push(transaction.description);
 
     // Column 6 - Value data
-    data.push(transaction.value.toLocaleString('pt-br',{style: 'currency', currency: transaction.currency}));
-    
+    data.push(
+        transaction.value.toLocaleString('pt-br', {
+            style: 'currency',
+            currency: transaction.currency,
+        })
+    );
+
     return data;
 }
 
-
 export function setURLs(transaction) {
     let urls = [];
-    
+
     if (transaction.installment) {
         urls = [
             `/parcelamento/${transaction.installment}/`,
             `/parcelamento/editar/${transaction.installment}`,
-            `/parcelamento/remover/${transaction.installment}`
-        ]
+            `/parcelamento/remover/${transaction.installment}`,
+        ];
     } else {
         urls = [
             `/movimentacao/${transaction.id}/`,
             `/movimentacao/editar/${transaction.id}`,
-            `/movimentacao/remover/${transaction.id}`
-        ]
-    }    
+            `/movimentacao/remover/${transaction.id}`,
+        ];
+    }
     return urls;
 }

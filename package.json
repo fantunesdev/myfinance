@@ -1,0 +1,13 @@
+{
+  "devDependencies": {
+    "@eslint/js": "^9.24.0",
+    "eslint": "^9.24.0",
+    "globals": "^16.0.0"
+  },
+  "dependencies": {
+    "prettier": "^3.5.3"
+  },
+  "scripts": {
+    "format:js": "prettier --write statement/static/js/"
+  }
+}

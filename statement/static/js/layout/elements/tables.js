@@ -1,12 +1,11 @@
 import * as tableData from '../../data/expenses-table.js';
 
-
 export function renderTable(father, transactions, transactionAttrs) {
     const table = document.createElement('table'),
         thead = document.createElement('thead'),
         tbody = document.createElement('tbody'),
         row = document.createElement('tr');
-    
+
     table.id = 'subcategory-table';
 
     let headRow = createTitleRow(row, tableData.columnTitles);
@@ -20,13 +19,12 @@ export function renderTable(father, transactions, transactionAttrs) {
         createRow(newRow, 'td', data, anchors);
         tbody.appendChild(newRow);
     }
-    
+
     table.appendChild(thead);
     table.appendChild(tbody);
-    
+
     father.appendChild(table);
 }
-
 
 function createTitleRow(row, data) {
     for (let i of data) {
@@ -36,7 +34,6 @@ function createTitleRow(row, data) {
     }
     return row;
 }
-
 
 function createRow(row, type, data, anchors) {
     for (let i = 0; i < data.length; i++) {
@@ -56,7 +53,6 @@ function createRow(row, type, data, anchors) {
     return row;
 }
 
-
 function createImage(father, src) {
     const img = document.createElement('img');
 
@@ -66,33 +62,27 @@ function createImage(father, src) {
     father.appendChild(img);
 }
 
-
-function createAnchors(urls) {    
+function createAnchors(urls) {
     let anchors = [];
     for (let index = 0; index < 3; index++) {
         let anchor = document.createElement('a'),
             content = createAnchorWithFontAwesomeIcons(index);
-            anchor.href = urls[index];
-            anchor.appendChild(content);
-            anchors.push(anchor);
-        }
-        
-        return anchors;
+        anchor.href = urls[index];
+        anchor.appendChild(content);
+        anchors.push(anchor);
     }
-    
-    
+
+    return anchors;
+}
+
 function createAnchorWithFontAwesomeIcons(index) {
     const content = document.createElement('i'),
         fontAwesomeClassName = {
             format: 'fa-solid',
-            icons: [
-                'fa-file-lines',
-                'fa-pen-to-square',
-                'fa-trash'
-            ],
-            behavior: 'action-icon'
-        }
-        
+            icons: ['fa-file-lines', 'fa-pen-to-square', 'fa-trash'],
+            behavior: 'action-icon',
+        };
+
     content.classList.add(fontAwesomeClassName.format);
     content.classList.add(fontAwesomeClassName.icons[index]);
     content.classList.add(fontAwesomeClassName.behavior);

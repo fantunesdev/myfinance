@@ -1,15 +1,15 @@
-const DEBUG = false
+const DEBUG = false;
 
 if (DEBUG) {
     console.log('Script carregado.');
 }
 
 function connectWebSocket() {
-    const wsProtocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
     const wsHost = window.location.hostname;
-    const wsPort = wsHost === 'localhost' ? "8765" : '';
-    const wsEndpoint = "/ws/";
-    
+    const wsPort = wsHost === 'localhost' ? '8765' : '';
+    const wsEndpoint = '/ws/';
+
     if (DEBUG) {
         console.log('Chamando connectWebSocket()...');
     }
@@ -35,14 +35,14 @@ function connectWebSocket() {
         if (DEBUG) {
             console.log('Mensagem recebida.');
         }
-        
+
         try {
             const data = JSON.parse(event.data);
-            
+
             if (data.data) {
                 const [key, value] = Object.entries(data.data)[0];
-    
-                sessionStorage.setItem(key, JSON.stringify(value))
+
+                sessionStorage.setItem(key, JSON.stringify(value));
                 if (DEBUG) {
                     console.log(`Atualizando sessionStorage para ${key}`);
                 }

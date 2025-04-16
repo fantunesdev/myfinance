@@ -13,7 +13,6 @@ export function setPaymentDate(releaseDate, card) {
     }
 }
 
-
 function addMonth(day, monthString, anoString) {
     var month = parseInt(monthString),
         year = parseInt(anoString);

@@ -1,19 +1,20 @@
 import * as services from './services.js';
 
-
 export async function setSubcategoryDataset(id) {
     const transactions = JSON.parse(sessionStorage.getItem('transactions')),
-        subcategories = await services.getChildrenResource('categories','subcategories', id);
+        subcategories = await services.getChildrenResource('categories', 'subcategories', id);
 
     let expenses = [],
-        subcategory, transaction, object;
+        subcategory,
+        transaction,
+        object;
 
     for (subcategory of subcategories) {
         object = {
             id: subcategory.id,
             name: subcategory.description,
-            amount: 0
-        }
+            amount: 0,
+        };
         expenses.push(object);
     }
 
@@ -25,7 +26,7 @@ export async function setSubcategoryDataset(id) {
         }
     }
 
-    expenses.sort((a, b) => a.amount < b.amount ? 1 : a.amount > b.amount ? -1 : 0);
+    expenses.sort((a, b) => (a.amount < b.amount ? 1 : a.amount > b.amount ? -1 : 0));
 
     return expenses;
 }

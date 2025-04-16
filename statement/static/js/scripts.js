@@ -7,9 +7,7 @@ const pathName = window.location.pathname,
     searchButton = document.querySelector('#search-button'),
     body = document.getElementsByTagName('body')[0];
 
-
 // FUNÇÕES ESTÉTICAS
-
 
 /**
  * Encolhe e estica a barra lateral.
@@ -24,56 +22,51 @@ function toggleSidebar() {
     }
 }
 
-
 /**
  * Recolhe a barra do menu lateral e colapsa os itens que irão desaparecer.
  */
 function recallSidebar() {
-    let body = document.getElementsByTagName('body')[0],
-        logo = document.getElementsByTagName('body')[0].children[1].children[0],
-        toggle = document.getElementsByClassName('toggle'),
-        inverseToggle = document.getElementsByClassName('inverse-toggle'),
-        i;
+    let body = document.getElementsByTagName('body')[0];
+    let logo = document.getElementsByTagName('body')[0].children[1].children[0];
+    let toggle = document.getElementsByClassName('toggle');
+    let inverseToggle = document.getElementsByClassName('inverse-toggle');
 
-        body.classList.add('toggled-sidebar');
-        logo.children[1].classList.add('toggled');
+    body.classList.add('toggled-sidebar');
+    logo.children[1].classList.add('toggled');
 
-        for (i of toggle) {
-            i.classList.add('toggled');
-        }
+    for (let i of toggle) {
+        i.classList.add('toggled');
+    }
 
-        for (j of inverseToggle) {
-            j.classList.add('toggled')
-        }
+    for (let j of inverseToggle) {
+        j.classList.add('toggled');
+    }
 }
-
 
 /**
  * Expande a barra do menu lateral e mostra os itens que estavam escondidos.
  */
 function expandSidebar() {
-    let body = document.getElementsByTagName('body')[0],
-        logo = document.getElementsByTagName('body')[0].children[1].children[0],
-        toggle = document.getElementsByClassName('toggle'),
-        inverseToggle = document.getElementsByClassName('inverse-toggle'),
-        i;
+    let body = document.getElementsByTagName('body')[0];
+    let logo = document.getElementsByTagName('body')[0].children[1].children[0];
+    let toggle = document.getElementsByClassName('toggle');
+    let inverseToggle = document.getElementsByClassName('inverse-toggle');
 
-        body.classList.remove('toggled-sidebar');
-        logo.children[1].classList.remove('toggled');
+    body.classList.remove('toggled-sidebar');
+    logo.children[1].classList.remove('toggled');
 
-        for (i of toggle) {
-            i.classList.remove('toggled');
-        }
+    for (let i of toggle) {
+        i.classList.remove('toggled');
+    }
 
-        for (j of inverseToggle) {
-            j.classList.remove('toggled')
-        }
+    for (let j of inverseToggle) {
+        j.classList.remove('toggled');
+    }
 }
-
 
 /**
  * Retrai e expande os submenus.
- * 
+ *
  * @param {string} id - Uma string com o id html do submenu a ser retraído/expandido.
  */
 function toggleSubMenu(id) {
@@ -91,7 +84,7 @@ function toggleSubMenu(id) {
 
 /**
  * Colapsa e revela caixas.
- * 
+ *
  * @param {string} id - Uma string com o ID HTML da caixa a ser colapsada/revelada.
  */
 function toggleBox(id) {
@@ -103,7 +96,7 @@ function toggleBox(id) {
         element.classList.add('active');
     }
 
-    if (id == 'search') {;
+    if (id == 'search') {
         search.focus();
     }
 }
@@ -112,21 +105,18 @@ function toggleBox(id) {
  * Função anônima que encolhe e amplia o menu lateral de acordo com o tamanho da tela disponível.
  */
 (window.onresize = () => {
-    let boxes = [
-        document.getElementById('tempo-area'),
-        document.getElementById('graphic')
-    ];
-    
+    let boxes = [document.getElementById('tempo-area'), document.getElementById('graphic')];
+
     if (body.clientWidth < 1200) {
         recallSidebar();
-        for (box of boxes) {
+        for (let box of boxes) {
             if (box) {
                 box.style.maxWidth = 'calc(100% - 20px)';
             }
         }
     } else {
         expandSidebar();
-        for (box of boxes) {
+        for (let box of boxes) {
             if (box) {
                 box.style.maxWidth = 'calc(55% - 20px)';
             }
@@ -136,22 +126,22 @@ function toggleBox(id) {
 
 /**
  * Adiciona a classe CSS toggled para colapçar/mostrar elementos.
- * 
+ *
  * @param {string} id - Uma string com o ID HTML do elemento que será colapsado/mostrado.
  */
 function toggle(id) {
     let box = document.getElementById(id);
 
-        if (hasToggled(box.classList)) {
-            box.classList.remove('toggled');
-        } else {
-            box.classList.add('toggled');
-        }
+    if (hasToggled(box.classList)) {
+        box.classList.remove('toggled');
+    } else {
+        box.classList.add('toggled');
+    }
 }
 
 /**
  * Verifica e inclui a classe CSS active na lista de classes de um elemento html.
- * 
+ *
  * @param {Array} classList - Um array com as classes CSS de um elemento.
  * @returns - O array com as classes CSS com a classe active adicionada.
  */
@@ -163,7 +153,7 @@ function hasToggled(classList) {
 
 /**
  * Verifica e inclui uma classe CSS na lista de classe de um elemento html.
- * 
+ *
  * @param {Array} classList - Um array com as classes CSS de um elemento.
  * @param {string} verifiedClass - Uma string da classe CSS a ser verificada.
  * @returns - O array com a classe adicionada.
@@ -183,7 +173,6 @@ function searchByDescription() {
     window.location.href = url;
 }
 
-
 // EVENT LISTENERS
 
 // Evento do icone hamburger para encolher/expandir o menu lateral.
@@ -197,7 +186,7 @@ asides.addEventListener('mouseover', () => {
 });
 
 // Chama a função que pesquisa ao apertar enter no formulário.
-search.addEventListener('keydown', event => {
+search.addEventListener('keydown', (event) => {
     if (event.key === 'Enter') {
         searchByDescription();
     }

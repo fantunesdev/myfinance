@@ -6,19 +6,17 @@
  */
 export async function getTransactionsByYearAndMonth(year, month) {
     const path = window.location.pathname;
-    let accountId,
-        cardId,
-        url;
-        
-        if (path.includes('contas')) {
-            accountId = path.split('/')[3];
-            url = `/api/transactions/accounts/${accountId}/year/${year}/month/${month}/`;
-        } else if (path.includes('cartoes')) {
+    let accountId, cardId, url;
+
+    if (path.includes('contas')) {
+        accountId = path.split('/')[3];
+        url = `/api/transactions/accounts/${accountId}/year/${year}/month/${month}/`;
+    } else if (path.includes('cartoes')) {
         cardId = path.split('/')[3];
         url = `/api/transactions/cards/${cardId}/year/${year}/month/${month}/`;
-        } else {
-            url = `/api/transactions/year/${year}/month/${month}/`;
-        }
+    } else {
+        url = `/api/transactions/year/${year}/month/${month}/`;
+    }
 
     const response = await fetch(url),
         data = await response.json(),
@@ -50,12 +48,7 @@ export async function getTransactionsByYear(year) {
  * @returns Uma lista de obsjetos literais contendo todos os lançamentos do ano.
  */
 export async function getLastTwelveMonthsTransactionsByYearAndMonth(year, month) {
-    const path = window.location.pathname;
-    let accountId,
-        cardId,
-        url;
-    
-    url = `/api/transactions/last_twelve/${year}-${month}/`;
+    const url = `/api/transactions/last_twelve/${year}-${month}/`;
 
     const response = await fetch(url),
         data = await response.json(),
@@ -64,7 +57,6 @@ export async function getLastTwelveMonthsTransactionsByYearAndMonth(year, month)
     sessionStorage.setItem('transactions', sessionStorageData);
     return data;
 }
-
 
 /**
  * Consulta na API um recurso específico. Geralmente as instâncias de um modelo.
@@ -88,7 +80,6 @@ export async function getResource(model) {
     return data;
 }
 
-
 /**
  * Consulta na API uma instância específica do modelo com base no ID.
  * @param {string} model - O nome do modelo.
@@ -105,11 +96,10 @@ export async function getSpecificResource(model, id) {
         response = await fetch(url),
         data = await response.json(),
         sessionStorageData = JSON.stringify(data);
-        
+
     sessionStorage.setItem(`${model}-${id}`, sessionStorageData);
     return data;
 }
-
 
 /**
  * Consulta na API uma instância específica de um modelo relacionado a outro modelo com base no ID. Por exemplo, a subcategoria de uma categoria.
@@ -133,10 +123,9 @@ export async function getChildrenResource(model, child, id) {
     return data;
 }
 
-
 /**
  * Cadastra uma instância do modelo no banco de dados.
- * 
+ *
  * @param {string} model - O nome do modelo
  * @param {object} resource - Instância do modelo.
  * @returns Uma instância do modelo cadastrado no banco de dados.
@@ -144,29 +133,28 @@ export async function getChildrenResource(model, child, id) {
 export async function createResource(model, resource) {
     const url = `/api/${model}/`,
         requestOptions = {
-            method: "POST",
+            method: 'POST',
             headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": getCsrfToken()
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken(),
             },
             body: resource,
-        }
-    
+        };
+
     try {
         const response = await fetch(url, requestOptions);
         if (!response.ok) {
             throw new Error(await response.text());
         }
         return await response.json();
-    } catch(error) {
+    } catch (error) {
         return error;
     }
 }
 
-
 /**
  * Faz upload do arquivo dos lançamentos, o backend lê e retorna um JSON com os dados para renderização.
- * 
+ *
  * @param {array} formData - um objeto que contém os dados do formulário
  * @param {string} csrf - O CSRF Token
  * @returns - Um JSON com todos os lançamentos do arquivo de carga.
@@ -174,13 +162,13 @@ export async function createResource(model, resource) {
 export async function importTransactions(formData) {
     const url = `/api/transactions/import/`,
         requestOptions = {
-            method: "POST",
+            method: 'POST',
             headers: {
-                "Accept": "application/json",
-                "X-CSRFToken": getCsrfToken()
+                Accept: 'application/json',
+                'X-CSRFToken': getCsrfToken(),
             },
             body: formData,
-        }
+        };
 
     try {
         const response = await fetch(url, requestOptions);
@@ -192,7 +180,7 @@ export async function importTransactions(formData) {
 
 /**
  * Obtém o CSRF Token da aplicação Django através dos cookies do navegador
- * 
+ *
  * @param {string} name - Nome do cookie: csrftoken
  * @returns {string} - CSRF Token
  */
@@ -202,7 +190,7 @@ function getCsrfToken() {
         const cookies = document.cookie.split(';');
         for (let i = 0; i < cookies.length; i++) {
             const cookie = cookies[i].trim();
-            if (cookie.substring(0, 'csrftoken'.length + 1) === ('csrftoken' + '=')) {
+            if (cookie.substring(0, 'csrftoken'.length + 1) === 'csrftoken' + '=') {
                 cookieValue = decodeURIComponent(cookie.substring('csrftoken'.length + 1));
                 break;
             }

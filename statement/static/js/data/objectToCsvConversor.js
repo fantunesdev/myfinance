@@ -1,4 +1,4 @@
-import * as transactionsObjectConversor from './transactions-object-conversor.js'
+import * as transactionsObjectConversor from './transactions-object-conversor.js';
 import * as general from './general.js';
 
 /**
@@ -48,30 +48,30 @@ export async function convertTransactions(transactions) {
 /**
  * Trata uma linha de dados com base na URL atual. Dependendo da URL, a função remove determinadas colunas,
  * filtra valores nulos, indefinidos ou vazios e formata a linha como uma string CSV.
- * 
+ *
  * @param {Array} line - Uma matriz de valores que representa uma linha de dados a ser tratada.
  * @returns {string} A linha de dados formatada como uma string CSV com uma nova linha no final.
  */
 function removeColumnByActualPath(line) {
     const path = window.location.href;
-    
+
     if (path.includes('contas')) {
         line[4] = null; // Remove a coluna Cartões
     } else if (path.includes('cartoes')) {
         line[2] = null; // Remove a coluna Tipo (saida/entrada)
         line[3] = null; // Remove a coluna Cartões
     }
-    
+
     if (path.includes('contas') || path.includes('cartoes')) {
         // Remove `null`, `undefined` e strings vazias
-        const filteredLine = line.filter(item => item !== null && item !== undefined && item !== '');
-    
+        const filteredLine = line.filter((item) => item !== null && item !== undefined && item !== '');
+
         // Junta os elementos com `;` como separador
         const result = filteredLine.join(';');
-    
+
         // Remove espaços vazios no início e no fim da string
         const resultWithoutSpaces = result.trim();
-    
+
         // Retorna a string com uma nova linha no final
         return `${resultWithoutSpaces}\n`;
     }
@@ -82,9 +82,9 @@ function removeColumnByActualPath(line) {
 
 /**
  * Faz o download de um arquivo CSV com base no conteúdo fornecido.
- * 
+ *
  * Cria um arquivo e um hiperlink temporários, simulando um click no mesmo para fazer o download do arquivo.
- * 
+ *
  * @param {string} csvContent - O conteúdo do arquivo CSV a ser baixado.
  */
 async function downloadCsvFile(csvContent) {
@@ -101,28 +101,25 @@ async function downloadCsvFile(csvContent) {
 
 /**
  * Define um nome de arquivo com base no caminho atual da URL.
- * 
+ *
  * O nome do arquivo é determinado com base no tipo de recurso (contas ou cartões) e a data (mês e ano).
  */
 async function defineFileNameByPath() {
     const path = window.location.pathname;
 
-    let fileName,
-        month, 
-        year;
+    let fileName, month, year;
 
-    
     let arrayPath = path.split('/');
-    
+
     if (path.includes('cartoes')) {
-        const index = arrayPath.findIndex(element => element === 'cartoes');
+        const index = arrayPath.findIndex((element) => element === 'cartoes');
         const cardId = arrayPath[index + 1];
         const card = await transactionsObjectConversor.setCard(cardId);
         const cardName = general.handleNamesToComputer(card.description);
 
         fileName = `fatura_${cardName}_`;
     } else if (path.includes('contas')) {
-        const index = arrayPath.findIndex(element => element === 'contas');
+        const index = arrayPath.findIndex((element) => element === 'contas');
         const accountId = arrayPath[index + 1];
         const account = await transactionsObjectConversor.setAccount(accountId);
         const accountName = general.handleNamesToComputer(account.bank.description);
@@ -138,11 +135,11 @@ async function defineFileNameByPath() {
         year = String(actualDate.getFullYear());
     } else {
         if (path.includes('contas')) {
-            const index = arrayPath.findIndex(element => element === 'extrato');
+            const index = arrayPath.findIndex((element) => element === 'extrato');
             year = arrayPath[index + 1];
             month = arrayPath[index + 2];
         } else if (path.includes('cartoes')) {
-            const index = arrayPath.findIndex(element => element === 'fatura');
+            const index = arrayPath.findIndex((element) => element === 'fatura');
             year = arrayPath[index + 1];
             month = arrayPath[index + 2];
         }

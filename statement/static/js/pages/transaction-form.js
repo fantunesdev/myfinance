@@ -5,7 +5,6 @@ import * as general from '../layout/general.js';
 import * as services from '../data/services.js';
 import * as selectInput from '../layout/elements/selects.js';
 
-
 /**
  * Mostra e oculta campos do formulário de acordo com o meio de pagamento selecionado.
  */
@@ -22,13 +21,12 @@ function selectPaymentMethod() {
     }
 }
 
-
 /**
  * Altera a dada de efetivação de acordo com o meio de pagamento e a data do lançamento.
  */
 async function changePaymentDateInput() {
     if (selects.paymentMethod.value == 1) {
-        let cardId = selects.card.value
+        let cardId = selects.card.value;
         var card = await services.getSpecificResource('cards', cardId);
     }
     const releaseDate = selects.releaseDate.value,
@@ -58,13 +56,11 @@ async function changePaymentDateInput() {
     }
 })();
 
-
 async function changeSubcategoriesInput(categoryId) {
     const subcategories = await services.getChildrenResource('categories', 'subcategories', categoryId);
 
     selectInput.renderOptions(selects.subcategory, subcategories);
 }
-
 
 if (buttons.installment) {
     buttons.installment.addEventListener('click', () => showHide(divs.installment));
@@ -128,10 +124,9 @@ DISTÂNCIA: ${km} km.
 `;
 }
 
-
 /**
  * Trata o valor do campo Valor de forma que sempre retorne um float de dois dígitos.
- * 
+ *
  * @param {object} event - KeyboardEvent que pega a tecla que foi digitada.
  */
 function twoDigitFloatHandler(event) {
@@ -165,4 +160,3 @@ function twoDigitFloatHandler(event) {
 }
 
 selectPaymentMethod();
-

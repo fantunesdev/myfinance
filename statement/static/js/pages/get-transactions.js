@@ -12,7 +12,7 @@ import * as general from '../data/general.js';
 const yearNavigation = document.getElementById('id_year'),
     monthNavigation = document.getElementById('id_month'),
     transactionDownloadButton = document.getElementById('download-transactions-button');
-    
+
 /**
  * Busca todas as informações para desenhar os gráficos de barras e de donuts.
  * @returns - Um gráfico de barras.
@@ -29,11 +29,10 @@ async function draw() {
 
     const barChart = graphics.drawBarChart(expenses, 'Despesas');
     graphics.drawDoughnutChart(revenue, 'revenue', 'Receitas');
-    graphics.drawDoughnutChart(amount, 'amount', 'Receitas/Despesas');    
+    graphics.drawDoughnutChart(amount, 'amount', 'Receitas/Despesas');
 
     return barChart;
 }
-
 
 /**
  * Atualiza o gráfico de barras conforme a categoria selecionada.
@@ -43,7 +42,7 @@ export async function updateBarChart(barChart) {
     const transactions = JSON.parse(sessionStorage.getItem('transactions')),
         categories = JSON.parse(sessionStorage.getItem('categories'));
 
-    let barLabelClicked = sessionStorage.getItem('bar_label_clicked')
+    let barLabelClicked = sessionStorage.getItem('bar_label_clicked');
 
     if (barLabelClicked) {
         for (let category of categories) {
@@ -56,28 +55,26 @@ export async function updateBarChart(barChart) {
             report = categoryData.setCategoriesReport(transactions, categories);
         var expenses = report.expenses;
     }
-    
+
     const dataset = categoryData.setCategoriesDataset(expenses);
     graphics.updateChart(barChart, dataset);
-    
-    updateTable(transactions, expenses)
+
+    updateTable(transactions, expenses);
 }
 
-
 /**
- * Atualiza a tabela com os registros de 
+ * Atualiza a tabela com os registros de
  * @param {Array} transactions - Uma lista de lançamentos.
  * @param {Array} expenses - Uma lista de subcategorias do tipo despesas.
-*/
+ */
 async function updateTable(transactions, expenses) {
     let subcategoryTable = document.getElementById('subcategory-table'),
         barLabelClicked = sessionStorage.getItem('bar_label_clicked');
 
-        
-        if (subcategoryTable) {
-            subcategoryTable.parentNode.removeChild(subcategoryTable);
-        }
-        
+    if (subcategoryTable) {
+        subcategoryTable.parentNode.removeChild(subcategoryTable);
+    }
+
     if (barLabelClicked) {
         let categories = JSON.parse(sessionStorage.getItem('categories')),
             selectedCategory,
@@ -90,26 +87,30 @@ async function updateTable(transactions, expenses) {
                 selectedCategory = category;
             }
         }
-        
+
         if (!accounts) {
-            accounts = await services.getResource('accounts'),
-            cards = await services.getResource('cards'),
-            banks = await services.getResource('banks');
+            (accounts = await services.getResource('accounts')),
+                (cards = await services.getResource('cards')),
+                (banks = await services.getResource('banks'));
         }
-        
+
         for (let category of categories) {
             if (category.id == selectedCategory.id) {
                 const transactionAttrs = {
-                        accounts: accounts,
-                        cards: cards,
-                        category: category,
-                        subcategories: expenses,
-                        banks: banks
-                    }
+                    accounts: accounts,
+                    cards: cards,
+                    category: category,
+                    subcategories: expenses,
+                    banks: banks,
+                };
 
                 originalTable.classList.add('hide');
-                let filteredTransactions = dataTable.orderExpensesBySubcategory(transactions, selectedCategory.id, expenses);
-                
+                let filteredTransactions = dataTable.orderExpensesBySubcategory(
+                    transactions,
+                    selectedCategory.id,
+                    expenses
+                );
+
                 tables.renderTable(statementBox, filteredTransactions, transactionAttrs);
             }
             sessionStorage.removeItem('bar_label_clicked');
@@ -145,8 +146,18 @@ function yearMonthRouter() {
 async function downloadTransactions() {
     const transactions = JSON.parse(sessionStorage.getItem('transactions')),
         deletedProperties = [
-            'annual', 'currency', 'effected', 'fixed', 'home_screen', 'id', 'installment', 'installments_number', 'observation',
-            'paid', 'remember', 'user'
+            'annual',
+            'currency',
+            'effected',
+            'fixed',
+            'home_screen',
+            'id',
+            'installment',
+            'installments_number',
+            'observation',
+            'paid',
+            'remember',
+            'user',
         ],
         handledTransactions = [];
 
@@ -185,7 +196,7 @@ function convertDbDateForDayMonthYearDate(date) {
     const [year, month, day] = date.split('-');
     return `${day}/${month}/${year}`;
 }
-    
+
 const resetDashboardButton = document.querySelector('#reset-dashboard-button');
 resetDashboardButton.addEventListener('click', () => {
     updateBarChart(barChart);
@@ -194,7 +205,6 @@ resetDashboardButton.addEventListener('click', () => {
 
 let barChart = await draw();
 sessionStorage.setItem('bar_chart_level', 'categories');
-
 
 // Redireciona para a página do ano selecionado.
 yearNavigation.addEventListener('change', () => {

@@ -2,13 +2,12 @@ import { divs, selects } from '../layout/elements/transaction-form-elements.js';
 import * as services from '../data/services.js';
 // import * as tables from '../layout/elements/tables.js';
 
-const fileInput = document.querySelector('#id_file'),
-    importBtn = document.querySelector('#import-btn'),
-    boxTransactions = document.querySelector('#box-transactions'),
-    divImportTransactions = document.querySelector('#div-import-transactions'),
-    transactionRows = document.querySelector('#transaction-rows'),
-    checkboxCheckAll = document.querySelector('#checkall'),
-    sendTransactionsBtn = document.querySelector('#send-transactions-btn');
+const fileInput = document.querySelector('#id_file');
+const importBtn = document.querySelector('#import-btn');
+const boxTransactions = document.querySelector('#box-transactions');
+const transactionRows = document.querySelector('#transaction-rows');
+const checkboxCheckAll = document.querySelector('#checkall');
+const sendTransactionsBtn = document.querySelector('#send-transactions-btn');
 
 selects.paymentMethod.value = 2;
 divs.card.classList.add('toggled');
@@ -44,7 +43,6 @@ async function sendFile() {
     formData.append('account', isNaN(parseInt(selects.account.value)) ? '' : parseInt(selects.account.value));
     formData.append('card', isNaN(parseInt(selects.card.value)) ? '' : parseInt(selects.card.value));
 
-
     if (!fileInput.files[0]) {
         alert('Selecione um arquivo para continuar.');
         return;
@@ -68,14 +66,12 @@ async function sendFile() {
     }
 }
 
-
-
 /**
  * Renderiza a tabela de transações importadas.
  * Cada linha da tabela representa uma transação importada.
  * As colunas da tabela são: data, descrição, valor, categoria, subcategoria e conta/cartão.
- * 
- * @todo - Dividir a função em funções menores pra facilitar a leitura e manutenção. 
+ *
+ * @todo - Dividir a função em funções menores pra facilitar a leitura e manutenção.
  * @param {array} transactions - Um array de transações importadas do arquivo da instituição financeira.
  */
 async function renderBox(transactions) {
@@ -131,7 +127,7 @@ async function renderBox(transactions) {
                     select.id = `${key}_${transaction.id}`;
                     select.classList.add('form-control');
 
-                    categories.forEach(category => {
+                    categories.forEach((category) => {
                         let option = document.createElement('option');
                         option.value = category.id;
                         option.textContent = category.description;
@@ -144,13 +140,17 @@ async function renderBox(transactions) {
                     // Adiciona o evento onchange para atualizar as subcategorias
                     select.addEventListener('change', async function () {
                         const subcategorySelect = newCell.nextSibling.querySelector('select');
-                        const subcategories = await services.getChildrenResource('categories', 'subcategories', select.value);
+                        const subcategories = await services.getChildrenResource(
+                            'categories',
+                            'subcategories',
+                            select.value
+                        );
 
                         // Limpa as opções existentes no select de subcategorias
                         subcategorySelect.innerHTML = '';
 
                         // Adiciona as novas opções de subcategorias
-                        subcategories.forEach(subcategory => {
+                        subcategories.forEach((subcategory) => {
                             let option = document.createElement('option');
                             option.value = subcategory.id;
                             option.textContent = subcategory.description;
@@ -166,8 +166,12 @@ async function renderBox(transactions) {
                     select.id = `${key}_${transaction.id}`;
                     select.classList.add('form-control');
 
-                    const subcategories = await services.getChildrenResource('categories', 'subcategories', transaction.category);
-                    subcategories.forEach(subcategory => {
+                    const subcategories = await services.getChildrenResource(
+                        'categories',
+                        'subcategories',
+                        transaction.category
+                    );
+                    subcategories.forEach((subcategory) => {
                         let option = document.createElement('option');
                         option.value = subcategory.id;
                         option.textContent = subcategory.description;
@@ -199,18 +203,17 @@ async function renderBox(transactions) {
     }
 }
 
-
 /**
  * Envia as transações selecionadas para o backend.
  * Faz a validação dos dados e cadastra as transações no banco de dados.
- * 
+ *
  * @todo - A função está funcional novamente, mas ainda precisa de alguns ajustes.
  * @todo - 1 - Pegar os valores dos inputs de data, categoria, subcategoria e descrição.
  * @todo - 2 - O valor está ficando sem ponto flutuante. Ex R: 1000,00 está ficando 100000.
  * @todo - 3 - É necessário implementar a lógica para verificar se houve alteração entre o valor original (transaction) e o novo valor (formulário).
  * @todo - 4 - Criar uma nova função para cadastrar o CategorizationFeedback.
  * @todo - 5 - Dividir a função em funções menores pra facilitar a leitura e manutenção.
- * 
+ *
  * @param {array} transactions - Um array de transações importadas do arquivo da instituição financeira.
  *
  * @returns - Redireciona para a tela de relatório financeiro.
@@ -228,29 +231,19 @@ async function importTransactions(transactions) {
     const accountSelect = document.querySelector('#id_account');
     const cardSelect = document.querySelector('#id_card');
 
-    let homeScreen;    
-        
-    if (paymentMethod.value == 2) {
-        let account = await services.getSpecificResource('accounts', accountSelect.value);
-        homeScreen = account.home_screen;
-    } else {
-        let card = await services.getSpecificResource('cards', cardSelect.value);
-        homeScreen = card.home_screen;
-    }
-
     let errors = 0;
 
     for (let transaction of transactions) {
         if (transactionsIds.includes(transaction.id)) {
             let newTransaction = {
-                'release_date': transaction.date,
-                'account': transaction.account ? transaction.account : null,
-                'card': transaction.card ? transaction.card : null,
-                'category': transaction.category,
-                'subcategory': transaction.subcategory,
-                'description': transaction.description,
-                'value': transaction.value.replace('.', '').replace(',', '.'),
-            }
+                release_date: transaction.date,
+                account: transaction.account ? transaction.account : null,
+                card: transaction.card ? transaction.card : null,
+                category: transaction.category,
+                subcategory: transaction.subcategory,
+                description: transaction.description,
+                value: transaction.value.replace('.', '').replace(',', '.'),
+            };
             const importError = document.querySelector('#import-error');
             try {
                 let response = await services.createResource('transactions', JSON.stringify(newTransaction));
@@ -271,12 +264,11 @@ async function importTransactions(transactions) {
     }
 }
 
-
 importBtn.addEventListener('click', () => sendFile());
 
 selects.paymentMethod.addEventListener('change', () => selectPaymentMethod());
 
-checkboxCheckAll.addEventListener('change', function() {
+checkboxCheckAll.addEventListener('change', function () {
     for (const row of transactionRows.children) {
         const checkbox = row.children[0].children[0];
         checkbox.checked = this.checked;

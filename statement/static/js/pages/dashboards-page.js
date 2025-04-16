@@ -21,13 +21,17 @@ async function drawAnnualStatementChart(select) {
 
     const year = yearSeletct.value;
     const transactions = await services.getTransactionsByYear(year);
-    
+
     const monthlyReport = monthsData.setMontlyReport(transactions);
     const lineDataset = monthsData.setMonthDataset(monthlyReport[select]);
     const doughnutDataset = monthsData.setDoughnutDataset(monthlyReport);
 
     const lineChart = graphics.drawLineChart(lineDataset, handleLabel(select));
-    const doughnutChart = doughnut.drawDoughnutChart(doughnutDataset, 'Receitas / Despesas / Investimentos', handleAnnualStatementDoughnutClick);
+    const doughnutChart = doughnut.drawDoughnutChart(
+        doughnutDataset,
+        'Receitas / Despesas / Investimentos',
+        handleAnnualStatementDoughnutClick
+    );
 
     window.lineChart = lineChart;
     window.doughnutChart = doughnutChart;
@@ -44,7 +48,11 @@ async function drawAnnualOverviewChart(select) {
     const doughnutDataset = monthsData.setDoughnutDataset(annualReport);
 
     const lineChart = graphics.drawLineChart(lineDataset, handleLabel(select));
-    const doughnutChart = doughnut.drawDoughnutChart(doughnutDataset, 'Receitas / Despesas / Investimentos', handleAnnualSOverviewDoughnutClick);
+    const doughnutChart = doughnut.drawDoughnutChart(
+        doughnutDataset,
+        'Receitas / Despesas / Investimentos',
+        handleAnnualSOverviewDoughnutClick
+    );
 
     window.lineChart = lineChart;
     window.doughnutChart = doughnutChart;
@@ -99,17 +107,16 @@ function handleAnnualSOverviewDoughnutClick(newSelect) {
 }
 
 yearSeletct.addEventListener('change', () => {
-    drawAnnualStatementChart()
+    drawAnnualStatementChart();
 });
 decreaseButton.addEventListener('click', () => {
-    yearSeletct.value --;
+    yearSeletct.value--;
     drawAnnualStatementChart('revenues');
 });
 increaseButton.addEventListener('click', () => {
-    yearSeletct.value ++;
+    yearSeletct.value++;
     drawAnnualStatementChart('revenues');
 });
-
 
 annualStatementTab.addEventListener('click', () => {
     drawAnnualStatementChart('revenues');
@@ -122,6 +129,5 @@ expensesCategoryTab.addEventListener('click', () => {
     drawExpensesCategoryChart();
     alert('Em construção');
 });
-
 
 let lineChart = await drawAnnualStatementChart('revenues');

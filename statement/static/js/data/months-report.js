@@ -1,5 +1,3 @@
-
-
 export function setMontlyReport(transactions) {
     const revenuesByMont = {},
         expensesByMonth = {},
@@ -14,11 +12,11 @@ export function setMontlyReport(transactions) {
 
     for (const transaction of transactions) {
         let [yearInt, monthInt, dayInt] = transaction.payment_date.split('-').map(Number);
-        const date = new Date(yearInt, monthInt -1, dayInt)
-        const month = date.getMonth()
+        const date = new Date(yearInt, monthInt - 1, dayInt);
+        const month = date.getMonth();
         const monthInFull = handleMonth(month);
         const category = getCategory(transaction.category);
-        
+
         if (transaction.type == 'entrada' && transaction.home_screen) {
             revenuesByMont[monthInFull] += transaction.value;
         } else {
@@ -28,14 +26,13 @@ export function setMontlyReport(transactions) {
                 investimentsByMonth[monthInFull] += transaction.value;
             }
         }
-
     }
 
     return {
-        revenues: revenuesByMont, 
-        expenses: expensesByMonth, 
+        revenues: revenuesByMont,
+        expenses: expensesByMonth,
         investments: investimentsByMonth,
-    }
+    };
 }
 
 export function setMonthDataset(report) {
@@ -49,19 +46,19 @@ export function setMonthDataset(report) {
         values.push(report[key]);
         colors.push(`rgba(139, 0, 0, 1)`);
     }
-    return {names, values, colors}
+    return { names, values, colors };
 }
 
 export function setDoughnutDataset(report) {
     const revenues = Object.values(report.revenues).reduce((acc, cur) => acc + cur, 0);
     const expenses = Object.values(report.expenses).reduce((acc, cur) => acc + cur, 0);
     const investments = Object.values(report.investments).reduce((acc, cur) => acc + cur, 0);
-    
+
     const names = ['Despesas', 'Investimentos', 'Receitas'];
     const values = [expenses, investments, revenues];
-    const colors = ['rgba(139, 0, 0, 1)', 'rgba(255, 191, 0, 1)', 'rgba(0, 139, 0, 1)']
+    const colors = ['rgba(139, 0, 0, 1)', 'rgba(255, 191, 0, 1)', 'rgba(0, 139, 0, 1)'];
 
-    return {names, values, colors}
+    return { names, values, colors };
 }
 
 function handleMonth(month) {
@@ -123,8 +120,8 @@ function translateMonth(month) {
 }
 
 function getCategory(categoryId) {
-    const categories = JSON.parse(sessionStorage.getItem('categories'));    
-    
+    const categories = JSON.parse(sessionStorage.getItem('categories'));
+
     for (const category of categories) {
         if (category.id == categoryId) {
             return category;

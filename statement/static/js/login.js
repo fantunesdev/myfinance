@@ -1,4 +1,4 @@
-import * as services from "./data/services.js";
+import * as services from './data/services.js';
 
 (async () => {
     if (window.location.pathname == '/login/') {
