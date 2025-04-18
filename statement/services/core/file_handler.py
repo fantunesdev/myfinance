@@ -1,5 +1,4 @@
 import csv
-import json
 import os
 from json.decoder import JSONDecodeError
 
@@ -28,7 +27,6 @@ class FileHandlerService:
         self._account = self._set_account(request)
         self._card = self._set_card(request)
         self._token = JWTUtils.generate_token(self._user)
-        self._debug = False
 
     def _set_account(self, request):
         """
@@ -87,6 +85,8 @@ class FileHandlerService:
                 'value': row['amount'],
             }
             transactions.append(transaction)
+        if not transactions:
+            raise ValueError('O arquivo está vazio.')
         return transactions
 
     def _predict(self, row):
@@ -108,18 +108,6 @@ class FileHandlerService:
             'category': row.get('category', None),
         }
 
-        try:
-            response = requests.post(url, headers=headers, json=payload, timeout=10)
-            if self._debug:
-                print(f'URL: {url}')
-                print(f'Payload: {payload}')
-                print(f'Status Code: {response.status_code}')
-                print(f'Response: {response.text}')
-            response.raise_for_status()
-            return response.json()
-        except requests.exceptions.RequestException as e:
-            print(f'Erro ao fazer a requisição para url {url}: {e}')
-            return None
-        except JSONDecodeError as e:
-            print(f'Erro ao decodificar a resposta JSON: {e}')
-            return None
+        response = requests.post(url, headers=headers, json=payload, timeout=10)
+        response.raise_for_status()
+        return response.json()

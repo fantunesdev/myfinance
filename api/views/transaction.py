@@ -1,4 +1,6 @@
+import logging
 import re
+import requests
 
 from rest_framework import status
 from rest_framework.decorators import action
@@ -18,6 +20,7 @@ from statement.utils.datetime import DateTimeUtils
 from statement.views.core.transaction import TransactionView as StatementView
 
 
+logger = logging.getLogger('myfinance')
 class TransactionView(BaseView):
     """
     Classe que gerencia a view das categorias na API.
@@ -223,10 +226,15 @@ class TransactionView(BaseView):
         if not file:
             return Response({'detail': 'Arquivo não encontrado.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        file_handler = FileHandlerService(request)
-        transactions = file_handler.read_file()
-
-        if not transactions:
-            return Response({'detail': 'Nenhum lançamento encontrado no arquivo.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        return Response(transactions, status=status.HTTP_200_OK)
+        try:
+            file_handler = FileHandlerService(request)
+            transactions = file_handler.read_file()
+            return Response(transactions, status=status.HTTP_200_OK)
+        except requests.exceptions.JSONDecodeError as e:
+            logger.warning('Erro na conversão para JSON: %s', e)
+            return Response({'errors': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except requests.exceptions.RequestException as e:
+            logger.warning('Erro na requisição ao transaction_classifier: %s', e)
+            return Response({'errors': str(e)}, status=status.HTTP_502_BAD_GATEWAY)
+        except Exception as e:  # pylint: disable=broad-except
+            return Response({'errors': str(e)}, status=status.HTTP_400_BAD_REQUEST)
