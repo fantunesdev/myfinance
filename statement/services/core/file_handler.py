@@ -96,6 +96,8 @@ class FileHandlerService:
         :param row: linha processada.
         :return: Subcategoria associada ao lançamento.
         """
+        # TODO - O .env está ficando com muita responsabilidade.
+        # Repensar o que está hoje no .env e deve ser transformado numa configuração.
         uri = os.getenv('TRANSACTION_CLASSIFIER_URL')
         port = os.getenv('TRANSACTION_CLASSIFIER_PORT')
         endpoint = f'predict/{self._user.id}'
