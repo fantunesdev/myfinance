@@ -34,6 +34,7 @@ urlpatterns = [
     path('relatorio_financeiro/', include('statement.urls.statement')),
     path('sonhos/', include('statement.urls.dream.dream')),
     path('usuarios/', include('login.urls')),
+    path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
 ]
 
 if settings.DEBUG:

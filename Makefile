@@ -23,3 +23,5 @@ update:
 	@poetry run python manage.py collectstatic
 kill_daphne:
 	@pkill -f "daphne" || true
+create_oauth_app:
+	@python manage.py create_oauth_app

@@ -29,7 +29,6 @@ def create_user(request):
                 photo=user_form.cleaned_data['photo'],
             )
             db_user = user_services.create_user(new_user)
-            create_categories(db_user)
             create_next_year_view(db_user)
             return redirect('login_user')
         else:
