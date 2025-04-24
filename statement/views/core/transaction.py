@@ -196,7 +196,9 @@ class TransactionView(BaseView):
         match self._context:
             case 'create':
                 if request.method == 'POST':
-                    return TransactionForm(request.POST, request.FILES or None)
+                    post_data = request.POST.dict()
+                    post_data['type'] = self._type
+                    return self.class_form(post_data, request.FILES or None)
                 if self._type == 'entrada':
                     return TransactionRevenueForm(request)
                 return TransactionExpenseForm(request)
