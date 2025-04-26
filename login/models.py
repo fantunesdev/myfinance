@@ -10,6 +10,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     """
     Classe do usuário
     """
+
     objects = UserManager()
     username = models.CharField(max_length=150, unique=True)
     name = models.CharField(max_length=150)

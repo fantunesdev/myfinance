@@ -12,7 +12,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from statement.utils.datetime import DateTimeUtils
 
-CLIENT_SECRET= os.getenv('CLIENT_SECRET')
+CLIENT_SECRET = os.getenv('CLIENT_SECRET')
+
 
 @dataclasses.dataclass
 class JWTUtils:

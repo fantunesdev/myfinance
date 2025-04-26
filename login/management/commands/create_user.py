@@ -1,13 +1,16 @@
-from django.core.management.base import BaseCommand
-from django.contrib.auth import get_user_model
 import getpass
 
+from django.contrib.auth import get_user_model
+from django.core.management.base import BaseCommand
+
 User = get_user_model()
+
 
 class Command(BaseCommand):
     """
     Cria um usuário interativamente.
     """
+
     help = 'Cria um usuário interativamente.'
 
     def handle(self, *args, **options):

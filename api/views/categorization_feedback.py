@@ -1,16 +1,17 @@
 import os
-import requests
 from datetime import datetime
-from rest_framework.decorators import action
+
+import requests
 from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from api.serializers.base_serializer import BaseSerializer
 from api.views.base_view import BaseView
 from statement.models import CategorizationFeedback
 from statement.services.core.categorization_feedback import CategorizationFeedbackService
-from statement.views.core.categorization_feedback import CategorizationFeedbackView as StatementView
 from statement.utils.jwt import JWTUtils
+from statement.views.core.categorization_feedback import CategorizationFeedbackView as StatementView
 
 
 class CategorizationFeedbackView(BaseView):
@@ -37,8 +38,7 @@ class CategorizationFeedbackView(BaseView):
 
             if not feedbacks.exists():
                 return Response(
-                    {"message": "Nenhum feedback disponível para treinamento."},
-                    status=status.HTTP_204_NO_CONTENT
+                    {'message': 'Nenhum feedback disponível para treinamento.'}, status=status.HTTP_204_NO_CONTENT
                 )
 
             # Envia os feedbacks para o microserviço
@@ -50,22 +50,20 @@ class CategorizationFeedbackView(BaseView):
 
             return Response(
                 {
-                    "message": "Feedbacks enviados e marcados como treinados com sucesso.",
-                    "microservice_response": microservice_response,
+                    'message': 'Feedbacks enviados e marcados como treinados com sucesso.',
+                    'microservice_response': microservice_response,
                 },
-                status=status.HTTP_200_OK
+                status=status.HTTP_200_OK,
             )
         except requests.exceptions.RequestException as e:
             # Trata erros de comunicação com o microserviço
             return Response(
-                {"error": f"Erro ao comunicar com o microserviço: {str(e)}"},
-                status=status.HTTP_502_BAD_GATEWAY
+                {'error': f'Erro ao comunicar com o microserviço: {str(e)}'}, status=status.HTTP_502_BAD_GATEWAY
             )
         except Exception as e:
             # Trata erros gerais
             return Response(
-                {"error": f"Ocorreu um erro inesperado: {str(e)}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                {'error': f'Ocorreu um erro inesperado: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
     def _train_from_feedback(self, feedbacks, user):

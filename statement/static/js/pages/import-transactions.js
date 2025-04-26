@@ -68,7 +68,7 @@ async function sendFile() {
 
 /**
  * Método principal que renderiza a tabela de transações importadas.
- * 
+ *
  * As colunas da tabela são: data, descrição, valor, categoria, subcategoria e conta/cartão.
  *
  * @param {array} transactions - Um array de transações importadas do arquivo da instituição financeira.
@@ -88,10 +88,9 @@ async function renderBox(transactions) {
     }
 }
 
-
 /**
  * Método acessório de renderBox que cria a lista das colunas com as configurações dos campos a serem renderizados.
- * 
+ *
  * @param {Object} transaction - Os lançamentos provenientes do arquivo de importação
  * @param {Object} categories - As categorias cadastradas no banco.
  * @param {Object} subcategories - As subcategorias cadastradas no banco.
@@ -116,12 +115,12 @@ function getTransactionFields(transaction, categories, subcategories) {
                 }
 
                 cell.appendChild(checkbox);
-            }
+            },
         },
         {
             id: `id_date_${transaction.id}`,
             type: 'date',
-            value: transaction.date
+            value: transaction.date,
         },
         {
             id: `id_category_${transaction.id}`,
@@ -132,37 +131,37 @@ function getTransactionFields(transaction, categories, subcategories) {
                 const subcategorySelect = cell.nextSibling.querySelector('select');
                 const subcategories = await services.getChildrenResource('categories', 'subcategories', select.value);
                 updateSelectOptions(subcategorySelect, subcategories);
-            }
+            },
         },
         {
             id: `id_subcategory_${transaction.id}`,
             type: 'select',
             options: subcategories,
-            selected: transaction.subcategory
+            selected: transaction.subcategory,
         },
         {
             id: `id_description_${transaction.id}`,
             type: 'text',
-            value: transaction.description
+            value: transaction.description,
         },
         {
             id: `id_value_${transaction.id}`,
             type: 'text',
             value: transaction.value,
-            disabled: true
-        }
+            disabled: true,
+        },
     ];
 }
 
 /**
  * Método acessório de renderBox que renderiza o array dos campos configurados transformando-os em
  * campos com valores editáveis.
- * 
+ *
  * @param {Object} row Elemento TR
  * @param {Array} fields Os campos a serem renderizados na linha.
  */
 function renderFields(row, fields) {
-    fields.forEach(field => {
+    fields.forEach((field) => {
         const cell = row.insertCell();
 
         if (field.render) {
@@ -188,7 +187,7 @@ function renderFields(row, fields) {
 
 /**
  * Método acessório de renderFields que cria inputs.
- * 
+ *
  * @param {Object} field - O campo a ser renderizado na coluna.
  * @returns Um elemento HTML de input.
  */
@@ -204,7 +203,7 @@ function createInput(field) {
 
 /**
  * Método acessório de renderFields que cria selects.
- * 
+ *
  * @param {Object} field - O campo a ser renderizado na coluna.
  * @returns Um elemento HTML de select.
  */
@@ -213,7 +212,7 @@ function createSelect(field) {
     select.id = field.id;
     select.classList.add('form-control');
 
-    field.options.forEach(opt => {
+    field.options.forEach((opt) => {
         const option = document.createElement('option');
         option.value = opt.id;
         option.textContent = opt.description;
@@ -226,20 +225,19 @@ function createSelect(field) {
 
 /**
  * Método acessório de getTransactionFields que cria as options para um select.
- * 
+ *
  * @param {Object} select - Um Objeto HTML do tipo select.
  * @param {Array} options - Uma lista de options para o select.
  */
 function updateSelectOptions(select, options) {
     select.innerHTML = '';
-    options.forEach(opt => {
+    options.forEach((opt) => {
         const option = document.createElement('option');
         option.value = opt.id;
         option.textContent = opt.description;
         select.appendChild(option);
     });
 }
-
 
 /**
  * Envia as transações selecionadas para o backend.
@@ -268,7 +266,7 @@ async function importTransactions(transactions) {
 
     // Envia para o backend uma requisição para treinar o Transaction Classifier a partir dos feedbacks
     services.retrainFromFeedback();
-    
+
     // Redireciona para o mês atual
     // window.location.href = '/relatorio_financeiro/mes_atual/';
 }
@@ -304,7 +302,7 @@ function getFormData(transactionId) {
 
 /**
  * Método acessório de importTransactions que compara os dados da predição com os dados corrigidos pelo usuário.
- * 
+ *
  * @param {Object} original - Um objeto de transaction oriundo da importação do arquivo.
  * @param {Object} updated - Um objeto de transaction oriundo do formulário.
  * @returns O feedback de categorização, se houver alteração.
@@ -328,19 +326,19 @@ function buildFeedback(original, updated) {
 
 /**
  * Método acessório de importTransactions que cria um novo recurso no backend via requisição POST.
- * 
+ *
  * @param {string} endpoint - Nome do endpoint da API (ex: 'transactions', 'categorization-feedback').
  * @param {object|string} data - Dados a serem enviados. Se for objeto, será convertido para JSON.
  * @param {boolean} [useAwait=false] - Se verdadeiro, aguarda a resposta antes de continuar.
- * @returns {Promise<object|null>} - Retorna a resposta em JSON, ou false em caso de erro. 
-*/
+ * @returns {Promise<object|null>} - Retorna a resposta em JSON, ou false em caso de erro.
+ */
 async function createNewResource(model, instance) {
     const importError = document.querySelector('#import-error');
 
     const response = await services.createResource(model, JSON.stringify(instance));
     try {
         importError.classList.add('toggled');
-        
+
         if (response instanceof Error) {
             throw new Error(response.message);
         }

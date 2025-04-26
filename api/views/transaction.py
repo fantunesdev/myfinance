@@ -1,7 +1,7 @@
 import logging
 import re
-import requests
 
+import requests
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -19,8 +19,9 @@ from statement.services.core.transaction import TransactionService
 from statement.utils.datetime import DateTimeUtils
 from statement.views.core.transaction import TransactionView as StatementView
 
-
 logger = logging.getLogger('myfinance')
+
+
 class TransactionView(BaseView):
     """
     Classe que gerencia a view das categorias na API.

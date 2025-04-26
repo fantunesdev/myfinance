@@ -162,13 +162,13 @@ export async function createResource(model, resource) {
 export async function importTransactions(formData) {
     const url = `/api/transactions/import/`;
     const requestOptions = {
-            method: 'POST',
-            headers: {
-                Accept: 'application/json',
-                'X-CSRFToken': getCsrfToken(),
-            },
-            body: formData,
-        };
+        method: 'POST',
+        headers: {
+            Accept: 'application/json',
+            'X-CSRFToken': getCsrfToken(),
+        },
+        body: formData,
+    };
 
     try {
         const response = await fetch(url, requestOptions);
@@ -185,12 +185,12 @@ export async function retrainFromFeedback() {
         headers: {
             'Content-Type': 'application/json',
             'X-CSRFToken': getCsrfToken(),
-        }
+        },
     };
 
     try {
         const response = await fetch(url, requestOptions);
-        return await response.json()
+        return await response.json();
     } catch (error) {
         return error;
     }

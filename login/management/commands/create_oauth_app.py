@@ -1,13 +1,15 @@
+from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from oauth2_provider.models import Application
-from django.contrib.auth import get_user_model
 
 User = get_user_model()
+
 
 class Command(BaseCommand):
     """
     'Cria um app OAuth2 para o Transaction Classifier'
     """
+
     help = 'Cria um app OAuth2 para o Transaction Classifier'
 
     def handle(self, *args, **options):

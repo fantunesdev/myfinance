@@ -3,6 +3,7 @@ from django.contrib.auth.base_user import BaseUserManager
 
 class UserManager(BaseUserManager):
     """Gerenciador para objetos User."""
+
     def create_user(self, username, email, name, password=None, **extra_fields):
         """
         Cria e salva um User com o nome de usuário, email e senha fornecidos.
@@ -16,9 +17,9 @@ class UserManager(BaseUserManager):
         :returns: O objeto User recém-criado.
         """
         if not username:
-            raise ValueError("O nome de usuário é obrigatório")
+            raise ValueError('O nome de usuário é obrigatório')
         if not email:
-            raise ValueError("O email é obrigatório")
+            raise ValueError('O email é obrigatório')
         email = self.normalize_email(email)
         user = self.model(username=username, email=email, name=name, **extra_fields)
         user.set_password(password)
@@ -41,8 +42,8 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault('is_active', True)
 
         if extra_fields.get('is_staff') is not True:
-            raise ValueError("Superusuário precisa ter is_staff=True.")
+            raise ValueError('Superusuário precisa ter is_staff=True.')
         if extra_fields.get('is_superuser') is not True:
-            raise ValueError("Superusuário precisa ter is_superuser=True.")
+            raise ValueError('Superusuário precisa ter is_superuser=True.')
 
         return self.create_user(username, email, name, password, **extra_fields)
