@@ -160,8 +160,8 @@ export async function createResource(model, resource) {
  * @returns - Um JSON com todos os lançamentos do arquivo de carga.
  */
 export async function importTransactions(formData) {
-    const url = `/api/transactions/import/`,
-        requestOptions = {
+    const url = `/api/transactions/import/`;
+    const requestOptions = {
             method: 'POST',
             headers: {
                 Accept: 'application/json',
@@ -173,6 +173,24 @@ export async function importTransactions(formData) {
     try {
         const response = await fetch(url, requestOptions);
         return await response.json();
+    } catch (error) {
+        return error;
+    }
+}
+
+export async function retrainFromFeedback() {
+    const url = `/api/categorization-feedback/retrain/`;
+    const requestOptions = {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken(),
+        }
+    };
+
+    try {
+        const response = await fetch(url, requestOptions);
+        return await response.json()
     } catch (error) {
         return error;
     }

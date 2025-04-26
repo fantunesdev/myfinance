@@ -26,7 +26,7 @@ class FileHandlerService:
         self._user = request.user
         self._account = self._set_account(request)
         self._card = self._set_card(request)
-        self._token = JWTUtils.generate_token(self._user)
+        self._token = JWTUtils.generate_access_token_for_user(self._user)
 
     def _set_account(self, request):
         """
@@ -100,7 +100,7 @@ class FileHandlerService:
         # Repensar o que está hoje no .env e deve ser transformado numa configuração.
         uri = os.getenv('TRANSACTION_CLASSIFIER_URL')
         port = os.getenv('TRANSACTION_CLASSIFIER_PORT')
-        endpoint = f'predict/{self._user.id}'
+        endpoint = 'predict'
 
         url = f'{uri}:{port}/{endpoint}'
 

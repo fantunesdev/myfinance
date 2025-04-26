@@ -67,7 +67,7 @@ async function sendFile() {
 }
 
 /**
- * Renderiza a tabela de transações importadas.
+ * Método principal que renderiza a tabela de transações importadas.
  * 
  * As colunas da tabela são: data, descrição, valor, categoria, subcategoria e conta/cartão.
  *
@@ -90,7 +90,7 @@ async function renderBox(transactions) {
 
 
 /**
- * Cria a lista das colunas com as configurações dos campos a serem renderizados.
+ * Método acessório de renderBox que cria a lista das colunas com as configurações dos campos a serem renderizados.
  * 
  * @param {Object} transaction - Os lançamentos provenientes do arquivo de importação
  * @param {Object} categories - As categorias cadastradas no banco.
@@ -155,7 +155,8 @@ function getTransactionFields(transaction, categories, subcategories) {
 }
 
 /**
- * Renderiza o array dos campos configurados transformando-os em campos com valores editáveis.
+ * Método acessório de renderBox que renderiza o array dos campos configurados transformando-os em
+ * campos com valores editáveis.
  * 
  * @param {Object} row Elemento TR
  * @param {Array} fields Os campos a serem renderizados na linha.
@@ -185,6 +186,12 @@ function renderFields(row, fields) {
     });
 }
 
+/**
+ * Método acessório de renderFields que cria inputs.
+ * 
+ * @param {Object} field - O campo a ser renderizado na coluna.
+ * @returns Um elemento HTML de input.
+ */
 function createInput(field) {
     const input = document.createElement('input');
     input.type = field.type || 'text';
@@ -195,6 +202,12 @@ function createInput(field) {
     return input;
 }
 
+/**
+ * Método acessório de renderFields que cria selects.
+ * 
+ * @param {Object} field - O campo a ser renderizado na coluna.
+ * @returns Um elemento HTML de select.
+ */
 function createSelect(field) {
     const select = document.createElement('select');
     select.id = field.id;
@@ -211,6 +224,12 @@ function createSelect(field) {
     return select;
 }
 
+/**
+ * Método acessório de getTransactionFields que cria as options para um select.
+ * 
+ * @param {Object} select - Um Objeto HTML do tipo select.
+ * @param {Array} options - Uma lista de options para o select.
+ */
 function updateSelectOptions(select, options) {
     select.innerHTML = '';
     options.forEach(opt => {
@@ -243,15 +262,19 @@ async function importTransactions(transactions) {
         if (!created) return;
 
         if (feedback) {
-            services.createResource('categorization-feedback', JSON.stringify(feedback));
+            await services.createResource('categorization-feedback', JSON.stringify(feedback));
         }
     }
 
-    window.location.href = '/relatorio_financeiro/mes_atual/';
+    // Envia para o backend uma requisição para treinar o Transaction Classifier a partir dos feedbacks
+    services.retrainFromFeedback();
+    
+    // Redireciona para o mês atual
+    // window.location.href = '/relatorio_financeiro/mes_atual/';
 }
 
 /**
- * Retorna os IDs das transações selecionadas pelo usuário.
+ * Método acessório de importTransactions que retorna os IDs das transações selecionadas pelo usuário.
  */
 function getSelectedTransactionIds() {
     const ids = [];
@@ -265,7 +288,7 @@ function getSelectedTransactionIds() {
 }
 
 /**
- * Coleta os dados do formulário da transação com base no ID.
+ * Método acessório de importTransactions que coleta os dados do formulário da transação com base no ID.
  */
 function getFormData(transactionId) {
     return {
@@ -280,8 +303,11 @@ function getFormData(transactionId) {
 }
 
 /**
- * Compara os dados da predição com os dados corrigidos pelo usuário.
- * Retorna o feedback de categorização, se houver alteração.
+ * Método acessório de importTransactions que compara os dados da predição com os dados corrigidos pelo usuário.
+ * 
+ * @param {Object} original - Um objeto de transaction oriundo da importação do arquivo.
+ * @param {Object} updated - Um objeto de transaction oriundo do formulário.
+ * @returns O feedback de categorização, se houver alteração.
  */
 function buildFeedback(original, updated) {
     const categoryChanged = original.category !== updated.category;
@@ -301,7 +327,7 @@ function buildFeedback(original, updated) {
 }
 
 /**
- * Cria um novo recurso no backend via requisição POST.
+ * Método acessório de importTransactions que cria um novo recurso no backend via requisição POST.
  * 
  * @param {string} endpoint - Nome do endpoint da API (ex: 'transactions', 'categorization-feedback').
  * @param {object|string} data - Dados a serem enviados. Se for objeto, será convertido para JSON.
