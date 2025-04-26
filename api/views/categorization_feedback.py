@@ -8,9 +8,9 @@ from rest_framework.response import Response
 
 from api.serializers.base_serializer import BaseSerializer
 from api.views.base_view import BaseView
+from clients.transaction_classifier import TransactionClassifierClient
 from statement.models import CategorizationFeedback
 from statement.services.core.categorization_feedback import CategorizationFeedbackService
-from statement.utils.jwt import JWTUtils
 from statement.views.core.categorization_feedback import CategorizationFeedbackView as StatementView
 
 
@@ -42,7 +42,8 @@ class CategorizationFeedbackView(BaseView):
                 )
 
             # Envia os feedbacks para o microserviço
-            microservice_response = self._train_from_feedback(feedbacks, request.user)
+            microservice_client = TransactionClassifierClient(request.user)
+            microservice_response = microservice_client.retrain_from_feedback(feedbacks)
 
             # Marca os feedbacks como treinados
             for feedback in feedbacks:
@@ -65,29 +66,3 @@ class CategorizationFeedbackView(BaseView):
             return Response(
                 {'error': f'Ocorreu um erro inesperado: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-
-    def _train_from_feedback(self, feedbacks, user):
-        """
-        Envia os feedbacks para o microserviço de treinamento.
-
-        TODO: separar esses métodos de conexão com o microserviço numa classe em statement/integrations/transaction_classifier.py
-
-        :param feedbacks: QuerySet de feedbacks.
-        :param user: Usuário autenticado.
-        """
-        uri = os.getenv('TRANSACTION_CLASSIFIER_URL')
-        port = os.getenv('TRANSACTION_CLASSIFIER_PORT')
-        endpoint = 'feedback'
-        token = JWTUtils.generate_access_token_for_user(user)
-
-        url = f'{uri}:{port}/{endpoint}'
-
-        headers = {
-            'Content-Type': 'application/json',
-            'Authorization': f'Bearer {token}',
-        }
-
-        serializer = self.serializer(feedbacks, many=True, model=CategorizationFeedback)
-        response = requests.post(url, headers=headers, json=serializer.data, timeout=10)
-        response.raise_for_status()
-        return response.json()

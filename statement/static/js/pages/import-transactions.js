@@ -268,7 +268,7 @@ async function importTransactions(transactions) {
     services.retrainFromFeedback();
 
     // Redireciona para o mês atual
-    // window.location.href = '/relatorio_financeiro/mes_atual/';
+    window.location.href = '/relatorio_financeiro/mes_atual/';
 }
 
 /**
