@@ -4,11 +4,14 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.shortcuts import redirect, render
 
-from .entities.user import User
-from .forms import user_forms
-from .forms.password_form import PasswordChangeCustomForm
-from .repository import *
-from .services import user_services
+from clients.transaction_classifier import TransactionClassifierClient
+from login.entities.user import User
+from login.forms import user_forms
+from login.forms.password_form import PasswordChangeCustomForm
+from login.repository import create_next_year_view
+from login.services import user_services
+from statement.utils.utils import DictToObject
+from statement.utils.datetime import DateTimeUtils
 
 # Create your views here.
 
@@ -92,4 +95,18 @@ def logout_user(request):
 
 @login_required
 def get_profile(request):
-    return render(request, 'user/get_profile.html')
+    """
+    Método que exibe as informações e configurações do usuário.
+
+    :request (django.http.HttpRequest): - Informações sobre o cabeçalho, método e outros dados da requisição.
+    """
+    microservice_client = TransactionClassifierClient(request.user)
+    status = microservice_client.status()
+    transaction_classifier = status['data']
+    
+    print(transaction_classifier.date)
+    print(type(transaction_classifier.date))
+    templatetags = {
+        'transaction_classifier': transaction_classifier,
+    }
+    return render(request, 'user/get_profile.html', templatetags)

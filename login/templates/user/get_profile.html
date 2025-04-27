@@ -73,8 +73,8 @@
                 <tbody>
                     <tr>
                         <td>Transaction Classifier</td>
-                        <td>Treinado</td>
-                        <td>27/06/2025</td>
+                        <td>{{ transaction_classifier.status }}</td>
+                        <td>{{ transaction_classifier.date | date:"d/m/Y" }}</td>
                         <td>
                             <button id="transaction-classifier-train-btn" class="btn-tiny btn-primary">
                                 Treinar

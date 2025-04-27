@@ -16,6 +16,20 @@ class TransactionClassifierView(ViewSet):
 
     permission_classes = [IsAuthenticated]
 
+    @action(detail=False, methods=['get'], url_path='status')
+    def status(self, request):
+        """
+        Obtém o status de treinamento do modelo do usuário.
+
+        :request (django.http.HttpRequest): - Informações sobre o cabeçalho, método e outros dados da requisição.
+        """
+        try:
+            microservice_client = TransactionClassifierClient(request.user)
+            response = microservice_client.status()
+            return Response({'message': response['message']}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
     @action(detail=False, methods=['post'], url_path='train')
     def train(self, request):
         """
