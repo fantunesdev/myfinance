@@ -23,6 +23,10 @@
         <title>{% block title %}  {% endblock %} | MyFinance</title>
     </head>
     <body>
+        {# INÍCIO COMPONENTES #}
+        {% include 'components/modal.html' %}
+        {# FIM COMPONENTES #}
+
         {% comment %} INÍCIO FORMULÁRIO DE PESQUISA {% endcomment %}
         {% comment %} Quando eu tiro essa div o header está quebrando - verificar depois {% endcomment %}
         <div class="box box-primary toggled" id="search-form">

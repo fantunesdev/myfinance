@@ -265,7 +265,7 @@ async function importTransactions(transactions) {
     }
 
     // Envia para o backend uma requisição para treinar o Transaction Classifier a partir dos feedbacks
-    services.retrainFromFeedback();
+    await services.sendRequisition('transaction-classifier/train', 'POST');
 
     // Redireciona para o mês atual
     window.location.href = '/relatorio_financeiro/mes_atual/';

@@ -780,7 +780,20 @@ td a:hover {
 .btn:hover {
     border: 1px solid #292929;
     background-color: #343434;
-    transition: all .45s linear;
+    transition: all .15s linear;
+}
+
+.btn-tiny {
+    font-family: Ubuntu;
+    font-size: 13px;
+    text-decoration: none;
+    padding: 5px 15px 5px 15px;
+    border-radius: 4px;
+    border: 1px solid #292929;
+    background-color: #262626;
+    color: azure;
+    box-shadow: none;
+    cursor: pointer;
 }
 
 .btn-primary {
@@ -790,8 +803,8 @@ td a:hover {
 
 .btn-primary:hover {
     border: 1px solid #5e0000;
-    background-color: darkred;
-    transition: all .45s linear;
+    background-color: #8b0000;
+    transition: all .15s linear;
 }
 
 .btn-danger {
@@ -801,12 +814,28 @@ td a:hover {
 
 .btn-danger:hover {
     border: 1px solid #5e0000;
-    background-color: darkred;
-    transition: all .45s linear;
+    background-color: #a50000;
+    transition: all .15s linear;
 }
 
 .icon-btn:hover {
     cursor: pointer;
+}
+
+/* Animação de rotação */
+@keyframes rotate {
+    100% {
+    transform: rotate(0deg);
+    }
+    0% {
+    transform: rotate(360deg);
+    }
+}
+
+/* Aplica a animação no ícone */
+.rotate-icon {
+    display: inline-block;
+    animation: rotate 2s linear infinite;
 }
 
 /* FIM BOTÕES */

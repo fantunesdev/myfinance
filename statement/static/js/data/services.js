@@ -178,14 +178,15 @@ export async function importTransactions(formData) {
     }
 }
 
-export async function retrainFromFeedback() {
-    const url = `/api/categorization-feedback/retrain/`;
+export async function sendRequisition(endpoint, method, body = false) {
+    const url = `/api/${endpoint}/`;
     const requestOptions = {
-        method: 'GET',
+        method: method,
         headers: {
             'Content-Type': 'application/json',
             'X-CSRFToken': getCsrfToken(),
         },
+        body: body,
     };
 
     try {

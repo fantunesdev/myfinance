@@ -12,6 +12,7 @@ from api.views.next_month_view_view import NextMonthView
 from api.views.portfolio.fixed_income_views import FixedIncomeProgressionList
 from api.views.subcategory import SubcategoryView
 from api.views.transaction import TransactionView
+from api.views.transaction_classifier import TransactionClassifierView
 
 router = DefaultRouter()
 router.register(r'subcategories', SubcategoryView, basename='subcategory')
@@ -21,6 +22,7 @@ router.register(r'accounts', AccountView, basename='account')
 router.register(r'banks', BankView, basename='banks')
 router.register(r'cards', CardView, basename='cards')
 router.register(r'transactions', TransactionView, basename='transactions')
+router.register(r'transaction-classifier', TransactionClassifierView, basename='transaction_classifier')
 
 urlpatterns = [
     path('', include(router.urls)),

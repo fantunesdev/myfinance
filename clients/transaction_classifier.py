@@ -1,11 +1,13 @@
-import os
 import json
-import requests
+import os
 from typing import Union
+
+import requests
 
 from api.serializers.base_serializer import BaseSerializer
 from statement.models import CategorizationFeedback
 from statement.utils.jwt import JWTUtils
+
 
 class TransactionClassifierClient:
     """

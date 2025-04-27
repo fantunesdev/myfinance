@@ -1,0 +1,23 @@
+{% load static %}
+{% load  i18n %}
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/components/modal.css' %}">
+{% endblock %}
+
+<div id="modal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span id="close-modal" class="close">&times;</span>
+        <h2 id="modal-title">Título Modal</h2>
+        <p id="modal-body">Mensagem do Modal</p>
+        <div id="modal-footer" class="modal-footer">
+            <div class="modal-btn-context">
+                <button id="confirm-modal" class="btn btn-danger">Confirmar</button>
+                <button id="cancel-modal" class="btn btn-primary">Cancelar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block script %}
+<script src="{% static 'js/components/modal.js' %}" type="module"></script>
+{% endblock %}

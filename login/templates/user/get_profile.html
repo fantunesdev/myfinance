@@ -3,7 +3,7 @@
 {% load  i18n %}
 
 {% block title %}
-    Login
+    Perfil
 {% endblock title %}
 
 {% block content %}
@@ -52,6 +52,52 @@
         <div class="box-footer">
             <a href="{% url 'update_profile' %}"><input type="button" value="Editar Perfil" class="btn"></a>
             <a href="{% url 'change_password' %}"><input type="button" value="Alterar Senha" class="btn"></a>
+        </div>
+    </div>
+
+
+    <div class="box box-primary">
+        <div class="box-header">
+            <h3 class="box-title">Inteligências Artificiais</h3>
+        </div>
+        <div class="box-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Modelo</th>
+                        <th>Status</th>
+                        <th>Último Feedback</th>
+                        <th style="width: 250px; white-space: nowrap;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Transaction Classifier</td>
+                        <td>Treinado</td>
+                        <td>27/06/2025</td>
+                        <td>
+                            <button id="transaction-classifier-train-btn" class="btn-tiny btn-primary">
+                                Treinar
+                            </button>
+                            <button id="transaction-classifier-feedback-btn" class="btn-tiny btn-primary">
+                                Dar Feedback
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Description Normalizer</td>
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <button id="description-normalizer-feedback-btn" class="btn-tiny btn-primary">
+                                Dar Feedback
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="box-footer">
         </div>
     </div>
 
