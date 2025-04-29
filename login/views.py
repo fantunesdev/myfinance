@@ -103,9 +103,6 @@ def get_profile(request):
     microservice_client = TransactionClassifierClient(request.user)
     status = microservice_client.status()
     transaction_classifier = status['data']
-    
-    print(transaction_classifier.date)
-    print(type(transaction_classifier.date))
     templatetags = {
         'transaction_classifier': transaction_classifier,
     }
