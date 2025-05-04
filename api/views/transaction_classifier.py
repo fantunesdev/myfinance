@@ -78,7 +78,7 @@ class TransactionClassifierView(ViewSet):
         except RequestException as e:
             # Trata erros de comunicação com o micro serviço
             return Response(
-                {'error': f'Erro ao comunicar com o microserviço: {str(e)}'}, status=status.HTTP_502_BAD_GATEWAY
+                {'error': f'Erro ao comunicar com o micro serviço: {str(e)}'}, status=status.HTTP_502_BAD_GATEWAY
             )
         except Exception as e:
             # Trata erros gerais

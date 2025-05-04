@@ -52,7 +52,7 @@ class TransactionClassifierClient:
         """
         Envia uma solicitação para o micro serviço treinar o modelo com base nos dados do usuário.
         """
-        return self._send_requisition('train', 'post')
+        return self._send_requisition('subcategories_predictor/train', 'post')
 
     def predict(self, description: str, category: str = ''):
         """
@@ -66,7 +66,7 @@ class TransactionClassifierClient:
             'description': description,
             'category': category,
         }
-        return self._send_requisition('predict', 'post', body)
+        return self._send_requisition('subcategories_predictor/predict', 'post', body)
 
     def predict_batch(self, transactions: list):
         """
@@ -76,7 +76,7 @@ class TransactionClassifierClient:
         :example: {'description': 'Alguma descrição' , 'category': ''}
         """
         transactions_json = json.dumps(transactions)
-        return self._send_requisition('predict-batch', 'post', transactions_json)
+        return self._send_requisition('subcategories_predictor/predict-batch', 'post', transactions_json)
 
     def retrain_from_feedback(self, feedbacks: list):
         """
@@ -85,7 +85,38 @@ class TransactionClassifierClient:
         :param feedbacks: Uma lista de feedbacks dados pelo usuário
         """
         serializer = BaseSerializer(feedbacks, many=True, model=CategorizationFeedback)
-        return self._send_requisition('feedback', 'post', serializer.data)
+        return self._send_requisition('subcategories_predictor/feedback', 'post', serializer.data)
+
+    def predict_description(self, description: str):
+        """
+        Envia uma solicitação de previsão para o micro serviço
+
+        :param description: Uma descrição de lançamento.
+        :returns
+        """
+        body = {
+            'description': description,
+        }
+        return self._send_requisition('description/predict', 'post', body)
+
+    def description_predict_batch(self, transactions: list):
+        """
+        Envia uma lista de previsões para o micro serviço.
+
+        :param transactions: Uma lista de lançamentos com dicionários.
+        :example: {'description': 'Alguma descrição'}
+        """
+        transactions_json = json.dumps(transactions)
+        return self._send_requisition('predict-batch', 'post', transactions_json)
+
+    def description_feedback(self, feedbacks: list):
+        """
+        Envia o feedback do usuário para o modelo ser retreinado
+
+        :param feedbacks: Uma lista de feedbacks dados pelo usuário
+        """
+        serializer = BaseSerializer(feedbacks, many=True, model=CategorizationFeedback)
+        return self._send_requisition('description/feedback', 'post', serializer.data)
 
     def _handle_status_data(self, response):
         """
@@ -94,6 +125,8 @@ class TransactionClassifierClient:
         :param response: dict - A resposta do micro serviço contendo as informações de status.
         :return: None - O método modifica a resposta diretamente, substituindo o valor da chave 'data'.
         """
-        data = DictToObject(response['data'])
-        data.date = DateTimeUtils.string_to_date(data.date)
-        response['data'] = data
+        for i, _ in enumerate(response['data']):
+            date = response['data'][i]['date']
+            if date:
+                response['data'][i]['date'] = DateTimeUtils.string_to_date(date)
+            response['data'][i] = DictToObject(response['data'][i])
