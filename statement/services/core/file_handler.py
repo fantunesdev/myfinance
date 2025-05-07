@@ -69,7 +69,6 @@ class FileHandlerService:
             # Obtém a predição da categoria e da subcategoria a partir do micro serviço
             microservice_client = TransactionClassifierClient(self._user)
             predicted = microservice_client.predict(row['title'], row.get('category', ''))
-            print(predicted)
 
             # Instancia a categoria predita para obter o tipo (entrada/saída)
             category = CategoryService.get_by_id(predicted['category_id'], user=self._user)

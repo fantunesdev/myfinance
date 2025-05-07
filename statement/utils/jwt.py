@@ -8,7 +8,9 @@ from datetime import timedelta
 
 from django.conf import settings
 from jose import jwt
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.tokens import RefreshToken, UntypedToken
+from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
 
 from login.models import User
 from statement.utils.datetime import DateTimeUtils
@@ -52,3 +54,17 @@ class JWTUtils:
             raise ValueError('User is not an User model.')
         refresh = RefreshToken.for_user(user)
         return str(refresh.access_token)
+
+    @staticmethod
+    def verify_simplejwt_token(token: str):
+        """
+        Verifica se um token JWT gerado pelo SimpleJWT é válido.
+
+        :param token: O token JWT como string.
+        :return: True se o token for válido, False caso contrário.
+        """
+        try:
+            UntypedToken(token)
+            return True
+        except Exception:
+            return False

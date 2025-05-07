@@ -13,6 +13,7 @@ from api.views.portfolio.fixed_income_views import FixedIncomeProgressionList
 from api.views.subcategory import SubcategoryView
 from api.views.transaction import TransactionView
 from api.views.transaction_classifier import TransactionClassifierView
+from api.views.validate_token import ValidateTokenView
 
 router = DefaultRouter()
 router.register(r'subcategories', SubcategoryView, basename='subcategory')
@@ -35,4 +36,5 @@ urlpatterns = [
     # Autenticação JWT
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('validate-token/', ValidateTokenView.as_view(), name='validate_token')
 ]
