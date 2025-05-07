@@ -9,19 +9,82 @@ class CategorizationFeedbackService(BaseService):
     user_field = 'user'
 
     @classmethod
-    def set_as_trained(cls, instance):
+    def set_subcategory_training_status(cls, instance):
         """
         Marca o feedback como já utilizado para treino.
 
         :param: instance - Uma instância do modelo CategorizationFeedback
         """
-        instance.is_used_for_training = True
+        instance.subcategory_training = True
         instance.save()
         return instance
 
     @classmethod
-    def get_untrained(cls):
+    def get_subcategory_untrained(cls, user):
         """
         Obtém as os feedbacks que ainda não foram usados para treino
         """
-        return cls.model.objects.filter(is_used_for_training=False)
+        return cls.model.objects.filter(user=user, subcategory_training=False)
+
+    @classmethod
+    def set_description_training_status(cls, instance):
+        """
+        Marca o feedback como já utilizado para treino.
+
+        :param: instance - Uma instância do modelo CategorizationFeedback
+        """
+        instance.description_training = True
+        instance.save()
+        return instance
+
+    @classmethod
+    def get_description_untrained(cls, user):
+        """
+        Obtém as os feedbacks que ainda não foram usados para treino de descrição
+        """
+        return cls.model.objects.filter(user=user, description_training=False)
+
+    @classmethod
+    def reset_feedback(cls, user):
+        """
+        Marca todos os feedbacks como não treinados
+        """
+        feedbacks = cls.get_all(user)
+
+        for feedback in feedbacks:
+            feedback.category_training = False
+            feedback.description_training = False
+            feedback.save()
+
+    @classmethod
+    def reset_subcategory_feedback(cls, user):
+        """
+        Marca todos os feedbacks como não treinados
+        """
+        print('passou aqui')
+        feedbacks = cls.get_all(user)
+
+        for feedback in feedbacks:
+            feedback.subcategory_training = False
+            feedback.save()
+
+    @classmethod
+    def reset_description_feedback(cls, user):
+        """
+        Marca todos os feedbacks como não treinados
+        """
+        feedbacks = cls.get_all(user)
+
+        for feedback in feedbacks:
+            feedback.description_training = False
+            feedback.save()
+
+    @classmethod
+    def delete_feedbacks(cls, user):
+        """
+        Apaga os feedbacks cadastrados do usuário.
+        """
+        feedbacks = cls.get_all(user)
+
+        for feedback in feedbacks:
+            feedback.delete()

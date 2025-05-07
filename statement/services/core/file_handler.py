@@ -1,6 +1,6 @@
 import csv
 
-from clients.transaction_classifier import TransactionClassifierClient
+from clients.transaction_classifier.transaction_classifier import TransactionClassifierClient
 from statement.services.core.account import AccountService
 from statement.services.core.card import CardService
 from statement.services.core.category import CategoryService
@@ -69,6 +69,7 @@ class FileHandlerService:
             # Obtém a predição da categoria e da subcategoria a partir do micro serviço
             microservice_client = TransactionClassifierClient(self._user)
             predicted = microservice_client.predict(row['title'], row.get('category', ''))
+            print(predicted)
 
             # Instancia a categoria predita para obter o tipo (entrada/saída)
             category = CategoryService.get_by_id(predicted['category_id'], user=self._user)
@@ -80,7 +81,7 @@ class FileHandlerService:
                 'card': self._card.id if self._card else None,
                 'category': predicted['category_id'],
                 'subcategory': predicted['subcategory_id'],
-                'description': row['title'],
+                'description': predicted['description'],
                 'value': row['amount'],
             }
             transactions.append(transaction)

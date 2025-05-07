@@ -10,6 +10,7 @@ from django.conf import settings
 from jose import jwt
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from login.models import User
 from statement.utils.datetime import DateTimeUtils
 
 CLIENT_SECRET = os.getenv('CLIENT_SECRET')
@@ -47,5 +48,7 @@ class JWTUtils:
         :param user (:obj:`User`): O objeto do usuário autenticado proveniente de `requests.user`.
         :returns: str - O token de acesso JWT como uma string.
         """
+        if not isinstance(user, User):
+            raise ValueError('User is not an User model.')
         refresh = RefreshToken.for_user(user)
         return str(refresh.access_token)

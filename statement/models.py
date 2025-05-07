@@ -71,7 +71,8 @@ class CategorizationFeedback(models.Model):
     corrected_description = models.CharField(max_length=255)
     corrected_category_id = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name='+')
     corrected_subcategory_id = models.ForeignKey(Subcategory, on_delete=models.SET_NULL, null=True, related_name='+')
-    is_used_for_training = models.BooleanField(default=False)
+    subcategory_training = models.BooleanField(default=False)
+    description_training = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
 

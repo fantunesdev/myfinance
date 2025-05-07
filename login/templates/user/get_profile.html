@@ -78,21 +78,20 @@
                             <td>{{ predictor.status }}</td>
                             <td>{{ predictor.date|default_if_none:'' }}</td>
                             <td>
-                                {% if predictor.actions.train %}
-                                    <button id="{{ predictor.name }}-train-btn" class="btn-tiny btn-primary">
-                                        Treinar
-                                    </button>
-                                {% endif %}
-                                {% if predictor.actions.feedback %}
-                                    <button id="{{ predictor.name }}-feedback-btn" class="btn-tiny btn-primary">
-                                        Dar Feedback
-                                    </button>
-                                {% endif %}
+                                <button id="{{ predictor.name }}-train-btn" class="btn-tiny btn-primary">
+                                    Treinar
+                                </button>
+                                <button id="{{ predictor.name }}-feedback-btn" class="btn-tiny btn-primary">
+                                    Dar Feedback
+                                </button>
                             </td>
                         </tr>
                     {% endfor %}
                 </tbody>
             </table>
+            <button id="delete-feedbacks-btn" class="btn-tiny btn-primary">
+                Apagar Feedbacks
+            </button>
         </div>
         <div class="box-footer">
         </div>

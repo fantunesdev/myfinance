@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.shortcuts import redirect, render
 
-from clients.transaction_classifier import TransactionClassifierClient
+from clients.transaction_classifier.transaction_classifier import TransactionClassifierClient
 from login.entities.user import User
 from login.forms import user_forms
 from login.forms.password_form import PasswordChangeCustomForm
