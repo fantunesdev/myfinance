@@ -100,11 +100,11 @@ def get_profile(request):
 
     :request (django.http.HttpRequest): - Informações sobre o cabeçalho, método e outros dados da requisição.
     """
-    # microservice_client = TransactionClassifierClient(request.user)
-    # status = microservice_client.status()
-    # transaction_classifier = status['data']
+    microservice_client = TransactionClassifierClient(request.user)
+    status = microservice_client.status()
+    transaction_classifier = status['data']
     templatetags = {
-        # 'transaction_classifier': transaction_classifier,
+        'transaction_classifier': transaction_classifier,
         'accounts': AccountService.get_all(request.user),
         'cards': CardService.get_all(request.user),
     }
