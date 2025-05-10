@@ -10,8 +10,8 @@ from login.forms import user_forms
 from login.forms.password_form import PasswordChangeCustomForm
 from login.repository import create_next_year_view
 from login.services import user_services
-from statement.utils.utils import DictToObject
-from statement.utils.datetime import DateTimeUtils
+from statement.services.core.account import AccountService
+from statement.services.core.card import CardService
 
 # Create your views here.
 
@@ -100,10 +100,12 @@ def get_profile(request):
 
     :request (django.http.HttpRequest): - Informações sobre o cabeçalho, método e outros dados da requisição.
     """
-    microservice_client = TransactionClassifierClient(request.user)
-    status = microservice_client.status()
-    transaction_classifier = status['data']
+    # microservice_client = TransactionClassifierClient(request.user)
+    # status = microservice_client.status()
+    # transaction_classifier = status['data']
     templatetags = {
-        'transaction_classifier': transaction_classifier,
+        # 'transaction_classifier': transaction_classifier,
+        'accounts': AccountService.get_all(request.user),
+        'cards': CardService.get_all(request.user),
     }
     return render(request, 'user/get_profile.html', templatetags)
