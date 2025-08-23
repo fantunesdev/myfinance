@@ -64,11 +64,9 @@ class InstallmentService(BaseService):
         """
         start = transaction.paid + 1
         stop = transaction.installments_number + 1
-        months = 0
         for i in range(start, stop):
             transaction.paid = i
-            months += 1
-            transaction.payment_date = DateTimeUtils.add_months(transaction.payment_date, months)
+            transaction.payment_date = DateTimeUtils.add_months(transaction.payment_date, 1)
             transaction_form = cls.instance_to_form(transaction, TransactionForm)
             TransactionService.create(transaction_form, transaction.user)
 
