@@ -8,15 +8,18 @@ from clients.transaction_classifier.transaction_classifier import TransactionCla
 from login.entities.user import User
 from login.forms import user_forms
 from login.forms.password_form import PasswordChangeCustomForm
-from login.repository import create_next_year_view
+from login.models import Profile
 from login.services import user_services
-from statement.services.core.account import AccountService
-from statement.services.core.card import CardService
+from login.services.profile import ProfileService
 
 # Create your views here.
 
 
 def create_user(request):
+    """
+    Método que cria um novo usuário.
+    :request (django.http.HttpRequest): - Informações sobre o cabeçalho, método e outros dados da requisição.
+    """
     if request.method == 'POST':
         user_form = user_forms.UserForm(request.POST, request.FILES)
         if user_form.is_valid():
@@ -32,7 +35,7 @@ def create_user(request):
                 photo=user_form.cleaned_data['photo'],
             )
             db_user = user_services.create_user(new_user)
-            create_next_year_view(db_user)
+            Profile.objects.create(user=db_user)
             return redirect('login_user')
         else:
             print(user_form.errors)
@@ -42,6 +45,10 @@ def create_user(request):
 
 
 def login_user(request):
+    """
+    Método que faz o login do usuário.
+    :request (django.http.HttpRequest): - Informações sobre o cabeçalho, método e outros dados da requisição.
+    """
     if request.method == 'POST':
         login_form = user_forms.LoginForm(data=request.POST)
         if login_form.is_valid():
@@ -60,6 +67,10 @@ def login_user(request):
 
 @login_required
 def change_password(request):
+    """
+    Método que altera a senha do usuário.
+    :request (django.http.HttpRequest): - Informações sobre o cabeçalho, método e outros dados da requisição.
+    """
     if request.method == 'POST':
         password_form = PasswordChangeCustomForm(request.user, request.POST)
         if password_form.is_valid():
@@ -73,6 +84,10 @@ def change_password(request):
 
 @login_required
 def update_profile(request):
+    """
+    Método que atualiza o perfil do usuário.
+    :request (django.http.HttpRequest): - Informações sobre o cabeçalho, método e outros dados da requisição.
+    """
     if request.method == 'POST':
         profile_form = user_forms.ProfileForm(request.POST, request.FILES, instance=request.user)
         if profile_form.is_valid():
@@ -89,6 +104,10 @@ def update_profile(request):
 
 @login_required
 def logout_user(request):
+    """
+    Método que faz o logout do usuário.
+    :request (django.http.HttpRequest): - Informações sobre o cabeçalho, método e outros dados da requisição.
+    """
     logout(request)
     return redirect('login_user')
 
@@ -103,9 +122,29 @@ def get_profile(request):
     microservice_client = TransactionClassifierClient(request.user)
     status = microservice_client.status()
     transaction_classifier = status['data']
+    profile = ProfileService(request.user)
     templatetags = {
         'transaction_classifier': transaction_classifier,
-        'accounts': AccountService.get_all(request.user),
-        'cards': CardService.get_all(request.user),
+        'profile': profile,
     }
     return render(request, 'user/get_profile.html', templatetags)
+
+
+@login_required
+def update_configs(request):
+    """
+    Método que atualiza o perfil do usuário.
+    :request (django.http.HttpRequest): - Informações sobre o cabeçalho, método e outros dados da requisição.
+    """
+    if request.method == 'POST':
+        profile_form = user_forms.ProfileForm(request.POST, request.FILES, instance=request.user)
+        if profile_form.is_valid():
+            profile_form.photo = profile_form.cleaned_data['photo']
+            print(profile_form.photo)
+            profile_form.save()
+            return redirect('get_profile')
+        else:
+            print(profile_form.errors)
+    else:
+        profile_form = user_forms.ProfileForm(instance=request.user)
+    return render(request, 'user/profile_form.html', {'profile_form': profile_form})

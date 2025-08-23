@@ -1,7 +1,7 @@
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db import models
 
-from login.manager import *
+from login.manager import UserManager
 
 # Create your models here.
 
@@ -27,3 +27,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         """Retorna o username do usuário"""
         return self.username
+
+class Profile(models.Model):
+    """
+    Classe do perfil do usuário
+    """
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    use_next_month = models.BooleanField(default=False)
+    next_month_day = models.PositiveBigIntegerField(default=10)

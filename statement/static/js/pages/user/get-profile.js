@@ -52,6 +52,16 @@ const infos = [
         route: 'transaction-classifier/delete',
         method: 'POST'
     },
+    {
+        id: 'next-month-update-btn',
+        label: 'Editar',
+        title: 'Editar configuração de ver o próximo mês',
+        message: 'Decidi que fica mais organizado dividir as configurações em sessões. O Next Month é a primeira, mas futuramente poderão' +
+                 ' existir outras. Quando for migrar a implementação do Next Mont pra cá, criar um novo modal de formulário para as configurações.' +
+                 'e enviar por PATCH para a API. Vai precisar construir as rotas na API.',
+        route: '',
+        method: 'PATCH'
+    },
 ]
 
 infos.forEach((info) => {
@@ -86,3 +96,4 @@ function modalHandler(info) {
         });
     });
 }
+
