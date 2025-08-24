@@ -81,6 +81,7 @@ class FileHandlerService:
                 'category': predicted['category_id'],
                 'subcategory': predicted['subcategory_id'],
                 'description': predicted['description'],
+                'original_description': row['title'],
                 'value': row['amount'],
             }
             transactions.append(transaction)

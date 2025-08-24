@@ -143,6 +143,7 @@ function getTransactionFields(transaction, categories, subcategories) {
             id: `id_description_${transaction.id}`,
             type: 'text',
             value: transaction.description,
+            title: `Original: ${transaction.original_description}`,
         },
         {
             id: `id_value_${transaction.id}`,
@@ -161,6 +162,7 @@ function getTransactionFields(transaction, categories, subcategories) {
  * @param {Array} fields Os campos a serem renderizados na linha.
  */
 function renderFields(row, fields) {
+
     fields.forEach((field) => {
         const cell = row.insertCell();
 
@@ -195,6 +197,9 @@ function createInput(field) {
     const input = document.createElement('input');
     input.type = field.type || 'text';
     input.id = field.id;
+    if (field.title) {
+        input.title = field.title;
+    }
     input.value = field.value || '';
     input.classList.add('form-control');
     if (field.disabled) input.disabled = true;
