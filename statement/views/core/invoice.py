@@ -1,5 +1,6 @@
 from statement.services.core.card import CardService
 from statement.views.core.transaction import TransactionView
+from statement.utils.datetime import DateTimeUtils
 
 
 class InvoiceView(TransactionView):
@@ -48,5 +49,6 @@ class InvoiceView(TransactionView):
             'instances': instances,
             **self._set_dashboard_templatetags(instances, year, month),
             **self.set_navigation_templatetags(year, month),
+            'year_month': DateTimeUtils.date(year, month, 1),
             'instance': self._instance,
         }
