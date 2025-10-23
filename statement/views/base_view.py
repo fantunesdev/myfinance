@@ -2,6 +2,7 @@ import re
 from datetime import date
 
 from django.contrib.auth.decorators import login_required
+from django.forms.widgets import HiddenInput, CheckboxInput, MultipleHiddenInput
 from django.shortcuts import redirect, render
 from django.utils.decorators import method_decorator
 
@@ -107,13 +108,16 @@ class BaseView:
     def update(self, request, id):
         """
         Atualiza uma instância existente do modelo.
+        Garante que campos não renderizados no formulário mantenham seus valores originais.
         """
         self._context = 'update'
         instance = self.service.get_by_id(id)
         form = self._set_form(request, instance)
+        original_instance = type(instance).objects.get(pk=instance.pk)
         if form.is_valid():
-            self._custom_actions(request=request, form=form, instance=instance)
-            self.service.update(form, instance)
+            self._preserve_unrendered_fields_after_validation(form, original_instance)
+            self._custom_actions(request=request, form=form, instance=form.instance)
+            self.service.update(form, form.instance)
             return redirect(self.redirect_url)
         additional_context = self._add_context_on_templatetags(request, instance)
         specific_content = {
@@ -231,6 +235,20 @@ class BaseView:
                 return self.class_form(request.POST or None, request.FILES or None, instance=instance)
             case _:
                 raise ValueError('Sem contexto definido.')
+    
+    def _preserve_unrendered_fields_after_validation(self, form, original_instance):
+        """
+        Restaura valores originais de campos do model que não vieram no POST,
+        porque o ModelForm sobrescreve esses campos como None ao validar.
+        """
+        for field_name, field in form.fields.items():
+            widget = field.widget
+            # Campos que podem ser nulos intencionalmente (hidden, checkbox, etc.) são ignorados
+            if isinstance(widget, (HiddenInput, CheckboxInput, MultipleHiddenInput)):
+                continue
+            # Se o campo estava ausente no POST, restaura o valor original
+            if field_name not in form.data or form.data.get(field_name) in [None, '']:
+                setattr(form.instance, field_name, getattr(original_instance, field_name))
 
     def _custom_actions(self, request, form, instance):
         """

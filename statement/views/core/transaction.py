@@ -203,7 +203,10 @@ class TransactionView(BaseView):
                     return TransactionRevenueForm(request)
                 return TransactionExpenseForm(request)
             case 'update':
-                return self.class_form(request.POST or None, request.FILES or None, instance=instance)
+                if request.method == 'POST':
+                    return self.class_form(request.POST, request.FILES, instance=instance)
+                else:
+                    return self.class_form(instance=instance)
             case _:
                 raise ValueError('Sem contexto definido.')
 
@@ -222,9 +225,7 @@ class TransactionView(BaseView):
                     user = self._get_user(request)
                     InstallmentService.create(form=form, user=user, transaction=instance)
             case 'update':
-                if instance.installments_number > 0:
-                    user = self._get_user(request)
-                    InstallmentService.create(form=form, user=user, transaction=instance)
+                pass
 
     def set_navigation_templatetags(self, year, month):
         """
