@@ -1,3 +1,7 @@
+
+from django.utils.timezone import datetime
+from django.db.models import Sum
+
 from statement.models import FixedIncome
 from statement.services.base_service import BaseService
 
@@ -67,8 +71,8 @@ class FixedIncomeService(BaseService):
         return (
             FixedIncome.objects.filter(
                 user=user,
-                investment_date__lte=current_date,  # less than or equal
-                maturity_date__gt=current_date,  # greater than
+                investment_date__lte=current_date,
+                maturity_date__gt=current_date,
             ).aggregate(total=Sum('principal'))['total']
             or 0
         )

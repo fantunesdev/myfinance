@@ -27,3 +27,17 @@ class FixedIncomeView(BaseView):
                 'detail': False,
             }
         )
+        self.template_is_global.update(
+            {
+                'get_all': False,
+            }
+        )
+
+    def _add_context_on_templatetags(self, request, instance):
+        """
+        Permite que subclasses adicionem dados extras ao contexto.
+        """
+
+        return {
+            'total': sum(map(lambda x: x.principal, instance)),
+        }

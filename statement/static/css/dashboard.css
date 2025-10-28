@@ -4,8 +4,8 @@
     grid-template-rows: auto auto auto;
     grid-template-areas: 
         "expenses revenue-expenses revenue"
-        "expenses revenue-expenses-number cash"
-        "expenses fixed card";
+        "expenses revenue-expenses-number fixed"
+        "expenses cash card";
 }
 
 .expenses,
@@ -47,6 +47,7 @@
 
 .fixed {
     grid-area: fixed;
+    text-align: center;
 }
 
 .dashboard a {

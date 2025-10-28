@@ -30,7 +30,7 @@ urlpatterns = [
     path('api/', include('api.urls')),
     path('login/', login_user, name='login_user'),
     path('logout/', logout_user, name='logout_user'),
-    path('carteira/', include('statement.urls.portfolio.portfolio_urls')),
+    path('carteira/', include('statement.urls.portfolio.portfolio')),
     path('relatorio_financeiro/', include('statement.urls.statement')),
     path('sonhos/', include('statement.urls.dream.dream')),
     path('usuarios/', include('login.urls')),

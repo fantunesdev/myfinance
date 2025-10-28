@@ -10,7 +10,7 @@ class PortfolioView(BaseView):
     View responsável pela exibição da carteira
     """
 
-    @login_required
+    @method_decorator(login_required)
     def get_portfolio(self, request):
         """
         Obtém dados gerais do patrimônio

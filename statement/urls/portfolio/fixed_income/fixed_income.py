@@ -10,5 +10,5 @@ urlpatterns = [
     path('detalhar/<int:id>/', fixed_income_view.detail, name='detail_fixed_income'),
     path('editar/<int:id>/', fixed_income_view.update, name='update_fixed_income'),
     path('remover/<int:id>/', fixed_income_view.delete, name='delete_fixed_income'),
-    path('instrumento/', include('statement.urls.portfolio.fixed_income.fixed_income_security_urls')),
+    path('instrumento/', include('statement.urls.portfolio.fixed_income.fixed_income_security')),
 ]

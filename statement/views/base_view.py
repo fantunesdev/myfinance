@@ -81,9 +81,11 @@ class BaseView:
         self._context = 'get_all'
         user = self._get_user(request)
         instances = self.service.get_all(user)
+        additional_context = self._add_context_on_templatetags(request, instances)
         specific_content = {
             'instances': instances,
             'fields': list(map(lambda item: item[0], self.class_form().fields.items())),
+            **additional_context,
         }
         template = self._set_template_by_global_status('get_all')
         return self._render(request, None, template, specific_content)
