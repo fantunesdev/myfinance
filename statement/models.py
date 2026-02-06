@@ -548,3 +548,18 @@ class AssetTransaction(models.Model):
         """Ordena as transações pela data."""
 
         ordering = ['date']
+    
+class Notification(models.Model):
+    """
+    Representa uma notificação.
+
+    Atributos:
+        app (CharField): Aplicação relacionada à notificação.
+        title (CharField): Título da notificação.
+        message (TextField): Mensagem da notificação.
+        created_at (DateTimeField): Data e hora de criação da notificação.
+    """
+    app = models.CharField(max_length=50)
+    title = models.CharField(max_length=255)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
