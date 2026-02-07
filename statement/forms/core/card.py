@@ -1,7 +1,8 @@
 from django import forms
+from django.forms import inlineformset_factory
 
 from statement.forms.base_form import BaseForm
-from statement.models import Card
+from statement.models import Card, CardNumber
 
 
 class CardForm(BaseForm):
@@ -27,3 +28,22 @@ class CardForm(BaseForm):
             'closing_day': forms.NumberInput(),
             'file_handler_conf': forms.Textarea(attrs={'class': 'form-control textarea'}),
         }
+
+
+class CardNumberForm(forms.ModelForm):
+    class Meta:
+        model = CardNumber
+        fields = ['number']
+        widgets = {
+            'number': forms.TextInput(attrs={'placeholder': 'Número do cartão'}),
+        }
+
+
+# Formset para gerenciar múltiplos números de cartão
+CardNumberFormSet = inlineformset_factory(
+    Card,
+    CardNumber,
+    form=CardNumberForm,
+    extra=1,
+    can_delete=True
+)

@@ -124,6 +124,7 @@ class TransactionView(BaseView):
         """
         form = UploadFileForm(request.user)
         cards = CardService.get_all(request.user)
+        print(cards)
         bank_names = {card.account.bank.description for card in cards}
         notifications = NotificationService.get_by_filter(
             is_used=False,

@@ -18,3 +18,21 @@ class CardService(BaseService):
             month = date.month + 1
             return date.replace(day=card.expiration_day, month=month)
         return date.replace(day=card.expiration_day)
+
+    @staticmethod
+    def is_notification_owner(card, notification):
+        """
+        Verifica se uma notificação pertence a um cartão específico
+        
+        :param card: O cartão a ser verificado.
+        :param notification: A notificação a ser verificada.
+        """
+
+    @staticmethod
+    def are_notifications_owner(cards, notifications):
+        """
+        Verifica a quais cartões pertencem as notificações.
+
+        :param cards: Uma lista de cartões a serem verificados.
+        :param notifications: uma lista de notificações a serem verificadas.
+        """

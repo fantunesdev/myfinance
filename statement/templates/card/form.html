@@ -1,0 +1,62 @@
+{% extends 'base/form.html' %}
+{% load static %}
+
+{% block child_model %}
+    <div class="box box-primary mt-20">
+        <div class="box-header">
+            <h3 class="box-title">Números do Cartão</h3>
+        </div>
+        <div class="box-body">
+            {{ formset.management_form }}
+            {% if formset.non_form_errors %}
+                <div class="alert alert-danger">
+                    {% for error in formset.non_form_errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <button type="button" class="btn btn-primary mb-20" id="add-card-number">
+                + Adicionar número
+            </button>
+
+            <!-- Template vazio para novos formulários -->
+            <template data-empty-form-input>
+                {{ formset.empty_form.number }}
+            </template>
+            <template data-empty-form-id>
+                {{ formset.empty_form.id }}
+            </template>
+            <template data-empty-form-delete>
+                {{ formset.empty_form.DELETE }}
+            </template>
+
+            <div id="card-numbers-container">
+                {% for card_number_form in formset %}
+                    {% if forloop.counter != formset|length or card_number_form.number.value %}
+                        <div class="card-number-form mb-20" data-form-index="{{ forloop.counter0 }}">
+                            {% if card_number_form.number.errors %}
+                                <div class="alert alert-danger">
+                                    {{ card_number_form.number.errors }}
+                                </div>
+                            {% endif %}
+                            <div class="form-group-inline">
+                                <label for="{{ card_number_form.number.id_for_label }}">{{ card_number_form.number.label }}</label>
+                                <div class="input-with-button">
+                                    {{ card_number_form.number }}
+                                    <button type="button" class="btn-remove-card-number" data-form-id="{{ card_number_form.id.value|default:'' }}">Remover</button>
+                                </div>
+                            </div>
+                            {{ card_number_form.id }}
+                            {{ card_number_form.DELETE }}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <link rel="stylesheet" href="{% static 'css/card-form.css' %}">
+    <script src="{% static 'js/pages/card-form.js' %}"></script>
+{% endblock %}
+
