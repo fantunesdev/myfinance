@@ -17,7 +17,6 @@ class CardForm(BaseForm):
             'expiration_day',
             'closing_day',
             'home_screen',
-            'file_handler_conf',
         ]
         widgets = {
             'flag': forms.Select(),
@@ -26,7 +25,6 @@ class CardForm(BaseForm):
             'account': forms.Select(),
             'expiration_day': forms.NumberInput(),
             'closing_day': forms.NumberInput(),
-            'file_handler_conf': forms.Textarea(attrs={'class': 'form-control textarea'}),
         }
 
 

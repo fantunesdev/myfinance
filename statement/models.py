@@ -129,15 +129,10 @@ class Account(models.Model):
     bank = models.ForeignKey(Bank, on_delete=models.PROTECT)
     branch = models.CharField(max_length=10, blank=True, null=True)
     number = models.CharField(max_length=20, blank=True, null=True)
-    balance = models.FloatField(
-        default=0,
-    )
+    balance = models.FloatField(default=0,)
     limits = models.FloatField(default=0)
     type = models.ForeignKey(AccountType, on_delete=models.PROTECT)
-    home_screen = models.BooleanField(
-        default=False,
-    )
-    file_handler_conf = models.TextField(blank=True, null=True)
+    home_screen = models.BooleanField(default=False,)
     user = models.ForeignKey(User, on_delete=models.PROTECT)
 
     def __str__(self):
@@ -190,7 +185,6 @@ class Card(models.Model):
     expiration_day = models.IntegerField(blank=False, null=False)
     closing_day = models.IntegerField(blank=False, null=False)
     home_screen = models.BooleanField(default=False)
-    file_handler_conf = models.TextField(blank=True, null=True)
     user = models.ForeignKey(User, on_delete=models.PROTECT)
 
     @property
