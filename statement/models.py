@@ -193,9 +193,30 @@ class Card(models.Model):
     file_handler_conf = models.TextField(blank=True, null=True)
     user = models.ForeignKey(User, on_delete=models.PROTECT)
 
+    @property
+    def all_card_numbers(self):
+        """ Retorna todos os números de cartão associados a este cartão."""
+        return self.all_card_numbers.all()
+
     def __str__(self):
         """Retorna a descrição do cartão de crédito."""
         return self.description
+
+
+class CardNumber(models.Model):
+    """
+    Classe que representa um número de cartão de crédito.
+    
+    Atributos:
+        number (CharField): Número do cartão de crédito.
+    """
+
+    card = models.ForeignKey(Card, on_delete=models.CASCADE, related_name='card_numbers')
+    number = models.CharField(max_length=20)
+
+    def __str__(self):
+        """Retorna o número do cartão de crédito."""
+        return self.number
 
 
 class Currency(models.Model):
@@ -557,9 +578,15 @@ class Notification(models.Model):
         app (CharField): Aplicação relacionada à notificação.
         title (CharField): Título da notificação.
         message (TextField): Mensagem da notificação.
+        is_used (BooleanField): Indica se a notificação já foi utilizada.
         created_at (DateTimeField): Data e hora de criação da notificação.
     """
     app = models.CharField(max_length=50)
     title = models.CharField(max_length=255)
     message = models.TextField()
+    is_used = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        """Retorna a descrição da notificação."""
+        return f'{self.app} - {self.title} - {self.message}'

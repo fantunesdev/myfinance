@@ -8,8 +8,10 @@ from django.utils.timezone import now
 from statement.forms.core.transaction import TransactionExpenseForm, TransactionForm, TransactionRevenueForm
 from statement.forms.general_forms import NavigationForm, UploadFileForm
 from statement.models import Transaction
+from statement.services.core.card import CardService
 from statement.services.core.fixed_expenses import FixedExpensesService
 from statement.services.core.installment import InstallmentService
+from statement.services.core.notification import NotificationService
 from statement.services.core.transaction import TransactionService
 from statement.utils.datetime import DateTimeUtils
 from statement.views.base_view import BaseView
@@ -103,8 +105,34 @@ class TransactionView(BaseView):
     def import_transactions(self, request):
         """
         Página que faz o upload para o carregamento de lançamentos
+
+        TODO
+        - Classe CARD
+            - Mexer no CRUD pra comportar os números do cartão.
+            - Mexer no formulário adicionando de número de cartão com JavaScript para adicionar mais de um número.
+        - Fazer a lógica para filtrar as notificações DEPOIS da query. Porque alguns cartões só tem um número ou 
+            então, não há interesse algum de dividir as faturas por número de cartão. Nesse caso não vejo 
+            necessidade de ter que cadastrar um número de cartão.
+        - Pensar se não é melhor mover esta lógica para o FileHandler, pois ele vai precisar lidar com os JSON das
+            notificações geradas pelo Tasker.
+        - Pensar se não é melhor usar o que já está desenvolvido em JavaScript pra listar os lançamentos das notificações.
+        - Criar uma rotina no Tasker pra enviar os arquivos para o MyFinance.
+            - Usar o MESSAGE e o DATE da notificação pra garantir que não sejam duplicadas.
+        - Depois de importar marcar a notificação como usada.
+        - Pensar se é necessário criar uma tela de gerenciamento (CRUD) de notificações.
+            - Filtro por período (data)
         """
         form = UploadFileForm(request.user)
+        cards = CardService.get_all(request.user)
+        bank_names = {card.account.bank.description for card in cards}
+        notifications = NotificationService.get_by_filter(
+            is_used=False,
+            app__in=bank_names,
+        )
+        print(bank_names)
+        print(len(notifications))
+        for notification in notifications:
+            print(notification)
         return self._render(request, form, 'transaction/import.html')
 
     def _get_current_month(self):
