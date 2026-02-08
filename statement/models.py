@@ -89,6 +89,7 @@ class Bank(models.Model):
     description = models.CharField(max_length=30)
     code = models.CharField(max_length=10, blank=True, null=True)
     icon = models.ImageField(upload_to='img/', null=True, blank=True)
+    app_id = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
         """Retorna a descrição do banco."""

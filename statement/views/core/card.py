@@ -31,20 +31,20 @@ class CardView(BaseView):
         """
         self._context = 'create'
         user = self._get_user(request)
-        
+
         if request.method == 'POST':
             form = self._set_form(request, instance=None)
             formset = CardNumberFormSet(request.POST, instance=None)
-            
+
             if form.is_valid() and formset.is_valid():
                 instance = form.save(commit=False)
                 instance.user = user
                 instance.save()
-                
+
                 # Associa o cartão ao formset antes de salvar
                 formset.instance = instance
                 formset.save()
-                
+
                 self._custom_actions(request=request, form=form, instance=instance)
                 return redirect(self.redirect_url)
             else:
@@ -56,7 +56,7 @@ class CardView(BaseView):
         else:
             form = self._set_form(request, instance=None)
             formset = CardNumberFormSet(instance=None)
-        
+
         specific_content = {
             'create': True,
             'formset': formset,
@@ -71,11 +71,11 @@ class CardView(BaseView):
         self._context = 'update'
         instance = self.service.get_by_id(id)
         original_instance = type(instance).objects.get(pk=instance.pk)
-        
+
         if request.method == 'POST':
             form = self._set_form(request, instance)
             formset = CardNumberFormSet(request.POST, instance=instance)
-            
+
             if form.is_valid() and formset.is_valid():
                 self._preserve_unrendered_fields_after_validation(form, original_instance)
                 self._custom_actions(request=request, form=form, instance=form.instance)
@@ -91,7 +91,7 @@ class CardView(BaseView):
         else:
             form = self._set_form(request, instance)
             formset = CardNumberFormSet(instance=instance)
-        
+
         additional_context = self._add_context_on_templatetags(request, instance)
         specific_content = {
             'old_instance': instance,
