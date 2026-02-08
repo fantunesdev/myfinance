@@ -1,9 +1,12 @@
 import csv
+import json
 
+from datetime import datetime
 from clients.transaction_classifier.transaction_classifier import TransactionClassifierClient
 from statement.services.core.account import AccountService
 from statement.services.core.card import CardService
 from statement.services.core.category import CategoryService
+from statement.services.core.notification import NotificationService
 
 
 class FileHandlerService:
@@ -47,14 +50,18 @@ class FileHandlerService:
             return CardService.get_by_id(card_id, user=self._user)
         return None
 
-    def read_file(self):
+    def read_file(self, file_type='csv'):
         """
         Lê o arquivo e retorna os dados processados.
+        
+        :param file_type: Tipo de arquivo ('csv' ou 'tasker_json')
         :return: Lista de dicionários com os dados do arquivo.
         """
-        if self._extension == 'csv':
+        if file_type == 'tasker_json':
+            return self._read_tasker_json()
+        elif file_type == 'csv':
             return self._read_csv()
-        raise ValueError('Unsupported file format. Only CSV and JSON are supported.')
+        raise ValueError('Unsupported file format. Only CSV and Tasker JSON are supported.')
 
     def _read_csv(self):
         """
@@ -88,3 +95,83 @@ class FileHandlerService:
         if not transactions:
             raise ValueError('O arquivo está vazio.')
         return transactions
+    def _read_tasker_json(self):
+        """
+        Lê um arquivo JSON do Tasker (uma linha por JSON) e converte em notificações.
+        
+        Formato esperado (JSON Lines - um JSON por linha):
+        {
+            "app": "br.com.intermedium",
+            "title": "Compra no crédito",
+            "message": "Mensagem completa...",
+            "date": "2026-02-06 14:26:55"
+        }
+        
+        :return: Lista de dicionários com os dados convertidos em notificações.
+        """
+        notifications_to_create = []
+        file_content = self._file.read().decode('utf-8')
+        
+        for line_num, line in enumerate(file_content.splitlines(), 1):
+            if not line.strip():
+                continue
+            
+            try:
+                data = json.loads(line)
+            except json.JSONDecodeError as e:
+                raise ValueError(f'Erro ao processar JSON na linha {line_num}: {str(e)}')
+            
+            # Valida os campos obrigatórios
+            required_fields = ['app', 'title', 'message', 'date']
+            for field in required_fields:
+                if field not in data:
+                    raise ValueError(f'Campo obrigatório "{field}" não encontrado na linha {line_num}')
+            
+            # Verifica se a notificação já existe (evita duplicata)
+            existing = NotificationService.get_by_filter(
+                app=data['app'],
+                title=data['title'],
+                message=data['message']
+            )
+            
+            if existing.exists():
+                continue  # Pula notificações duplicadas
+            
+            # Extrai o valor da mensagem se possível
+            value = self._extract_value_from_message(data['message'])
+            
+            notifications_to_create.append({
+                'app': data['app'],
+                'title': data['title'],
+                'message': data['message'],
+                'date': data['date'],
+                'value': value,
+            })
+        
+        if not notifications_to_create:
+            raise ValueError('Nenhuma notificação válida encontrada no arquivo.')
+        
+        return notifications_to_create
+
+    def _extract_value_from_message(self, message):
+        """
+        Extrai o valor monetário da mensagem de notificação.
+        
+        Exemplo: "Você acaba de comprar R$ 69,71 em JACOMAR"
+        Retorna: "69.71"
+        
+        :param message: Texto da mensagem.
+        :return: Valor extraído ou None.
+        """
+        import re
+        
+        # Procura por padrão "R$ XX,XX"
+        match = re.search(r'R\$\s*([\d.,]+)', message)
+        if match:
+            value_str = match.group(1).replace('.', '').replace(',', '.')
+            try:
+                return float(value_str)
+            except ValueError:
+                return None
+        
+        return None

@@ -33,38 +33,112 @@
                 <h3 class="box-title">Importar Lançamentos por Arquivo</h3>
             </div>
             <div class="box-body">
-                <form method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
+                <!-- Sub-seletor: CSV ou Tasker JSON -->
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="margin-right: 30px;">
+                        <input type="radio" name="file-type" value="csv" checked id="file-type-csv">
+                        <span>Arquivo CSV</span>
+                    </label>
+                    <label>
+                        <input type="radio" name="file-type" value="tasker" id="file-type-tasker">
+                        <span>JSON Tasker</span>
+                    </label>
+                </div>
 
-                    <div class="form-group">
-                        {{ form.file.errors }}
-                        <label>Arquivo: </label><br>
-                        {{ form.file }}
-                    </div>
+                <!-- Formulário CSV -->
+                <div id="form-csv" class="file-form">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
 
-                    <div class="form-group mt-15">
-                        {{ form.payment_method.errors }}
-                        <label>Meio de Pagamento: </label><br>
-                        {{ form.payment_method }}
-                    </div>
-
-                    <div class="form-input">
-                        <div id="div-account">
-                            <label for="id_account">Conta</label>
-                            {{ form.account }}
-                            {{ form.account.errors }}
+                        <div class="form-group">
+                            {{ form.file.errors }}
+                            <label>Arquivo CSV: </label><br>
+                            {{ form.file }}
                         </div>
-                        <div id="div-card">
-                            <label for="id_card">Cartão</label>
-                            {{ form.card }}
-                            {{ form.card.errors }}
-                        </div>
-                    </div>
 
-                    <div class="form-group">
-                        <input type="button" value="Importar" class="btn btn-primary" id="import-btn">
+                        <div class="form-group mt-15">
+                            {{ form.payment_method.errors }}
+                            <label>Meio de Pagamento: </label><br>
+                            {{ form.payment_method }}
+                        </div>
+
+                        <div class="form-input">
+                            <div id="div-account">
+                                <label for="id_account">Conta</label>
+                                {{ form.account }}
+                                {{ form.account.errors }}
+                            </div>
+                            <div id="div-card">
+                                <label for="id_card">Cartão</label>
+                                {{ form.card }}
+                                {{ form.card.errors }}
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <input type="button" value="Importar CSV" class="btn btn-primary" id="import-btn">
+                            <input type="hidden" id="import-type-field" value="csv">
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Formulário Tasker JSON -->
+                <div id="form-tasker" class="file-form toggled">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <div class="form-group">
+                            <label>Arquivo JSON Tasker: </label><br>
+                            <input type="file" name="file" id="id_file_tasker" accept=".json,.txt" class="form-control">
+                            <small style="color: #999;">Arquivo .json ou .txt com uma notificação (JSON) por linha</small>
+                        </div>
+
+                        <div class="form-group mt-15">
+                            <label for="id_card_tasker">Cartão para Tasker</label>
+                            <select id="id_card_tasker" class="form-control">
+                                <option value="">-- Selecione um Cartão --</option>
+                                {% for card in form.card.field.queryset %}
+                                    <option value="{{ card.id }}">{{ card }}</option>
+                                {% endfor %}
+                                <option value="tasker">Tasker (Genérico)</option>
+                            </select>
+                            <small style="color: #999;">Selecione o cartão que receberá essas notificações ou use "Tasker (Genérico)" para notificações não associadas a um cartão específico</small>
+                        </div>
+
+                        <div class="form-group">
+                            <input type="button" value="Importar Tasker" class="btn btn-primary" id="import-tasker-btn">
+                            <input type="hidden" id="import-type-field-tasker" value="tasker_json">
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Tabela de notificações Tasker processadas -->
+                <div class="box box-primary toggled" id="box-notifications" style="margin-top: 20px;">
+                    <div class="box-header">
+                        <h3 class="box-title">Notificações Processadas</h3>
                     </div>
-                </form>
+                    <div class="box-body" id="div-notifications-tasker">
+                        <form method="post">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            <input type="checkbox" id="checkall-tasker">
+                                        </th>
+                                        <th>Data</th>
+                                        <th>Categoria</th>
+                                        <th>Subcategoria</th>
+                                        <th>Descrição</th>
+                                        <th>Valor</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="notification-rows">
+                                </tbody>
+                            </table>
+                            <input type="button" value="Cadastrar Notificações" class="btn btn-primary" id="save-tasker-notifications-btn">
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -145,4 +219,5 @@
     <script src="{% static 'js/pages/import-selector.js' %}"></script>
     <script src="{% static 'js/pages/import-transactions.js' %}" type="module"></script>
     <script src="{% static 'js/pages/import-notifications.js' %}" type="module"></script>
+    <script src="{% static 'js/pages/import-tasker.js' %}" type="module"></script>
 {% endblock %}

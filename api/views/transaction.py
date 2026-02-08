@@ -227,9 +227,21 @@ class TransactionView(BaseView):
         if not file:
             return Response({'detail': 'Arquivo não encontrado.'}, status=status.HTTP_400_BAD_REQUEST)
 
+        # Obtém o tipo de importação: 'csv' ou 'tasker_json'
+        import_type = request.data.get('import_type', 'csv')
+
         try:
             file_handler = FileHandlerService(request)
-            transactions = file_handler.read_file()
+            
+            # Se for Tasker JSON, processa as notificações e retorna dados para importação
+            if import_type == 'tasker_json':
+                notifications_data = file_handler.read_file(file_type='tasker_json')
+                # Aqui você pode retornar as notificações processadas
+                # O frontend vai lidar com a criação de Notification records
+                return Response(notifications_data, status=status.HTTP_200_OK)
+            
+            # CSV padrão
+            transactions = file_handler.read_file(file_type='csv')
             return Response(transactions, status=status.HTTP_200_OK)
         except requests.exceptions.JSONDecodeError as e:
             logger.warning('Erro na conversão para JSON: %s', e)
