@@ -1,0 +1,46 @@
+{% extends 'index.html' %}
+{% load static %}
+{% load  i18n %}
+
+{% block title %}
+    Importar Notificações
+{% endblock %}
+
+{% block content %}
+    <div class="box box-primary">
+        <div class="box-header">
+            <h3 class="box-title">Importar Transações a partir de Notificações</h3>
+        </div>
+        <div class="box-body" id="div-import-notifications">
+            <form method="post">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>
+                                <input type="checkbox" id="checkall-notifications">
+                            </th>
+                            <th>Data</th>
+                            <th>Categoria</th>
+                            <th>Subcategoria</th>
+                            <th>Descrição</th>
+                            <th>Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody id="notification-rows">
+                    </tbody>
+                </table>
+                <input type="button" value="Cadastrar" class="btn btn-primary" id="send-notifications-btn">
+            </form>
+        </div>
+    </div>
+
+    <div id="import-error" class="danger toggled"></div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        window.myFinance = window.myFinance || {};
+        window.myFinance.importedTransactions = {{ notifications_json|safe }};
+    </script>
+    <script src="{% static 'js/pages/import-notifications.js' %}" type="module"></script>
+{% endblock %}

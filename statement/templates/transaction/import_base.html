@@ -1,0 +1,148 @@
+{% extends 'index.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}
+    Importar Lançamentos
+{% endblock %}
+
+{% block content %}
+    <!-- Seletor de tipo de importação -->
+    <div class="box box-primary">
+        <div class="box-header">
+            <h3 class="box-title">Tipo de Importação</h3>
+        </div>
+        <div class="box-body">
+            <div class="form-group">
+                <label style="margin-right: 30px;">
+                    <input type="radio" name="import-type" value="file" checked id="import-type-file">
+                    <span>Importar por Arquivo</span>
+                </label>
+                <label>
+                    <input type="radio" name="import-type" value="notifications" id="import-type-notifications">
+                    <span>Importar por Notificações</span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- SEÇÃO: IMPORTAR POR ARQUIVO -->
+    <div id="section-file-import" class="import-section">
+        <div class="box box-primary">
+            <div class="box-header">
+                <h3 class="box-title">Importar Lançamentos por Arquivo</h3>
+            </div>
+            <div class="box-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <div class="form-group">
+                        {{ form.file.errors }}
+                        <label>Arquivo: </label><br>
+                        {{ form.file }}
+                    </div>
+
+                    <div class="form-group mt-15">
+                        {{ form.payment_method.errors }}
+                        <label>Meio de Pagamento: </label><br>
+                        {{ form.payment_method }}
+                    </div>
+
+                    <div class="form-input">
+                        <div id="div-account">
+                            <label for="id_account">Conta</label>
+                            {{ form.account }}
+                            {{ form.account.errors }}
+                        </div>
+                        <div id="div-card">
+                            <label for="id_card">Cartão</label>
+                            {{ form.card }}
+                            {{ form.card.errors }}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <input type="button" value="Importar" class="btn btn-primary" id="import-btn">
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="box box-primary toggled" id="box-transactions">
+            <div class="box-header">
+                <h3 class="box-title">Lançamentos</h3>
+            </div>
+            <div class="box-body" id="div-import-transactions">
+                <form method="post">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <input type="checkbox" id="checkall">
+                                </th>
+                                <th>Data</th>
+                                <th>Categoria</th>
+                                <th>Subcategoria</th>
+                                <th>Descrição</th>
+                                <th>Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transaction-rows">
+                        </tbody>
+                    </table>
+                    <input type="button" value="Cadastrar" class="btn btn-primary" id="send-transactions-btn">
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- SEÇÃO: IMPORTAR POR NOTIFICAÇÕES -->
+    <div id="section-notifications-import" class="import-section toggled">
+        <div class="box box-primary">
+            <div class="box-header">
+                <h3 class="box-title">Importar Lançamentos por Notificações</h3>
+            </div>
+            {% if has_notifications %}
+            <div class="box-body" id="div-import-notifications">
+                <form method="post">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <input type="checkbox" id="checkall-notifications">
+                                </th>
+                                <th>Data</th>
+                                <th>Categoria</th>
+                                <th>Subcategoria</th>
+                                <th>Descrição</th>
+                                <th>Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody id="notification-rows">
+                        </tbody>
+                    </table>
+                    <input type="button" value="Cadastrar" class="btn btn-primary" id="send-notifications-btn">
+                </form>
+            </div>
+            {% else %}
+            <div class="box-body">
+                <p style="color: #999;">Nenhuma notificação disponível para importação.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div id="import-error" class="danger toggled"></div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        window.myFinance = window.myFinance || {};
+        window.myFinance.fileTransactions = {{ file_notifications_json|safe }};
+        window.myFinance.notifications = {{ notifications_json|safe }};
+        window.myFinance.importedTransactions = {{ file_notifications_json|safe }};
+    </script>
+    <script src="{% static 'js/pages/import-selector.js' %}"></script>
+    <script src="{% static 'js/pages/import-transactions.js' %}" type="module"></script>
+    <script src="{% static 'js/pages/import-notifications.js' %}" type="module"></script>
+{% endblock %}

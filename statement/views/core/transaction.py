@@ -1,3 +1,5 @@
+import json
+
 from datetime import date
 
 from dateutil.relativedelta import relativedelta
@@ -5,6 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.utils.timezone import now
 
+from clients.transaction_classifier.transaction_classifier import TransactionClassifierClient
 from statement.forms.core.transaction import TransactionExpenseForm, TransactionForm, TransactionRevenueForm
 from statement.forms.general_forms import NavigationForm, UploadFileForm
 from statement.models import Transaction
@@ -104,37 +107,67 @@ class TransactionView(BaseView):
     @method_decorator(login_required)
     def import_transactions(self, request):
         """
-        Página que faz o upload para o carregamento de lançamentos
-
-        TODO
-        - Classe CARD
-            - Mexer no CRUD pra comportar os números do cartão.
-            - Mexer no formulário adicionando de número de cartão com JavaScript para adicionar mais de um número.
-        - Fazer a lógica para filtrar as notificações DEPOIS da query. Porque alguns cartões só tem um número ou 
-            então, não há interesse algum de dividir as faturas por número de cartão. Nesse caso não vejo 
-            necessidade de ter que cadastrar um número de cartão.
-        - Pensar se não é melhor mover esta lógica para o FileHandler, pois ele vai precisar lidar com os JSON das
-            notificações geradas pelo Tasker.
-        - Pensar se não é melhor usar o que já está desenvolvido em JavaScript pra listar os lançamentos das notificações.
-        - Criar uma rotina no Tasker pra enviar os arquivos para o MyFinance.
-            - Usar o MESSAGE e o DATE da notificação pra garantir que não sejam duplicadas.
-        - Depois de importar marcar a notificação como usada.
-        - Pensar se é necessário criar uma tela de gerenciamento (CRUD) de notificações.
-            - Filtro por período (data)
+        Página que faz o upload para o carregamento de lançamentos por arquivo
         """
         form = UploadFileForm(request.user)
+        
+        specific_context = {
+            'notifications_json': json.dumps([]),
+        }
+        
+        return self._render(request, form, 'transaction/import.html', specific_context)
+
+    @method_decorator(login_required)
+    def import_data(self, request):
+        """
+        Página que oferece opções de importação: por arquivo ou por notificações
+        """
+        form = UploadFileForm(request.user)
+        
+        # Busca os cartões do usuário para validação de notificações
         cards = CardService.get_all(request.user)
-        print(cards)
-        bank_names = {card.account.bank.description for card in cards}
-        notifications = NotificationService.get_by_filter(
-            is_used=False,
-            app__in=bank_names,
-        )
-        print(bank_names)
-        print(len(notifications))
-        for notification in notifications:
-            print(notification)
-        return self._render(request, form, 'transaction/import.html')
+        
+        # Se há cartões, busca as notificações não usadas
+        notifications = []
+        if cards:
+            all_notifications = list(NotificationService.get_by_filter(is_used=False))
+            # Valida qual notificação pertence a qual cartão do usuário
+            CardService.are_notifications_owner(cards, all_notifications)
+            # Filtra apenas as notificações que pertencem aos cartões do usuário
+            user_notifications = [n for n in all_notifications if n.card_id is not None]
+            
+            # Converte as notificações em transações para exibição
+            for notification in user_notifications:
+                transaction_data = NotificationService.build_transaction_from_notification(notification, notification.card)
+                # Formata para o padrão do JavaScript
+                value = transaction_data.get('value', '')
+                if isinstance(value, str):
+                    value = value.replace(',', '.')  # Converte formato BR para padrão
+                    try:
+                        value = float(value)
+                    except (ValueError, TypeError):
+                        value = 0
+
+                # TODO: Quando usar notificações em produção, integrar transactionClassifier para predição de categorias
+                notifications.append({
+                    'id': notification.id,
+                    'date': transaction_data.get('release_date', '').strftime('%Y-%m-%d') if transaction_data.get('release_date') else '',
+                    'description': transaction_data.get('description', ''),
+                    'original_description': notification.message if hasattr(notification, 'message') else '',
+                    'value': value,
+                    'category': None,
+                    'subcategory': None,
+                    'card_id': notification.card_id,
+                    'notification_id': notification.id,
+                })
+        
+        specific_context = {
+            'file_notifications_json': json.dumps([]),
+            'notifications_json': json.dumps(notifications),
+            'has_notifications': len(notifications) > 0,
+        }
+        
+        return self._render(request, form, 'transaction/import_base.html', specific_context)
 
     def _get_current_month(self):
         """

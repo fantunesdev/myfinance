@@ -1,89 +1,26 @@
-import { divs, selects } from '../layout/elements/transaction-form-elements.js';
 import * as services from '../data/services.js';
 
-const fileInput = document.querySelector('#id_file');
-const importBtn = document.querySelector('#import-btn');
-const boxTransactions = document.querySelector('#box-transactions');
-const transactionRows = document.querySelector('#transaction-rows');
-const checkboxCheckAll = document.querySelector('#checkall');
-const sendTransactionsBtn = document.querySelector('#send-transactions-btn');
-
-selects.paymentMethod.value = 2;
-divs.card.classList.add('toggled');
+const notificationRows = document.querySelector('#notification-rows');
+const checkboxCheckAllNotifications = document.querySelector('#checkall-notifications');
+const sendNotificationsBtn = document.querySelector('#send-notifications-btn');
 
 /**
- * Configura os selects relacionados ao meio de pagamento.
- */
-export function selectPaymentMethod() {
-    const paymentMethod = selects.paymentMethod.value;
-    if (paymentMethod == 1) {
-        divs.account.classList.add('toggled');
-        divs.card.classList.remove('toggled');
-        selects.card.required = true;
-        selects.account.required = false;
-        selects.account.selectedIndex = 0;
-    } else {
-        divs.card.classList.add('toggled');
-        divs.account.classList.remove('toggled');
-        selects.account.required = true;
-        selects.card.required = false;
-        selects.card.selectedIndex = 0;
-    }
-}
-
-/**
- * Verifica se o arquivo foi enviado e se o meio de pagamento foi selecionado.
- * Se tudo estiver correto, envia o arquivo para o backend.
- */
-async function sendFile() {
-    const formData = new FormData();
-
-    formData.append('file', fileInput.files[0]);
-    formData.append('account', isNaN(parseInt(selects.account.value)) ? '' : parseInt(selects.account.value));
-    formData.append('card', isNaN(parseInt(selects.card.value)) ? '' : parseInt(selects.card.value));
-
-    if (!fileInput.files[0]) {
-        alert('Selecione um arquivo para continuar.');
-        return;
-    }
-    if (selects.paymentMethod.value == 1 && !selects.card.value) {
-        alert('Selecione um cartão para continuar.');
-    } else if (selects.paymentMethod.value == 2 && !selects.account.value) {
-        alert('Selecione uma conta para continuar.');
-    } else {
-        const transactions = await services.importTransactions(formData);
-        window.myFinance = window.myFinance || {};
-        window.myFinance.importedTransactions = transactions;
-        const importError = document.querySelector('#import-error');
-        if (transactions.errors) {
-            importError.classList.remove('toggled');
-            importError.textContent = transactions.errors;
-        } else {
-            importError.classList.add('toggled');
-            renderBox(transactions);
-        }
-    }
-}
-
-/**
- * Método principal que renderiza a tabela de transações importadas.
+ * Renderiza a tabela de notificações para importação.
  *
- * As colunas da tabela são: data, descrição, valor, categoria, subcategoria e conta/cartão.
- *
- * @param {array} transactions - Um array de transações importadas do arquivo da instituição financeira.
+ * @param {array} notifications - Um array de notificações convertidas em transações.
  */
-async function renderBox(transactions) {
+async function renderNotificationsBox(notifications) {
     const categories = await services.getResource('categories');
 
-    boxTransactions.classList.remove('toggled');
-    transactionRows.innerHTML = '';
+    notificationRows.innerHTML = '';
 
-    for (const transaction of transactions) {
+    for (const notification of notifications) {
         const row = document.createElement('tr');
-        const subcategories = await services.getChildrenResource('categories', 'subcategories', transaction.category);
-        const fields = getTransactionFields(transaction, categories, subcategories);
+        // Se não houver categoria selecionada, passa um array vazio
+        const subcategories = notification.category ? await services.getChildrenResource('categories', 'subcategories', notification.category) : [];
+        const fields = getTransactionFields(notification, categories, subcategories);
         renderFields(row, fields);
-        transactionRows.appendChild(row);
+        notificationRows.appendChild(row);
     }
 }
 
@@ -93,7 +30,6 @@ async function renderBox(transactions) {
  * @param {Object} transaction - Os lançamentos provenientes do arquivo de importação
  * @param {Object} categories - As categorias cadastradas no banco.
  * @param {Object} subcategories - As subcategorias cadastradas no banco.
- * @param {Boolean} isNotification - Se é notificação ou transação de arquivo.
  * @returns Uma lista de objetos literais com os campos a serem renderizados.
  */
 function getTransactionFields(transaction, categories, subcategories) {
@@ -245,21 +181,63 @@ function updateSelectOptions(select, options) {
 }
 
 /**
- * Envia as transações selecionadas para o backend.
+ * Marca um array de notificações como usadas no backend.
+ *
+ * @param {array} notificationIds - Array com os IDs das notificações a marcar como usadas.
+ */
+async function markNotificationsAsUsed(notificationIds) {
+    for (const notificationId of notificationIds) {
+        try {
+            await fetch(`/api/notifications/${notificationId}/`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+                body: JSON.stringify({ is_used: true }),
+            });
+        } catch (error) {
+            console.error(`Erro ao marcar notificação ${notificationId} como usada:`, error);
+        }
+    }
+}
+
+/**
+ * Obtém o valor de um cookie pelo nome.
+ *
+ * @param {string} name - Nome do cookie.
+ * @returns {string} Valor do cookie ou string vazia se não encontrado.
+ */
+function getCookie(name) {
+    let cookieValue = '';
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+/**
+ * Envia as notificações selecionadas para o backend.
  * Faz a validação dos dados e cadastra as transações no banco de dados.
  *
- * @param {array} transactions - Um array de transações importadas do arquivo da instituição financeira.
- *
- * @returns - Redireciona para a tela de relatório financeiro.
+ * @param {array} notifications - Um array de notificações convertidas em transações.
  */
-async function importTransactions(transactions) {
-    const selectedIds = getSelectedTransactionIds(transactionRows);
+async function importNotifications(notifications) {
+    const selectedIds = getSelectedNotificationIds();
+    const notificationsToMarkAsUsed = [];
 
-    for (let transaction of transactions) {
-        if (!selectedIds.includes(transaction.id)) continue;
+    for (let notification of notifications) {
+        if (!selectedIds.includes(notification.id)) continue;
 
-        const newTransaction = getFormData(transaction.id, transaction);
-        const feedback = buildFeedback(transaction, newTransaction);
+        const newTransaction = getFormData(notification.id, notification);
+        const feedback = buildFeedback(notification, newTransaction);
 
         const created = await createNewResource('transactions', newTransaction, true);
         if (!created) return;
@@ -267,6 +245,16 @@ async function importTransactions(transactions) {
         if (feedback) {
             await services.createResource('categorization-feedback', JSON.stringify(feedback));
         }
+
+        // Coleta o ID para marcar como usada
+        if (notification.notification_id) {
+            notificationsToMarkAsUsed.push(notification.notification_id);
+        }
+    }
+
+    // Marca as notificações como usadas
+    if (notificationsToMarkAsUsed.length > 0) {
+        await markNotificationsAsUsed(notificationsToMarkAsUsed);
     }
 
     // Envia para o backend uma requisição para treinar o Transaction Classifier a partir dos feedbacks
@@ -277,11 +265,11 @@ async function importTransactions(transactions) {
 }
 
 /**
- * Método acessório de importTransactions que retorna os IDs das transações selecionadas pelo usuário.
+ * Método acessório de importNotifications que retorna os IDs das notificações selecionadas pelo usuário.
  */
-function getSelectedTransactionIds(rows = transactionRows) {
+function getSelectedNotificationIds() {
     const ids = [];
-    for (let row of rows.children) {
+    for (let row of notificationRows.children) {
         const checkbox = row.firstChild.firstChild;
         if (checkbox.checked) {
             ids.push(parseInt(checkbox.id));
@@ -291,25 +279,24 @@ function getSelectedTransactionIds(rows = transactionRows) {
 }
 
 /**
- * Método acessório de importTransactions que coleta os dados do formulário da transação com base no ID.
+ * Método acessório de importNotifications que coleta os dados do formulário da transação com base no ID.
  */
-function getFormData(transactionId, transactionObj = null) {
+function getFormData(notificationId, notificationObj) {
     return {
-        release_date: document.getElementById(`id_date_${transactionId}`).value,
-        account: document.getElementById('id_account').value,
-        card: document.getElementById('id_card').value,
-        category: document.getElementById(`id_category_${transactionId}`).value,
-        subcategory: document.getElementById(`id_subcategory_${transactionId}`).value,
-        description: document.getElementById(`id_description_${transactionId}`).value,
-        value: document.getElementById(`id_value_${transactionId}`).value,
+        release_date: document.getElementById(`id_date_${notificationId}`).value,
+        card: notificationObj.card_id,
+        category: document.getElementById(`id_category_${notificationId}`).value,
+        subcategory: document.getElementById(`id_subcategory_${notificationId}`).value,
+        description: document.getElementById(`id_description_${notificationId}`).value,
+        value: document.getElementById(`id_value_${notificationId}`).value,
     };
 }
 
 /**
- * Método acessório de importTransactions que compara os dados da predição com os dados corrigidos pelo usuário.
+ * Método acessório de importNotifications que compara os dados da predição com os dados corrigidos pelo usuário.
  *
- * @param {Object} original - Um objeto de transaction oriundo da importação do arquivo.
- * @param {Object} updated - Um objeto de transaction oriundo do formulário.
+ * @param {Object} original - Um objeto de notificação oriundo da listagem.
+ * @param {Object} updated - Um objeto de transação oriundo do formulário.
  * @returns O feedback de categorização, se houver alteração.
  */
 function buildFeedback(original, updated) {
@@ -330,11 +317,10 @@ function buildFeedback(original, updated) {
 }
 
 /**
- * Método acessório de importTransactions que cria um novo recurso no backend via requisição POST.
+ * Método acessório de importNotifications que cria um novo recurso no backend via requisição POST.
  *
  * @param {string} endpoint - Nome do endpoint da API (ex: 'transactions', 'categorization-feedback').
  * @param {object|string} data - Dados a serem enviados. Se for objeto, será convertido para JSON.
- * @param {boolean} [useAwait=false] - Se verdadeiro, aguarda a resposta antes de continuar.
  * @returns {Promise<object|null>} - Retorna a resposta em JSON, ou false em caso de erro.
  */
 async function createNewResource(model, instance) {
@@ -356,17 +342,9 @@ async function createNewResource(model, instance) {
 }
 
 // Event listeners - apenas adiciona se os elementos existem
-if (importBtn) {
-    importBtn.addEventListener('click', () => sendFile());
-}
-
-if (selects && selects.paymentMethod) {
-    selects.paymentMethod.addEventListener('change', () => selectPaymentMethod());
-}
-
-if (checkboxCheckAll && transactionRows) {
-    checkboxCheckAll.addEventListener('change', function () {
-        for (const row of transactionRows.children) {
+if (checkboxCheckAllNotifications && notificationRows) {
+    checkboxCheckAllNotifications.addEventListener('change', function () {
+        for (const row of notificationRows.children) {
             const checkbox = row.children[0].children[0];
             checkbox.checked = this.checked;
 
@@ -380,11 +358,17 @@ if (checkboxCheckAll && transactionRows) {
     });
 }
 
-if (sendTransactionsBtn) {
-    sendTransactionsBtn.addEventListener('click', () => {
-        const transactions = window.myFinance.importedTransactions;
-        importTransactions(transactions);
+if (sendNotificationsBtn) {
+    sendNotificationsBtn.addEventListener('click', () => {
+        const notifications = window.myFinance.notifications;
+        importNotifications(notifications);
     });
 }
 
-
+// Inicializa a renderização das notificações assim que o módulo carrega
+(async () => {
+    const notifications = window.myFinance.notifications;
+    if (notifications && notifications.length > 0) {
+        await renderNotificationsBox(notifications);
+    }
+})();
