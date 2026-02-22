@@ -939,6 +939,15 @@ option {
     outline: none;
     appearance: none;
     text-align: center;
+    display: inline-block;
+    width: auto;
+    margin: 0;
+}
+
+.navigation-form > select {
+    display: inline-block;
+    width: auto;
+    margin: 0;
 }
 
 .navigation-form > select option {
@@ -947,7 +956,15 @@ option {
 }
 
 .navigation-div {
+    display: flex;
     justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.navigation-div > a {
+    display: inline-flex;
+    align-items: center;
 }
 
 .nav-btn {
