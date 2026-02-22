@@ -120,7 +120,8 @@ async function renderNotifications(notifications) {
     
     notificationRows.innerHTML = '';
     
-    for (const notification of notifications) {
+    for (let i = 0; i < notifications.length; i++) {
+        const notification = notifications[i];
         const row = document.createElement('tr');
         const subcategories = [];
         
@@ -139,13 +140,15 @@ async function renderNotifications(notifications) {
                 }
             },
             {
+                id: `id_date_tasker_${i}`,
                 type: 'text',
                 value: notification.date.split(' ')[0],
             },
             {
+                id: `id_category_tasker_${i}`,
                 type: 'select',
                 options: categories,
-                selected: null,
+                selected: notification.category || null,
                 onChange: async (selectElem, cell) => {
                     const subcategorySelect = cell.nextSibling.querySelector('select');
                     const subcategories = await services.getChildrenResource('categories', 'subcategories', selectElem.value);
@@ -153,9 +156,10 @@ async function renderNotifications(notifications) {
                 },
             },
             {
+                id: `id_subcategory_tasker_${i}`,
                 type: 'select',
                 options: subcategories,
-                selected: null,
+                selected: notification.subcategory || null,
             },
             {
                 type: 'text',
@@ -171,6 +175,17 @@ async function renderNotifications(notifications) {
         
         renderFields(row, fields);
         notificationRows.appendChild(row);
+        // Popula o select de subcategorias baseado na categoria atualmente selecionada
+        const categorySelect = document.getElementById(`id_category_tasker_${i}`);
+        const subSel = document.getElementById(`id_subcategory_tasker_${i}`);
+        if (categorySelect && subSel) {
+            const selectedCategory = categorySelect.value;
+            if (selectedCategory && parseInt(selectedCategory, 10) > 0) {
+                const subcats = await services.getChildrenResource('categories', 'subcategories', selectedCategory);
+                updateSelectOptions(subSel, subcats);
+                if (notification.subcategory) subSel.value = notification.subcategory;
+            }
+        }
     }
     
     // Mostra a tabela de notificações
@@ -198,7 +213,14 @@ function renderFields(row, fields) {
         } else {
             element = createInput(field);
         }
-        
+        // Ajusta largura da célula para valor/descrição garantindo layout
+        if (field.id && field.id.startsWith('id_value_')) {
+            cell.style.width = '140px';
+            cell.style.whiteSpace = 'nowrap';
+        } else if (field.id && field.id.startsWith('id_description_')) {
+            cell.style.width = 'auto';
+        }
+
         cell.appendChild(element);
     });
 }
@@ -216,6 +238,20 @@ function createInput(field) {
         input.value = field.value || '';
     }
     input.classList.add('form-control');
+    // Ajustes de tamanho e limites para campos de valor e descrição
+    if (field.id && field.id.startsWith('id_value_')) {
+        input.maxLength = 9;
+        input.pattern = '^[0-9]{1,6}(\\.[0-9]{2})?$';
+        input.style.setProperty('width', '120px', 'important');
+        input.style.setProperty('max-width', '120px', 'important');
+        input.style.setProperty('display', 'inline-block', 'important');
+        input.style.textAlign = 'right';
+    }
+    if (field.id && field.id.startsWith('id_description_')) {
+        input.maxLength = 255;
+        input.style.setProperty('width', 'auto', 'important');
+        input.style.setProperty('min-width', '200px', 'important');
+    }
     if (field.disabled) input.disabled = true;
     return input;
 }
@@ -248,16 +284,25 @@ function formatDateForInput(value) {
  */
 function createSelect(field) {
     const select = document.createElement('select');
+    if (field.id) select.id = field.id;
     select.classList.add('form-control');
     
-    field.options.forEach((opt) => {
+    // default empty option
+    const defaultOpt = document.createElement('option');
+    defaultOpt.value = 0;
+    defaultOpt.textContent = '---------';
+    select.appendChild(defaultOpt);
+
+    if (Array.isArray(field.options)) {
+        field.options.forEach((opt) => {
         const option = document.createElement('option');
         option.value = opt.id;
         option.textContent = opt.description;
         if (opt.id === field.selected) option.selected = true;
         select.appendChild(option);
-    });
-    
+        });
+    }
+
     return select;
 }
 
@@ -269,6 +314,10 @@ function createSelect(field) {
 function updateSelectOptions(select, options) {
     if (!select) return;
     select.innerHTML = '';
+    const defaultOpt = document.createElement('option');
+    defaultOpt.value = 0;
+    defaultOpt.textContent = '---------';
+    select.appendChild(defaultOpt);
     options.forEach((opt) => {
         const option = document.createElement('option');
         option.value = opt.id;

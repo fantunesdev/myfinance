@@ -27,6 +27,29 @@ async function renderNotificationsBox(notifications) {
             const fields = getTransactionFields(notification, categories, subcategories);
             renderFields(row, fields);
             notificationRows.appendChild(row);
+            // Popula o select de subcategorias com base no valor atualmente selecionado
+            // no select de categoria (padrão: primeira categoria). Isso garante que
+            // mesmo quando a notificação não traz categoria prevista, o select de
+            // subcategoria mostre as opções corretas.
+            const categorySelect = document.getElementById(`id_category_${notification.id}`);
+            const subcategorySelect = document.getElementById(`id_subcategory_${notification.id}`);
+            if (categorySelect && subcategorySelect) {
+                let selectedCategory = categorySelect.value;
+                // If no category is explicitly selected, pick the first meaningful option
+                if (!selectedCategory || parseInt(selectedCategory, 10) <= 0) {
+                    const firstOpt = Array.from(categorySelect.options).find(o => {
+                        const v = parseInt(o.value, 10);
+                        return !isNaN(v) && v > 0;
+                    });
+                    if (firstOpt) selectedCategory = firstOpt.value;
+                }
+
+                if (selectedCategory && parseInt(selectedCategory, 10) > 0) {
+                    const subcats = await services.getChildrenResource('categories', 'subcategories', selectedCategory);
+                    updateSelectOptions(subcategorySelect, subcats);
+                    if (notification.subcategory) subcategorySelect.value = notification.subcategory;
+                }
+            }
             notificationRows.style.display = 'table-row-group';
             row.style.display = 'table-row';
             row.style.visibility = 'visible';
@@ -110,16 +133,18 @@ function getTransactionFields(transaction, categories, subcategories) {
         },
         {
             id: `id_value_${transaction.id}`,
-            type: 'text',
+            type: 'number',
             value: transaction.value,
-            disabled: true,
+            disabled: false,
             render: (cell) => {
                 const input = document.createElement('input');
-                input.type = 'text';
+                input.type = 'number';
+                input.step = '0.01';
+                input.min = '0';
+                input.inputMode = 'decimal';
                 input.id = `id_value_${transaction.id}`;
                 input.value = transaction.value;
                 input.classList.add('form-control');
-                input.disabled = true;
                 cell.appendChild(input);
             },
         },
@@ -138,22 +163,38 @@ function renderFields(row, fields) {
         try {
             const cell = row.insertCell();
 
-            if (field.render) {
-                field.render(cell, row);
-            } else {
-                let element;
-                if (field.type === 'select') {
-                    element = createSelect(field);
+                if (field.render) {
+                    field.render(cell, row);
                 } else {
-                    element = createInput(field);
-                }
-                if (element) {
-                    cell.appendChild(element);
-                    if (field.onChange && field.type === 'select') {
-                        element.addEventListener('change', () => field.onChange(element, cell));
+                    let element;
+                    if (field.type === 'select') {
+                        element = createSelect(field);
+                    } else {
+                        element = createInput(field);
+                    }
+                    if (element) {
+                        cell.appendChild(element);
                     }
                 }
-            }
+
+                // Ajusta largura da célula para valor/descrição garantindo layout
+                const fid = String(field.id || '');
+                if (fid.startsWith('id_value_')) {
+                    cell.classList.add('value-cell');
+                    cell.style.setProperty('max-width', '120px', 'important');
+                    cell.style.setProperty('min-width', '0px', 'important');
+                    cell.style.whiteSpace = 'nowrap';
+                    cell.style.overflow = 'hidden';
+                } else if (fid.startsWith('id_description_')) {
+                    cell.classList.add('description-cell');
+                    cell.style.setProperty('min-width', '360px', 'important');
+                }
+
+                // Adiciona listener de change para selects (se aplicável)
+                if (field.onChange && field.type === 'select') {
+                    const selectElem = cell.querySelector('select');
+                    if (selectElem) selectElem.addEventListener('change', () => field.onChange(selectElem, cell));
+                }
         } catch (error) {
             console.error('Erro ao renderizar field:', field, error);
         }
@@ -180,6 +221,29 @@ function createInput(field) {
         input.value = field.value || '';
     }
     input.classList.add('form-control');
+    // Ajustes de tamanho e limites específicos para campos description/value
+    if (input.id && input.id.startsWith('id_value_')) {
+        // Numeric input: up to 6 digits + 2 decimals. Use number type attributes.
+        input.type = 'number';
+        input.step = '0.01';
+        input.min = '0';
+        input.inputMode = 'decimal';
+        input.maxLength = 9; // visual limit (doesn't strictly limit number input in all browsers)
+        input.pattern = '^[0-9]{1,6}(\\.[0-9]{2})?$';
+        // input ocupa 100% da célula, mas também define max-width para proteção contra CSS global
+        input.style.setProperty('width', '100%', 'important');
+        input.style.setProperty('max-width', '120px', 'important');
+        input.style.setProperty('box-sizing', 'border-box', 'important');
+        input.style.textAlign = 'right';
+        input.classList.add('value-input');
+    }
+    if (input.id && input.id.startsWith('id_description_')) {
+        // garantir que a descrição tenha espaço suficiente
+        input.maxLength = 255;
+        input.style.setProperty('width', '100%', 'important');
+        input.style.setProperty('min-width', '300px', 'important');
+        input.classList.add('description-input');
+    }
     if (field.disabled) input.disabled = true;
     return input;
 }
@@ -224,7 +288,7 @@ function formatDateForInput(value) {
  */
 function createSelect(field) {
     const select = document.createElement('select');
-    select.id = field.id;
+        if (field.id) select.id = field.id;
     select.classList.add('form-control');
 
     if (!field.options) {
@@ -256,7 +320,10 @@ function createSelect(field) {
  * @param {Array} options - Uma lista de options para o select.
  */
 function updateSelectOptions(select, options) {
+    if (!select) return;
     select.innerHTML = '';
+    const defaultOpt = document.createElement('option');
+    select.appendChild(defaultOpt);
     options.forEach((opt) => {
         const option = document.createElement('option');
         option.value = opt.id;

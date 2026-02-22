@@ -179,6 +179,14 @@ function renderFields(row, fields) {
             element = createInput(field);
         }
 
+        // Ajusta largura da célula para valor/descrição garantindo layout
+        if (field.id && field.id.startsWith('id_value_')) {
+            cell.style.width = '140px';
+            cell.style.whiteSpace = 'nowrap';
+        } else if (field.id && field.id.startsWith('id_description_')) {
+            cell.style.width = 'auto';
+        }
+
         cell.appendChild(element);
 
         if (field.onChange && field.type === 'select') {
@@ -206,6 +214,20 @@ function createInput(field) {
         input.value = field.value || '';
     }
     input.classList.add('form-control');
+    // Ajustes de tamanho e limites para campos de valor e descrição
+    if (input.id && input.id.startsWith('id_value_')) {
+        input.maxLength = 9;
+        input.pattern = '^[0-9]{1,6}(\\.[0-9]{2})?$';
+        input.style.setProperty('width', '120px', 'important');
+        input.style.setProperty('max-width', '120px', 'important');
+        input.style.setProperty('display', 'inline-block', 'important');
+        input.style.textAlign = 'right';
+    }
+    if (input.id && input.id.startsWith('id_description_')) {
+        input.maxLength = 255;
+        input.style.setProperty('width', 'auto', 'important');
+        input.style.setProperty('min-width', '200px', 'important');
+    }
     if (field.disabled) input.disabled = true;
     return input;
 }
@@ -241,8 +263,16 @@ function formatDateForInput(value) {
  */
 function createSelect(field) {
     const select = document.createElement('select');
-    select.id = field.id;
+    if (field.id) select.id = field.id;
     select.classList.add('form-control');
+
+    if (!field.options || !Array.isArray(field.options) || field.options.length === 0) {
+        const option = document.createElement('option');
+        option.value = '';
+        option.textContent = 'Nenhuma opção disponível';
+        select.appendChild(option);
+        return select;
+    }
 
     field.options.forEach((opt) => {
         const option = document.createElement('option');

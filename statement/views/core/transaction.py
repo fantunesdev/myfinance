@@ -124,14 +124,28 @@ class TransactionView(BaseView):
         """
         form = UploadFileForm(request.user)
         
-        # Busca as notificações não usadas que têm cartão associado
+        # Busca as notificações não usadas (vinculadas e não vinculadas)
         notifications = []
-        all_notifications = list(NotificationService.get_by_filter(is_used=False, card__isnull=False))
-        
+        all_notifications = list(NotificationService.get_by_filter(is_used=False))
+
         # Busca os cartões do usuário para validação
         cards = CardService.get_all(request.user)
         card_ids = {card.id for card in cards}
-        
+
+        # Tenta vincular notificações que ainda não tem cartão associado
+        unlinked = [n for n in all_notifications if n.card is None]
+        if unlinked:
+            CardService.are_notifications_owner(cards, unlinked)
+            for n in unlinked:
+                # Se o serviço identificou um cartão para a notificação e ela ainda não está vinculada no banco, salva 
+                # essa associação.
+                if getattr(n, 'card', None):
+                    current = NotificationService.get_by_filter(first=True, id=n.id)
+                    if current and current.card is None:
+                        n.card = n.card
+                        n.card_id = n.card.id
+                        n.save()
+
         # Filtra apenas as notificações que pertencem aos cartões do usuário
         user_notifications = [n for n in all_notifications if n.card_id in card_ids]
         
