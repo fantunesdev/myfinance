@@ -97,6 +97,23 @@ class TransactionView(BaseView):
         :return: Não retorna nada, pois request.data é atualizado diretamente no objeto request.
         """
         description = request.data.get('description')
+        # Normaliza possíveis campos de data recebidos no JSON
+        # Aceita 'release_date' ou 'date' (ex: '2026-02-06 02:26:55') e converte para 'YYYY-MM-DD'
+        raw_date = request.data.get('release_date') or request.data.get('date')
+        if raw_date:
+            try:
+                # Se vier no formato 'YYYY-MM-DD HH:MM:SS', pega a parte da data
+                if isinstance(raw_date, str) and ' ' in raw_date:
+                    raw_date = raw_date.split(' ')[0]
+                # Tenta formatar no padrão YYYY-MM-DD
+                from statement.utils.datetime import DateTimeUtils
+
+                # If already in YYYY-MM-DD, this will validate
+                _ = DateTimeUtils.string_to_date(raw_date)
+                request.data['release_date'] = raw_date
+            except Exception:
+                # fallback: ignore and keep whatever is in request.data; let form validation handle it
+                pass
         request.data['description'] = self._clean_description(description)
 
         # Monta um dicionário com atributos obrigatórios para o model Transaction

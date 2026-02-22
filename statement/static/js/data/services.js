@@ -81,6 +81,37 @@ export async function getResource(model) {
 }
 
 /**
+ * Consulta na API as categorias por tipo (entrada/saida).
+ * @param {string} type - 'entrada' ou 'saida'
+ * @returns Uma lista de categorias do tipo informado.
+ */
+export async function getCategoriesByType(type) {
+    const sessionData = sessionStorage.getItem(`categories-type-${type}`);
+    if (sessionData) return JSON.parse(sessionData);
+
+    const url = `/api/categories/type/${type}/`;
+    try {
+        const response = await fetch(url);
+        const contentType = response.headers.get('content-type') || '';
+        if (!response.ok) {
+            console.error(`Failed to fetch ${url}: ${response.status} ${response.statusText}`);
+            return [];
+        }
+        if (!contentType.includes('application/json')) {
+            console.error(`Expected JSON from ${url} but got ${contentType}`);
+            return [];
+        }
+        const data = await response.json();
+        const sessionStorageData = JSON.stringify(data);
+        sessionStorage.setItem(`categories-type-${type}`, sessionStorageData);
+        return data;
+    } catch (error) {
+        console.error(`Error fetching ${url}:`, error);
+        return [];
+    }
+}
+
+/**
  * Consulta na API uma instância específica do modelo com base no ID.
  * @param {string} model - O nome do modelo.
  * @param {string} id - O ID da instância.
@@ -114,13 +145,26 @@ export async function getChildrenResource(model, child, id) {
         return JSON.parse(sessionData);
     }
 
-    const url = `/api/${model}/${id}/${child}`,
-        response = await fetch(url),
-        data = await response.json(),
-        sessionStorageData = JSON.stringify(data);
-
-    sessionStorage.setItem(`${model}-${id}-${child}`, sessionStorageData);
-    return data;
+    const url = `/api/${model}/${id}/${child}`;
+    try {
+        const response = await fetch(url);
+        const contentType = response.headers.get('content-type') || '';
+        if (!response.ok) {
+            console.error(`Failed to fetch ${url}: ${response.status} ${response.statusText}`);
+            return [];
+        }
+        if (!contentType.includes('application/json')) {
+            console.error(`Expected JSON from ${url} but got ${contentType}`);
+            return [];
+        }
+        const data = await response.json();
+        const sessionStorageData = JSON.stringify(data);
+        sessionStorage.setItem(`${model}-${id}-${child}`, sessionStorageData);
+        return data;
+    } catch (error) {
+        console.error(`Error fetching ${url}:`, error);
+        return [];
+    }
 }
 
 /**

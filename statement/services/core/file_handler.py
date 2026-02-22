@@ -1,5 +1,6 @@
 import csv
 import json
+import re
 
 from datetime import datetime
 from clients.transaction_classifier.transaction_classifier import TransactionClassifierClient
@@ -113,6 +114,7 @@ class FileHandlerService:
         file_content = self._file.read().decode('utf-8')
         
         for line_num, line in enumerate(file_content.splitlines(), 1):
+            line = self._sanitize_utf8mb3(line)
             if not line.strip():
                 continue
             
@@ -175,3 +177,8 @@ class FileHandlerService:
                 return None
         
         return None
+
+    def _sanitize_utf8mb3(self, text: str):
+        if not isinstance(text, str):
+            return text
+        return re.sub(r'[\U00010000-\U0010FFFF]', '', text)

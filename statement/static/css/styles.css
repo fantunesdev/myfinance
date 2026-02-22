@@ -1,3 +1,16 @@
+/* Força largura e alinhamento das colunas da tabela de notificações */
+#section-notifications-import table th,
+#section-notifications-import table td {
+    width: auto;
+    min-width: 80px;
+    text-align: left;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+#section-notifications-import table {
+    table-layout: auto !important;
+    width: 100%;
+}
 /* INÍCIO LAYOUT */
 
 * {
@@ -911,6 +924,24 @@ textarea {
     transition: all 0.2s ease;
 }
 
+/* Estilos específicos para elementos em células de tabela */
+td input[type="text"],
+td input[type="email"],
+td input[type="password"],
+td input[type="number"],
+td input[type="date"],
+td input[type="time"],
+td input[type="datetime"],
+td select,
+td textarea {
+    display: inline-block;
+    width: 95%;
+    padding: 4px;
+    margin: 2px;
+    height: auto;
+    min-height: 28px;
+}
+
 input[type="text"]:focus,
 input[type="email"]:focus,
 input[type="password"]:focus,
@@ -1049,3 +1080,32 @@ a {
 
 
 /* FIM ELEMENTOS */
+
+/* Garante visibilidade de tbody e tr para notificações */
+/* tbody deve usar display: table-row-group; as linhas (tr) usam table-row */
+#notification-rows-section,
+#notification-rows-tasker,
+#notification-rows-card {
+    display: table-row-group !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+#notification-rows-section tr,
+#notification-rows-tasker tr,
+#notification-rows-card tr {
+    display: table-row !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Make checkbox column minimal width so it only fits the checkbox */
+#section-notifications-import .table th:first-child,
+#section-notifications-import .table td:first-child,
+#div-notifications-tasker .table th:first-child,
+#div-notifications-tasker .table td:first-child,
+#div-import-notifications .table th:first-child,
+#div-import-notifications .table td:first-child {
+    width: 40px !important;
+    white-space: nowrap !important;
+    text-align: center !important;
+}

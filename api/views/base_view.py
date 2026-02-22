@@ -132,8 +132,8 @@ class BaseView(ViewSet):
         return self.serializer(*args, **kwargs)
 
     def _serialize_and_return(self, instances):
-        has_many = isinstance(instances, QuerySet)
-        serializer = self.serializer(instances, many=has_many)
+        has_many = isinstance(instances, QuerySet) or isinstance(instances, (list, tuple))
+        serializer = self._get_serializer(instances, many=has_many)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def _set_user(self, request):

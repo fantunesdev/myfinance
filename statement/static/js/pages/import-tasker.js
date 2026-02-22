@@ -114,9 +114,9 @@ async function importTaskerJSON() {
  * Renderiza as notificações em uma tabela
  */
 async function renderNotifications(notifications) {
-    const notificationRows = document.querySelector('#notification-rows');
+    const notificationRows = document.querySelector('#notification-rows-tasker');
     const boxNotifications = document.querySelector('#box-notifications');
-    const categories = await services.getResource('categories');
+    const categories = await services.getCategoriesByType('saida');
     
     notificationRows.innerHTML = '';
     
@@ -146,6 +146,11 @@ async function renderNotifications(notifications) {
                 type: 'select',
                 options: categories,
                 selected: null,
+                onChange: async (selectElem, cell) => {
+                    const subcategorySelect = cell.nextSibling.querySelector('select');
+                    const subcategories = await services.getChildrenResource('categories', 'subcategories', selectElem.value);
+                    updateSelectOptions(subcategorySelect, subcategories);
+                },
             },
             {
                 type: 'select',
@@ -205,10 +210,37 @@ function createInput(field) {
     const input = document.createElement('input');
     input.type = field.type || 'text';
     if (field.title) input.title = field.title;
-    input.value = field.value || '';
+    if (input.type === 'date') {
+        input.value = formatDateForInput(field.value || '');
+    } else {
+        input.value = field.value || '';
+    }
     input.classList.add('form-control');
     if (field.disabled) input.disabled = true;
     return input;
+}
+
+function formatDateForInput(value) {
+    if (!value) return '';
+    if (typeof value === 'number') {
+        const d = new Date(value);
+        if (isNaN(d)) return '';
+        return d.toISOString().slice(0, 10);
+    }
+    if (typeof value === 'string') {
+        const isoMatch = value.match(/^(\d{4}-\d{2}-\d{2})/);
+        if (isoMatch) return isoMatch[1];
+        const brMatch = value.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+        if (brMatch) return `${brMatch[3]}-${brMatch[2]}-${brMatch[1]}`;
+        const parsed = new Date(value);
+        if (!isNaN(parsed)) {
+            const y = parsed.getFullYear();
+            const m = String(parsed.getMonth() + 1).padStart(2, '0');
+            const d = String(parsed.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+    }
+    return '';
 }
 
 /**
@@ -227,6 +259,22 @@ function createSelect(field) {
     });
     
     return select;
+}
+
+/**
+ * Atualiza as options de um select com uma lista de options.
+ * @param {HTMLSelectElement} select
+ * @param {Array} options
+ */
+function updateSelectOptions(select, options) {
+    if (!select) return;
+    select.innerHTML = '';
+    options.forEach((opt) => {
+        const option = document.createElement('option');
+        option.value = opt.id;
+        option.textContent = opt.description;
+        select.appendChild(option);
+    });
 }
 
 /**
@@ -270,7 +318,7 @@ if (importTaskerBtn) {
 
 // Select all checkbox para Tasker
 const checkallTasker = document.querySelector('#checkall-tasker');
-const notificationRowsTasker = document.querySelector('#notification-rows');
+const notificationRowsTasker = document.querySelector('#notification-rows-tasker');
 
 if (checkallTasker && notificationRowsTasker) {
     checkallTasker.addEventListener('change', function() {
@@ -331,6 +379,8 @@ async function saveNotifications(notifications) {
                     title: notification.title,
                     message: notification.message,
                     is_used: false,
+                    // Preserve original notification date/time when available
+                    created_at: notification.date || notification.datetime || null,
                 }),
             });
             

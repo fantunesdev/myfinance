@@ -573,12 +573,14 @@ class Notification(models.Model):
         app (CharField): Aplicação relacionada à notificação.
         title (CharField): Título da notificação.
         message (TextField): Mensagem da notificação.
+        card (ForeignKey): Cartão associado à notificação (opcional).
         is_used (BooleanField): Indica se a notificação já foi utilizada.
         created_at (DateTimeField): Data e hora de criação da notificação.
     """
     app = models.CharField(max_length=50)
     title = models.CharField(max_length=255)
     message = models.TextField()
+    card = models.ForeignKey(Card, on_delete=models.CASCADE, null=True, blank=True, related_name='notifications')
     is_used = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 

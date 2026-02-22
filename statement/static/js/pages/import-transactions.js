@@ -73,7 +73,7 @@ async function sendFile() {
  * @param {array} transactions - Um array de transações importadas do arquivo da instituição financeira.
  */
 async function renderBox(transactions) {
-    const categories = await services.getResource('categories');
+    const categories = await services.getCategoriesByType('saida');
 
     boxTransactions.classList.remove('toggled');
     transactionRows.innerHTML = '';
@@ -200,10 +200,37 @@ function createInput(field) {
     if (field.title) {
         input.title = field.title;
     }
-    input.value = field.value || '';
+    if (input.type === 'date') {
+        input.value = formatDateForInput(field.value || '');
+    } else {
+        input.value = field.value || '';
+    }
     input.classList.add('form-control');
     if (field.disabled) input.disabled = true;
     return input;
+}
+
+function formatDateForInput(value) {
+    if (!value) return '';
+    if (typeof value === 'number') {
+        const d = new Date(value);
+        if (isNaN(d)) return '';
+        return d.toISOString().slice(0, 10);
+    }
+    if (typeof value === 'string') {
+        const isoMatch = value.match(/^(\d{4}-\d{2}-\d{2})/);
+        if (isoMatch) return isoMatch[1];
+        const brMatch = value.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+        if (brMatch) return `${brMatch[3]}-${brMatch[2]}-${brMatch[1]}`;
+        const parsed = new Date(value);
+        if (!isNaN(parsed)) {
+            const y = parsed.getFullYear();
+            const m = String(parsed.getMonth() + 1).padStart(2, '0');
+            const d = String(parsed.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+    }
+    return '';
 }
 
 /**

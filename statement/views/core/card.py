@@ -121,14 +121,12 @@ class CardView(BaseView):
                 'cards': cards,
             })
 
-        # Pega todas as notificações não usadas
-        notifications = list(NotificationService.get_by_filter(is_used=False))
-
-        # Valida qual notificação pertence a qual cartão do usuário
-        CardService.are_notifications_owner(cards, notifications)
-
+        # Pega todas as notificações não usadas que têm cartão associado
+        notifications = list(NotificationService.get_by_filter(is_used=False, card__isnull=False))
+        
         # Filtra apenas as notificações que pertencem aos cartões do usuário
-        user_notifications = [n for n in notifications if n.card_id is not None]
+        card_ids = {card.id for card in cards}
+        user_notifications = [n for n in notifications if n.card_id in card_ids]
 
         # Converte as notificações em transações para exibição
         transactions = []

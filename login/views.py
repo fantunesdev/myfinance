@@ -11,6 +11,7 @@ from login.forms.password_form import PasswordChangeCustomForm
 from login.models import Profile
 from login.services import user_services
 from login.services.profile import ProfileService
+from myfinance.settings import ENVIRONMENT
 
 # Create your views here.
 
@@ -119,9 +120,11 @@ def get_profile(request):
 
     :request (django.http.HttpRequest): - Informações sobre o cabeçalho, método e outros dados da requisição.
     """
-    microservice_client = TransactionClassifierClient(request.user)
-    status = microservice_client.status()
-    transaction_classifier = status['data']
+    transaction_classifier = None
+    if ENVIRONMENT != 'development':
+        microservice_client = TransactionClassifierClient(request.user)
+        status = microservice_client.status()
+        transaction_classifier = status['data']
     profile = ProfileService(request.user)
     templatetags = {
         'transaction_classifier': transaction_classifier,

@@ -124,42 +124,41 @@ class TransactionView(BaseView):
         """
         form = UploadFileForm(request.user)
         
-        # Busca os cartões do usuário para validação de notificações
-        cards = CardService.get_all(request.user)
-        
-        # Se há cartões, busca as notificações não usadas
+        # Busca as notificações não usadas que têm cartão associado
         notifications = []
-        if cards:
-            all_notifications = list(NotificationService.get_by_filter(is_used=False))
-            # Valida qual notificação pertence a qual cartão do usuário
-            CardService.are_notifications_owner(cards, all_notifications)
-            # Filtra apenas as notificações que pertencem aos cartões do usuário
-            user_notifications = [n for n in all_notifications if n.card_id is not None]
-            
-            # Converte as notificações em transações para exibição
-            for notification in user_notifications:
-                transaction_data = NotificationService.build_transaction_from_notification(notification, notification.card)
-                # Formata para o padrão do JavaScript
-                value = transaction_data.get('value', '')
-                if isinstance(value, str):
-                    value = value.replace(',', '.')  # Converte formato BR para padrão
-                    try:
-                        value = float(value)
-                    except (ValueError, TypeError):
-                        value = 0
+        all_notifications = list(NotificationService.get_by_filter(is_used=False, card__isnull=False))
+        
+        # Busca os cartões do usuário para validação
+        cards = CardService.get_all(request.user)
+        card_ids = {card.id for card in cards}
+        
+        # Filtra apenas as notificações que pertencem aos cartões do usuário
+        user_notifications = [n for n in all_notifications if n.card_id in card_ids]
+        
+        # Converte as notificações em transações para exibição
+        for notification in user_notifications:
+            transaction_data = NotificationService.build_transaction_from_notification(notification, notification.card)
+            # Formata para o padrão do JavaScript
+            value = transaction_data.get('value', '')
+            if isinstance(value, str):
+                value = value.replace(',', '.')  # Converte formato BR para padrão
+                try:
+                    value = float(value)
+                except (ValueError, TypeError):
+                    value = 0
 
-                # TODO: Quando usar notificações em produção, integrar transactionClassifier para predição de categorias
-                notifications.append({
-                    'id': notification.id,
-                    'date': transaction_data.get('release_date', '').strftime('%Y-%m-%d') if transaction_data.get('release_date') else '',
-                    'description': transaction_data.get('description', ''),
-                    'original_description': notification.message if hasattr(notification, 'message') else '',
-                    'value': value,
-                    'category': None,
-                    'subcategory': None,
-                    'card_id': notification.card_id,
-                    'notification_id': notification.id,
-                })
+            # TODO: Quando usar notificações em produção, integrar transactionClassifier para predição de categorias
+            notifications.append({
+                'id': notification.id,
+                'date': transaction_data.get('release_date', '').strftime('%Y-%m-%d') if transaction_data.get('release_date') else '',
+                'description': transaction_data.get('description', ''),
+                'original_description': notification.message if hasattr(notification, 'message') else '',
+                'value': value,
+                'category': None,
+                'subcategory': None,
+                'card_id': notification.card_id,
+                'notification_id': notification.id,
+            })
         
         specific_context = {
             'file_notifications_json': json.dumps([]),

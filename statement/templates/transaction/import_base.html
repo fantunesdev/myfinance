@@ -15,11 +15,11 @@
         <div class="box-body">
             <div class="form-group">
                 <label style="margin-right: 30px;">
-                    <input type="radio" name="import-type" value="file" checked id="import-type-file">
+                    <input type="radio" name="import-type" value="file" id="import-type-file">
                     <span>Importar por Arquivo</span>
                 </label>
                 <label>
-                    <input type="radio" name="import-type" value="notifications" id="import-type-notifications">
+                    <input type="radio" name="import-type" value="notifications" id="import-type-notifications" checked>
                     <span>Importar por Notificações</span>
                 </label>
             </div>
@@ -132,7 +132,7 @@
                                         <th>Valor</th>
                                     </tr>
                                 </thead>
-                                <tbody id="notification-rows">
+                                <tbody id="notification-rows-tasker">
                                 </tbody>
                             </table>
                             <input type="button" value="Cadastrar Notificações" class="btn btn-primary" id="save-tasker-notifications-btn">
@@ -192,7 +192,7 @@
                                 <th>Valor</th>
                             </tr>
                         </thead>
-                        <tbody id="notification-rows">
+                        <tbody id="notification-rows-section">
                         </tbody>
                     </table>
                     <input type="button" value="Cadastrar" class="btn btn-primary" id="send-notifications-btn">

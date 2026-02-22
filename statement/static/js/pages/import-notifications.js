@@ -1,8 +1,9 @@
 import * as services from '../data/services.js';
 
-const notificationRows = document.querySelector('#notification-rows');
+const notificationRows = document.querySelector('#section-notifications-import #notification-rows-section');
 const checkboxCheckAllNotifications = document.querySelector('#checkall-notifications');
 const sendNotificationsBtn = document.querySelector('#send-notifications-btn');
+const radioImportNotifications = document.querySelector('#import-type-notifications');
 
 /**
  * Renderiza a tabela de notificações para importação.
@@ -10,17 +11,29 @@ const sendNotificationsBtn = document.querySelector('#send-notifications-btn');
  * @param {array} notifications - Um array de notificações convertidas em transações.
  */
 async function renderNotificationsBox(notifications) {
-    const categories = await services.getResource('categories');
+    const categories = await services.getCategoriesByType('saida');
 
+    const notificationRows = document.querySelector('#section-notifications-import #notification-rows-section');
     notificationRows.innerHTML = '';
+    notificationRows.style.display = 'table-row-group';
+    const section = document.getElementById('section-notifications-import');
+    if (section) section.style.display = 'block';
+
 
     for (const notification of notifications) {
-        const row = document.createElement('tr');
-        // Se não houver categoria selecionada, passa um array vazio
-        const subcategories = notification.category ? await services.getChildrenResource('categories', 'subcategories', notification.category) : [];
-        const fields = getTransactionFields(notification, categories, subcategories);
-        renderFields(row, fields);
-        notificationRows.appendChild(row);
+        try {
+            const row = document.createElement('tr');
+            const subcategories = notification.category ? await services.getChildrenResource('categories', 'subcategories', notification.category) : [];
+            const fields = getTransactionFields(notification, categories, subcategories);
+            renderFields(row, fields);
+            notificationRows.appendChild(row);
+            notificationRows.style.display = 'table-row-group';
+            row.style.display = 'table-row';
+            row.style.visibility = 'visible';
+            row.style.opacity = '1';
+        } catch (error) {
+            console.error('Erro ao renderizar notificação:', notification, error);
+        }
     }
 }
 
@@ -41,15 +54,12 @@ function getTransactionFields(transaction, categories, subcategories) {
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
                 checkbox.id = transaction.id;
-
                 checkbox.addEventListener('change', () => {
                     row.classList.toggle('row-disabled', !checkbox.checked);
                 });
-
                 if (!checkbox.checked) {
                     row.classList.add('row-disabled');
                 }
-
                 cell.appendChild(checkbox);
             },
         },
@@ -57,15 +67,23 @@ function getTransactionFields(transaction, categories, subcategories) {
             id: `id_date_${transaction.id}`,
             type: 'date',
             value: transaction.date,
+            render: (cell) => {
+                const input = document.createElement('input');
+                input.type = 'date';
+                input.id = `id_date_${transaction.id}`;
+                input.value = transaction.date;
+                input.classList.add('form-control');
+                cell.appendChild(input);
+            },
         },
         {
             id: `id_category_${transaction.id}`,
             type: 'select',
             options: categories,
             selected: transaction.category,
-            onChange: async (select, cell) => {
-                const subcategorySelect = cell.nextSibling.querySelector('select');
-                const subcategories = await services.getChildrenResource('categories', 'subcategories', select.value);
+            onChange: async (selectElem, cell) => {
+                const subcategorySelect = document.getElementById(`id_subcategory_${transaction.id}`) || cell.nextSibling.querySelector('select');
+                const subcategories = await services.getChildrenResource('categories', 'subcategories', selectElem.value);
                 updateSelectOptions(subcategorySelect, subcategories);
             },
         },
@@ -80,12 +98,30 @@ function getTransactionFields(transaction, categories, subcategories) {
             type: 'text',
             value: transaction.description,
             title: `Original: ${transaction.original_description}`,
+            render: (cell) => {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.id = `id_description_${transaction.id}`;
+                input.value = transaction.description;
+                input.title = `Original: ${transaction.original_description}`;
+                input.classList.add('form-control');
+                cell.appendChild(input);
+            },
         },
         {
             id: `id_value_${transaction.id}`,
             type: 'text',
             value: transaction.value,
             disabled: true,
+            render: (cell) => {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.id = `id_value_${transaction.id}`;
+                input.value = transaction.value;
+                input.classList.add('form-control');
+                input.disabled = true;
+                cell.appendChild(input);
+            },
         },
     ];
 }
@@ -98,27 +134,28 @@ function getTransactionFields(transaction, categories, subcategories) {
  * @param {Array} fields Os campos a serem renderizados na linha.
  */
 function renderFields(row, fields) {
-
     fields.forEach((field) => {
-        const cell = row.insertCell();
+        try {
+            const cell = row.insertCell();
 
-        if (field.render) {
-            field.render(cell, row);
-            return;
-        }
-
-        let element;
-
-        if (field.type === 'select') {
-            element = createSelect(field);
-        } else {
-            element = createInput(field);
-        }
-
-        cell.appendChild(element);
-
-        if (field.onChange && field.type === 'select') {
-            element.addEventListener('change', () => field.onChange(element, cell));
+            if (field.render) {
+                field.render(cell, row);
+            } else {
+                let element;
+                if (field.type === 'select') {
+                    element = createSelect(field);
+                } else {
+                    element = createInput(field);
+                }
+                if (element) {
+                    cell.appendChild(element);
+                    if (field.onChange && field.type === 'select') {
+                        element.addEventListener('change', () => field.onChange(element, cell));
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Erro ao renderizar field:', field, error);
         }
     });
 }
@@ -136,10 +173,47 @@ function createInput(field) {
     if (field.title) {
         input.title = field.title;
     }
-    input.value = field.value || '';
+    // format date values to yyyy-mm-dd for date inputs so browser doesn't default to today
+    if (input.type === 'date') {
+        input.value = formatDateForInput(field.value || '');
+    } else {
+        input.value = field.value || '';
+    }
     input.classList.add('form-control');
     if (field.disabled) input.disabled = true;
     return input;
+}
+
+/**
+ * Formata diferentes formatos de data para o padrão aceito por input[type=date]: YYYY-MM-DD
+ * Aceita: 'YYYY-MM-DD', 'YYYY-MM-DDTHH:MM:SS', 'DD/MM/YYYY', timestamps, e strings parseáveis pelo Date.
+ */
+function formatDateForInput(value) {
+    if (!value) return '';
+    if (typeof value === 'number') {
+        const d = new Date(value);
+        if (isNaN(d)) return '';
+        return d.toISOString().slice(0, 10);
+    }
+    if (typeof value === 'string') {
+        // Already ISO-like
+        const isoMatch = value.match(/^(\d{4}-\d{2}-\d{2})/);
+        if (isoMatch) return isoMatch[1];
+
+        // DD/MM/YYYY
+        const brMatch = value.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+        if (brMatch) return `${brMatch[3]}-${brMatch[2]}-${brMatch[1]}`;
+
+        // Try Date parsing
+        const parsed = new Date(value);
+        if (!isNaN(parsed)) {
+            const y = parsed.getFullYear();
+            const m = String(parsed.getMonth() + 1).padStart(2, '0');
+            const d = String(parsed.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+    }
+    return '';
 }
 
 /**
@@ -153,13 +227,24 @@ function createSelect(field) {
     select.id = field.id;
     select.classList.add('form-control');
 
-    field.options.forEach((opt) => {
+    if (!field.options) {
+        console.warn('Opções vazias para select:', field.id);
         const option = document.createElement('option');
-        option.value = opt.id;
-        option.textContent = opt.description;
-        if (opt.id === field.selected) option.selected = true;
+        option.value = '';
+        option.textContent = 'Nenhuma opção disponível';
         select.appendChild(option);
-    });
+        return select;
+    }
+
+    if (Array.isArray(field.options)) {
+        field.options.forEach((opt) => {
+            const option = document.createElement('option');
+            option.value = opt.id;
+            option.textContent = opt.description;
+            if (opt.id === field.selected) option.selected = true;
+            select.appendChild(option);
+        });
+    }
 
     return select;
 }
@@ -365,10 +450,34 @@ if (sendNotificationsBtn) {
     });
 }
 
+if (radioImportNotifications) {
+    radioImportNotifications.addEventListener('change', async (e) => {
+        if (e.target.checked) {
+            // Exibe a seção de notificações
+            const section = document.getElementById('section-notifications-import');
+            section.classList.remove('toggled');
+            // Oculta outras seções
+            const fileSection = document.getElementById('section-file-import');
+            fileSection.classList.add('toggled');
+            // Renderiza as notificações
+            const notifications = window.myFinance.notifications;
+            await renderNotificationsBox(notifications);
+        }
+    });
+}
+
 // Inicializa a renderização das notificações assim que o módulo carrega
 (async () => {
-    const notifications = window.myFinance.notifications;
-    if (notifications && notifications.length > 0) {
+    const radioImportNotifications = document.querySelector('#import-type-notifications');
+    const notifications = window.myFinance ? window.myFinance.notifications : [];
+    if (radioImportNotifications && radioImportNotifications.checked && notifications && notifications.length > 0) {
+        const section = document.getElementById('section-notifications-import');
+        const fileSection = document.getElementById('section-file-import');
+        const notificationRows = document.getElementById('notification-rows-section');
+        section.classList.remove('toggled');
+        section.style.display = 'block';
+        fileSection.classList.add('toggled');
+        notificationRows.style.display = 'table-row-group';
         await renderNotificationsBox(notifications);
     }
 })();

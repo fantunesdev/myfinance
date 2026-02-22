@@ -1,4 +1,7 @@
 from django.core.exceptions import ObjectDoesNotExist
+from django.forms import modelform_factory
+from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 from rest_framework import status
 from rest_framework.response import Response
 
@@ -37,3 +40,49 @@ class NotificationView(BaseView):
             return Response({'detail': 'Notificação não encontrada.'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    def create(self, request):
+        """
+        Cria uma notificação, permitindo que o cliente envie `created_at` ou `date`.
+        Se fornecido, tenta parsear a data e atribuí-la antes de salvar a instância.
+        """
+        # Reaproveita a lógica de form do BaseView, mas define created_at manualmente
+        form_class = modelform_factory(self.model, exclude=['user'])
+        form = form_class(request.data)
+
+        if not form.is_valid():
+            return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        instance = form.save(commit=False)
+
+        # Procura por campos de data no payload (client pode enviar 'created_at' ou 'date')
+        raw_date = request.data.get('created_at') or request.data.get('date')
+        if raw_date:
+            # Tenta parse seguro com parse_datetime, caindo para formato comum se necessário
+            dt = parse_datetime(raw_date)
+            if dt is None:
+                try:
+                    # formato esperado: 'YYYY-MM-DD HH:MM:SS'
+                    from datetime import datetime
+
+                    dt = datetime.strptime(raw_date, '%Y-%m-%d %H:%M:%S')
+                except Exception:
+                    dt = None
+
+            if dt is not None:
+                # Garantir timezone-aware
+                if timezone.is_naive(dt):
+                    dt = timezone.make_aware(dt, timezone.get_current_timezone())
+                    instance.created_at = dt
+
+        # Salva a instância (Notification.class_has_user é False segundo StatementView)
+        instance.save()
+
+        # Se o cliente forneceu uma data, atualiza diretamente no banco para
+        # contornar o comportamento de `auto_now_add` que pode sobrescrever o valor.
+        if raw_date and dt is not None:
+            Notification.objects.filter(pk=instance.pk).update(created_at=dt)
+            instance.refresh_from_db()
+
+        serializer = self._get_serializer(instance)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
