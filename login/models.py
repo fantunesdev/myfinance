@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 from login.manager import UserManager
 
@@ -34,4 +35,7 @@ class Profile(models.Model):
     """
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     use_next_month = models.BooleanField(default=False)
-    next_month_day = models.PositiveBigIntegerField(default=10)
+    next_month_day = models.PositiveSmallIntegerField(
+        default=10,
+        validators=[MinValueValidator(1), MaxValueValidator(31)],
+    )

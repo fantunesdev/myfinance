@@ -1,13 +1,18 @@
 from django import forms
+from django.core.validators import MinValueValidator, MaxValueValidator
 
-from statement.models import NextMonthView
+from statement.services.next_month_view import NextMonthViewService
 
 
-class NextMonthViewForm(forms.ModelForm):
-    day = forms.IntegerField(label='Dia', widget=forms.NumberInput(attrs={'class': 'form-control'}))
+class NextMonthViewForm(forms.Form):
+    day = forms.IntegerField(
+        label='Dia',
+        widget=forms.NumberInput(attrs={'class': 'form-control'}),
+        validators=[MinValueValidator(1), MaxValueValidator(31)],
+    )
 
     active = forms.BooleanField(label='Antecipar visualização do mês?', required=False)
 
-    class Meta:
-        model = NextMonthView
-        fields = ['day', 'active']
+    def save(self, user):
+        data = self.cleaned_data
+        return NextMonthViewService.create(user=user, day=data.get('day'), active=data.get('active', False))

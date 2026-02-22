@@ -73,7 +73,7 @@
                     <tr>
                         <td>{{ profile.configs.use_next_month|handle_boolean }}</td>
                         <td>{{ profile.configs.next_month_day }}</td>
-                        <td><i class="fa-solid fa-pen-to-square action-icon cursor-pointer" id="next-month-update-btn"></i></td>
+                        <td><a href="{% url 'update_next_month_view' %}"><i class="fa-solid fa-pen-to-square action-icon cursor-pointer"></i></a></td>
                     </tr>
                 </tbody>
             </table>

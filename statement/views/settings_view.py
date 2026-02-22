@@ -30,7 +30,7 @@ class SettingsView(BaseView):
         """
         specific_content = {
             'accounts': AccountService.get_all(request.user),
-            'next_month_view': NextMonthViewService.get_all(request.user).first(),
+            'next_month_view': NextMonthViewService.get(request.user),
             'banks': BankService.get_all(),
             'flags': FlagService.get_all(),
             'cards': CardService.get_all(request.user),

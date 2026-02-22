@@ -3,26 +3,14 @@ Este módulo fornece serviços relacionados à configuração de visão do próx
 para interagir com o banco de dados e fornecer suas respectivas funcionalidades.
 """
 
-from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
 
 from statement.services.next_month_view import NextMonthViewService
 
 
 def get_next_month_view(user):
-    """
-    Obtém as configurações de visualização do próximo mês associada a um usuário.
-
-    Parameters:
-    - user: O usuário para o qual a visualização do próximo mês será recuperada.
-
-    Returns:
-    As configurações da visualização do próximo mês associada ao usuário.
-
-    Raises:
-    Http404: Se nenhuma configuração de visualização do próximo mês for encontrada para o usuário.
-    """
-    try:
-        return NextMonthViewService.get_all(user).first()
-    except ObjectDoesNotExist:
+    """Retorna a configuração de next month do `Profile` do usuário ou lança 404."""
+    nm = NextMonthViewService.get(user)
+    if nm is None:
         raise Http404
+    return nm

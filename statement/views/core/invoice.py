@@ -19,7 +19,7 @@ class InvoiceView(TransactionView):
         self._instance = None
 
     def get_current_month(self, request, id):
-        year, month = self._get_current_month()
+        year, month = self._get_current_month(request)
         return self.get_by_year_and_month(request, id, year, month)
 
     def get_by_year_and_month(self, request, id, year, month):

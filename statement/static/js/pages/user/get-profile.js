@@ -70,6 +70,7 @@ infos.forEach((info) => {
 
 function modalHandler(info) {
     const button = document.getElementById(info.id);
+    if (!button) return;
     button.addEventListener('click', function () {
         window.showModal(info.title, info.message, async function () {
             window.hideModal();

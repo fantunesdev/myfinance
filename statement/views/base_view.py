@@ -1,5 +1,6 @@
 import re
 from datetime import date
+from dateutil.relativedelta import relativedelta
 
 from django.contrib.auth.decorators import login_required
 from django.forms.widgets import HiddenInput, CheckboxInput, MultipleHiddenInput
@@ -9,6 +10,7 @@ from django.utils.decorators import method_decorator
 from statement.forms.general_forms import ExclusionForm
 from statement.services.core.account import AccountService
 from statement.services.core.card import CardService
+from statement.services.next_month_view import NextMonthViewService
 
 
 class BaseView:
@@ -178,9 +180,25 @@ class BaseView:
         """
         Define o contexto padrão para o template.
         """
+        # calcula ano/mês efetivo considerando configuração de "next month view"
+        today = date.today()
+        nm = None
+        try:
+            nm = NextMonthViewService.get(user)
+        except Exception:
+            nm = None
+
+        if nm and getattr(nm, 'active', False) and getattr(nm, 'day', 0) and today.day >= nm.day:
+            effective = today + relativedelta(months=1)
+            current_year = effective.year
+            current_month = effective.month
+        else:
+            current_year = today.year
+            current_month = today.month
+
         self.templatetags = {
-            'current_year': date.today().year,
-            'current_month': date.today().month,
+            'current_year': current_year,
+            'current_month': current_month,
             'extracts': AccountService.get_all(user),
             'invoices': CardService.get_all(user),
             'class_title': self.class_title,

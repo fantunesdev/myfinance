@@ -16,7 +16,7 @@ export async function getMonthYear() {
             year = today.getFullYear();
         } else {
             month =
-                today.getDate() < nextMonthView.day && nextMonthView.active
+                nextMonthView && nextMonthView.active && today.getDate() >= nextMonthView.day
                     ? today.getMonth() + 2
                     : today.getMonth() + 1;
             year = month <= 12 ? today.getFullYear() : today.getFullYear() + 1;

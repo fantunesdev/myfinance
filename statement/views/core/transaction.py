@@ -57,7 +57,7 @@ class TransactionView(BaseView):
         """
         View responsável por exibir os lançamentos ano-mês atual.
         """
-        year, month = self._get_current_month()
+        year, month = self._get_current_month(request)
         return self.get_by_year_and_month(request, year, month)
 
     @method_decorator(login_required)
@@ -182,11 +182,27 @@ class TransactionView(BaseView):
         
         return self._render(request, form, 'transaction/import_base.html', specific_context)
 
-    def _get_current_month(self):
+    def _get_current_month(self, request):
         """
-        Obtém o mês atual
+        Obtém o mês atual levando em conta a configuração de "next month view" do perfil.
+        Se o usuário habilitou e o dia atual for maior ou igual ao configurado, avança um mês.
         """
         today = now()
+        from statement.services.next_month_view import NextMonthViewService
+
+        try:
+            nm = NextMonthViewService.get(request.user)
+        except Exception:
+            nm = None
+
+        if nm and getattr(nm, 'active', False):
+            try:
+                day = int(getattr(nm, 'day', 0))
+            except Exception:
+                day = 0
+            if day > 0 and today.day >= day:
+                dt = today + relativedelta(months=1)
+                return [dt.year, dt.month]
         return [today.year, today.month]
 
     def _set_monthly_filter_by_date_attr(self, attr, user, year, month, **extra_filters):

@@ -312,12 +312,6 @@ class Transaction(models.Model):
         ordering = ['release_date']
 
 
-class NextMonthView(models.Model):
-    day = models.IntegerField()
-    active = models.BooleanField(blank=True)
-    user = models.ForeignKey(User, on_delete=models.PROTECT)
-
-
 class FixedExpenses(models.Model):
     """
     Classe que representa uma despesa fixa.

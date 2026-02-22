@@ -1,31 +1,17 @@
 from rest_framework import serializers
 
-from statement.models import NextMonthView
 
+class NextMonthViewSerializer(serializers.Serializer):
+    """Serializador simples que expõe `day` e `active` (do `Profile`)."""
 
-class NextMonthViewSerializer(serializers.ModelSerializer):
-    """
-    Serializador para a classe NextMonthView.
+    day = serializers.IntegerField(allow_null=True)
+    active = serializers.BooleanField()
 
-    Este serializador converte instâncias da classe NextMonthView em dados serializados
-    e vice-versa. Ele é usado para integrar objetos NextMonthView com o Django REST Framework.
+    def to_representation(self, instance):
+        if instance is None:
+            return {'day': None, 'active': False}
 
-    Attributes:
-        model (NextMonthView): O modelo associado ao serializador.
-        fields (str): Uma string indicando quais campos do modelo devem ser incluídos
-                      na serialização. No caso, '__all__' significa todos os campos.
-
-    """
-
-    class Meta:
-        """
-        Classe aninhada que fornece configurações adicionais para o serializador.
-
-        Attributes:
-            model (NextMonthView): O modelo associado ao serializador. Neste caso, a classe NextMonthView.
-            fields (str): Uma string indicando quais campos do modelo devem ser incluídos
-                          na serialização. No caso, '__all__' significa todos os campos.
-        """
-
-        model = NextMonthView
-        fields = '__all__'
+        return {
+            'day': getattr(instance, 'day', None),
+            'active': getattr(instance, 'active', False),
+        }

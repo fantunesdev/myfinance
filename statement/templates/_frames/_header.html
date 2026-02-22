@@ -76,3 +76,15 @@
             {% comment %} FIM PROFILE {% endcomment %}
         </header>
         {% comment %} FIM BARRA SUPERIOR {% endcomment %}
+        {% if current_year and current_month %}
+        <script>
+            (function () {
+                try {
+                    const ym = [{{ current_year }}, {{ current_month }}];
+                    sessionStorage.setItem('year-month', JSON.stringify(ym));
+                } catch (e) {
+                    console.warn('Could not set year-month in sessionStorage', e);
+                }
+            })();
+        </script>
+        {% endif %}
