@@ -11,6 +11,8 @@ from login.forms.password_form import PasswordChangeCustomForm
 from login.models import Profile
 from login.services import user_services
 from login.services.profile import ProfileService
+from statement.services.core.fixed_expenses import FixedExpensesService
+from statement.models import AppConfig
 from myfinance.settings import ENVIRONMENT
 
 # Create your views here.
@@ -121,14 +123,32 @@ def get_profile(request):
     :request (django.http.HttpRequest): - Informações sobre o cabeçalho, método e outros dados da requisição.
     """
     transaction_classifier = None
-    if ENVIRONMENT != 'development':
-        microservice_client = TransactionClassifierClient(request.user)
-        status = microservice_client.status()
-        transaction_classifier = status['data']
+    transaction_classifier_enabled = False
+
+    # Determina se o classificador está ativado (seguro: não falha se a tabela AppConfig estiver ausente)
+    try:
+        appcfg_enabled = False
+        try:
+            appcfg_enabled = AppConfig.get_solo().enable_transaction_classifier
+        except Exception:
+            appcfg_enabled = False
+
+        transaction_classifier_enabled = appcfg_enabled and (ENVIRONMENT != 'development')
+
+        if transaction_classifier_enabled:
+            microservice_client = TransactionClassifierClient(request.user)
+            status = microservice_client.status()
+            transaction_classifier = status['data']
+    except Exception:
+        transaction_classifier = None
+
     profile = ProfileService(request.user)
+    fixed_expenses = FixedExpensesService.get_all(request.user)
     templatetags = {
         'transaction_classifier': transaction_classifier,
+        'transaction_classifier_enabled': transaction_classifier_enabled,
         'profile': profile,
+        'fixed_expenses': fixed_expenses,
     }
     return render(request, 'user/get_profile.html', templatetags)
 

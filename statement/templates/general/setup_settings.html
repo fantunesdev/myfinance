@@ -8,65 +8,28 @@
     {% block content %}
         <div class="box box-primary">
             <div class="box-header">
-                <h3 class="box-title">Antecipar visualização do próximo mês</h3>
+                <h3 class="box-title">Configurações Gerais</h3>
             </div>
             <div class="box-body">
-                <table class="table">
-                    <thead>
-                    <tr>
-                        <th>Dia</th>
-                        <th>Ativo</th>
-                        <th>Editar</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr>
-                        <td>{{ next_month_view.day }}</td>
-                        <td>{{ next_month_view.active | bool_to_portuguese }}</td>
-                        <td>
-                            <a href="{% url 'update_next_month_view' %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="box-footer">
-
-            </div>
-        </div>
-        <div class="box box-primary">
-            <div class="box-header">
-                <h3 class="box-title">Despesas Fixas</h3>
-            </div>
-            <div class="box-body">
-                <a href="{% url 'create_fixed_expense' %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
                 <table class="table">
                     <thead>
                         <tr>
-                            <th>Data Inicial</th>
-                            <th>Data Final</th>
-                            <th>Descrição</th>
+                            <th>Chave</th>
                             <th>Valor</th>
                             <th>Ações</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for fixed_expense in fixed_expenses %}
                         <tr>
-                            <td><a href="#">{{ fixed_expense.start_date | date:"d/m/Y" }}</a></td>
-                            <td><a href="#">{{ fixed_expense.end_date | date:"d/m/Y" }}</a></td>
-                            <td><a href="#">{{ fixed_expense.description }}</a></td>
-                            <td><a href="#">{{ fixed_expense.value | to_reais }}</a></td>
-                            <td><a href="{% url 'update_fixed_expense' fixed_expense.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
+                            <td>Ativar Transaction Classifier</td>
+                            <td>{{ app_config_enable_transaction_classifier | bool_to_portuguese }}</td>
+                            <td><a href="{% url 'edit_app_config' %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
                         </tr>
-                        {% endfor %}
                     </tbody>
                 </table>
             </div>
-            <div class="box-footer">
-                <span>Total de itens listados: {{ fixed_expenses.count }}</span>
-            </div>
         </div>
+        {# Fixed expenses moved to user profile page #}
         </div>
         <div class="box box-primary">
             <div class="box-header">

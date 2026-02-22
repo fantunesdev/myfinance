@@ -4,6 +4,7 @@ import re
 
 from datetime import datetime
 from clients.transaction_classifier.transaction_classifier import TransactionClassifierClient
+from statement.models import AppConfig
 from statement.services.core.account import AccountService
 from statement.services.core.card import CardService
 from statement.services.core.category import CategoryService
@@ -74,22 +75,42 @@ class FileHandlerService:
         transactions = []
         reader = csv.DictReader(self._file.read().decode('utf-8').splitlines())
         for i, row in enumerate(reader):
-            # Obtém a predição da categoria e da subcategoria a partir do micro serviço
-            microservice_client = TransactionClassifierClient(self._user)
-            predicted = microservice_client.predict(row['title'], row.get('category', ''))
+            predicted = {
+                'category_id': None,
+                'subcategory_id': None,
+                'description': row['title'],
+            }
 
-            # Instancia a categoria predita para obter o tipo (entrada/saída)
-            category = CategoryService.get_by_id(predicted['category_id'], user=self._user)
+            # Only call classifier if global toggle enabled
+            try:
+                if AppConfig.get_solo().enable_transaction_classifier:
+                    microservice_client = TransactionClassifierClient(self._user)
+                    predicted = microservice_client.predict(row['title'], row.get('category', ''))
+            except Exception:
+                # On any failure, fallback to original values
+                predicted = {
+                    'category_id': None,
+                    'subcategory_id': None,
+                    'description': row['title'],
+                }
+
+            # If classifier returned a category id, instantiate to obtain type (entrada/saída)
+            category = None
+            if predicted.get('category_id'):
+                try:
+                    category = CategoryService.get_by_id(predicted['category_id'], user=self._user)
+                except Exception:
+                    category = None
             transaction = {
                 'id': i + 1,
                 'date': row['date'],
-                'type': category.type,
+                'type': category.type if category else 'saida',
                 'account': self._account.id if self._account else None,
                 'card': self._card.id if self._card else None,
                 'category': predicted['category_id'],
                 'subcategory': predicted['subcategory_id'],
                 'description': predicted['description'],
-                'original_description': row['title'],
+                'original_description': row.get('title') or row.get('description') or '',
                 'value': row['amount'],
             }
             transactions.append(transaction)

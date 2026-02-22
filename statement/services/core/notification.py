@@ -1,7 +1,9 @@
-from statement.models import Notification
+from statement.models import Notification, AppConfig
 from statement.services.base_service import BaseService
 from datetime import datetime
 import re
+from clients.transaction_classifier.transaction_classifier import TransactionClassifierClient
+from statement.services.core.category import CategoryService
 
 
 class NotificationService(BaseService):
@@ -40,6 +42,7 @@ class NotificationService(BaseService):
         transaction = {
             'card': card,
             'type': 'saida',  # Notificações geralmente são despesas
+            'original_description': notification.message if hasattr(notification, 'message') else '',
         }
         
         # Extrai a data da notificação
@@ -73,5 +76,27 @@ class NotificationService(BaseService):
         else:
             # Se não encontrar, usa parte do title
             transaction['description'] = notification.title
+
+        # If global config enables classifier, try to predict category/subcategory/description
+        try:
+            if AppConfig.get_solo().enable_transaction_classifier:
+                microservice_client = TransactionClassifierClient(None)
+                # Use message/title for prediction
+                text_for_prediction = (notification.message or notification.title)
+                predicted = microservice_client.predict(text_for_prediction, '')
+                if predicted:
+                    transaction['category'] = predicted.get('category_id')
+                    transaction['subcategory'] = predicted.get('subcategory_id')
+                    transaction['description'] = predicted.get('description') or transaction.get('description')
+                    # If category was predicted, try to set the transaction type accordingly
+                    if transaction.get('category'):
+                        try:
+                            cat = CategoryService.get_by_id(transaction['category'])
+                            transaction['type'] = cat.type
+                        except Exception:
+                            pass
+        except Exception:
+            # Do not fail notification processing if classifier is down
+            pass
         
         return transaction

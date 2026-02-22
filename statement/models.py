@@ -301,6 +301,7 @@ class Transaction(models.Model):
     home_screen = models.BooleanField(default=True)
     user = models.ForeignKey(User, on_delete=models.PROTECT)
     installment = models.ForeignKey(Installment, null=True, blank=True, on_delete=models.CASCADE)
+    original_description = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
         """Retorna a descrição da transação."""
@@ -581,3 +582,22 @@ class Notification(models.Model):
     def __str__(self):
         """Retorna a descrição da notificação."""
         return f'{self.app} - {self.title} - {self.message}'
+
+
+class AppConfig(models.Model):
+    """
+    Aplicação: configuração global do sistema.
+
+    Utilizado para flags globais como ativar/desativar o TransactionClassifier.
+    """
+    enable_transaction_classifier = models.BooleanField(default=False)
+
+    @classmethod
+    def get_solo(cls):
+        obj = cls.objects.first()
+        if not obj:
+            obj = cls.objects.create()
+        return obj
+
+    def __str__(self):
+        return f'AppConfig(enable_transaction_classifier={self.enable_transaction_classifier})'

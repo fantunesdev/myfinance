@@ -16,7 +16,7 @@ urlpatterns = [
     path('despesas_fixas/', include('statement.urls.core.fixed_expenses')),
     # Renda Fixa
     path('indices/', include('statement.urls.portfolio.fixed_income.index_urls')),
-    path('visualizacao_proximo_mes/', include('statement.urls.next_month_view_url')),
+    path('appconfig/editar/', settings_view.edit_app_config, name='edit_app_config'),
     # Renda Variável
     path('setor/', include('statement.urls.portfolio.variable_income.sector')),
     path('papel/', include('statement.urls.portfolio.variable_income.ticker')),
