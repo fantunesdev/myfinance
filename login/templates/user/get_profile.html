@@ -247,8 +247,85 @@
         </div>
     </div>
 
+    <div class="box box-primary">
+        <div class="box-header">
+            <h3 class="box-title">Dispositivos (API Token)</h3>
+        </div>
+        <div class="box-body">
+            <p>Gere um token para um dispositivo (ex: Tasker). Guarde o token exibido abaixo e configure o Tasker para usá-lo no header <code>Authorization: Bearer &lt;TOKEN&gt;</code>.</p>
+            <form action="{% url 'create_device' %}" method="post" style="margin-bottom: 1rem;">
+                {% csrf_token %}
+                <label for="id_name">Nome do dispositivo</label>
+                <input type="text" id="id_name" name="name" required />
+                <input type="submit" value="Gerar Token" class="btn btn-primary" />
+            </form>
+
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Token</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for device in devices %}
+                    <tr>
+                        <td>{{ device.name }}</td>
+                        <td>
+                            <a href="#" data-token="{{ device.token }}" onclick="copyToken(event)" title="Copiar">{{ device.token }}</i></a>
+                        </td>
+                        <td style="word-break: break-all;"></td>
+                        <td>
+                            <a href="#" data-token="{{ device.token }}" onclick="copyToken(event)" title="Copiar"><i class="fa-solid fa-clipboard action-icon"></i></a>
+                            <a href="{% url 'update_device' device.id %}" title="Editar"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
+                            <a href="{% url 'delete_device' device.id %}" title="Deletar"><i class="fa-solid fa-trash action-icon"></i></a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4">Nenhum dispositivo cadastrado.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <h4>Exemplo de requisição (Tasker / curl)</h4>
+            <p>URL: <b>http://192.168.100.10/api/notifications/</b></p>
+            <p>Header: <b>Authorization: Bearer &lt;DEVICE_TOKEN&gt;</b></p>
+            <p>Body exemplo:</p>
+            <pre>
+{
+  "app": %anpackage,
+  "title": %antitle,
+  "message": %antext,
+  "date": %agora,
+}
+            </pre>
+        </div>
+        <div class="box-footer"></div>
+    </div>
+
 {% endblock %}
 
 {% block scripts %}
 <script src="{% static 'js/pages/user/get-profile.js' %}" type="module"></script>
+<script>
+function copyToken(e){
+    e.preventDefault();
+    const token = e.currentTarget.getAttribute('data-token');
+    if(!token) return;
+    if(navigator.clipboard){
+        navigator.clipboard.writeText(token).then(()=>{
+            alert('Token copiado para área de transferência');
+        }).catch(()=>{ alert('Falha ao copiar token'); });
+    } else {
+        // fallback
+        const el = document.createElement('textarea');
+        el.value = token;
+        document.body.appendChild(el);
+        el.select();
+        try{ document.execCommand('copy'); alert('Token copiado'); }catch{ alert('Falha ao copiar'); }
+        document.body.removeChild(el);
+    }
+}
+</script>
 {% endblock %}

@@ -11,6 +11,7 @@ from login.forms.password_form import PasswordChangeCustomForm
 from login.models import Profile
 from login.services import user_services
 from login.services.profile import ProfileService
+from statement.services.core.device import DeviceService
 from statement.services.core.fixed_expenses import FixedExpensesService
 from statement.models import AppConfig
 from myfinance.settings import ENVIRONMENT
@@ -144,11 +145,14 @@ def get_profile(request):
 
     profile = ProfileService(request.user)
     fixed_expenses = FixedExpensesService.get_all(request.user)
+    # dispositivos do usuário
+    devices = DeviceService.get_all(request.user)
     templatetags = {
         'transaction_classifier': transaction_classifier,
         'transaction_classifier_enabled': transaction_classifier_enabled,
         'profile': profile,
         'fixed_expenses': fixed_expenses,
+        'devices': devices,
     }
     return render(request, 'user/get_profile.html', templatetags)
 

@@ -54,6 +54,8 @@ class NotificationView(BaseView):
             return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
 
         instance = form.save(commit=False)
+        # Vincula o usuário autenticado automaticamente
+        instance.user = request.user
 
         # Procura por campos de data no payload (client pode enviar 'created_at' ou 'date')
         raw_date = request.data.get('created_at') or request.data.get('date')

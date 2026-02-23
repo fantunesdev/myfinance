@@ -1,6 +1,11 @@
 from django.db import models
+import secrets
 
 from login.models import User
+
+
+def generate_device_token():
+    return secrets.token_hex(32)
 
 
 class Category(models.Model):
@@ -486,6 +491,23 @@ class Ticker(models.Model):
         ordering = ['description']
 
 
+class Device(models.Model):
+    """
+    Representa um dispositivo autenticado por token.
+
+    Atributos:
+        user (ForeignKey): Usuário associado ao dispositivo.
+        name (CharField): Nome do dispositivo.
+        token (CharField): Token de autenticação único do dispositivo.
+    """
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='devices')
+    name = models.CharField(max_length=100)
+    token = models.CharField(max_length=64, unique=True, default=generate_device_token, editable=False)
+
+    def __str__(self):
+        return f"{self.name} ({self.user})"
+
+
 class Sector(models.Model):
     """
     Representa um setor de mercado.
@@ -572,6 +594,7 @@ class Notification(models.Model):
         is_used (BooleanField): Indica se a notificação já foi utilizada.
         created_at (DateTimeField): Data e hora de criação da notificação.
     """
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications', null=True, blank=True)
     app = models.CharField(max_length=50)
     title = models.CharField(max_length=255)
     message = models.TextField()
