@@ -196,7 +196,7 @@ class Card(models.Model):
     @property
     def all_card_numbers(self):
         """ Retorna todos os números de cartão associados a este cartão."""
-        return self.all_card_numbers.all()
+        return self.card_numbers.all()
 
     def __str__(self):
         """Retorna a descrição do cartão de crédito."""
@@ -213,10 +213,12 @@ class CardNumber(models.Model):
 
     card = models.ForeignKey(Card, on_delete=models.CASCADE, related_name='card_numbers')
     number = models.CharField(max_length=20)
+    name = models.CharField(max_length=50, blank=True, null=True)
+    home_screen = models.BooleanField(default=True)
 
     def __str__(self):
         """Retorna o número do cartão de crédito."""
-        return self.number
+        return self.name if self.name else self.number
 
 
 class Currency(models.Model):
@@ -290,6 +292,7 @@ class Transaction(models.Model):
     payment_date = models.DateField()
     account = models.ForeignKey(Account, on_delete=models.PROTECT, null=True, blank=True)
     card = models.ForeignKey(Card, on_delete=models.PROTECT, null=True, blank=True)
+    card_number = models.ForeignKey(CardNumber, on_delete=models.SET_NULL, null=True, blank=True)
     category = models.ForeignKey(Category, on_delete=models.PROTECT)
     subcategory = models.ForeignKey(Subcategory, on_delete=models.PROTECT)
     description = models.CharField(max_length=255)

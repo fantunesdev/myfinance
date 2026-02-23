@@ -85,7 +85,31 @@ class CardView(BaseView):
                 self._preserve_unrendered_fields_after_validation(form, original_instance)
                 self._custom_actions(request=request, form=form, instance=form.instance)
                 self.service.update(form, form.instance)
+                # Save formset (CardNumber instances)
                 formset.save()
+
+                # Propagate card.home_screen to CardNumber children that were
+                # not explicitly modified in the formset. This ensures that
+                # toggling the parent card immediately affects card-number
+                # visibility in the home/invoice views while allowing the
+                # user to override individual CardNumber settings.
+                try:
+                    card_home = form.instance.home_screen
+                    for f in formset.forms:
+                        # Only consider existing instances (skip new empty forms)
+                        inst = getattr(f, 'instance', None)
+                        if not inst or not getattr(inst, 'pk', None):
+                            continue
+                        # If the user did not change the home_screen for this
+                        # form, enforce the card's value.
+                        changed = getattr(f, 'changed_data', [])
+                        if 'home_screen' not in changed:
+                            if inst.home_screen != card_home:
+                                inst.home_screen = card_home
+                                inst.save(update_fields=['home_screen'])
+                except Exception:
+                    # Don't block the update flow if propagation fails for some reason
+                    pass
                 return redirect(self.redirect_url)
             else:
                 print('Formulário ou formset inválido:')

@@ -476,6 +476,38 @@ td a:hover {
     opacity: 0.5;
 }
 
+/* Group header for invoice sections */
+.group-header td {
+    background: #131313;
+    font-weight: bold;
+    padding: 8px 12px;
+}
+
+.group-empty {
+    color: #9a9a9a;
+    font-style: italic;
+    padding: 12px;
+}
+
+/* Total badge shown on invoice group headers */
+.group-total {
+    float: right;
+    background: linear-gradient(180deg, #2b2b2b, #1b1b1b);
+    color: #ffffff;
+    border-radius: 12px;
+    padding: 6px 10px;
+    font-weight: 600;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.4) inset;
+}
+
+/* Footer row showing group totals */
+.group-total-row td {
+    text-align: right;
+    font-weight: 700;
+    padding-top: 8px;
+    border-top: 1px solid #212121;
+}
+
 /* FIM TABELA */
 
 

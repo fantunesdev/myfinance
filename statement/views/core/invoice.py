@@ -27,7 +27,51 @@ class InvoiceView(TransactionView):
         Sobrescreve a função base passando card_id extraído da URL.
         """
         self._card_id = id
-        return super().get_by_year_and_month(request, year, month)
+        # Build filters for the requested month/year
+        from django.db.models import Q
+        card = CardService.get_by_id(self._card_id)
+        # date filters + user (invoice should show all transactions regardless of home_screen)
+        date_filters = self._set_monthly_filter_by_date_attr('payment', request.user, year, month)
+
+        # Include transactions that reference the card directly or via card_number
+        instances = self.service.model.objects.filter(
+            Q(card=card) | Q(card_number__card=card),
+            **date_filters
+        ).select_related('card_number', 'card', 'account')
+
+        # Build grouped structure by CardNumber. First group transactions that
+        # reference the Card directly (card set, card_number null), then one
+        # group per CardNumber (if any). This allows the template to render a
+        # section per card number.
+        grouped = []
+        # Parent card group (transactions that reference the card itself)
+        parent_qs = instances.filter(card=card, card_number__isnull=True)
+        from django.db.models import Sum
+        parent_total = parent_qs.aggregate(total=Sum('value'))['total'] or 0
+        # If the card has specific CardNumbers registered, prefer showing
+        # only the per-CardNumber sections. Include the parent/card-level
+        # group only when there are transactions that belong to the parent
+        # (i.e., card-level transactions) so we don't render an extra empty
+        # header for the parent when the card_numbers exist.
+        if card.card_numbers.exists():
+            if parent_qs.exists():
+                grouped.append({'label': card.description, 'card_number': None, 'transactions': parent_qs, 'total': parent_total})
+        else:
+            grouped.append({'label': card.description, 'card_number': None, 'transactions': parent_qs, 'total': parent_total})
+
+        # Per-cardnumber groups: include groups even when empty so template
+        # can show a "Nenhum lançamento neste cartão." message.
+        for cn in card.card_numbers.all().order_by('number'):
+            cn_qs = instances.filter(card_number=cn)
+            cn_total = cn_qs.aggregate(total=Sum('value'))['total'] or 0
+            label = cn.name if getattr(cn, 'name', None) else cn.number
+            grouped.append({'label': label, 'card_number': cn, 'transactions': cn_qs, 'total': cn_total})
+
+        template = self._set_template_by_global_status('get_all')
+        specific_context = self._set_specific_context(instances, year, month)
+        # Add grouped list for invoice rendering without breaking dashboard logic
+        specific_context.update({'grouped_instances': grouped, 'instance': card})
+        return self._render(request, None, template, specific_context)
 
     def _set_additional_filters(self, **kwargs):
         """

@@ -70,43 +70,120 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for transaction in instances %}
-                        <tr style="border-left: solid 3px {{ transaction.category.color }}">
-                                {% if 'pesquisa' in request.path %}
-                                <td>{{ transaction.release_date | date:"d/m/Y"}}</td>
+                        {% if 'fatura' in request.path and grouped_instances %}
+                            {% for group in grouped_instances %}
+                                <tr class="group-header" data-group-index="{{ forloop.counter0 }}" {% if group.card_number %}data-card-number-id="{{ group.card_number.id }}"{% endif %}>
+                                    <td colspan="7">
+                                        <strong>{{ group.label }}</strong>
+                                    </td>
+                                </tr>
+                                {% if group.transactions.exists %}
+                                    {% for transaction in group.transactions %}
+                                        <tr style="border-left: solid 3px {{ transaction.category.color }}">
+                                        {% if 'pesquisa' in request.path %}
+                                            <td>{{ transaction.release_date | date:"d/m/Y"}}</td>
+                                        {% else %}
+                                            <td>{{ transaction.release_date | date:"d/m"}}</td>
+                                        {% endif %}
+                                        {% if transaction.account %}
+                                            <td>
+                                                <a href="{% url 'get_extract_by_account_year_and_month' transaction.account.id transaction.payment_date|date:'Y' transaction.payment_date|date:'m' %}">
+                                                    <img src="{{ transaction.account.bank.icon | handle_image }}" alt="Logotipo do banco {{ bank.description }}" style="max-height: 25px;">
+                                                </a>
+                                            </td>
+                                        {% else %}
+                                            <td>
+                                                {% if transaction.card %}
+                                                    <a href="{% url 'get_invoice_by_card_year_and_month' transaction.card.id transaction.payment_date|date:'Y' transaction.payment_date|date:'m' %}">
+                                                        <img src="{{ transaction.card.icon | handle_image }}" alt="Logotipo do cartão {{ transaction.card.description }}" style="max-height: 25px;">
+                                                    </a>
+                                                {% elif transaction.card_number %}
+                                                    <a href="{% url 'get_invoice_by_card_year_and_month' transaction.card_number.card.id transaction.payment_date|date:'Y' transaction.payment_date|date:'m' %}">
+                                                        <img src="{{ transaction.card_number.card.icon | handle_image }}" alt="Logotipo do cartão {{ transaction.card_number.card.description }}" style="max-height: 25px;">
+                                                    </a>
+                                                    <div class="small">{% if transaction.card_number.name %}{{ transaction.card_number.name }}{% else %}{{ transaction.card_number.number }}{% endif %}</div>
+                                                {% else %}
+                                                    &nbsp;
+                                                {% endif %}
+                                            </td>
+                                        {% endif %}
+                                        <td style="text-align: left; max-width: 150px; min-width:115px"><i class="{{ transaction.category.icon }}" style="padding:10px;"></i> {{ transaction.category }}</td>
+                                        <td style="text-align: left;">{{ transaction.subcategory }}</td>
+                                        <td style="text-align: left;">{{ transaction | paid_installments }}</td>
+                                        <td style="text-align: right; max-width: 50px; min-width:30px;">{{ transaction.value | to_currency:transaction.currency.symbol }}</td>
+                                        <td>
+                                            {% if transaction.installment %}
+                                                <a href="{% url 'detail_installment' transaction.installment.id %}"><i class="fa-solid fa-file-lines action-icon"></i></a>
+                                                <a href="{% url 'update_installment' transaction.installment.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
+                                                <a href="{% url 'delete_installment' transaction.installment.id %}"><i class="fa-solid fa-trash action-icon"></i></a>
+                                            {% else %}
+                                                <a href="{% url 'detail_transaction' transaction.id %}"><i class="fa-solid fa-file-lines action-icon"></i></a>
+                                                <a href="{% url 'update_transaction' transaction.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
+                                                <a href="{% url 'delete_transaction' transaction.id %}"><i class="fa-solid fa-trash action-icon"></i></a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    <tr class="group-total-row">
+                                        <td colspan="7">Total: {{ group.total|to_reais }}</td>
+                                    </tr>
                                 {% else %}
-                                <td>{{ transaction.release_date | date:"d/m"}}</td>
+                                    <tr>
+                                        <td colspan="7" class="group-empty">Nenhum lançamento neste cartão.</td>
+                                    </tr>
+                                    <tr class="group-total-row">
+                                        <td colspan="7">Total: {{ group.total|to_reais }}</td>
+                                    </tr>
                                 {% endif %}
-                            {% if transaction.account %}
-                            <td>
-                                <a href="{% url 'get_extract_by_account_year_and_month' transaction.account.id transaction.payment_date|date:'Y' transaction.payment_date|date:'m' %}">
-                                    <img src="{{ transaction.account.bank.icon | handle_image }}" alt="Logotipo do banco {{ bank.description }}" style="max-height: 25px;">
-                                </a>
-                            </td>
-                            {% else %}
-                            <td>
-                                <a href="{% url 'get_invoice_by_card_year_and_month' transaction.card.id transaction.payment_date|date:'Y' transaction.payment_date|date:'m' %}">
-                                    <img src="{{ transaction.card.icon | handle_image }}" alt="Logotipo do cartão {{ transaction.card.description }}" style="max-height: 25px;">
-                                </a>
-                            </td>
-                            {% endif %}
-                            <td style="text-align: left; max-width: 150px; min-width:115px"><i class="{{ transaction.category.icon }}" style="padding:10px;"></i> {{ transaction.category }}</td>
-                            <td style="text-align: left;">{{ transaction.subcategory }}</td>
-                            <td style="text-align: left;">{{ transaction | paid_installments }}</td>
-                            <td style="text-align: right; max-width: 50px; min-width:30px;">{{ transaction.value | to_currency:transaction.currency.symbol }}</td>
-                            <td>
-                                {% if transaction.installment %}
-                                <a href="{% url 'detail_installment' transaction.installment.id %}"><i class="fa-solid fa-file-lines action-icon"></i></a>
-                                <a href="{% url 'update_installment' transaction.installment.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
-                                <a href="{% url 'delete_installment' transaction.installment.id %}"><i class="fa-solid fa-trash action-icon"></i></a>
-                                {% else %}
-                                <a href="{% url 'detail_transaction' transaction.id %}"><i class="fa-solid fa-file-lines action-icon"></i></a>
-                                <a href="{% url 'update_transaction' transaction.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
-                                <a href="{% url 'delete_transaction' transaction.id %}"><i class="fa-solid fa-trash action-icon"></i></a>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
+                            {% endfor %}
+                        {% else %}
+                            {% for transaction in instances %}
+                                <tr style="border-left: solid 3px {{ transaction.category.color }}">
+                                    {% if 'pesquisa' in request.path %}
+                                        <td>{{ transaction.release_date | date:"d/m/Y"}}</td>
+                                    {% else %}
+                                        <td>{{ transaction.release_date | date:"d/m"}}</td>
+                                    {% endif %}
+                                    {% if transaction.account %}
+                                        <td>
+                                            <a href="{% url 'get_extract_by_account_year_and_month' transaction.account.id transaction.payment_date|date:'Y' transaction.payment_date|date:'m' %}">
+                                                <img src="{{ transaction.account.bank.icon | handle_image }}" alt="Logotipo do banco {{ bank.description }}" style="max-height: 25px;">
+                                            </a>
+                                        </td>
+                                    {% else %}
+                                        <td>
+                                            {% if transaction.card %}
+                                                <a href="{% url 'get_invoice_by_card_year_and_month' transaction.card.id transaction.payment_date|date:'Y' transaction.payment_date|date:'m' %}">
+                                                    <img src="{{ transaction.card.icon | handle_image }}" alt="Logotipo do cartão {{ transaction.card.description }}" style="max-height: 25px;">
+                                                </a>
+                                            {% elif transaction.card_number %}
+                                                <a href="{% url 'get_invoice_by_card_year_and_month' transaction.card_number.card.id transaction.payment_date|date:'Y' transaction.payment_date|date:'m' %}">
+                                                    <img src="{{ transaction.card_number.card.icon | handle_image }}" alt="Logotipo do cartão {{ transaction.card_number.card.description }}" style="max-height: 25px;">
+                                                </a>
+                                                <div class="small">{% if transaction.card_number.name %}{{ transaction.card_number.name }}{% else %}{{ transaction.card_number.number }}{% endif %}</div>
+                                            {% else %}
+                                                &nbsp;
+                                            {% endif %}
+                                        </td>
+                                    {% endif %}
+                                    <td style="text-align: left; max-width: 150px; min-width:115px"><i class="{{ transaction.category.icon }}" style="padding:10px;"></i> {{ transaction.category }}</td>
+                                    <td style="text-align: left;">{{ transaction.subcategory }}</td>
+                                    <td style="text-align: left;">{{ transaction | paid_installments }}</td>
+                                    <td style="text-align: right; max-width: 50px; min-width:30px;">{{ transaction.value | to_currency:transaction.currency.symbol }}</td>
+                                    <td>
+                                        {% if transaction.installment %}
+                                            <a href="{% url 'detail_installment' transaction.installment.id %}"><i class="fa-solid fa-file-lines action-icon"></i></a>
+                                            <a href="{% url 'update_installment' transaction.installment.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
+                                            <a href="{% url 'delete_installment' transaction.installment.id %}"><i class="fa-solid fa-trash action-icon"></i></a>
+                                        {% else %}
+                                            <a href="{% url 'detail_transaction' transaction.id %}"><i class="fa-solid fa-file-lines action-icon"></i></a>
+                                            <a href="{% url 'update_transaction' transaction.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
+                                            <a href="{% url 'delete_transaction' transaction.id %}"><i class="fa-solid fa-trash action-icon"></i></a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% endif %}
                     </tbody>
                 </table>
             </div>
@@ -119,4 +196,7 @@
     {% block scripts %}
     <script src="{% static 'js/pages/get-transactions.js' %}" type="module"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.0/dist/chart.min.js"></script>
+    {% if 'fatura' in request.path %}
+    <script src="{% static 'js/pages/invoice-group.js' %}" type="module"></script>
+    {% endif %}
     {% endblock %}

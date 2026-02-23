@@ -33,25 +33,34 @@ class CardService(BaseService):
         :param notification: A notificação a ser verificada.
         :return: True se a notificação pertence ao cartão, False caso contrário.
         """
-        # Verifica se o app da notificação bate com o app_id do banco
+        # Require app_id match first (notification.app identifies the bank)
         if notification.app != card.account.bank.app_id:
             return False
-        
-        # Extrai os 4 últimos dígitos da mensagem (padrão: "final 8599")
-        match = re.search(r'final\s+(\d{4})', notification.message, re.IGNORECASE)
-        if not match:
-            return False
-        
-        last_four_digits = match.group(1)
-        
-        # Verifica se algum número de cartão vinculado termina com esses dígitos
-        card_numbers = card.card_numbers.all()
-        for card_number in card_numbers:
-            # Remove espaços em branco e pega os últimos 4 dígitos
-            number_without_spaces = card_number.number.replace(' ', '')
-            if number_without_spaces.endswith(last_four_digits):
-                return True
-        
+
+        # If notification has a user, ensure it matches card.user (new requirement)
+        if getattr(notification, 'user', None) is not None:
+            if notification.user_id != getattr(card.user, 'id', None):
+                return False
+
+        # Prefer matching by card number when card has numbers registered.
+        card_numbers = list(card.card_numbers.all())
+        if card_numbers:
+            # Try to extract the last 4 digits from the notification message (e.g. "final 8599")
+            match = re.search(r'final\s+(\d{4})', (notification.message or ''), re.IGNORECASE)
+            if match:
+                last_four_digits = match.group(1)
+                for card_number in card_numbers:
+                    number_without_spaces = (card_number.number or '').replace(' ', '')
+                    if number_without_spaces.endswith(last_four_digits):
+                        return True
+                # If message contains final but none of the card numbers match, do NOT bind
+                return False
+
+        # Fallback/default: bind by user + app_id (already checked app_id above).
+        # If notification.user is None and card has no numbers, we avoid binding to be safe.
+        if getattr(notification, 'user', None) is not None:
+            return notification.user_id == getattr(card.user, 'id', None)
+
         return False
 
     @staticmethod

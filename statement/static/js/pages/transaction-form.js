@@ -160,3 +160,121 @@ function twoDigitFloatHandler(event) {
 }
 
 selectPaymentMethod();
+
+// Populate card_number select based on selected card using data injected in template
+async function populateCardNumbersForCard(cardId) {
+    const select = document.getElementById('id_card_number');
+    const wrapper = document.getElementById('div-card-number');
+    console.log('populateCardNumbersForCard called with cardId=', cardId, 'selectExists=', !!select, 'wrapperExists=', !!wrapper);
+    if (!select || !wrapper) {
+        console.log('populateCardNumbersForCard: missing select or wrapper, aborting');
+        return;
+    }
+
+    // card_numbers_json may be injected as a JS array (object) or as a JSON string.
+    const raw = window.card_numbers_json || '[]';
+    let cardNumbers = [];
+    if (typeof raw === 'string') {
+        try {
+            cardNumbers = JSON.parse(raw);
+        } catch (e) {
+            cardNumbers = [];
+        }
+    } else if (Array.isArray(raw)) {
+        cardNumbers = raw;
+    } else {
+        // Unexpected type, attempt to coerce
+        try {
+            cardNumbers = JSON.parse(JSON.stringify(raw));
+        } catch (e) {
+            cardNumbers = [];
+        }
+    }
+
+    console.log('populateCardNumbersForCard: parsed cardNumbers count=', cardNumbers.length);
+    // Filter by cardId
+    const list = cardNumbers.filter(c => String(c.card_id) === String(cardId));
+    console.log('populateCardNumbersForCard: filtered list count=', list.length, 'sample=', list.slice(0,5));
+
+    // Clear existing options and add placeholder
+    select.innerHTML = '';
+    const emptyOpt = document.createElement('option');
+    emptyOpt.value = '';
+    emptyOpt.text = '---';
+    select.appendChild(emptyOpt);
+
+    if (list.length === 0) {
+        console.log('populateCardNumbersForCard: no card numbers for this cardId, hiding wrapper');
+        wrapper.style.display = 'none';
+        wrapper.classList.remove('active');
+        return;
+    }
+
+    list.forEach(n => {
+        const opt = document.createElement('option');
+        opt.value = n.id;
+        opt.text = n.name ? `${n.name} (${n.number})` : n.number;
+        select.appendChild(opt);
+    });
+
+    // If there's a preselected value from the form, keep it
+    const pre = select.getAttribute('data-initial');
+    if (pre) select.value = pre;
+
+    console.log('populateCardNumbersForCard: populated select with', list.length, 'options, showing wrapper');
+    wrapper.style.display = 'block';
+    wrapper.classList.add('active');
+}
+
+// Quando um cartão é selecionado, popula o select de números de cartão relacionados a ele usando os dados injetados no template. Se nenhum cartão for selecionado, esconde o campo de número do cartão.
+function cardChangeHandler(e) {
+    try {
+        console.log('cardChangeHandler: triggered, value=', e && e.target ? e.target.value : e);
+    } catch (err) {}
+    const val = e && e.target ? e.target.value : e;
+    populateCardNumbersForCard(val);
+}
+
+const attachCardChangeListener = () => {
+    const el = document.getElementById('id_card');
+    const selFromSelects = selects.card;
+    let attached = false;
+
+    if (el) {
+        console.log('attachCardChangeListener: attaching handler to DOM element #id_card, value=', el.value);
+        el.addEventListener('change', cardChangeHandler);
+        attached = true;
+    }
+
+    if (selFromSelects && selFromSelects !== el) {
+        console.log('attachCardChangeListener: attaching handler to selects.card reference, value=', selFromSelects.value);
+        selFromSelects.addEventListener('change', cardChangeHandler);
+        attached = true;
+    }
+
+    return attached;
+};
+
+if (!attachCardChangeListener()) {
+    console.log('attachCardChangeListener: element not found yet, will wait DOMContentLoaded');
+    document.addEventListener('DOMContentLoaded', () => {
+        const attached = attachCardChangeListener();
+        console.log('DOMContentLoaded: attachCardChangeListener returned', attached);
+        // Also run initial populate after DOM ready
+        const el = document.getElementById('id_card') || selects.card;
+        if (el) {
+            console.log('DOMContentLoaded: running initial populate for #id_card value', el.value);
+            populateCardNumbersForCard(el.value);
+            // ensure any other scripts that set the select value trigger population
+            if (el.value) el.dispatchEvent(new Event('change'));
+        }
+    });
+} else {
+    // If element exists now, also run initial populate immediately
+    const el = document.getElementById('id_card') || selects.card;
+    console.log('attachCardChangeListener: attached immediately, running initial populate for value', el && el.value);
+    if (el) {
+        populateCardNumbersForCard(el.value);
+        if (el.value) el.dispatchEvent(new Event('change'));
+    }
+}

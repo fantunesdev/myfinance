@@ -31,7 +31,7 @@ class CardForm(BaseForm):
 class CardNumberForm(forms.ModelForm):
     class Meta:
         model = CardNumber
-        fields = ['number']
+        fields = ['number', 'name', 'home_screen']
         widgets = {
             'number': forms.TextInput(attrs={'placeholder': 'Número do cartão'}),
         }

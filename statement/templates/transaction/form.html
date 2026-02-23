@@ -31,6 +31,11 @@
                                 {{ form.card }}
                                 {{ form.card.errors }}
                             </div>
+                            <div id="div-card-number" class="toggled" style="display:none;">
+                                <label for="id_card_number">Número do cartão</label>
+                                {{ form.card_number }}
+                                {{ form.card_number.errors }}
+                            </div>
                         </div>
 
                         {% if context == 'update' %}
@@ -162,6 +167,19 @@
                 </div>
             </form>
         </div>
+        {% if card_numbers_json %}
+        <script>
+            // Inject card numbers JSON for the transaction form JS
+            window.card_numbers_json = {{ card_numbers_json|safe }};
+            document.addEventListener('DOMContentLoaded', function(){
+                var sel = document.getElementById('id_card_number');
+                try {
+                    var init = '{{ form.initial.card_number|default_if_none:"" }}';
+                    if (sel && init) sel.setAttribute('data-initial', init);
+                } catch (e) {}
+            });
+        </script>
+        {% endif %}
     {% endblock %}
 
     {% block scripts %}

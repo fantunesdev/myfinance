@@ -5,6 +5,7 @@ from statement.models import Transaction
 from statement.services.core.category import CategoryService
 from statement.services.core.subcategory import SubcategoryService
 from statement.utils.datetime import DateTimeUtils
+from statement.models import CardNumber
 
 today = DateTimeUtils.today()
 
@@ -42,6 +43,25 @@ class TransactionForm(BaseForm):
             'observation': forms.Textarea(attrs={'class': 'form-control textarea'}),
         }
 
+    def __init__(self, user, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # On initial GET render, expose all card numbers so JS can populate the
+        # select dynamically. On POST, restrict queryset to card chosen in data
+        # so validation respects the selected card.
+        try:
+            if self.data:
+                card_id = self.data.get('card') or self.initial.get('card')
+                if card_id:
+                    self.fields['card_number'].queryset = CardNumber.objects.filter(card_id=card_id)
+                else:
+                    self.fields['card_number'].queryset = CardNumber.objects.none()
+            else:
+                # Expose all for client-side handling
+                self.fields['card_number'].queryset = CardNumber.objects.select_related('card').all()
+        except Exception:
+            # In case field isn't present or model changed, fail silently
+            pass
+
 
 class TransactionTypeForm(TransactionForm):
     """Classe base para filtrar categorias por tipo."""
@@ -49,7 +69,7 @@ class TransactionTypeForm(TransactionForm):
     transaction_type = None
 
     def __init__(self, user, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__(user, *args, **kwargs)
 
         self.fields.pop('type', None)
 

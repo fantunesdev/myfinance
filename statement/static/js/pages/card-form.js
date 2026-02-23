@@ -16,10 +16,22 @@
         return;
     }
 
+    // Ensure management TOTAL_FORMS reflects actual rendered forms on load
+    (function syncTotalForms() {
+        try {
+            const currentForms = container.querySelectorAll('.card-number-form').length;
+            if (totalFormsInput) totalFormsInput.value = currentForms;
+        } catch (e) {
+            // ignore
+        }
+    })();
+
     // Extrai templates dos elementos vazios
     const emptyFormInput = document.querySelector('[data-empty-form-input]');
+    const emptyFormHome = document.querySelector('[data-empty-form-home]');
     const emptyFormId = document.querySelector('[data-empty-form-id]');
     const emptyFormDelete = document.querySelector('[data-empty-form-delete]');
+    const emptyFormName = document.querySelector('[data-empty-form-name]');
 
     // Função para formatar número do cartão
     function formatCardNumber(value) {
@@ -39,18 +51,18 @@
                 // Pega o valor anterior e a posição do cursor
                 const oldValue = this.value;
                 const cursorPos = this.selectionStart;
-                
+
                 // Formata o novo valor
                 const formatted = formatCardNumber(this.value);
-                
+
                 // Só atualiza se realmente mudou
                 if (formatted !== oldValue) {
                     this.value = formatted;
-                    
+
                     // Calcula a nova posição do cursor
                     // Conta quantos dígitos tem antes da posição original
                     const beforeCursor = oldValue.substring(0, cursorPos).replace(/\D/g, '').length;
-                    
+
                     // Encontra onde esses dígitos terminam na string formatada
                     let digitCount = 0;
                     let newCursorPos = 0;
@@ -63,12 +75,12 @@
                             }
                         }
                     }
-                    
+
                     // Se não encontrou (último dígito), coloca no final
                     if (newCursorPos === 0) {
                         newCursorPos = formatted.length;
                     }
-                    
+
                     this.setSelectionRange(newCursorPos, newCursorPos);
                 }
             });
@@ -162,14 +174,23 @@
         const inputHtml = emptyFormInput ? emptyFormInput.innerHTML.replace(/__prefix__/g, currentCount) : '';
         const idHtml = emptyFormId ? emptyFormId.innerHTML.replace(/__prefix__/g, currentCount) : '';
         const deleteHtml = emptyFormDelete ? emptyFormDelete.innerHTML.replace(/__prefix__/g, currentCount) : '';
+        const nameHtml = emptyFormName ? emptyFormName.innerHTML.replace(/__prefix__/g, currentCount) : '';
+        const homeHtml = emptyFormHome ? emptyFormHome.innerHTML.replace(/__prefix__/g, currentCount) : '';
         
         newFormDiv.innerHTML = `
+            <div class="form-group-inline">
+                <label>Nome</label>
+                ${nameHtml}
+            </div>
             <div class="form-group-inline">
                 <label>Número do Cartão</label>
                 <div class="input-with-button">
                     ${inputHtml}
                     <button type="button" class="btn-remove-card-number">Remover</button>
                 </div>
+            </div>
+            <div class="form-group-inline home-screen-wrapper">
+                ${homeHtml}
             </div>
             ${idHtml}
             ${deleteHtml}
@@ -191,8 +212,69 @@
         if (numberInput) {
             numberInput.focus();
         }
+        // Garante que o checkbox home_screen tenha um label clicável
+        const homeCheckbox = newFormDiv.querySelector('input[type="checkbox"][name$="-home_screen"]');
+        if (homeCheckbox) {
+            let label = newFormDiv.querySelector('label.home-screen-label');
+            const wrapper = newFormDiv.querySelector('.home-screen-wrapper');
+                if (!label) {
+                label = document.createElement('label');
+                label.className = 'home-screen-label';
+                label.setAttribute('for', homeCheckbox.id);
+                const stateText = homeCheckbox.checked ? 'Ativado' : 'Desativado';
+                label.textContent = `Tela Inicial: ${stateText}`;
+                if (wrapper) wrapper.appendChild(label);
+            } else {
+                label.setAttribute('for', homeCheckbox.id);
+                const stateText = homeCheckbox.checked ? 'Ativado' : 'Desativado';
+                label.textContent = `Tela Inicial: ${stateText}`;
+            }
+            label.addEventListener('click', function(e) {
+                e.preventDefault();
+                homeCheckbox.checked = !homeCheckbox.checked;
+                const stateText = homeCheckbox.checked ? 'Ativado' : 'Desativado';
+                label.textContent = `Tela Inicial: ${stateText}`;
+            });
+        }
     });
 
     // Adiciona listeners aos forms existentes
     document.querySelectorAll('.card-number-form').forEach(addRemoveEventToForm);
+
+    // Before submitting the parent form, synchronize TOTAL_FORMS with DOM
+    (function attachSubmitSync() {
+        const parentForm = container.closest('form');
+        if (!parentForm) return;
+        parentForm.addEventListener('submit', function() {
+            const currentForms = container.querySelectorAll('.card-number-form').length;
+            if (totalFormsInput) totalFormsInput.value = currentForms;
+        });
+    })();
+
+    // Garante labels clicáveis para checkboxes já existentes na página
+    document.querySelectorAll('.card-number-form').forEach(formDiv => {
+        const homeCheckbox = formDiv.querySelector('input[type="checkbox"][name$="-home_screen"]');
+        if (homeCheckbox) {
+            let label = formDiv.querySelector('label.home-screen-label');
+            const wrapper = formDiv.querySelector('.home-screen-wrapper') || formDiv;
+            if (!label) {
+                label = document.createElement('label');
+                label.className = 'home-screen-label';
+                label.setAttribute('for', homeCheckbox.id);
+                const stateText = homeCheckbox.checked ? 'Ativado' : 'Desativado';
+                label.textContent = `Tela Inicial: ${stateText}`;
+                wrapper.appendChild(label);
+            } else {
+                label.setAttribute('for', homeCheckbox.id);
+                const stateText = homeCheckbox.checked ? 'Ativado' : 'Desativado';
+                label.textContent = `Tela Inicial: ${stateText}`;
+            }
+            label.addEventListener('click', function(e) {
+                e.preventDefault();
+                homeCheckbox.checked = !homeCheckbox.checked;
+                const stateText = homeCheckbox.checked ? 'Ativado' : 'Desativado';
+                label.textContent = `Tela Inicial: ${stateText}`;
+            });
+        }
+    });
 })();

@@ -67,9 +67,15 @@ class TransactionService(BaseService):
 
         :instance: Uma instância do model Transaction
         """
-        if instance.account:
+        # Prefer specific card number setting when present
+        if getattr(instance, 'card_number', None):
+            return instance.card_number.home_screen
+        if getattr(instance, 'card', None):
+            return instance.card.home_screen
+        if getattr(instance, 'account', None):
             return instance.account.home_screen
-        return instance.card.home_screen
+        # Fallback to the instance value (or model default)
+        return instance.home_screen
 
     @staticmethod
     def set_card_release_date(transaction):

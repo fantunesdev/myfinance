@@ -6,6 +6,7 @@ from dateutil.relativedelta import relativedelta
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.utils.timezone import now
+from django.shortcuts import redirect
 
 from clients.transaction_classifier.transaction_classifier import TransactionClassifierClient
 from statement.forms.core.transaction import TransactionExpenseForm, TransactionForm, TransactionRevenueForm
@@ -17,6 +18,8 @@ from statement.services.core.installment import InstallmentService
 from statement.services.core.notification import NotificationService
 from statement.services.core.transaction import TransactionService
 from statement.utils.datetime import DateTimeUtils
+from statement.models import CardNumber
+import json
 from statement.views.base_view import BaseView
 
 
@@ -50,7 +53,31 @@ class TransactionView(BaseView):
 
     def create(self, request, type, id=None):
         self._type = type
-        return super().create(request, id)
+        # Custom create to include card_numbers_json in the template context
+        self._context = 'create'
+        user = self._get_user(request)
+        if request.method == 'POST':
+            form = self._set_form(request, instance=None)
+            if form.is_valid():
+                instance = self.service.create(form=form, user=user, id=id)
+                self._custom_actions(request=request, form=form, instance=instance)
+                return redirect(self.redirect_url)
+            else:
+                print('Formulário inválido:')
+                print(form.errors)
+        else:
+            form = self._set_form(request, instance=None)
+
+        # Provide card numbers JSON for the form JS
+        card_numbers_qs = CardNumber.objects.select_related('card').all()
+        card_numbers = list(card_numbers_qs.values('id', 'number', 'name', 'card_id'))
+
+        specific_content = {
+            'create': True,
+            'card_numbers_json': json.dumps(card_numbers),
+        }
+        template = self._set_template_by_global_status('create')
+        return self._render(request, form, template, specific_content)
 
     @method_decorator(login_required)
     def get_current_month(self, request):
@@ -228,11 +255,16 @@ class TransactionView(BaseView):
         return {}
 
     def _set_specific_context(self, instances, year, month, **kwargs):
+        # Provide card numbers data to templates (as JSON) so client-side
+        # form logic can populate the card_number select dynamically.
+        card_numbers_qs = CardNumber.objects.select_related('card').all()
+        card_numbers = list(card_numbers_qs.values('id', 'number', 'name', 'card_id'))
         return {
             'instances': instances,
             **self._set_dashboard_templatetags(instances, year, month),
             **self.set_navigation_templatetags(year, month),
             'year_month': DateTimeUtils.date(year, month, 1),
+            'card_numbers_json': json.dumps(card_numbers),
             **kwargs,
         }
 
@@ -289,15 +321,15 @@ class TransactionView(BaseView):
                 if request.method == 'POST':
                     post_data = request.POST.dict()
                     post_data['type'] = self._type
-                    return self.class_form(post_data, request.FILES or None)
+                    return self.class_form(request.user, post_data, request.FILES or None)
                 if self._type == 'entrada':
-                    return TransactionRevenueForm(request)
-                return TransactionExpenseForm(request)
+                    return TransactionRevenueForm(request.user)
+                return TransactionExpenseForm(request.user)
             case 'update':
                 if request.method == 'POST':
-                    return self.class_form(request.POST, request.FILES, instance=instance)
+                    return self.class_form(request.user, request.POST, request.FILES, instance=instance)
                 else:
-                    return self.class_form(instance=instance)
+                    return self.class_form(request.user, instance=instance)
             case _:
                 raise ValueError('Sem contexto definido.')
 
