@@ -19,6 +19,7 @@ from statement.services.core.notification import NotificationService
 from statement.services.core.transaction import TransactionService
 from statement.utils.datetime import DateTimeUtils
 from statement.models import CardNumber
+from statement.models import NotificationTitle
 import json
 from statement.views.base_view import BaseView
 
@@ -174,7 +175,18 @@ class TransactionView(BaseView):
                         n.save()
 
         # Filtra apenas as notificações que pertencem aos cartões do usuário
-        user_notifications = [n for n in all_notifications if n.card_id in card_ids]
+        # Se houver títulos habilitados configurados, filtra pelas notificações cujo
+        # título esteja ativo. Caso contrário, não aplica esse filtro para manter
+        # compatibilidade quando a tabela não existir ou não estiver populada.
+        try:
+            enabled_titles = set(NotificationTitle.objects.filter(enabled=True).values_list('title', flat=True))
+        except Exception:
+            enabled_titles = None
+
+        user_notifications = [
+            n for n in all_notifications
+            if n.card_id in card_ids and (enabled_titles is None or n.title in enabled_titles)
+        ]
         
         # Converte as notificações em transações para exibição
         for notification in user_notifications:

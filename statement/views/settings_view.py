@@ -16,6 +16,7 @@ from statement.services.portfolio.variable_income.ticker import TickerService
 from statement.views.base_view import BaseView
 from django.forms import modelform_factory
 from django.shortcuts import redirect
+from statement.models import NotificationTitle, Notification
 
 
 class SettingsView(BaseView):
@@ -51,8 +52,39 @@ class SettingsView(BaseView):
             'sectors': SectorService.get_all(request.user),
             'tickers': TickerService.get_all(request.user),
             'app_config_enable_transaction_classifier': enable_transaction_classifier,
+            'notification_titles': [],
         }
+        # prepare notification titles: ensure a NotificationTitle exists for each unique title in Notification
+        try:
+            titles = Notification.objects.values_list('title', flat=True).distinct()
+            titles = [t for t in titles if t]
+            existing = {nt.title: nt for nt in NotificationTitle.objects.filter(title__in=titles)}
+            results = []
+            for t in titles:
+                nt = existing.get(t)
+                if not nt:
+                    nt = NotificationTitle.objects.create(title=t, enabled=True)
+                results.append(nt)
+            specific_content['notification_titles'] = results
+        except Exception:
+            specific_content['notification_titles'] = []
         return self._render(request, None, 'general/setup_settings.html', specific_content)
+
+    @method_decorator(login_required)
+    def edit_notification_titles(self, request):
+        """Atualiza os títulos de notificação habilitados a partir do formulário de settings."""
+        if request.method != 'POST':
+            return redirect('setup_settings')
+        enabled_ids = request.POST.getlist('enabled_ids')
+        # Primeiro desativa todos os titles que aparecem atualmente
+        try:
+            all_titles = NotificationTitle.objects.all()
+            all_titles.update(enabled=False)
+            if enabled_ids:
+                NotificationTitle.objects.filter(id__in=enabled_ids).update(enabled=True)
+        except Exception:
+            pass
+        return redirect('setup_settings')
 
     @method_decorator(login_required)
     def edit_app_config(self, request):

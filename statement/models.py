@@ -610,6 +610,20 @@ class Notification(models.Model):
         return f'{self.app} - {self.title} - {self.message}'
 
 
+class NotificationTitle(models.Model):
+    """
+    Guarda títulos únicos de notificações e se estão habilitados.
+
+    Usado para permitir ao usuário ativar/desativar tipos de notificações
+    com base no título da mensagem.
+    """
+    title = models.CharField(max_length=255, unique=True)
+    enabled = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f'{self.title} ({"Ativado" if self.enabled else "Desativado"})'
+
+
 class AppConfig(models.Model):
     """
     Aplicação: configuração global do sistema.

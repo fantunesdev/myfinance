@@ -1,3 +1,28 @@
+import logging
+
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+from .models import Notification, NotificationTitle
+
+logger = logging.getLogger('myfinance')
+
+
+@receiver(post_save, sender=Notification)
+def ensure_notification_title_exists(sender, instance, created, **kwargs):
+    """
+    Garante que exista um registro em NotificationTitle para o título da Notification.
+    Executado sempre que uma Notification é salva; usa get_or_create para evitar
+    duplicatas e falha silenciosa caso a tabela não exista (migrações pendentes).
+    """
+    try:
+        if not instance or not getattr(instance, 'title', None):
+            return
+
+        NotificationTitle.objects.get_or_create(title=instance.title)
+    except Exception as e:
+        # Não interromper fluxo de criação de notificações por conta deste processo.
+        logger.warning('Não foi possível criar NotificationTitle para "%s": %s', getattr(instance, 'title', None), str(e))
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 

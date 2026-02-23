@@ -133,6 +133,17 @@ class FileHandlerService:
         """
         notifications_to_create = []
         file_content = self._file.read().decode('utf-8')
+        # Obtém títulos habilitados, se o modelo existir e a query funcionar.
+        try:
+            from statement.models import NotificationTitle
+
+            enabled_titles = set(
+                NotificationTitle.objects.filter(enabled=True).values_list('title', flat=True)
+            )
+        except Exception:
+            # Se houver qualquer problema (migrações não aplicadas, tabela ausente, etc.),
+            # não filtramos por título para evitar interromper o fluxo de importação.
+            enabled_titles = None
         
         for line_num, line in enumerate(file_content.splitlines(), 1):
             line = self._sanitize_utf8mb3(line)
@@ -149,6 +160,11 @@ class FileHandlerService:
             for field in required_fields:
                 if field not in data:
                     raise ValueError(f'Campo obrigatório "{field}" não encontrado na linha {line_num}')
+
+            # Se houver uma lista de títulos habilitados, pula notificações cujo título
+            # não esteja habilitado nas configurações do usuário.
+            if enabled_titles is not None and data['title'] not in enabled_titles:
+                continue
             
             # Verifica se a notificação já existe (evita duplicata)
             existing = NotificationService.get_by_filter(
