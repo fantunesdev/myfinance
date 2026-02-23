@@ -15,11 +15,29 @@ class FixedExpensesView(TransactionView):
     """
 
     class_has_user = True
-    class_title = 'Conta'
+    class_title = 'Despesa Fixa'
     class_form = FixedExpensesForm
     model = FixedExpenses
     service = FixedExpensesService
-    redirect_url = 'get_current_month_transactions'
+    redirect_url = 'get_profile'
+    template_is_global = {
+        'create': True,
+        'delete': True,
+        'detail': True,
+        'get_all': True,
+        'update': True,
+    }
+
+    def __init__(self):
+        # garante que template_is_global seja o desejado após TransactionView.__init__
+        super().__init__()
+        self.template_is_global.update({
+            'create': True,
+            'delete': True,
+            'detail': True,
+            'get_all': True,
+            'update': True,
+        })
 
     @method_decorator(login_required)
     def get_by_year_and_month(self, request, year, month):
@@ -32,3 +50,7 @@ class FixedExpensesView(TransactionView):
         fixed_expenses = FixedExpensesService.get_active_by_date(year, month, request.user)
         specific_context = self._set_specific_context(instances, year, month, fixed_expenses=fixed_expenses)
         return self._render(request, None, 'transaction/list.html', specific_context)
+
+    def create(self, request, id=None):
+        """Wrapper to call TransactionView.create with a default type for fixed expenses."""
+        return super().create(request, type='saida', id=id)

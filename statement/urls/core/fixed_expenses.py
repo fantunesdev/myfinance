@@ -8,4 +8,6 @@ urlpatterns = [
     path('cadastrar/', fixed_expenses_view.create, name='create_fixed_expense'),
     path('editar/<int:id>/', fixed_expenses_view.update, name='update_fixed_expense'),
     path('remover/<int:id>/', fixed_expenses_view.delete, name='delete_fixed_expense'),
+    # backward-compatible alias (some templates/code expect plural name)
+    path('remover/<int:id>/', fixed_expenses_view.delete, name='delete_fixed_expenses'),
 ]

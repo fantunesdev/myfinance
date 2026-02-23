@@ -14,4 +14,4 @@ class AccountView(BaseView):
     class_form = AccountForm
     model = Account
     service = AccountService
-    redirect_url = 'setup_settings'
+    redirect_url = 'get_profile'

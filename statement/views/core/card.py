@@ -21,7 +21,7 @@ class CardView(BaseView):
     class_form = CardForm
     model = Card
     service = CardService
-    redirect_url = 'setup_settings'
+    redirect_url = 'get_profile'
     template_is_global = {
         'create': False,
         'delete': True,
