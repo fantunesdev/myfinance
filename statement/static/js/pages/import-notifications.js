@@ -537,14 +537,29 @@ if (radioImportNotifications) {
 (async () => {
     const radioImportNotifications = document.querySelector('#import-type-notifications');
     const notifications = window.myFinance ? window.myFinance.notifications : [];
-    if (radioImportNotifications && radioImportNotifications.checked && notifications && notifications.length > 0) {
+
+    // Se o radio de importação por notificações estiver selecionado,
+    // sempre exibe a seção de notificações (mesmo que esteja vazia) e
+    // oculta a seção de importação por arquivo. Só renderiza as linhas
+    // quando houver notificações.
+    if (radioImportNotifications && radioImportNotifications.checked) {
         const section = document.getElementById('section-notifications-import');
         const fileSection = document.getElementById('section-file-import');
         const notificationRows = document.getElementById('notification-rows-section');
-        section.classList.remove('toggled');
-        section.style.display = 'block';
-        fileSection.classList.add('toggled');
-        notificationRows.style.display = 'table-row-group';
-        await renderNotificationsBox(notifications);
+
+        if (section) {
+            section.classList.remove('toggled');
+            section.style.display = 'block';
+        }
+        if (fileSection) fileSection.classList.add('toggled');
+
+        if (notifications && notifications.length > 0) {
+            if (notificationRows) notificationRows.style.display = 'table-row-group';
+            await renderNotificationsBox(notifications);
+        } else if (notificationRows) {
+            // quando não há notificações, garante que a tabela esteja oculta
+            // e a mensagem "Nenhuma notificação disponível para importação." (template) apareça
+            notificationRows.style.display = 'none';
+        }
     }
 })();
