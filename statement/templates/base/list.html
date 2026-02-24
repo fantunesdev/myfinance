@@ -5,7 +5,6 @@
 
     {# Customização de estilos #}
     {% block styles %}
-
     {% endblock %}
 
     {% block title %}{{ class_title }}{% endblock %}
@@ -22,32 +21,78 @@
         {# #}
     <div class="box box-primary">
         <div class="box-header">
-                <h3 class="box-title">{{ class_title }}</h3>
-            </div>
+                    <div class="box-header-inner">
+                        <h3 class="box-title">{{ class_title }}</h3>
+                        <div class="box-header-actions">
+                            {% if actions_list.create %}
+                            <button type="button" id="toggle-filters" title="Filtrar" class="btn-filter" aria-label="Filtrar">
+                                <i class="fa-solid fa-filter"></i>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
             <div class="box-body" id="statement-box">
+                {# botões movidos para a toolbar acima da tabela #}
+                <div class="list-toolbar">
+                    <div class="toolbar-left">
+                        {% if actions_list.create %}
+                        <a href="{% url urls.create %}"> <input type="button" value="Cadastrar" class="btn btn-primary"> </a>
+                        {% endif %}
+                    </div>
+                    <div class="toolbar-right">
+                        {% if actions_list.create %}
+                        <button type="button" id="mark-duplicates" class="btn btn-danger" title="Marcar duplicações">
+                            <i class="fa-solid fa-eye"></i> Duplicações
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
                 <table class="table" id="statement-table">
                     <thead>
                         <tr>
                             {% for column in column_names %}
-                                <th>{{ column }}</th>
+                                <th class="sortable">
+                                    {{ column }}
+                                    <span class="sort-btn" data-field="{{ forloop.counter0 }}" role="button" tabindex="0" aria-label="Ordenar">
+                                        <i class="fa-solid fa-arrows-up-down action-icon"></i>
+                                    </span>
+                                </th>
                             {% endfor %}
                             <th>Ações</th>
                         </tr>
+                        <tr class="filter-row">
+                            {% for field in fields %}
+                                <th>
+                                    <input type="text" data-field="{{ forloop.counter0 }}" class="form-control column-filter" placeholder="Filtrar">
+                                </th>
+                            {% endfor %}
+                            <th class="no-wrap"></th>
+                        </tr>
                     </thead>
                     <tbody>
-                        {% if actions_list.create %}
-                            <a href="{% url urls.create %}">
-                                <input type="button" value="Cadastrar" class="btn btn-primary">
-                            </a>
-                        {% endif %}
                         {% for instance in instances %}
-                            <tr>
+                            <tr
+                                {% if 'user' in fields %}
+                                    {% if instance.user %} data-dup-user="{{ instance.user.id }}" {% else %} data-dup-user="" {% endif %}
+                                {% endif %}
+                                {% if 'app' in fields %} data-dup-app="{{ instance.app|default_if_none:''|escape }}" {% endif %}
+                                {% if 'title' in fields %} data-dup-title="{{ instance.title|default_if_none:''|escape }}" {% endif %}
+                                {% if 'message' in fields %} data-dup-message="{{ instance.message|default_if_none:''|escape }}" {% endif %}
+                                {% if 'created_at' in fields %} data-dup-created_at="{{ instance.created_at|date:"Y-m-d H:i:s" }}" {% endif %}
+                            >
                                 {% for key, value in instance|get_fields %}
                                     {% if key in fields %}
-                                        <td>{{ value }}</td>
-                                    {% endif %}
+                                            <td>
+                                                {% if key == 'created_at' %}
+                                                    {{ value|date:"d/m/Y" }}
+                                                {% else %}
+                                                    {{ value }}
+                                                {% endif %}
+                                            </td>
+                                        {% endif %}
                                 {% endfor %}
-                                <td>
+                                <td class="no-wrap">
                                     {% if actions_list.detail %}
                                         <a href="{% url urls.detail instance.id %}">
                                             <i class="fa-solid fa-file-lines action-icon"></i>
@@ -77,5 +122,6 @@
 
     {# Customização de scripts #}
     {% block scripts %}
-        
+        <script src="{% static 'js/pages/list-filters.js' %}"></script>
+        <script src="{% static 'js/pages/find-duplicates.js' %}"></script>
     {% endblock %}

@@ -1,3 +1,34 @@
+# Ordenação por coluna
+.sort-btn{
+    border: none;
+    background: transparent;
+    padding: 0;
+    margin-left: 6px;
+    cursor: pointer;
+    color: inherit;
+    display: inline-flex;
+    align-items: center;
+}
+.sort-btn:focus{ outline: none; }
+.sort-btn i{ font-size: .9rem; display: inline-block; line-height: 1; color: inherit; }
+.sort-btn.active i{ color: inherit; }
+
+/* Garante que o título da coluna e o ícone de ordenação não quebrem de linha
+   — assegura largura mínima para o cabeçalho (título + ícone) sem forçar
+   comportamento de quebra nas células de dados. */
+table#statement-table th.sortable{
+    white-space: nowrap;
+}
+table#statement-table th.sortable .sort-btn{
+    display: inline-flex;
+    align-items: center;
+    margin-left: 6px;
+}
+table#statement-table th.sortable .sort-btn i{
+    display: inline-block;
+    vertical-align: middle;
+}
+
 /* Força largura e alinhamento das colunas da tabela de notificações */
 #section-notifications-import table th,
 #section-notifications-import table td {
@@ -500,6 +531,42 @@ td a:hover {
     box-shadow: 0 1px 0 rgba(0,0,0,0.4) inset;
 }
 
+.list-toolbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    width:100%;
+    margin-bottom:8px;
+}
+.list-toolbar .toolbar-left{
+    display:flex;
+    gap:8px;
+    align-items:center;
+}
+.list-toolbar .toolbar-right{
+    display:flex;
+    gap:8px;
+    align-items:center;
+}
+.no-wrap{ white-space: nowrap; }
+/* Força largura fixa da coluna de "Ações" na tabela de transações */
+#statement-table th:last-child,
+#statement-table td:last-child {
+    width: 110px;
+    min-width: 110px;
+    max-width: 110px;
+    text-align: center;
+    white-space: nowrap;
+}
+.filter-row{ display: none; }
+.btn-filter{ border: none; background: transparent; padding: 6px 8px; margin-left:6px; color: inherit; cursor: pointer; }
+.btn-filter i{ font-size: 1rem; color: inherit; }
+.btn-filter:focus{ outline: none; }
+
+.action-icon, .btn-filter i{ color: inherit; }
+/* Observação: os botões de ação e o ícone de filtro usam a mesma cor da fonte
+    para manter consistência visual com a toolbar. */
+
 /* Footer row showing group totals */
 .group-total-row td {
     text-align: right;
@@ -541,6 +608,27 @@ td a:hover {
     margin:10px;
     display: flex;
 }
+
+.box-header-inner{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+}
+.box-header-actions{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.btn-filter{
+    border: none;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    padding: 6px;
+}
+.btn-filter:focus{ outline: none; }
 
 .box-body {
     display: block;
@@ -863,6 +951,12 @@ td a:hover {
     transition: all .15s linear;
 }
 
+/* highlight rows identified as duplicates */
+.duplicate-highlight td{
+    background-color: darkred;
+    color: #fff;
+}
+
 .icon-btn:hover {
     cursor: pointer;
 }
@@ -1018,6 +1112,23 @@ option {
     border: none;
 }
 
+/* Remover contorno dos selects na navegação (ex: notificações) para combinar com transactions */
+.navigation-div select,
+.navigation-div select.form-control,
+.navigation-div .form-control {
+    background: transparent;
+    border: none;
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    color: inherit;
+    padding: 0;
+    margin: 0;
+    font-family: Ubuntu;
+    font-size: 16px;
+}
+
 .navigation-div {
     display: flex;
     justify-content: center;
@@ -1025,9 +1136,42 @@ option {
     gap: 10px;
 }
 
+/* posiciona link voltar à esquerda e mantém o bloco centralizado */
+.navigation-div{
+    position: relative;
+    width: 100%;
+}
+.navigation-div .nav-back{
+    position: absolute;
+    left: 0;
+}
+.navigation-div .nav-center{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
+
 .navigation-div > a {
     display: inline-flex;
     align-items: center;
+}
+
+.navigation-div .nav-back{
+    display: inline-flex;
+    align-items: center;
+    color: inherit;
+    text-decoration: none;
+    margin-right: 10px;
+    font-size: 16px;
+}
+.navigation-div .icon-btn{
+    cursor: pointer;
+    color: inherit;
+    display: inline-flex;
+    align-items: center;
+    padding: 6px;
 }
 
 .nav-btn {

@@ -14,6 +14,7 @@ from login.services.profile import ProfileService
 from statement.services.core.device import DeviceService
 from statement.services.core.fixed_expenses import FixedExpensesService
 from statement.models import AppConfig
+from statement.services.core.notification import NotificationService
 from myfinance.settings import ENVIRONMENT
 
 # Create your views here.
@@ -153,7 +154,12 @@ def get_profile(request):
         'profile': profile,
         'fixed_expenses': fixed_expenses,
         'devices': devices,
+        'recent_notifications': [],
     }
+    try:
+        templatetags['recent_notifications'] = list(NotificationService.get_by_filter(order='-created_at', user=request.user)[:5])
+    except Exception:
+        templatetags['recent_notifications'] = []
     return render(request, 'user/get_profile.html', templatetags)
 
 

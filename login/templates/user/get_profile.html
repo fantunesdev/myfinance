@@ -54,6 +54,9 @@
             <a href="{% url 'update_profile' %}"><input type="button" value="Editar Perfil" class="btn"></a>
             <a href="{% url 'change_password' %}"><input type="button" value="Alterar Senha" class="btn"></a>
         </div>
+        <div class="box-footer">
+            <a href="{% url 'get_all_notification' %}">Ver todas as notificações</a>
+        </div>
     </div>
 
     <div class="box box-primary">
@@ -302,6 +305,49 @@
             </pre>
         </div>
         <div class="box-footer"></div>
+    </div>
+
+    <div class="box box-primary">
+        <div class="box-header">
+            <h3 class="box-title">Notificações Recentes</h3>
+        </div>
+        <div class="box-body">
+            <a href="{% url 'create_notification' %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Título</th>
+                        <th>Mensagem</th>
+                        <th>Data</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for n in recent_notifications %}
+                    <tr>
+                        <td>{{ n.title }}</td>
+                        <td>{{ n.message|truncatechars:80 }}</td>
+                        <td>{{ n.created_at|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            {% if request.user.is_staff %}
+                                <a href="{% url 'update_notification' n.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
+                                <a href="{% url 'delete_notification' n.id %}"><i class="fa-solid fa-trash action-icon"></i></a>
+                            {% else %}
+                                <a href="{% url 'detail_notification' n.id %}"><i class="fa-solid fa-file-lines action-icon"></i></a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4">Nenhuma notificação encontrada.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="box-footer">
+            <a href="{% url 'get_all_notification' %}">Ver todas as notificações</a>
+        </div>
     </div>
 
 {% endblock %}

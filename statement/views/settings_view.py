@@ -17,6 +17,7 @@ from statement.views.base_view import BaseView
 from django.forms import modelform_factory
 from django.shortcuts import redirect
 from statement.models import NotificationTitle, Notification
+from statement.services.core.notification import NotificationService
 
 
 class SettingsView(BaseView):
@@ -31,7 +32,12 @@ class SettingsView(BaseView):
         """
         Retorna todas as instâncias do modelo.
         """
-        # Resolve app config flag safely to avoid crashing if migrations are not applied yet
+        # Protege acesso às configurações para usuários não staff
+        if not request.user.is_staff:
+            from django.core.exceptions import PermissionDenied
+            raise PermissionDenied()
+        # Recupera a flag de configuração do App de forma segura para evitar falhas
+        # caso as migrations ainda não tenham sido aplicadas
         try:
             enable_transaction_classifier = AppConfig.get_solo().enable_transaction_classifier
         except Exception:
@@ -53,8 +59,10 @@ class SettingsView(BaseView):
             'tickers': TickerService.get_all(request.user),
             'app_config_enable_transaction_classifier': enable_transaction_classifier,
             'notification_titles': [],
+            'recent_notifications': [],
         }
-        # prepare notification titles: ensure a NotificationTitle exists for each unique title in Notification
+        # Prepara os títulos de notificação: garante que exista um NotificationTitle
+        # para cada título único presente em Notification
         try:
             titles = Notification.objects.values_list('title', flat=True).distinct()
             titles = [t for t in titles if t]
@@ -68,11 +76,20 @@ class SettingsView(BaseView):
             specific_content['notification_titles'] = results
         except Exception:
             specific_content['notification_titles'] = []
+        # últimas notificações (primeiras 5)
+        try:
+            specific_content['recent_notifications'] = NotificationService.get_by_filter(order='-created_at')[:5]
+        except Exception:
+            specific_content['recent_notifications'] = []
         return self._render(request, None, 'general/setup_settings.html', specific_content)
 
     @method_decorator(login_required)
     def edit_notification_titles(self, request):
         """Atualiza os títulos de notificação habilitados a partir do formulário de settings."""
+        # Protege acesso às configurações para usuários não staff
+        if not request.user.is_staff:
+            from django.core.exceptions import PermissionDenied
+            raise PermissionDenied()
         if request.method != 'POST':
             return redirect('setup_settings')
         enabled_ids = request.POST.getlist('enabled_ids')
@@ -88,11 +105,15 @@ class SettingsView(BaseView):
 
     @method_decorator(login_required)
     def edit_app_config(self, request):
-        """Edit global AppConfig (enable_transaction_classifier) from settings UI."""
+        """Edita o AppConfig global (`enable_transaction_classifier`) pela interface de configurações."""
+        # Protege acesso às configurações para usuários não staff
+        if not request.user.is_staff:
+            from django.core.exceptions import PermissionDenied
+            raise PermissionDenied()
         try:
             cfg = AppConfig.get_solo()
         except Exception:
-            # If table doesn't exist yet, create an in-memory default instance
+            # Se a tabela ainda não existir, cria uma instância padrão em memória
             cfg = AppConfig()
 
         AppConfigForm = modelform_factory(AppConfig, fields=('enable_transaction_classifier',))
@@ -104,5 +125,5 @@ class SettingsView(BaseView):
         else:
             form = AppConfigForm(instance=cfg)
 
-        # reuse global base form template
+        # Reutiliza o template base de formulário global
         return self._render(request, form, 'base/form.html', {})

@@ -1,0 +1,24 @@
+{% extends 'base/list.html' %}
+{% load static %}
+
+{% block navigation %}
+    <div class="navigation-div" id="notification-navigation">
+        <a href="{% url 'setup_settings' %}" class="nav-back">&laquo; Voltar</a>
+        <div class="nav-center">
+            <i class="fa-solid fa-backward-step icon-btn" id="notif-prev" role="button" tabindex="0" aria-label="Anterior"></i>
+            <select id="notif-month" class="form-control" style="display:inline-block; width:auto; margin:0 6px;"></select>
+            <select id="notif-year" class="form-control" style="display:inline-block; width:auto; margin-right:6px;"></select>
+            <i class="fa-solid fa-forward-step icon-btn" id="notif-next" role="button" tabindex="0" aria-label="Próximo"></i>
+            <i class="fa-solid fa-times icon-btn" id="notif-clear" role="button" tabindex="0" aria-label="Limpar filtro" title="Limpar filtro"></i>
+        </div>
+    </div>
+{% endblock %}
+
+{% block content %}
+    {{ block.super }}
+{% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+    <script src="{% static 'js/pages/notification-navigation.js' %}"></script>
+{% endblock %}

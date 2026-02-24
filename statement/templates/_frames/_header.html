@@ -9,8 +9,13 @@
                     <a onclick="toggleBox('search')" class="btn-search"><i class="fa-solid fa-magnifying-glass"></i></a>
                 </li>
                 <li>
+                    <a href="{% url 'get_profile' %}"><i class="fa-solid fa-user-gear"></i></a>
+                </li>
+                {% if request.user.is_staff %}
+                <li>
                     <a href="{% url 'setup_settings' %}"><i class="fa-solid fa-gear"></i></a>
                 </li>
+                {% endif %}
                 <li class="profile-button">
                     {% spaceless %}
                     {% if user.photo %}

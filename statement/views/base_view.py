@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.forms.widgets import HiddenInput, CheckboxInput, MultipleHiddenInput
 from django.shortcuts import redirect, render
 from django.utils.decorators import method_decorator
+from django.core.exceptions import PermissionDenied
 
 from statement.forms.general_forms import ExclusionForm
 from statement.services.core.account import AccountService
@@ -56,6 +57,9 @@ class BaseView:
         """
         Cria uma nova instância do modelo.
         """
+        # Protege páginas de configuração para usuários não staff
+        if getattr(self, 'redirect_url', None) == 'setup_settings' and not request.user.is_staff:
+            raise PermissionDenied()
         self._context = 'create'
         user = self._get_user(request)
         if request.method == 'POST':
@@ -80,13 +84,39 @@ class BaseView:
         """
         Retorna todas as instâncias do modelo.
         """
+        # Protege páginas de configuração para usuários não staff
+        if getattr(self, 'redirect_url', None) == 'setup_settings' and not request.user.is_staff:
+            raise PermissionDenied()
         self._context = 'get_all'
         user = self._get_user(request)
+
         instances = self.service.get_all(user)
         additional_context = self._add_context_on_templatetags(request, instances)
+        # Se a subclasse definir `list_fields`, usá-la (evita mostrar `id` etc.)
+        if getattr(self, 'list_fields', None):
+            merged_fields = list(self.list_fields)
+        else:
+            # Monta a lista de campos a partir dos campos do formulário e do modelo
+            # (assim campos não editáveis, como 'created_at' com auto_now_add, também ficam disponíveis)
+            form_field_names = []
+            try:
+                form_field_names = list(map(lambda item: item[0], self.class_form().fields.items()))
+            except Exception:
+                form_field_names = []
+
+            model_field_names = []
+            try:
+                if self.model:
+                    model_field_names = [f.name for f in self.model._meta.fields]
+            except Exception:
+                model_field_names = []
+
+            # Mescla preservando ordem: campos do formulário primeiro, depois campos do modelo não incluídos
+            merged_fields = form_field_names + [f for f in model_field_names if f not in form_field_names]
+
         specific_content = {
             'instances': instances,
-            'fields': list(map(lambda item: item[0], self.class_form().fields.items())),
+            'fields': merged_fields,
             **additional_context,
         }
         template = self._set_template_by_global_status('get_all')
@@ -97,6 +127,9 @@ class BaseView:
         """
         Retorna uma instância específica do modelo.
         """
+        # Protege páginas de configuração para usuários não staff
+        if getattr(self, 'redirect_url', None) == 'setup_settings' and not request.user.is_staff:
+            raise PermissionDenied()
         self._context = 'detail'
         user = self._get_user(request)
         instance = self.service.get_by_id(id, user)
@@ -114,6 +147,9 @@ class BaseView:
         Atualiza uma instância existente do modelo.
         Garante que campos não renderizados no formulário mantenham seus valores originais.
         """
+        # Protege páginas de configuração para usuários não staff
+        if getattr(self, 'redirect_url', None) == 'setup_settings' and not request.user.is_staff:
+            raise PermissionDenied()
         self._context = 'update'
         instance = self.service.get_by_id(id)
         form = self._set_form(request, instance)
@@ -137,6 +173,9 @@ class BaseView:
         """
         Exclui uma instância do modelo.
         """
+        # Protege páginas de configuração para usuários não staff
+        if getattr(self, 'redirect_url', None) == 'setup_settings' and not request.user.is_staff:
+            raise PermissionDenied()
         self._context = 'delete'
         instance = self.service.get_by_id(id)
         if request.method == 'POST':
@@ -173,6 +212,7 @@ class BaseView:
 
         if specific_content:
             self.templatetags.update(specific_content or {})
+        # Não expor parâmetros de filtro no servidor (usar filtragem via JS no cliente)
 
         return render(request, template, self.templatetags)
 
@@ -202,6 +242,7 @@ class BaseView:
             'extracts': AccountService.get_all(user),
             'invoices': CardService.get_all(user),
             'class_title': self.class_title,
+            'column_names': self.column_names,
             'urls': {
                 'create': f'create_{self.snake_case_classname}',
                 'get_all': f'get_all_{self.snake_case_classname}',
