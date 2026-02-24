@@ -1174,6 +1174,18 @@ option {
     padding: 6px;
 }
 
+/* Utility classes */
+/* Alinha conteúdo à esquerda (útil para pequenos blocos no conteúdo) */
+.align-left {
+    text-align: left;
+}
+
+/* Bloco com link alinhado à esquerda e espaçamento inferior similar ao usado anteriormente */
+.left-link-block {
+    text-align: left;
+    margin-bottom: 8px;
+}
+
 .nav-btn {
     font-family: Ubuntu;
     font-size: 13px;

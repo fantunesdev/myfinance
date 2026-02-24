@@ -3,7 +3,6 @@
 
 {% block navigation %}
     <div class="navigation-div" id="notification-navigation">
-        <a href="{% url 'setup_settings' %}" class="nav-back">&laquo; Voltar</a>
         <div class="nav-center">
             <i class="fa-solid fa-backward-step icon-btn" id="notif-prev" role="button" tabindex="0" aria-label="Anterior"></i>
             <select id="notif-month" class="form-control" style="display:inline-block; width:auto; margin:0 6px;"></select>
@@ -15,6 +14,34 @@
 {% endblock %}
 
 {% block content %}
+    <div class="left-link-block">
+        <a href="{% url 'get_profile' %}" class="nav-back">&laquo; Voltar</a>
+    </div>
+
+    <div class="box box-primary" style="margin-top:16px;">
+        <div class="box-header">
+            <h3 class="box-title">Títulos de Notificação</h3>
+        </div>
+        <div class="box-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Título</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for nt in notification_titles %}
+                        {% if nt.enabled %}
+                        <tr>
+                            <td>{{ nt.title }}</td>
+                        </tr>
+                        {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div style="margin-top:10px;"><a href="{% url 'user_notification_titles' %}">Ver/Editar todos os títulos disponíveis</a></div>
+        </div>
+    </div>
     {{ block.super }}
 {% endblock %}
 
