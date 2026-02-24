@@ -618,10 +618,21 @@ class NotificationTitle(models.Model):
     com base no título da mensagem.
     """
     title = models.CharField(max_length=255, unique=True)
-    enabled = models.BooleanField(default=True)
+
+class NotificationTitlePreference(models.Model):
+    """
+    Associação entre usuário e título de notificação indicando se o título
+    está habilitado para aquele usuário.
+    """
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notification_title_preferences')
+    title = models.ForeignKey(NotificationTitle, on_delete=models.CASCADE, related_name='preferences')
+    enabled = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ('user', 'title')
 
     def __str__(self):
-        return f'{self.title} ({"Ativado" if self.enabled else "Desativado"})'
+        return f'{self.user} - {self.title} = {self.enabled}'
 
 
 class AppConfig(models.Model):

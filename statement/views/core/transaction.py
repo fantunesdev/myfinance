@@ -19,7 +19,6 @@ from statement.services.core.notification import NotificationService
 from statement.services.core.transaction import TransactionService
 from statement.utils.datetime import DateTimeUtils
 from statement.models import CardNumber
-from statement.models import NotificationTitle
 import json
 from statement.views.base_view import BaseView
 
@@ -179,7 +178,8 @@ class TransactionView(BaseView):
         # título esteja ativo. Caso contrário, não aplica esse filtro para manter
         # compatibilidade quando a tabela não existir ou não estiver populada.
         try:
-            enabled_titles = set(NotificationTitle.objects.filter(enabled=True).values_list('title', flat=True))
+            from statement.services.core.notification_title import NotificationTitleService
+            enabled_titles = NotificationTitleService.get_enabled_titles_for_user(request.user)
         except Exception:
             enabled_titles = None
 

@@ -61,6 +61,31 @@
 
     <div class="box box-primary">
         <div class="box-header">
+            <h3 class="box-title">Títulos de Notificação</h3>
+        </div>
+        <div class="box-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Título</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for nt in notification_titles %}
+                        {% if nt.enabled %}
+                        <tr>
+                            <td>{{ nt.title }}</td>
+                        </tr>
+                        {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div style="margin-top:10px;"><a href="{% url 'user_notification_titles' %}">Ver/Editar todos os títulos disponíveis</a></div>
+        </div>
+    </div>
+
+    <div class="box box-primary">
+        <div class="box-header">
             <h3 class="box-title">Despesas Fixas</h3>
         </div>
         <div class="box-body">

@@ -17,6 +17,8 @@ from statement.models import AppConfig
 from statement.services.core.notification import NotificationService
 from myfinance.settings import ENVIRONMENT
 
+from statement.services.core.notification_title import NotificationTitleService
+
 # Create your views here.
 
 
@@ -155,12 +157,62 @@ def get_profile(request):
         'fixed_expenses': fixed_expenses,
         'devices': devices,
         'recent_notifications': [],
+        'notification_titles': [],
     }
     try:
         templatetags['recent_notifications'] = list(NotificationService.get_by_filter(order='-created_at', user=request.user)[:5])
     except Exception:
         templatetags['recent_notifications'] = []
+    # Ensure notification titles exist and prepare user preferences list
+    try:
+        titles = NotificationService.get_by_filter(order='-created_at', user=request.user)
+        # collect distinct titles from notifications
+        distinct_titles = list({n.title for n in titles if getattr(n, 'title', None)})
+        NotificationTitleService.ensure_titles(distinct_titles)
+        all_titles = NotificationTitleService.get_all_titles()
+        enabled = NotificationTitleService.get_enabled_titles_for_user(request.user)
+        templatetags['notification_titles'] = [
+            {'id': nt.id, 'title': nt.title, 'enabled': (nt.title in enabled)} for nt in all_titles
+        ]
+    except Exception:
+        templatetags['notification_titles'] = []
     return render(request, 'user/get_profile.html', templatetags)
+
+
+@login_required
+def edit_user_notification_titles(request):
+    """Endpoint para atualizar preferências de títulos de notificação do usuário."""
+    if request.method != 'POST':
+        return redirect('get_profile')
+    enabled_ids = request.POST.getlist('enabled_ids')
+    try:
+        NotificationTitleService.set_user_enabled_titles(request.user, enabled_ids)
+    except Exception:
+        pass
+    return redirect('get_profile')
+
+
+@login_required
+def get_user_notification_titles(request):
+    """Exibe a lista completa de títulos de notificação e o estado do usuário."""
+    try:
+        # Garante que existam títulos derivados das notificações já salvas
+        titles_qs = NotificationService.get_by_filter(order='-created_at', user=request.user)
+        distinct_titles = list({n.title for n in titles_qs if getattr(n, 'title', None)})
+    except Exception:
+        distinct_titles = []
+
+    try:
+        NotificationTitleService.ensure_titles(distinct_titles)
+        all_titles = NotificationTitleService.get_all_titles()
+        enabled = NotificationTitleService.get_enabled_titles_for_user(request.user)
+        notification_titles = [
+            {'id': nt.id, 'title': nt.title, 'enabled': (nt.title in enabled)} for nt in all_titles
+        ]
+    except Exception:
+        notification_titles = []
+
+    return render(request, 'user/list.html', {'notification_titles': notification_titles})
 
 
 @login_required

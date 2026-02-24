@@ -1,0 +1,35 @@
+{% extends 'index.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}Títulos de Notificação{% endblock %}
+
+{% block content %}
+    <div class="box box-primary">
+        <div class="box-header">
+            <h3 class="box-title">Títulos de Notificação</h3>
+        </div>
+        <div class="box-body">
+            <form method="post" action="{% url 'edit_user_notification_titles' %}">
+                {% csrf_token %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Título</th>
+                            <th>Ativado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for nt in notification_titles %}
+                        <tr>
+                            <td>{{ nt.title }}</td>
+                            <td><input type="checkbox" name="enabled_ids" value="{{ nt.id }}" {% if nt.enabled %}checked{% endif %}></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div style="margin-top:8px;"><button type="submit" class="btn btn-primary">Salvar</button></div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

@@ -16,7 +16,7 @@ from statement.services.portfolio.variable_income.ticker import TickerService
 from statement.views.base_view import BaseView
 from django.forms import modelform_factory
 from django.shortcuts import redirect
-from statement.models import NotificationTitle, Notification
+from statement.models import Notification
 from statement.services.core.notification import NotificationService
 
 
@@ -62,18 +62,20 @@ class SettingsView(BaseView):
             'recent_notifications': [],
         }
         # Prepara os títulos de notificação: garante que exista um NotificationTitle
-        # para cada título único presente em Notification
+        # para cada título único presente em Notification e monta a lista com o
+        # estado (habilitado) do admin (request.user)
         try:
+            from statement.services.core.notification_title import NotificationTitleService
+
             titles = Notification.objects.values_list('title', flat=True).distinct()
             titles = [t for t in titles if t]
-            existing = {nt.title: nt for nt in NotificationTitle.objects.filter(title__in=titles)}
-            results = []
-            for t in titles:
-                nt = existing.get(t)
-                if not nt:
-                    nt = NotificationTitle.objects.create(title=t, enabled=True)
-                results.append(nt)
-            specific_content['notification_titles'] = results
+            NotificationTitleService.ensure_titles(titles)
+            # monta lista de dicts com estado para o usuário admin
+            all_titles = NotificationTitleService.get_all_titles()
+            admin_enabled = NotificationTitleService.get_enabled_titles_for_user(request.user)
+            specific_content['notification_titles'] = [
+                {'id': nt.id, 'title': nt.title, 'enabled': (nt.title in admin_enabled)} for nt in all_titles
+            ]
         except Exception:
             specific_content['notification_titles'] = []
         # últimas notificações (primeiras 5)
@@ -93,12 +95,9 @@ class SettingsView(BaseView):
         if request.method != 'POST':
             return redirect('setup_settings')
         enabled_ids = request.POST.getlist('enabled_ids')
-        # Primeiro desativa todos os titles que aparecem atualmente
         try:
-            all_titles = NotificationTitle.objects.all()
-            all_titles.update(enabled=False)
-            if enabled_ids:
-                NotificationTitle.objects.filter(id__in=enabled_ids).update(enabled=True)
+            from statement.services.core.notification_title import NotificationTitleService
+            NotificationTitleService.set_user_enabled_titles(request.user, enabled_ids)
         except Exception:
             pass
         return redirect('setup_settings')

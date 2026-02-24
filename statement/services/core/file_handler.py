@@ -135,11 +135,9 @@ class FileHandlerService:
         file_content = self._file.read().decode('utf-8')
         # Obtém títulos habilitados, se o modelo existir e a query funcionar.
         try:
-            from statement.models import NotificationTitle
+            from statement.services.core.notification_title import NotificationTitleService
 
-            enabled_titles = set(
-                NotificationTitle.objects.filter(enabled=True).values_list('title', flat=True)
-            )
+            enabled_titles = NotificationTitleService.get_enabled_titles_for_user(self._user)
         except Exception:
             # Se houver qualquer problema (migrações não aplicadas, tabela ausente, etc.),
             # não filtramos por título para evitar interromper o fluxo de importação.

@@ -15,6 +15,8 @@ urlpatterns = [
     path('perfil/', get_profile, name='get_profile'),
     path('perfil/editar/', update_profile, name='update_profile'),
     path('perfil/configuracoes/editar/', update_configs, name='update_configs'),
+    path('perfil/notificacoes/titles/editar/', edit_user_notification_titles, name='edit_user_notification_titles'),
+    path('perfil/notificacoes/titles/', get_user_notification_titles, name='user_notification_titles'),
     path('perfil/next_month/editar/', edit_next_month_view, name='update_next_month_view'),
     path('alterar_senha/', change_password, name='change_password'),
     # Device management under user profile
