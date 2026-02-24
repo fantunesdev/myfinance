@@ -158,6 +158,8 @@ class TransactionView(BaseView):
 
         # Busca os cartões do usuário para validação
         cards = CardService.get_all(request.user)
+        for card in cards:
+            print(card)
         card_ids = {card.id for card in cards}
 
         # Tenta vincular notificações que ainda não tem cartão associado

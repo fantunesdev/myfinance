@@ -10,6 +10,7 @@ from api.views.base_view import BaseView
 from statement.models import Notification
 from statement.services.core.notification import NotificationService
 from statement.views.core.notification import NotificationView as StatementView
+from statement.services.core.card import CardService
 
 
 class NotificationView(BaseView):
@@ -56,6 +57,22 @@ class NotificationView(BaseView):
         instance = form.save(commit=False)
         # Vincula o usuário autenticado automaticamente
         instance.user = request.user
+
+        # Tenta identificar o cartão proprietário da notificação antes de salvar.
+        try:
+            # Busca todos os cartões do usuário e verifica posse da notificação
+            cards = CardService.get_all(request.user)
+            CardService.are_notifications_owner(cards, [instance])
+            # Se um cartão foi identificado, atribui à instância
+            if getattr(instance, 'card_id', None):
+                try:
+                    instance.card = CardService.get_by_id(instance.card_id, user=request.user)
+                except Exception:
+                    # Não falhar o fluxo se não conseguir resolver o cartão
+                    instance.card = None
+        except Exception:
+            # Não interrompe a criação se a lógica de binding falhar
+            pass
 
         # Procura por campos de data no payload (client pode enviar 'created_at' ou 'date')
         raw_date = request.data.get('created_at') or request.data.get('date')

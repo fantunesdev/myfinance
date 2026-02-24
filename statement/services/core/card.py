@@ -34,6 +34,7 @@ class CardService(BaseService):
         :return: True se a notificação pertence ao cartão, False caso contrário.
         """
         # Require app_id match first (notification.app identifies the bank)
+        # print(f"Notification.app={notification.app}, Card's bank app_id={card.account.bank.app_id}")
         if notification.app != card.account.bank.app_id:
             return False
 

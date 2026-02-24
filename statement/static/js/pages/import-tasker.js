@@ -78,35 +78,12 @@ async function importTaskerJSON() {
         return;
     }
     
-    // Envia para o backend via FormData (assim como CSV)
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('import_type', 'tasker_json');
-    formData.append('account', '');
-    formData.append('card', document.querySelector('#id_card_tasker').value || '');
-    
+    // Envia cada notificação diretamente para o backend e cadastra no model `notifications`
     try {
-        const response = await fetch('/api/transactions/import/', {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken'),
-            },
-            body: formData,
-        });
-        
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.errors || 'Erro ao processar arquivo');
-        }
-        
-        const processedNotifications = await response.json();
-        
-        // Renderiza as notificações processadas
-        await renderNotifications(processedNotifications);
-        importError.classList.add('toggled');
+        await saveNotifications(notifications);
     } catch (error) {
         importError.classList.remove('toggled');
-        importError.textContent = `Erro ao processar arquivo: ${error.message}`;
+        importError.textContent = `Erro ao salvar notificações: ${error.message}`;
     }
 }
 
@@ -355,6 +332,19 @@ function getCookie(name) {
     return cookieValue;
 }
 
+/**
+ * Remove emojis e caracteres fora do Basic Multilingual Plane (code points > 0xFFFF)
+ * para evitar erros em bancos que não suportam utf8mb4.
+ */
+function sanitizeText(text) {
+    if (text === null || text === undefined) return text;
+    // Remove variation selectors
+    let cleaned = String(text).replace(/\uFE0F/g, '');
+    // Remove code points > 0xFFFF (surrogate pairs, where most emoji live)
+    cleaned = Array.from(cleaned).filter(ch => ch.codePointAt(0) <= 0xFFFF).join('');
+    return cleaned;
+}
+
 // Event listeners
 if (fileTypeCSV && fileTypeTasker) {
     fileTypeCSV.addEventListener('change', toggleFileType);
@@ -385,7 +375,7 @@ const saveTaskerBtn = document.querySelector('#save-tasker-notifications-btn');
 if (saveTaskerBtn) {
     saveTaskerBtn.addEventListener('click', async () => {
         const selectedNotifications = [];
-        const card = document.querySelector('#id_card_tasker').value;
+        // Não usar select de cartão aqui — preservar cartão vindo na própria notificação
         
         if (!notificationRowsTasker) return;
         
@@ -394,7 +384,8 @@ if (saveTaskerBtn) {
             const checkbox = row.children[0].children[0];
             if (checkbox.checked && checkbox.dataset.notification) {
                 const notification = JSON.parse(checkbox.dataset.notification);
-                notification.card = card !== 'tasker' ? card : null;
+                // Preserve qualquer vínculo de cartão presente na notificação; caso contrário, deixa null
+                notification.card = notification.card || null;
                 selectedNotifications.push(notification);
             }
         }
@@ -424,9 +415,9 @@ async function saveNotifications(notifications) {
                     'X-CSRFToken': getCookie('csrftoken'),
                 },
                 body: JSON.stringify({
-                    app: notification.app,
-                    title: notification.title,
-                    message: notification.message,
+                    app: sanitizeText(notification.app),
+                    title: sanitizeText(notification.title),
+                    message: sanitizeText(notification.message),
                     is_used: false,
                     // Preserve original notification date/time when available
                     created_at: notification.date || notification.datetime || null,
