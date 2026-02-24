@@ -29,6 +29,7 @@
     // Extrai templates dos elementos vazios
     const emptyFormInput = document.querySelector('[data-empty-form-input]');
     const emptyFormHome = document.querySelector('[data-empty-form-home]');
+    const emptyFormDependente = document.querySelector('[data-empty-form-dependente]');
     const emptyFormId = document.querySelector('[data-empty-form-id]');
     const emptyFormDelete = document.querySelector('[data-empty-form-delete]');
     const emptyFormName = document.querySelector('[data-empty-form-name]');
@@ -176,6 +177,7 @@
         const deleteHtml = emptyFormDelete ? emptyFormDelete.innerHTML.replace(/__prefix__/g, currentCount) : '';
         const nameHtml = emptyFormName ? emptyFormName.innerHTML.replace(/__prefix__/g, currentCount) : '';
         const homeHtml = emptyFormHome ? emptyFormHome.innerHTML.replace(/__prefix__/g, currentCount) : '';
+        const dependenteHtml = emptyFormDependente ? emptyFormDependente.innerHTML.replace(/__prefix__/g, currentCount) : '';
         
         newFormDiv.innerHTML = `
             <div class="form-group-inline">
@@ -188,6 +190,10 @@
                     ${inputHtml}
                     <button type="button" class="btn-remove-card-number">Remover</button>
                 </div>
+            </div>
+            <div class="form-group-inline">
+                <label>Dependente</label>
+                ${dependenteHtml}
             </div>
             <div class="form-group-inline home-screen-wrapper">
                 ${homeHtml}

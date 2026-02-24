@@ -215,6 +215,7 @@ class CardNumber(models.Model):
     number = models.CharField(max_length=20)
     name = models.CharField(max_length=50, blank=True, null=True)
     home_screen = models.BooleanField(default=True)
+    dependente = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='dependent_card_numbers')
 
     def __str__(self):
         """Retorna o número do cartão de crédito."""

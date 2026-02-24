@@ -3,6 +3,8 @@ from django.forms import inlineformset_factory
 
 from statement.forms.base_form import BaseForm
 from statement.models import Card, CardNumber
+from django import forms
+from login.models import User
 
 
 class CardForm(BaseForm):
@@ -31,10 +33,17 @@ class CardForm(BaseForm):
 class CardNumberForm(forms.ModelForm):
     class Meta:
         model = CardNumber
-        fields = ['number', 'name', 'home_screen']
+        fields = ['number', 'name', 'home_screen', 'dependente']
         widgets = {
             'number': forms.TextInput(attrs={'placeholder': 'Número do cartão'}),
         }
+
+    dependente = forms.ModelChoiceField(
+        queryset=User.objects.all(),
+        required=False,
+        widget=forms.Select(),
+        label='Dependente'
+    )
 
 
 # Formset para gerenciar múltiplos números de cartão
