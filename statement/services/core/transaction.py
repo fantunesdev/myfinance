@@ -43,7 +43,9 @@ class TransactionService(BaseService):
         if user is not None:
             # Extrai filtro home_screen se presente e delega à função protegida
             home_screen_filter = kwargs.pop('home_screen') if 'home_screen' in kwargs else None
-            return cls._visible_transactions_for_user(user=user, filters=kwargs, home_screen=home_screen_filter, order=order, first=first)
+            return cls._visible_transactions_for_user(
+                user=user, filters=kwargs, home_screen=home_screen_filter, order=order, first=first
+            )
 
         if first:
             return Transaction.objects.filter(**kwargs).first()
@@ -95,7 +97,9 @@ class TransactionService(BaseService):
         end_date = datetime(year, month, 1)
         start_date = end_date - relativedelta(months=11)
         # Reutiliza get_by_filter para garantir mesmo comportamento de visibilidade
-        return cls.get_by_filter(payment_date__gte=start_date, payment_date__lte=end_date, user=user, home_screen=True).order_by('release_date')
+        return cls.get_by_filter(
+            payment_date__gte=start_date, payment_date__lte=end_date, user=user, home_screen=True
+        ).order_by('release_date')
 
     @staticmethod
     def _set_home_screen(instance):

@@ -22,11 +22,15 @@ def ensure_notification_title_exists(sender, instance, created, **kwargs):
         NotificationTitle.objects.get_or_create(title=instance.title)
     except Exception as e:
         # Não interromper fluxo de criação de notificações por conta deste processo.
-        logger.warning('Não foi possível criar NotificationTitle para "%s": %s', getattr(instance, 'title', None), str(e))
-from django.db.models.signals import post_save, post_delete
+        logger.warning(
+            'Não foi possível criar NotificationTitle para "%s": %s', getattr(instance, 'title', None), str(e)
+        )
+
+
+from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
-from statement.models import CardNumber, Card, Transaction
+from statement.models import Card, CardNumber, Transaction
 
 
 @receiver(post_save, sender=CardNumber)
@@ -39,7 +43,9 @@ def update_transactions_on_cardnumber_save(sender, instance, **kwargs):
 def update_transactions_on_cardnumber_delete(sender, instance, **kwargs):
     """When a CardNumber is deleted, transactions linked to it should fallback to card.home_screen."""
     fallback = instance.card.home_screen if getattr(instance, 'card', None) else False
-    Transaction.objects.filter(card_number_id=getattr(instance, 'id', None)).update(home_screen=fallback, card_number=None)
+    Transaction.objects.filter(card_number_id=getattr(instance, 'id', None)).update(
+        home_screen=fallback, card_number=None
+    )
 
 
 @receiver(post_save, sender=Card)

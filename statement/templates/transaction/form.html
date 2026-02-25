@@ -169,7 +169,7 @@
         </div>
         {% if card_numbers_json %}
         <script>
-            // Inject card numbers JSON for the transaction form JS
+            // Injeta JSON dos números de cartão para o JS do formulário de transação
             window.card_numbers_json = {{ card_numbers_json|safe }};
             document.addEventListener('DOMContentLoaded', function(){
                 var sel = document.getElementById('id_card_number');

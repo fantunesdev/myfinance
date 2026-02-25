@@ -1,6 +1,6 @@
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.core.validators import MinValueValidator, MaxValueValidator
 
 from login.manager import UserManager
 
@@ -29,10 +29,12 @@ class User(AbstractBaseUser, PermissionsMixin):
         """Retorna o username do usuário"""
         return self.username
 
+
 class Profile(models.Model):
     """
     Classe do perfil do usuário
     """
+
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     use_next_month = models.BooleanField(default=False)
     next_month_day = models.PositiveSmallIntegerField(

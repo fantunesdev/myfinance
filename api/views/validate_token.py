@@ -1,6 +1,6 @@
-from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from statement.utils.jwt import JWTUtils
 
@@ -22,5 +22,5 @@ class ValidateTokenView(APIView):
         token = auth_header.split(' ')[1]
 
         if JWTUtils.verify_simplejwt_token(token):
-            return Response({"valid": True}, status=status.HTTP_200_OK)
+            return Response({'valid': True}, status=status.HTTP_200_OK)
         return Response({'valid': False}, status=status.HTTP_401_UNAUTHORIZED)

@@ -1,13 +1,14 @@
-from statement.models import Notification, AppConfig
-from statement.services.base_service import BaseService
-from datetime import datetime
 import re
+from datetime import datetime
+
 from clients.transaction_classifier.transaction_classifier import TransactionClassifierClient
+from statement.models import AppConfig, Notification
+from statement.services.base_service import BaseService
 from statement.services.core.category import CategoryService
 
 
 class NotificationService(BaseService):
-    """ Serviço para gerenciar operações relacionadas ao modelo Notification. """
+    """Serviço para gerenciar operações relacionadas ao modelo Notification."""
 
     model = Notification
 
@@ -28,13 +29,13 @@ class NotificationService(BaseService):
     def build_transaction_from_notification(notification, card=None):
         """
         Monta a estrutura básica de um lançamento a partir de uma notificação.
-        
+
         Extrai informações da notificação:
         - date: Data da notificação
         - value: Valor em reais (padrão: R$ XX,XX)
         - description: Estabelecimento (entre "em" e caracteres de pontuação)
         - card: Cartão associado (opcional)
-        
+
         :param notification: A notificação a ser processada
         :param card: O cartão associado à transação (opcional)
         :return: Dicionário com os dados da transação
@@ -44,7 +45,7 @@ class NotificationService(BaseService):
             'type': 'saida',  # Notificações geralmente são despesas
             'original_description': notification.message if hasattr(notification, 'message') else '',
         }
-        
+
         # Extrai a data da notificação
         try:
             notification_date = datetime.strptime(notification.created_at.strftime('%Y-%m-%d'), '%Y-%m-%d').date()
@@ -54,7 +55,7 @@ class NotificationService(BaseService):
             # Se falhar, tenta usar o campo "date" se existir na mensagem
             transaction['release_date'] = datetime.now().date()
             transaction['payment_date'] = datetime.now().date()
-        
+
         # Extrai o valor (padrão: R$ XX,XX ou R$ XX.XXX,XX)
         value_match = re.search(r'R\$\s*([\d.,]+)', notification.message)
         if value_match:
@@ -67,7 +68,7 @@ class NotificationService(BaseService):
                 transaction['value'] = 0.0
         else:
             transaction['value'] = 0.0
-        
+
         # Extrai a descrição do estabelecimento (entre "em" e ponto/vírgula)
         # Padrão: "...em ESTABELECIMENTO. A compra..."
         desc_match = re.search(r'em\s+([A-Za-záéíóúàâêôãõç\s]+?)[\.,]', notification.message, re.IGNORECASE)
@@ -82,7 +83,7 @@ class NotificationService(BaseService):
             if AppConfig.get_solo().enable_transaction_classifier:
                 microservice_client = TransactionClassifierClient(None)
                 # Use message/title for prediction
-                text_for_prediction = (notification.message or notification.title)
+                text_for_prediction = notification.message or notification.title
                 predicted = microservice_client.predict(text_for_prediction, '')
                 if predicted:
                     transaction['category'] = predicted.get('category_id')
@@ -98,5 +99,5 @@ class NotificationService(BaseService):
         except Exception:
             # Do not fail notification processing if classifier is down
             pass
-        
+
         return transaction

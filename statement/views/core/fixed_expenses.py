@@ -31,13 +31,15 @@ class FixedExpensesView(TransactionView):
     def __init__(self):
         # garante que template_is_global seja o desejado após TransactionView.__init__
         super().__init__()
-        self.template_is_global.update({
-            'create': True,
-            'delete': True,
-            'detail': True,
-            'get_all': True,
-            'update': True,
-        })
+        self.template_is_global.update(
+            {
+                'create': True,
+                'delete': True,
+                'detail': True,
+                'get_all': True,
+                'update': True,
+            }
+        )
 
     @method_decorator(login_required)
     def get_by_year_and_month(self, request, year, month):

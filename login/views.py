@@ -11,12 +11,11 @@ from login.forms.password_form import PasswordChangeCustomForm
 from login.models import Profile
 from login.services import user_services
 from login.services.profile import ProfileService
+from myfinance.settings import ENVIRONMENT
+from statement.models import AppConfig
 from statement.services.core.device import DeviceService
 from statement.services.core.fixed_expenses import FixedExpensesService
-from statement.models import AppConfig
 from statement.services.core.notification import NotificationService
-from myfinance.settings import ENVIRONMENT
-
 from statement.services.core.notification_title import NotificationTitleService
 
 # Create your views here.
@@ -160,7 +159,9 @@ def get_profile(request):
         'notification_titles': [],
     }
     try:
-        templatetags['recent_notifications'] = list(NotificationService.get_by_filter(order='-created_at', user=request.user)[:5])
+        templatetags['recent_notifications'] = list(
+            NotificationService.get_by_filter(order='-created_at', user=request.user)[:5]
+        )
     except Exception:
         templatetags['recent_notifications'] = []
     # Ensure notification titles exist and prepare user preferences list
@@ -206,9 +207,7 @@ def get_user_notification_titles(request):
         NotificationTitleService.ensure_titles(distinct_titles)
         all_titles = NotificationTitleService.get_all_titles()
         enabled = NotificationTitleService.get_enabled_titles_for_user(request.user)
-        notification_titles = [
-            {'id': nt.id, 'title': nt.title, 'enabled': (nt.title in enabled)} for nt in all_titles
-        ]
+        notification_titles = [{'id': nt.id, 'title': nt.title, 'enabled': (nt.title in enabled)} for nt in all_titles]
     except Exception:
         notification_titles = []
 

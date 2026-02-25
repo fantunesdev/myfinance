@@ -1,25 +1,22 @@
 import json
-
 from datetime import date
 
 from dateutil.relativedelta import relativedelta
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import redirect
 from django.utils.decorators import method_decorator
 from django.utils.timezone import now
-from django.shortcuts import redirect
 
 from clients.transaction_classifier.transaction_classifier import TransactionClassifierClient
 from statement.forms.core.transaction import TransactionExpenseForm, TransactionForm, TransactionRevenueForm
 from statement.forms.general_forms import NavigationForm, UploadFileForm
-from statement.models import Transaction
+from statement.models import CardNumber, Transaction
 from statement.services.core.card import CardService
 from statement.services.core.fixed_expenses import FixedExpensesService
 from statement.services.core.installment import InstallmentService
 from statement.services.core.notification import NotificationService
 from statement.services.core.transaction import TransactionService
 from statement.utils.datetime import DateTimeUtils
-from statement.models import CardNumber
-import json
 from statement.views.base_view import BaseView
 
 
@@ -68,7 +65,7 @@ class TransactionView(BaseView):
         else:
             form = self._set_form(request, instance=None)
 
-        # Provide card numbers JSON for the form JS
+        # Fornece os números de cartão em JSON para uso pelo JavaScript do formulário
         card_numbers_qs = CardNumber.objects.select_related('card').all()
         card_numbers = list(card_numbers_qs.values('id', 'number', 'name', 'card_id'))
 
@@ -137,11 +134,11 @@ class TransactionView(BaseView):
         Página que faz o upload para o carregamento de lançamentos por arquivo
         """
         form = UploadFileForm(request.user)
-        
+
         specific_context = {
             'notifications_json': json.dumps([]),
         }
-        
+
         return self._render(request, form, 'transaction/import.html', specific_context)
 
     @method_decorator(login_required)
@@ -150,7 +147,7 @@ class TransactionView(BaseView):
         Página que oferece opções de importação: por arquivo ou por notificações
         """
         form = UploadFileForm(request.user)
-        
+
         # Busca as notificações não usadas (vinculadas e não vinculadas)
         notifications = []
         all_notifications = list(NotificationService.get_by_filter(is_used=False))
@@ -164,7 +161,7 @@ class TransactionView(BaseView):
         if unlinked:
             CardService.are_notifications_owner(cards, unlinked)
             for n in unlinked:
-                # Se o serviço identificou um cartão para a notificação e ela ainda não está vinculada no banco, salva 
+                # Se o serviço identificou um cartão para a notificação e ela ainda não está vinculada no banco, salva
                 # essa associação.
                 if getattr(n, 'card', None):
                     current = NotificationService.get_by_filter(first=True, id=n.id)
@@ -179,15 +176,17 @@ class TransactionView(BaseView):
         # compatibilidade quando a tabela não existir ou não estiver populada.
         try:
             from statement.services.core.notification_title import NotificationTitleService
+
             enabled_titles = NotificationTitleService.get_enabled_titles_for_user(request.user)
         except Exception:
             enabled_titles = None
 
         user_notifications = [
-            n for n in all_notifications
+            n
+            for n in all_notifications
             if n.card_id in card_ids and (enabled_titles is None or n.title in enabled_titles)
         ]
-        
+
         # Converte as notificações em transações para exibição
         for notification in user_notifications:
             transaction_data = NotificationService.build_transaction_from_notification(notification, notification.card)
@@ -201,24 +200,28 @@ class TransactionView(BaseView):
                     value = 0
 
             # TODO: Quando usar notificações em produção, integrar transactionClassifier para predição de categorias
-            notifications.append({
-                'id': notification.id,
-                'date': transaction_data.get('release_date', '').strftime('%Y-%m-%d') if transaction_data.get('release_date') else '',
-                'description': transaction_data.get('description', ''),
-                'original_description': notification.message if hasattr(notification, 'message') else '',
-                'value': value,
-                'category': None,
-                'subcategory': None,
-                'card_id': notification.card_id,
-                'notification_id': notification.id,
-            })
-        
+            notifications.append(
+                {
+                    'id': notification.id,
+                    'date': transaction_data.get('release_date', '').strftime('%Y-%m-%d')
+                    if transaction_data.get('release_date')
+                    else '',
+                    'description': transaction_data.get('description', ''),
+                    'original_description': notification.message if hasattr(notification, 'message') else '',
+                    'value': value,
+                    'category': None,
+                    'subcategory': None,
+                    'card_id': notification.card_id,
+                    'notification_id': notification.id,
+                }
+            )
+
         specific_context = {
             'file_notifications_json': json.dumps([]),
             'notifications_json': json.dumps(notifications),
             'has_notifications': len(notifications) > 0,
         }
-        
+
         return self._render(request, form, 'transaction/import_base.html', specific_context)
 
     def _get_current_month(self, request):
@@ -267,12 +270,13 @@ class TransactionView(BaseView):
         return {}
 
     def _set_specific_context(self, instances, year, month, **kwargs):
-        # Provide card numbers data to templates (as JSON) so client-side
-        # form logic can populate the card_number select dynamically.
+        # Fornece os números de cartão para os templates (em JSON) para que
+        # a lógica cliente-populada possa preencher dinamicamente o select de card_number.
         card_numbers_qs = CardNumber.objects.select_related('card').all()
         card_numbers = list(card_numbers_qs.values('id', 'number', 'name', 'card_id'))
-        # Compute total value for the rendered set (efficiently when possible)
+        # Calcula o valor total para o conjunto renderizado (de forma eficiente quando possível)
         from django.db.models import Sum
+
         try:
             total_value = instances.aggregate(total=Sum('value'))['total'] or 0
         except Exception:

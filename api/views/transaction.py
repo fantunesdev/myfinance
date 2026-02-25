@@ -64,14 +64,20 @@ class TransactionView(BaseView):
         """
         return self._get_transactions_by_date(request, year=year, month=month)
 
-    @action(detail=False, methods=['get'], url_path='accounts/(?P<account_id>\d+)/year/(?P<year>\d{4})/month/(?P<month>\d{1,2})')
+    @action(
+        detail=False,
+        methods=['get'],
+        url_path='accounts/(?P<account_id>\d+)/year/(?P<year>\d{4})/month/(?P<month>\d{1,2})',
+    )
     def get_extract_by_year_and_month(self, request, account_id, year, month):
         """
         Obtém os lançamentos por conta, ano e mês.
         """
         return self._get_transactions_by_date(request, account=account_id, year=year, month=month)
 
-    @action(detail=False, methods=['get'], url_path='cards/(?P<card_id>\d+)/year/(?P<year>\d{4})/month/(?P<month>\d{1,2})')
+    @action(
+        detail=False, methods=['get'], url_path='cards/(?P<card_id>\d+)/year/(?P<year>\d{4})/month/(?P<month>\d{1,2})'
+    )
     def get_invoice_by_year_and_month(self, request, card_id, year, month):
         """
         Obtém os lançamentos por conta, ano e mês.
@@ -249,14 +255,14 @@ class TransactionView(BaseView):
 
         try:
             file_handler = FileHandlerService(request)
-            
+
             # Se for Tasker JSON, processa as notificações e retorna dados para importação
             if import_type == 'tasker_json':
                 notifications_data = file_handler.read_file(file_type='tasker_json')
                 # Aqui você pode retornar as notificações processadas
                 # O frontend vai lidar com a criação de Notification records
                 return Response(notifications_data, status=status.HTTP_200_OK)
-            
+
             # CSV padrão
             transactions = file_handler.read_file(file_type='csv')
             return Response(transactions, status=status.HTTP_200_OK)

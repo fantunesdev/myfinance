@@ -14,6 +14,9 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='profile',
             name='next_month_day',
-            field=models.PositiveSmallIntegerField(default=10, validators=[django.core.validators.MinValueValidator(1), django.core.validators.MaxValueValidator(31)]),
+            field=models.PositiveSmallIntegerField(
+                default=10,
+                validators=[django.core.validators.MinValueValidator(1), django.core.validators.MaxValueValidator(31)],
+            ),
         ),
     ]

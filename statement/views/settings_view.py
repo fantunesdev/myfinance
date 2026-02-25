@@ -1,23 +1,22 @@
 from django.contrib.auth.decorators import login_required
+from django.forms import modelform_factory
+from django.shortcuts import redirect
 from django.utils.decorators import method_decorator
 
+from statement.models import AppConfig, Notification
 from statement.services.core.account import AccountService
 from statement.services.core.bank import BankService
 from statement.services.core.card import CardService
 from statement.services.core.category import CategoryService
-from statement.services.core.flag import FlagService
-from statement.services.core.subcategory import SubcategoryService
 from statement.services.core.fixed_expenses import FixedExpensesService
-from statement.models import AppConfig
+from statement.services.core.flag import FlagService
+from statement.services.core.notification import NotificationService
+from statement.services.core.subcategory import SubcategoryService
 from statement.services.portfolio.fixed_income.index import IndexService
 from statement.services.portfolio.fixed_income.security import FixedIncomeSecurityService
 from statement.services.portfolio.variable_income.sector import SectorService
 from statement.services.portfolio.variable_income.ticker import TickerService
 from statement.views.base_view import BaseView
-from django.forms import modelform_factory
-from django.shortcuts import redirect
-from statement.models import Notification
-from statement.services.core.notification import NotificationService
 
 
 class SettingsView(BaseView):
@@ -35,6 +34,7 @@ class SettingsView(BaseView):
         # Protege acesso às configurações para usuários não staff
         if not request.user.is_staff:
             from django.core.exceptions import PermissionDenied
+
             raise PermissionDenied()
         # Recupera a flag de configuração do App de forma segura para evitar falhas
         # caso as migrations ainda não tenham sido aplicadas
@@ -91,12 +91,14 @@ class SettingsView(BaseView):
         # Protege acesso às configurações para usuários não staff
         if not request.user.is_staff:
             from django.core.exceptions import PermissionDenied
+
             raise PermissionDenied()
         if request.method != 'POST':
             return redirect('setup_settings')
         enabled_ids = request.POST.getlist('enabled_ids')
         try:
             from statement.services.core.notification_title import NotificationTitleService
+
             NotificationTitleService.set_user_enabled_titles(request.user, enabled_ids)
         except Exception:
             pass
@@ -108,6 +110,7 @@ class SettingsView(BaseView):
         # Protege acesso às configurações para usuários não staff
         if not request.user.is_staff:
             from django.core.exceptions import PermissionDenied
+
             raise PermissionDenied()
         try:
             cfg = AppConfig.get_solo()

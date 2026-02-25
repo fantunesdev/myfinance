@@ -1,14 +1,9 @@
 from django.urls import path
 
-from .views import *
+from statement.views.device import create_device, delete_device, detail_device, get_all_device, update_device
 from statement.views.next_month_view import edit_next_month_view
-from statement.views.device import (
-    create_device,
-    get_all_device,
-    detail_device,
-    update_device,
-    delete_device,
-)
+
+from .views import *
 
 urlpatterns = [
     path('cadastrar/', create_user, name='create_user'),

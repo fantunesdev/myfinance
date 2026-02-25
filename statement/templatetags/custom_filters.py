@@ -60,4 +60,3 @@ def bool_to_portuguese(boolean):
 def get_fields(instance):
     """Retorna uma lista de tuplas (campo, valor) da instância do modelo."""
     return [(field.name, getattr(instance, field.name)) for field in instance._meta.fields]
-

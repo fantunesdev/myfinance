@@ -1,5 +1,6 @@
-from django.apps import apps
 from types import SimpleNamespace
+
+from django.apps import apps
 
 
 class NextMonthViewService:
@@ -21,6 +22,7 @@ class NextMonthViewService:
     @classmethod
     def get_all(cls, user):
         """Return a wrapper with .first() for compatibility with older code."""
+
         class _Wrapper:
             def __init__(self, obj):
                 self._obj = obj

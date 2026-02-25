@@ -343,7 +343,7 @@ header > section > div > p:last-child {
     transition: all .25s linear;
 }
 
-/* When the sidebar is toggled/hidden, let main span the full width */
+/* Quando o sidebar é recolhido/oculto, fazer o main ocupar toda a largura */
 body.toggled-sidebar main {
     grid-column: 1 / -1;
     width: 100%;
@@ -514,7 +514,7 @@ td a:hover {
     opacity: 0.5;
 }
 
-/* Group header for invoice sections */
+/* Cabeçalho de grupo para seções da fatura */
 .group-header td {
     background: #131313;
     font-weight: bold;
@@ -527,7 +527,7 @@ td a:hover {
     padding: 12px;
 }
 
-/* Total badge shown on invoice group headers */
+/* Badge de total exibido nos cabeçalhos de grupos da fatura */
 .group-total {
     float: right;
     background: linear-gradient(180deg, #2b2b2b, #1b1b1b);
@@ -574,7 +574,7 @@ td a:hover {
 /* Observação: os botões de ação e o ícone de filtro usam a mesma cor da fonte
     para manter consistência visual com a toolbar. */
 
-/* Footer row showing group totals */
+/* Linha de rodapé mostrando totais do grupo */
 .group-total-row td {
     text-align: right;
     font-weight: 700;
@@ -958,7 +958,7 @@ td a:hover {
     transition: all .15s linear;
 }
 
-/* highlight rows identified as duplicates */
+/* Destacar linhas identificadas como duplicadas */
 .duplicate-highlight td{
     background-color: darkred;
     color: #fff;
@@ -1293,7 +1293,7 @@ a {
     opacity: 1 !important;
 }
 
-/* Make checkbox column minimal width so it only fits the checkbox */
+/* Forçar largura mínima da coluna do checkbox para caber apenas o checkbox */
 #section-notifications-import .table th:first-child,
 #section-notifications-import .table td:first-child,
 #div-notifications-tasker .table th:first-child,
@@ -1362,15 +1362,15 @@ a {
         padding-right: 0px !important;
     }
 
-    /* Show the total summary only on mobile */
+    /* Mostrar o resumo do total apenas no mobile */
     .mobile-total { display: block !important; }
 }
 
 @media (max-width: 800px) {
-    /* Prevent horizontal scrolling on mobile devices */
+    /* Evitar rolagem horizontal em dispositivos móveis */
     html, body { overflow-x: hidden; }
-    /* Make header use full viewport width and remove extra right padding */
-    /* Use 100% instead of 100vw to avoid scrollbar-width gap */
+    /* Fazer o header usar toda a largura da viewport e remover padding extra à direita */
+    /* Usar 100% em vez de 100vw para evitar a faixa causada pela largura da scrollbar */
     header { overflow-x: hidden !important; width: 100% !important; left: 0 !important; right: 0 !important; box-sizing: border-box !important; padding: 0 !important; margin: 0 !important; }
     header > ul { justify-content: flex-start !important; gap: 6px !important; width: 100% !important; max-width: 100% !important; margin: 0 !important; padding: 0 4px !important; box-sizing: border-box !important; }
     header > ul > li:first-child { margin-right: auto !important; }
@@ -1381,7 +1381,7 @@ a {
     header > ul > li { flex: 0 0 auto; }
     header > ul > li > a { padding: 8px !important; }
 
-    /* Keep the search popup within viewport on mobile */
+    /* Manter o popup de busca dentro da viewport no mobile */
     #search-form {
         left: 8px !important;
         right: 8px !important;
@@ -1395,15 +1395,15 @@ a {
     }
 }
 
-/* Hide mobile total by default on larger screens */
+/* Ocultar o total móvel por padrão em telas maiores */
 .mobile-total { display: none; }
 
-/* Mobile sidebar behavior: hide logo and keep only hamburger; show sidebar as overlay when opened */
+/* Comportamento do sidebar no mobile: esconder o logo grande e manter apenas o hamburger; mostrar o sidebar como overlay quando aberto */
 @media (max-width: 800px) {
-    /* hide the large logo area */
+    /* esconder a área do logo grande */
     logo { display: none; }
 
-    /* collapse grid to single column layout (header + main) */
+    /* colapsar o grid para layout de coluna única (header + main) */
     body {
         grid-template-columns: 1fr;
         grid-template-areas:
@@ -1412,7 +1412,7 @@ a {
             "footer";
     }
 
-    /* hide aside by default and position it as an overlay off-canvas */
+    /* esconder o aside por padrão e posicioná-lo como overlay off-canvas */
     aside {
         position: fixed;
         left: 0;
@@ -1424,13 +1424,13 @@ a {
         z-index: 2000;
     }
 
-    /* when body has mobile-sidebar-open, slide the aside into view */
+    /* quando o body tiver mobile-sidebar-open, deslizar o aside para dentro da tela */
     body.mobile-sidebar-open aside {
         transform: translateX(0);
         box-shadow: 2px 0 8px rgba(0,0,0,0.6);
     }
 
-    /* dim the main content when sidebar is open */
+    /* escurecer o conteúdo principal quando o sidebar estiver aberto */
     body.mobile-sidebar-open main::after {
         content: '';
         position: fixed;
@@ -1442,16 +1442,16 @@ a {
         z-index: 1500;
     }
 
-    /* ensure header stays full width and visible */
+    /* garantir que o header permaneça em largura total e visível */
     header { position: fixed; left: 0; right: 0; top: 0; z-index: 2100; }
     main { padding-top: 70px; }
 
-    /* Make header content wrap and reduce spacing on small screens so icons aren't pushed out */
+    /* Fazer o conteúdo do header quebrar linha e reduzir espaçamento em telas pequenas para que os ícones não sejam empurrados para fora */
     header { overflow-x: hidden; }
     header > ul { flex-wrap: wrap; align-items: center; }
     header > ul > li > a { padding: 8px; font-size: 20px; }
 
-    /* Ensure main takes the full available width on small screens */
+    /* Garantir que o main ocupe toda a largura disponível em telas pequenas */
     main {
         grid-column: 1 / -1;
         width: 100%;

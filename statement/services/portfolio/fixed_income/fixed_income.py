@@ -1,6 +1,5 @@
-
-from django.utils.timezone import datetime
 from django.db.models import Sum
+from django.utils.timezone import datetime
 
 from statement.models import FixedIncome
 from statement.services.base_service import BaseService
@@ -37,7 +36,9 @@ class FixedIncomeService(BaseService):
             daily_amount = daily_investments.aggregate(total=Sum('principal'))['total'] or 0
 
             # Investimentos que venceram até esta data (precisam ser subtraídos)
-            matured = investments.filter(maturity_date__lte=date).aggregate(total=Sum('principal'))['total'] or Decimal(0)
+            matured = investments.filter(maturity_date__lte=date).aggregate(total=Sum('principal'))['total'] or Decimal(
+                0
+            )
 
             # Atualiza o montante total
             running_total += Decimal(daily_amount)

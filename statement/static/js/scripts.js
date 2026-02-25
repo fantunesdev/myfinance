@@ -107,9 +107,9 @@ function toggleBox(id) {
 (window.onresize = () => {
     let boxes = [document.getElementById('tempo-area'), document.getElementById('graphic')];
 
-    // Keep desktop collapsed state between 801px and 1199px.
-    // For mobile (<=800px) we want titles visible while aside is off-canvas,
-    // so do not add the collapsed/toggled classes in that range.
+    // Manter o estado recolhido do desktop entre 801px e 1199px.
+    // Em mobile (<=800px) queremos os títulos visíveis enquanto o aside fica como overlay,
+    // portanto não aplicar as classes de colapso/toggled nessa faixa.
     if (body.clientWidth < 1200 && body.clientWidth > 800) {
         recallSidebar();
         for (let box of boxes) {

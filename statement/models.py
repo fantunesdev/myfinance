@@ -1,5 +1,6 @@
-from django.db import models
 import secrets
+
+from django.db import models
 
 from login.models import User
 
@@ -135,10 +136,14 @@ class Account(models.Model):
     bank = models.ForeignKey(Bank, on_delete=models.PROTECT)
     branch = models.CharField(max_length=10, blank=True, null=True)
     number = models.CharField(max_length=20, blank=True, null=True)
-    balance = models.FloatField(default=0,)
+    balance = models.FloatField(
+        default=0,
+    )
     limits = models.FloatField(default=0)
     type = models.ForeignKey(AccountType, on_delete=models.PROTECT)
-    home_screen = models.BooleanField(default=False,)
+    home_screen = models.BooleanField(
+        default=False,
+    )
     user = models.ForeignKey(User, on_delete=models.PROTECT)
 
     def __str__(self):
@@ -195,7 +200,7 @@ class Card(models.Model):
 
     @property
     def all_card_numbers(self):
-        """ Retorna todos os números de cartão associados a este cartão."""
+        """Retorna todos os números de cartão associados a este cartão."""
         return self.card_numbers.all()
 
     def __str__(self):
@@ -206,7 +211,7 @@ class Card(models.Model):
 class CardNumber(models.Model):
     """
     Classe que representa um número de cartão de crédito.
-    
+
     Atributos:
         number (CharField): Número do cartão de crédito.
     """
@@ -215,7 +220,9 @@ class CardNumber(models.Model):
     number = models.CharField(max_length=20)
     name = models.CharField(max_length=50, blank=True, null=True)
     home_screen = models.BooleanField(default=True)
-    dependente = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='dependent_card_numbers')
+    dependente = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True, related_name='dependent_card_numbers'
+    )
 
     def __str__(self):
         """Retorna o número do cartão de crédito."""
@@ -504,12 +511,13 @@ class Device(models.Model):
         name (CharField): Nome do dispositivo.
         token (CharField): Token de autenticação único do dispositivo.
     """
+
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='devices')
     name = models.CharField(max_length=100)
     token = models.CharField(max_length=64, unique=True, default=generate_device_token, editable=False)
 
     def __str__(self):
-        return f"{self.name} ({self.user})"
+        return f'{self.name} ({self.user})'
 
 
 class Sector(models.Model):
@@ -585,7 +593,8 @@ class AssetTransaction(models.Model):
         """Ordena as transações pela data."""
 
         ordering = ['date']
-    
+
+
 class Notification(models.Model):
     """
     Representa uma notificação.
@@ -598,6 +607,7 @@ class Notification(models.Model):
         is_used (BooleanField): Indica se a notificação já foi utilizada.
         created_at (DateTimeField): Data e hora de criação da notificação.
     """
+
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications', null=True, blank=True)
     app = models.CharField(max_length=50)
     title = models.CharField(max_length=255)
@@ -618,13 +628,16 @@ class NotificationTitle(models.Model):
     Usado para permitir ao usuário ativar/desativar tipos de notificações
     com base no título da mensagem.
     """
+
     title = models.CharField(max_length=255, unique=True)
+
 
 class NotificationTitlePreference(models.Model):
     """
     Associação entre usuário e título de notificação indicando se o título
     está habilitado para aquele usuário.
     """
+
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notification_title_preferences')
     title = models.ForeignKey(NotificationTitle, on_delete=models.CASCADE, related_name='preferences')
     enabled = models.BooleanField(default=False)
@@ -642,6 +655,7 @@ class AppConfig(models.Model):
 
     Utilizado para flags globais como ativar/desativar o TransactionClassifier.
     """
+
     enable_transaction_classifier = models.BooleanField(default=False)
 
     @classmethod

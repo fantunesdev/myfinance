@@ -1,12 +1,12 @@
 import re
 from datetime import date
-from dateutil.relativedelta import relativedelta
 
+from dateutil.relativedelta import relativedelta
 from django.contrib.auth.decorators import login_required
-from django.forms.widgets import HiddenInput, CheckboxInput, MultipleHiddenInput
+from django.core.exceptions import PermissionDenied
+from django.forms.widgets import CheckboxInput, HiddenInput, MultipleHiddenInput
 from django.shortcuts import redirect, render
 from django.utils.decorators import method_decorator
-from django.core.exceptions import PermissionDenied
 
 from statement.forms.general_forms import ExclusionForm
 from statement.services.core.account import AccountService
@@ -309,7 +309,7 @@ class BaseView:
                 return self.class_form(request.POST or None, request.FILES or None, instance=instance)
             case _:
                 raise ValueError('Sem contexto definido.')
-    
+
     def _preserve_unrendered_fields_after_validation(self, form, original_instance):
         """
         Restaura valores originais de campos do model que não vieram no POST,

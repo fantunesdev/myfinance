@@ -8,9 +8,9 @@ from rest_framework.response import Response
 from api.serializers.base_serializer import BaseSerializer
 from api.views.base_view import BaseView
 from statement.models import Notification
+from statement.services.core.card import CardService
 from statement.services.core.notification import NotificationService
 from statement.views.core.notification import NotificationView as StatementView
-from statement.services.core.card import CardService
 
 
 class NotificationView(BaseView):

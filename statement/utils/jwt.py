@@ -9,8 +9,8 @@ from datetime import timedelta
 from django.conf import settings
 from jose import jwt
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.tokens import RefreshToken, UntypedToken
-from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
 
 from login.models import User
 from statement.utils.datetime import DateTimeUtils

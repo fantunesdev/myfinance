@@ -38,5 +38,5 @@ urlpatterns = [
     # Autenticação JWT
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('validate-token/', ValidateTokenView.as_view(), name='validate_token')
+    path('validate-token/', ValidateTokenView.as_view(), name='validate_token'),
 ]

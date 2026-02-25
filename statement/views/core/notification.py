@@ -1,8 +1,8 @@
 from statement.forms.core.notification import NotificationForm
 from statement.models import Notification
 from statement.services.core.notification import NotificationService
-from statement.views.base_view import BaseView
 from statement.services.core.notification_title import NotificationTitleService
+from statement.views.base_view import BaseView
 
 
 class NotificationView(BaseView):

@@ -161,7 +161,7 @@ function twoDigitFloatHandler(event) {
 
 selectPaymentMethod();
 
-// Populate card_number select based on selected card using data injected in template
+// Popula o select de números de cartão com base no cartão selecionado usando dados injetados no template
 async function populateCardNumbersForCard(cardId) {
     const select = document.getElementById('id_card_number');
     const wrapper = document.getElementById('div-card-number');
@@ -171,7 +171,7 @@ async function populateCardNumbersForCard(cardId) {
         return;
     }
 
-    // card_numbers_json may be injected as a JS array (object) or as a JSON string.
+    // card_numbers_json pode ser injetado como um array JS (objeto) ou como uma string JSON.
     const raw = window.card_numbers_json || '[]';
     let cardNumbers = [];
     if (typeof raw === 'string') {
@@ -183,7 +183,7 @@ async function populateCardNumbersForCard(cardId) {
     } else if (Array.isArray(raw)) {
         cardNumbers = raw;
     } else {
-        // Unexpected type, attempt to coerce
+        // Tipo inesperado, tentar converter
         try {
             cardNumbers = JSON.parse(JSON.stringify(raw));
         } catch (e) {
@@ -192,11 +192,11 @@ async function populateCardNumbersForCard(cardId) {
     }
 
     console.log('populateCardNumbersForCard: parsed cardNumbers count=', cardNumbers.length);
-    // Filter by cardId
+    // Filtra por cardId
     const list = cardNumbers.filter(c => String(c.card_id) === String(cardId));
     console.log('populateCardNumbersForCard: filtered list count=', list.length, 'sample=', list.slice(0,5));
 
-    // Clear existing options and add placeholder
+    // Limpa opções existentes e adiciona placeholder
     select.innerHTML = '';
     const emptyOpt = document.createElement('option');
     emptyOpt.value = '';
@@ -217,7 +217,7 @@ async function populateCardNumbersForCard(cardId) {
         select.appendChild(opt);
     });
 
-    // If there's a preselected value from the form, keep it
+    // Se houver um valor pré-selecionado no formulário, mantê-lo
     const pre = select.getAttribute('data-initial');
     if (pre) select.value = pre;
 
@@ -260,17 +260,17 @@ if (!attachCardChangeListener()) {
     document.addEventListener('DOMContentLoaded', () => {
         const attached = attachCardChangeListener();
         console.log('DOMContentLoaded: attachCardChangeListener returned', attached);
-        // Also run initial populate after DOM ready
+            // Também executa a população inicial após DOMContentLoaded
         const el = document.getElementById('id_card') || selects.card;
         if (el) {
             console.log('DOMContentLoaded: running initial populate for #id_card value', el.value);
             populateCardNumbersForCard(el.value);
-            // ensure any other scripts that set the select value trigger population
+                    // garantir que quaisquer outros scripts que setem o valor do select disparem a população
             if (el.value) el.dispatchEvent(new Event('change'));
         }
     });
 } else {
-    // If element exists now, also run initial populate immediately
+    // Se o elemento já existir agora, também executar a população inicial imediatamente
     const el = document.getElementById('id_card') || selects.card;
     console.log('attachCardChangeListener: attached immediately, running initial populate for value', el && el.value);
     if (el) {

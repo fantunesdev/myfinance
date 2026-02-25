@@ -1,6 +1,7 @@
+import re
+
 from statement.models import Card
 from statement.services.base_service import BaseService
-import re
 
 
 class CardService(BaseService):
@@ -24,11 +25,11 @@ class CardService(BaseService):
     def is_notification_owner(card, notification):
         """
         Verifica se uma notificação pertence a um cartão específico
-        
+
         Valida através do:
         - app_id do cartão (card.account.app_id)
         - 4 últimos dígitos do cartão na mensagem da notificação
-        
+
         :param card: O cartão a ser verificado.
         :param notification: A notificação a ser verificada.
         :return: True se a notificação pertence ao cartão, False caso contrário.
@@ -68,21 +69,21 @@ class CardService(BaseService):
     def are_notifications_owner(cards, notifications):
         """
         Verifica a quais cartões pertencem as notificações.
-        
+
         Adiciona um atributo 'card_id' em cada notificação com o ID do cartão proprietário.
 
         :param cards: Uma lista de cartões a serem verificados.
         :param notifications: uma lista de notificações a serem verificadas.
-        :return: Dicionário mapeando cada notificação aos cartões que a possuem, 
+        :return: Dicionário mapeando cada notificação aos cartões que a possuem,
                  e adicionando atributo 'card_id' na notificação.
         """
         result = {}
-        
+
         for notification in notifications:
             result[notification.id] = []
             # Inicializa card_id como None
             notification.card_id = None
-            
+
             for card in cards:
                 if CardService.is_notification_owner(card, notification):
                     result[notification.id].append(card)
@@ -90,5 +91,5 @@ class CardService(BaseService):
                     if notification.card_id is None:
                         notification.card_id = card.id
                         notification.card = card
-        
+
         return result

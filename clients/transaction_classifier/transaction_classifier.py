@@ -5,13 +5,13 @@ from typing import Union
 import requests
 
 from api.serializers.base_serializer import BaseSerializer
+from clients.transaction_classifier.base_microservice import BaseMicroserviceClient
 from clients.transaction_classifier.description_predictor import DescriptionPredictorClient
 from clients.transaction_classifier.subcategory_predictor import SubcategoryPredictorClient
-from clients.transaction_classifier.base_microservice import BaseMicroserviceClient
 from statement.models import CategorizationFeedback
+from statement.utils.datetime import DateTimeUtils
 from statement.utils.jwt import JWTUtils
 from statement.utils.utils import DictToObject
-from statement.utils.datetime import DateTimeUtils
 
 
 class TransactionClassifierClient(BaseMicroserviceClient):
@@ -23,7 +23,6 @@ class TransactionClassifierClient(BaseMicroserviceClient):
         super().__init__(user)
         self.subcategory = SubcategoryPredictorClient(user)
         self.description = DescriptionPredictorClient(user)
-
 
     def status(self):
         """

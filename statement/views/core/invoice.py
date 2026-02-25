@@ -1,6 +1,6 @@
 from statement.services.core.card import CardService
-from statement.views.core.transaction import TransactionView
 from statement.utils.datetime import DateTimeUtils
+from statement.views.core.transaction import TransactionView
 
 
 class InvoiceView(TransactionView):
@@ -29,6 +29,7 @@ class InvoiceView(TransactionView):
         self._card_id = id
         # Monta os filtros para o mês/ano solicitado
         from django.db.models import Q
+
         card = CardService.get_by_id(self._card_id)
         # Se o usuário for dependente de algum card_number desse cartão, mostrar
         # apenas os lançamentos do(s) card_number(s) dele, independente do campo
@@ -43,8 +44,7 @@ class InvoiceView(TransactionView):
 
         # Include transactions that reference the card directly or via card_number
         instances = self.service.model.objects.filter(
-            Q(card=card) | Q(card_number__card=card),
-            **date_filters
+            Q(card=card) | Q(card_number__card=card), **date_filters
         ).select_related('card_number', 'card', 'account')
 
         # Se for dependente, restringe às transações cujo card_number.dependente seja o usuário
@@ -59,15 +59,20 @@ class InvoiceView(TransactionView):
         # Grupo do cartão pai (transações que referenciam o cartão em si)
         parent_qs = instances.filter(card=card, card_number__isnull=True)
         from django.db.models import Sum
+
         parent_total = parent_qs.aggregate(total=Sum('value'))['total'] or 0
         # Se o cartão possui CardNumbers cadastrados, prefere mostrar apenas
         # as seções por CardNumber. Inclui o grupo do cartão-pai apenas quando
         # houver transações no nível do cartão (para evitar cabeçalhos vazios).
         if card.card_numbers.exists():
             if parent_qs.exists():
-                grouped.append({'label': card.description, 'card_number': None, 'transactions': parent_qs, 'total': parent_total})
+                grouped.append(
+                    {'label': card.description, 'card_number': None, 'transactions': parent_qs, 'total': parent_total}
+                )
         else:
-            grouped.append({'label': card.description, 'card_number': None, 'transactions': parent_qs, 'total': parent_total})
+            grouped.append(
+                {'label': card.description, 'card_number': None, 'transactions': parent_qs, 'total': parent_total}
+            )
 
         # Grupos por card_number: inclui grupos mesmo quando vazios para que o
         # template mostre a mensagem "Nenhum lançamento neste cartão.". Se o

@@ -1,8 +1,9 @@
+import json
+
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 from django.utils.decorators import method_decorator
 from django.utils.timezone import now
-import json
 
 from statement.forms.core.card import CardForm, CardNumberFormSet
 from statement.models import Card
@@ -125,6 +126,7 @@ class CardView(BaseView):
         }
         template = self._set_template_by_global_status('update')
         return self._render(request, form, template, specific_content)
+
     @method_decorator(login_required)
     def import_notifications(self, request):
         """
@@ -135,14 +137,19 @@ class CardView(BaseView):
 
         # Se não houver cartões, retorna sem notificações
         if not cards:
-            return self._render(request, None, 'card/import_notifications.html', {
-                'notifications_json': json.dumps([]),
-                'cards': cards,
-            })
+            return self._render(
+                request,
+                None,
+                'card/import_notifications.html',
+                {
+                    'notifications_json': json.dumps([]),
+                    'cards': cards,
+                },
+            )
 
         # Pega todas as notificações não usadas que têm cartão associado
         notifications = list(NotificationService.get_by_filter(is_used=False, card__isnull=False))
-        
+
         # Filtra apenas as notificações que pertencem aos cartões do usuário
         card_ids = {card.id for card in cards}
         user_notifications = [n for n in notifications if n.card_id in card_ids]
@@ -162,17 +169,21 @@ class CardView(BaseView):
 
             # TODO: Quando usar notificações em produção, integrar transactionClassifier para predição de categorias
             # Por enquanto, category e subcategory são deixados como None para o usuário preencher manualmente
-            transactions.append({
-                'id': notification.id,  # ID temporário da notificação (será usado para identificação)
-                'date': transaction_data.get('release_date', '').strftime('%Y-%m-%d') if transaction_data.get('release_date') else '',
-                'description': transaction_data.get('description', ''),
-                'original_description': notification.message if hasattr(notification, 'message') else '',
-                'value': value,
-                'category': None,  # Sem IA em desenvolvimento
-                'subcategory': None,  # Sem IA em desenvolvimento
-                'card_id': notification.card_id,
-                'notification_id': notification.id,
-            })
+            transactions.append(
+                {
+                    'id': notification.id,  # ID temporário da notificação (será usado para identificação)
+                    'date': transaction_data.get('release_date', '').strftime('%Y-%m-%d')
+                    if transaction_data.get('release_date')
+                    else '',
+                    'description': transaction_data.get('description', ''),
+                    'original_description': notification.message if hasattr(notification, 'message') else '',
+                    'value': value,
+                    'category': None,  # Sem IA em desenvolvimento
+                    'subcategory': None,  # Sem IA em desenvolvimento
+                    'card_id': notification.card_id,
+                    'notification_id': notification.id,
+                }
+            )
 
         specific_context = {
             'notifications_json': json.dumps(transactions),

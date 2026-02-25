@@ -1,11 +1,10 @@
 from django import forms
 
 from statement.forms.base_form import BaseForm
-from statement.models import Transaction
+from statement.models import CardNumber, Transaction
 from statement.services.core.category import CategoryService
 from statement.services.core.subcategory import SubcategoryService
 from statement.utils.datetime import DateTimeUtils
-from statement.models import CardNumber
 
 today = DateTimeUtils.today()
 

@@ -1,7 +1,7 @@
-from statement.views.base_view import BaseView
-from statement.services.core.device import DeviceService
 from statement.forms.core.device import DeviceForm
 from statement.models import Device
+from statement.services.core.device import DeviceService
+from statement.views.base_view import BaseView
 
 
 class DeviceView(BaseView):

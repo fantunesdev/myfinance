@@ -1,11 +1,13 @@
 import os
-import requests
 from typing import Union
+
+import requests
 
 from statement.utils.jwt import JWTUtils
 
+
 class BaseMicroserviceClient:
-    """ Classe base do microservi;o """
+    """Classe base do microservi;o"""
 
     BASE_URL = os.getenv('TRANSACTION_CLASSIFIER_URL')
     PORT = os.getenv('TRANSACTION_CLASSIFIER_PORT')

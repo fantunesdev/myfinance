@@ -1,8 +1,8 @@
 import csv
 import json
 import re
-
 from datetime import datetime
+
 from clients.transaction_classifier.transaction_classifier import TransactionClassifierClient
 from statement.models import AppConfig
 from statement.services.core.account import AccountService
@@ -55,7 +55,7 @@ class FileHandlerService:
     def read_file(self, file_type='csv'):
         """
         Lê o arquivo e retorna os dados processados.
-        
+
         :param file_type: Tipo de arquivo ('csv' ou 'tasker_json')
         :return: Lista de dicionários com os dados do arquivo.
         """
@@ -117,10 +117,11 @@ class FileHandlerService:
         if not transactions:
             raise ValueError('O arquivo está vazio.')
         return transactions
+
     def _read_tasker_json(self):
         """
         Lê um arquivo JSON do Tasker (uma linha por JSON) e converte em notificações.
-        
+
         Formato esperado (JSON Lines - um JSON por linha):
         {
             "app": "br.com.intermedium",
@@ -128,7 +129,7 @@ class FileHandlerService:
             "message": "Mensagem completa...",
             "date": "2026-02-06 14:26:55"
         }
-        
+
         :return: Lista de dicionários com os dados convertidos em notificações.
         """
         notifications_to_create = []
@@ -142,17 +143,17 @@ class FileHandlerService:
             # Se houver qualquer problema (migrações não aplicadas, tabela ausente, etc.),
             # não filtramos por título para evitar interromper o fluxo de importação.
             enabled_titles = None
-        
+
         for line_num, line in enumerate(file_content.splitlines(), 1):
             line = self._sanitize_utf8mb3(line)
             if not line.strip():
                 continue
-            
+
             try:
                 data = json.loads(line)
             except json.JSONDecodeError as e:
                 raise ValueError(f'Erro ao processar JSON na linha {line_num}: {str(e)}')
-            
+
             # Valida os campos obrigatórios
             required_fields = ['app', 'title', 'message', 'date']
             for field in required_fields:
@@ -163,45 +164,43 @@ class FileHandlerService:
             # não esteja habilitado nas configurações do usuário.
             if enabled_titles is not None and data['title'] not in enabled_titles:
                 continue
-            
+
             # Verifica se a notificação já existe (evita duplicata)
-            existing = NotificationService.get_by_filter(
-                app=data['app'],
-                title=data['title'],
-                message=data['message']
-            )
-            
+            existing = NotificationService.get_by_filter(app=data['app'], title=data['title'], message=data['message'])
+
             if existing.exists():
                 continue  # Pula notificações duplicadas
-            
+
             # Extrai o valor da mensagem se possível
             value = self._extract_value_from_message(data['message'])
-            
-            notifications_to_create.append({
-                'app': data['app'],
-                'title': data['title'],
-                'message': data['message'],
-                'date': data['date'],
-                'value': value,
-            })
-        
+
+            notifications_to_create.append(
+                {
+                    'app': data['app'],
+                    'title': data['title'],
+                    'message': data['message'],
+                    'date': data['date'],
+                    'value': value,
+                }
+            )
+
         if not notifications_to_create:
             raise ValueError('Nenhuma notificação válida encontrada no arquivo.')
-        
+
         return notifications_to_create
 
     def _extract_value_from_message(self, message):
         """
         Extrai o valor monetário da mensagem de notificação.
-        
+
         Exemplo: "Você acaba de comprar R$ 69,71 em JACOMAR"
         Retorna: "69.71"
-        
+
         :param message: Texto da mensagem.
         :return: Valor extraído ou None.
         """
         import re
-        
+
         # Procura por padrão "R$ XX,XX"
         match = re.search(r'R\$\s*([\d.,]+)', message)
         if match:
@@ -210,7 +209,7 @@ class FileHandlerService:
                 return float(value_str)
             except ValueError:
                 return None
-        
+
         return None
 
     def _sanitize_utf8mb3(self, text: str):

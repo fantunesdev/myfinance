@@ -3,8 +3,9 @@ from statement.services.base_service import BaseService
 from statement.services.core.account import AccountService
 from statement.services.core.card import CardService
 
+
 class ProfileService:
-    """ Serviço para gerenciar operações relacionadas ao perfil do usuário. """
+    """Serviço para gerenciar operações relacionadas ao perfil do usuário."""
 
     def __init__(self, user):
         self.user = user
@@ -15,12 +16,12 @@ class ProfileService:
 
     @property
     def accounts(self):
-        """ Retorna todas as contas do usuário. """
+        """Retorna todas as contas do usuário."""
         return AccountService.get_all(self.user)
 
     @property
     def cards(self):
-        """ Retorna todos os cartões do usuário. """
+        """Retorna todos os cartões do usuário."""
         return CardService.get_all(self.user)
 
     # Métodos CRUD
@@ -42,7 +43,7 @@ class ProfileService:
         return self._crud.update(form, instance)
 
     def delete(self, instance):
-        """ Deleta um perfil de usuário existente.
+        """Deleta um perfil de usuário existente.
         :param instance: Instância do perfil a ser deletado.
         :return: Instância do perfil deletado.
         """

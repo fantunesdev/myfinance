@@ -46,7 +46,7 @@ class NotificationTitleService:
 
         # Garante que exista uma preferência para todos os títulos
         all_titles = list(NotificationTitle.objects.all())
-        existing_prefs = { (p.user_id, p.title_id): p for p in NotificationTitlePreference.objects.filter(user=user) }
+        existing_prefs = {(p.user_id, p.title_id): p for p in NotificationTitlePreference.objects.filter(user=user)}
 
         # Create missing prefs and update enabled flag
         for title in all_titles:

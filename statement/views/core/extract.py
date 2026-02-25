@@ -1,6 +1,6 @@
 from statement.services.core.account import AccountService
-from statement.views.core.transaction import TransactionView
 from statement.utils.datetime import DateTimeUtils
+from statement.views.core.transaction import TransactionView
 
 
 class ExtractView(TransactionView):
