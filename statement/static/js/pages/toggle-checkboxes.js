@@ -1,37 +1,37 @@
 
-document.addEventListener('DOMContentLoaded', function(){
+document.addEventListener('DOMContentLoaded', function () {
     const table = document.getElementById('statement-table');
     const toggleBtn = document.getElementById('toggle-checkboxes');
-    if(!table || !toggleBtn) return;
+    if (!table || !toggleBtn) return;
 
     // Garantir estado inicial: escondido
-    try{
+    try {
         table.classList.remove('show-checkboxes');
         table.dataset.checkboxVisible = 'false';
-    }catch(e){}
+    } catch (e) { }
 
     // Carregar linhas ocultas persistidas para esta página
-    try{
+    try {
         const hadHidden = loadHiddenRows(table);
-        if(hadHidden){
+        if (hadHidden) {
             setToggleIcon(toggleBtn, true);
             refreshZebra(table);
             recalcDashboardTotals(table);
         }
-    }catch(e){ console.error('loadHiddenRows error', e); }
+    } catch (e) { console.error('loadHiddenRows error', e); }
     // Carregar grupos e marcar linhas agrupadas (se houver)
-    try{ loadGroups(table); }catch(e){ console.error('loadGroups error', e); }
-    try{ updateMainToggleIcon(table, toggleBtn); }catch(e){}
+    try { loadGroups(table); } catch (e) { console.error('loadGroups error', e); }
+    try { updateMainToggleIcon(table, toggleBtn); } catch (e) { }
 
     // Adicionar checkbox 'selecionar todos' no cabeçalho (se a tabela tiver coluna de checkbox)
-    try{
+    try {
         const thead = table.tHead;
-        if(thead && thead.rows && thead.rows.length){
+        if (thead && thead.rows && thead.rows.length) {
             const headerRow = thead.rows[0];
             // Tentar encontrar um th com a classe 'checkbox-col' ou usar o primeiro th
             let th = headerRow.querySelector('th.checkbox-col');
-            if(!th) th = headerRow.querySelector('th');
-            if(th){
+            if (!th) th = headerRow.querySelector('th');
+            if (th) {
                 // Criar checkbox "selecionar todos"
                 const selectAll = document.createElement('input');
                 selectAll.type = 'checkbox';
@@ -41,48 +41,48 @@ document.addEventListener('DOMContentLoaded', function(){
                 th.insertBefore(selectAll, th.firstChild);
 
                 // Quando selectAll mudar, marcar/desmarcar todos os checkboxes das linhas
-                selectAll.addEventListener('change', function(){
+                selectAll.addEventListener('change', function () {
                     const checked = !!this.checked;
                     const tbody = table.tBodies[0];
-                    if(!tbody) return;
+                    if (!tbody) return;
                     const inputs = tbody.querySelectorAll('input[type="checkbox"]');
                     inputs.forEach(i => { i.checked = checked; });
                 });
 
                 // Manter o estado do selectAll sincronizado com mudanças dos checkboxes das linhas (delegação)
                 const tbody = table.tBodies[0];
-                if(tbody){
-                    tbody.addEventListener('change', function(e){
-                        if(!e.target || e.target.type !== 'checkbox') return;
+                if (tbody) {
+                    tbody.addEventListener('change', function (e) {
+                        if (!e.target || e.target.type !== 'checkbox') return;
                         updateSelectAllState(table);
                     });
                 }
             }
         }
-    }catch(e){ console.error('select-all init error', e); }
+    } catch (e) { console.error('select-all init error', e); }
 
-    toggleBtn.addEventListener('click', function(event){
+    toggleBtn.addEventListener('click', function (event) {
         // Sempre abrir o popup e NÃO revelar automaticamente nem limpar linhas ocultas.
         const currently = table.dataset.checkboxVisible === 'true';
         const next = !currently;
-        if(next){
+        if (next) {
             table.classList.add('show-checkboxes');
             table.dataset.checkboxVisible = 'true';
-            toggleBtn.setAttribute('title','Ocultar checkboxes');
+            toggleBtn.setAttribute('title', 'Ocultar checkboxes');
         } else {
             table.classList.remove('show-checkboxes');
             table.dataset.checkboxVisible = 'false';
-            toggleBtn.setAttribute('title','Mostrar checkboxes');
+            toggleBtn.setAttribute('title', 'Mostrar checkboxes');
         }
         // Mostrar popup de opções (não alterar linhas ocultas)
         showOptionsPopup(event.currentTarget, table, toggleBtn);
     });
 
     // Observar mudanças de classe na tabela para fechar o popup quando a coluna de checkboxes for escondida
-    const mo = new MutationObserver(function(mutations){
-        for(const m of mutations){
-            if(m.attributeName === 'class'){
-                if(!table.classList.contains('show-checkboxes')){
+    const mo = new MutationObserver(function (mutations) {
+        for (const m of mutations) {
+            if (m.attributeName === 'class') {
+                if (!table.classList.contains('show-checkboxes')) {
                     // Fechar popup se a coluna de checkboxes for escondida
                     closeCheckboxPopup();
                 }
@@ -92,20 +92,26 @@ document.addEventListener('DOMContentLoaded', function(){
     mo.observe(table, { attributes: true, attributeFilter: ['class'] });
 });
 
-function showOptionsPopup(anchorEl, table, toggleBtn){
+/**
+ * Exibe o popup de opções para as checkboxes, permitindo ao usuário escolher entre ocultar, agrupar ou ocultar grupos. O popup é posicionado próximo ao ícone do olho e se mantém alinhado mesmo durante rolagem ou redimensionamento da janela. As ações do popup afetam apenas as linhas selecionadas, e o estado do popup é gerenciado para refletir as opções escolhidas pelo usuário.
+ * @param {*} anchorEl - O elemento âncora próximo ao qual o popup será exibido.
+ * @param {object} table - A tabela para a qual o popup de opções será exibido.
+ * @param {*} toggleBtn - O botão de alternância que acionou o popup.
+ */
+function showOptionsPopup(anchorEl, table, toggleBtn) {
     // Remover popup existente se houver (pode acontecer se o usuário clicar rapidamente várias vezes no ícone)
     const existing = document.querySelector('.myfinance-checkbox-popup');
-    if(existing) existing.remove();
+    if (existing) existing.remove();
 
     const popup = document.createElement('div');
     popup.className = 'myfinance-checkbox-popup';
-    popup.setAttribute('role','dialog');
+    popup.setAttribute('role', 'dialog');
 
     const select = document.createElement('select');
     select.className = 'myfinance-checkbox-select';
-    const opt1 = document.createElement('option'); opt1.value='hide'; opt1.text = 'Ocultar';
-    const opt2 = document.createElement('option'); opt2.value='group'; opt2.text = 'Agrupar';
-    const opt3 = document.createElement('option'); opt3.value='hide-groups'; opt3.text = 'Ocultar grupos';
+    const opt1 = document.createElement('option'); opt1.value = 'hide'; opt1.text = 'Ocultar';
+    const opt2 = document.createElement('option'); opt2.value = 'group'; opt2.text = 'Agrupar';
+    const opt3 = document.createElement('option'); opt3.value = 'hide-groups'; opt3.text = 'Ocultar grupos';
     select.appendChild(opt1); select.appendChild(opt2); select.appendChild(opt3);
 
     // Container de ações (select + botão Aplicar)
@@ -134,7 +140,10 @@ function showOptionsPopup(anchorEl, table, toggleBtn){
     // permaneça alinhado ao ícone mesmo quando o documento for rolado.
     popup.style.position = 'fixed';
 
-    function reposition(){
+    /**
+     * Repositiona o popup para ficar próximo ao ícone, garantindo que ele fique dentro da viewport. A posição é preferencialmente à esquerda do ícone, mas se não houver espaço suficiente, tenta à direita. Também ajusta verticalmente para centralizar em relação ao ícone e garantir que não ultrapasse os limites da janela.
+     */
+    function reposition() {
         const r = anchorEl.getBoundingClientRect();
         const pw = popup.offsetWidth || 0;
         const ph = popup.offsetHeight || 0;
@@ -142,15 +151,15 @@ function showOptionsPopup(anchorEl, table, toggleBtn){
         let left = r.left - pw - 8;
         const minLeft = 6;
         const maxLeft = window.innerWidth - pw - 6;
-        if(left < minLeft) left = r.right + 8; // try place to right
-        if(left < minLeft) left = minLeft;
-        if(left > maxLeft) left = maxLeft;
+        if (left < minLeft) left = r.right + 8;
+        if (left < minLeft) left = minLeft;
+        if (left > maxLeft) left = maxLeft;
 
         let top = r.top + (r.height - ph) / 2;
         const minTop = 6;
         const maxTop = window.innerHeight - ph - 6;
-        if(top < minTop) top = minTop;
-        if(top > maxTop) top = maxTop;
+        if (top < minTop) top = minTop;
+        if (top > maxTop) top = maxTop;
 
         popup.style.left = left + 'px';
         popup.style.top = top + 'px';
@@ -171,35 +180,34 @@ function showOptionsPopup(anchorEl, table, toggleBtn){
     // foco para teclado
     select.focus();
 
-    function cleanup(){
+    function cleanup() {
         popup.remove();
-        try{ if(popup._onResize) window.removeEventListener('resize', popup._onResize); }catch(e){}
+        try { if (popup._onResize) window.removeEventListener('resize', popup._onResize); } catch (e) { }
     }
 
-    // OBS: NÃO fechar o popup ao clicar fora; somente o ícone do olho ou chamadas
-    // programáticas devem fechá-lo. Ainda registramos resize/scroll para reposicionar
-    // ou remover o popup conforme mudanças na viewport.
+    // Evita que o popo seja fechado ao clicar fora e registras resize/scroll para reposicionar ou remover o popup conforme mudanças na viewport.
     window.addEventListener('resize', cleanup);
     popup._onResize = cleanup;
 
     // Mostrar/ocultar input de nome do grupo ou lista de grupos dependendo da seleção
-    select.addEventListener('change', function(){
-        if(select.value === 'group'){
+    select.addEventListener('change', function () {
+        if (select.value === 'group') {
             groupNameInput.style.display = 'inline-block';
             groupNameInput.focus();
+
             // Ocultar lista de grupos e descrições ocultas se estavam visíveis de uma seleção anterior
-            if(groupsContainer) groupsContainer.style.display = 'none';
+            if (groupsContainer) groupsContainer.style.display = 'none';
             hiddenDesc.style.display = 'none';
-        } else if(select.value === 'hide-groups'){
+        } else if (select.value === 'hide-groups') {
             groupNameInput.style.display = 'none';
             const gc = popup.querySelector('.myfinance-groups-list');
-            if(gc){ gc.style.display = 'block'; renderGroupsList(gc, table); }
+            if (gc) { gc.style.display = 'block'; renderGroupsList(gc, table); }
             hiddenDesc.style.display = 'none';
         } else {
             groupNameInput.style.display = 'none';
-            if(groupsContainer) groupsContainer.style.display = 'none';
+            if (groupsContainer) groupsContainer.style.display = 'none';
             // Quando 'Ocultar' estiver selecionado, mostrar descrições das transações atualmente ocultas
-            if(select.value === 'hide'){
+            if (select.value === 'hide') {
                 hiddenDesc.style.display = 'block';
                 renderHiddenDescriptions();
             } else {
@@ -214,46 +222,46 @@ function showOptionsPopup(anchorEl, table, toggleBtn){
     hiddenDesc.style.display = 'none';
     popup.appendChild(hiddenDesc);
 
-    // Ao abrir o popup, se o select já estiver em 'Ocultar' e houver linhas ocultas
-    // nesta página, renderizá-las imediatamente para que o usuário veja a lista
-    // sem precisar mudar o select.
-    if(select.value === 'hide'){
+    /** 
+     * Ao abrir o popup, verificar o valor selecionado no select e renderizar o conteúdo correspondente (descrições ocultas para 'Ocultar' ou lista de grupos para 'Ocultar grupos') para que o usuário veja imediatamente
+     */
+    if (select.value === 'hide') {
         hiddenDesc.style.display = 'block';
         renderHiddenDescriptions();
-    } else if(select.value === 'hide-groups'){
+    } else if (select.value === 'hide-groups') {
         // Se o valor padrão for 'hide-groups', mostrar grupos
         groupsContainer.style.display = 'block';
         renderGroupsList(groupsContainer, table);
     }
 
-    function renderHiddenDescriptions(){
+    function renderHiddenDescriptions() {
         hiddenDesc.innerHTML = '';
-            // Listar apenas transações ocultas que não pertencem a grupos
+        // Listar apenas transações ocultas que não pertencem a grupos
         const rows = Array.from(table.querySelectorAll('tbody tr.row-hidden')).filter(r => !r.classList.contains('row-hidden-by-group'));
-        if(!rows.length){
+        if (!rows.length) {
             hiddenDesc.textContent = 'Nenhuma transação oculta.';
             return;
         }
         const list = document.createElement('ul'); list.style.paddingLeft = '16px'; list.style.margin = '6px 0';
-        for(const r of rows){
+        for (const r of rows) {
             const id = r.getAttribute('data-tx-id') || '';
             const li = document.createElement('li'); li.style.display = 'flex'; li.style.alignItems = 'center'; li.style.gap = '8px';
             const text = document.createElement('span'); text.textContent = getRowDescription(r) || ('ID ' + id);
             li.appendChild(text);
             // Ícone de revelar (olho) para mostrar esta transação
             const ic = document.createElement('i'); ic.className = 'fa-solid fa-eye'; ic.title = 'Revelar transação'; ic.style.cursor = 'pointer'; ic.style.marginLeft = 'auto';
-            ic.addEventListener('click', function(){
+            ic.addEventListener('click', function () {
                 // Revelar esta linha (remover flags de oculto manual)
-                try{
-                    if(r.classList.contains('row-hidden')) r.classList.remove('row-hidden');
-                    if(r.classList.contains('row-hidden-by-manual')) r.classList.remove('row-hidden-by-manual');
+                try {
+                    if (r.classList.contains('row-hidden')) r.classList.remove('row-hidden');
+                    if (r.classList.contains('row-hidden-by-manual')) r.classList.remove('row-hidden-by-manual');
                     refreshZebra(table);
                     recalcDashboardTotals(table);
                     saveHiddenRows(table);
                     showToast('Transação revelada', 'success');
-                    const toggleBtn = document.getElementById('toggle-checkboxes'); if(toggleBtn) updateMainToggleIcon(table, toggleBtn);
+                    const toggleBtn = document.getElementById('toggle-checkboxes'); if (toggleBtn) updateMainToggleIcon(table, toggleBtn);
                     renderHiddenDescriptions();
-                }catch(e){ console.error('reveal single row error', e); }
+                } catch (e) { console.error('reveal single row error', e); }
             });
             li.appendChild(ic);
             list.appendChild(li);
@@ -261,91 +269,89 @@ function showOptionsPopup(anchorEl, table, toggleBtn){
         hiddenDesc.appendChild(list);
     }
 
-    function getRowDescription(row){
-            try{
-                // Priorizar atributos data explícitos primeiro
-                const selAttrs = row.querySelector('[data-description], [data-desc], [data-descicao], td.description, td.desc, .description, .tx-desc');
-                if(selAttrs && selAttrs.textContent) return selAttrs.textContent.trim();
+    function getRowDescription(row) {
+        try {
+            // Priorizar atributos data explícitos primeiro
+            const selAttrs = row.querySelector('[data-description], [data-desc], [data-descicao], td.description, td.desc, .description, .tx-desc');
+            if (selAttrs && selAttrs.textContent) return selAttrs.textContent.trim();
 
-                // Testar classes que podem conter variantes em Português/Inglês
-                const classCandidates = ['.descricao', '.descricao-cell', '.description', '.desc', '.tx-desc', '.description-cell'];
-                for(const s of classCandidates){
-                    const el = row.querySelector(s);
-                    if(el && el.textContent) return el.textContent.trim();
-                }
+            // Testar classes que podem conter variantes em Português/Inglês
+            const classCandidates = ['.descricao', '.descricao-cell', '.description', '.desc', '.tx-desc', '.description-cell'];
+            for (const s of classCandidates) {
+                const el = row.querySelector(s);
+                if (el && el.textContent) return el.textContent.trim();
+            }
 
-                // Fallback: tentar encontrar a coluna do cabeçalho que contenha "descr" (descrição/description)
-                const table = row.closest('table');
-                if(table && table.tHead && table.tHead.rows.length){
-                    const headers = Array.from(table.tHead.rows[0].querySelectorAll('th'));
-                    for(let i=0;i<headers.length;i++){
-                        const h = headers[i];
-                        const ht = (h.textContent || '').toLowerCase();
-                        if(ht.includes('descr')){
-                            const tds = row.querySelectorAll('td');
-                            if(tds && tds[i] && tds[i].textContent) return tds[i].textContent.trim();
-                        }
+            // Fallback: tentar encontrar a coluna do cabeçalho que contenha "descr" (descrição/description)
+            const table = row.closest('table');
+            if (table && table.tHead && table.tHead.rows.length) {
+                const headers = Array.from(table.tHead.rows[0].querySelectorAll('th'));
+                for (let i = 0; i < headers.length; i++) {
+                    const h = headers[i];
+                    const ht = (h.textContent || '').toLowerCase();
+                    if (ht.includes('descr')) {
+                        const tds = row.querySelectorAll('td');
+                        if (tds && tds[i] && tds[i].textContent) return tds[i].textContent.trim();
                     }
                 }
+            }
 
-                // Último recurso: primeira célula que não seja checkbox (evitar retornar data quando possível)
-                const tds = Array.from(row.querySelectorAll('td'));
-                for(const td of tds){
-                    if(td.classList && td.classList.contains('checkbox-cell')) continue;
-                    const txt = td.textContent.trim();
-                    if(txt) return txt;
-                }
-                return '';
-            }catch(e){ return ''; }
+            // Último recurso: primeira célula que não seja checkbox (evitar retornar data quando possível)
+            const tds = Array.from(row.querySelectorAll('td'));
+            for (const td of tds) {
+                if (td.classList && td.classList.contains('checkbox-cell')) continue;
+                const txt = td.textContent.trim();
+                if (txt) return txt;
+            }
+            return '';
+        } catch (e) { return ''; }
     }
 
     // Aplicar ação quando clicar no botão Aplicar
-    applyBtn.addEventListener('click', function(){
+    applyBtn.addEventListener('click', function () {
         const v = select.value;
-        if(v === 'hide'){
+        if (v === 'hide') {
             hideCheckedRows(table);
             // Alterar ícone para eye-slash quando linhas foram ocultadas
             setToggleIcon(toggleBtn, true);
             // Sucesso, fechar popup e limpar checkboxes
-            try{ table.classList.remove('show-checkboxes'); table.dataset.checkboxVisible = 'false'; toggleBtn.setAttribute('title','Mostrar checkboxes'); }catch(e){}
+            try { table.classList.remove('show-checkboxes'); table.dataset.checkboxVisible = 'false'; toggleBtn.setAttribute('title', 'Mostrar checkboxes'); } catch (e) { }
             cleanup();
             return;
-        } else if(v === 'group'){
+        } else if (v === 'group') {
             const name = (groupNameInput.value || '').trim();
-            if(!name){
+            if (!name) {
                 // Nada a fazer se o nome do grupo estiver vazio
-                try{ table.classList.remove('show-checkboxes'); table.dataset.checkboxVisible = 'false'; toggleBtn.setAttribute('title','Mostrar checkboxes'); }catch(e){}
+                try { table.classList.remove('show-checkboxes'); table.dataset.checkboxVisible = 'false'; toggleBtn.setAttribute('title', 'Mostrar checkboxes'); } catch (e) { }
                 cleanup();
                 return;
             }
             const saved = saveGroup(table, name);
-            if(!saved){
+            if (!saved) {
                 // Usuário cancelou a sobrescrição ou nada foi salvo — não ocultar/fechar
                 return;
             }
             // Salvo com sucesso -> notificar usuário, limpar checkboxes mas MANTER o popup aberto
-            try{ clearAllCheckboxes(table); }catch(e){}
-            try{ updateMainToggleIcon(table, toggleBtn); }catch(e){}
+            try { clearAllCheckboxes(table); } catch (e) { }
+            try { updateMainToggleIcon(table, toggleBtn); } catch (e) { }
             showToast('Grupo salvo', 'success');
             // Re-renderizar a lista de grupos no popup se estiver visível
             const popupNow = document.querySelector('.myfinance-checkbox-popup');
-            if(popupNow){ const gc = popupNow.querySelector('.myfinance-groups-list'); if(gc && gc.style.display !== 'none') renderGroupsList(gc, table); }
+            if (popupNow) { const gc = popupNow.querySelector('.myfinance-groups-list'); if (gc && gc.style.display !== 'none') renderGroupsList(gc, table); }
             // Manter popup aberto para que o usuário possa imediatamente escolher ocultar
             // Limpar o input do nome do grupo para conveniência
-            try{ groupNameInput.value = ''; }catch(e){}
+            try { groupNameInput.value = ''; } catch (e) { }
             return;
-        } else if(v === 'hide-groups'){
-            hideGroups(table);
-            setToggleIcon(toggleBtn, true);
-            try{ table.classList.remove('show-checkboxes'); table.dataset.checkboxVisible = 'false'; toggleBtn.setAttribute('title','Mostrar checkboxes'); }catch(e){}
+        } else if (v === 'hide-groups') {
+            try { table.classList.remove('show-checkboxes'); table.dataset.checkboxVisible = 'false'; toggleBtn.setAttribute('title', 'Mostrar checkboxes'); } catch (e) { }
             cleanup();
             return;
         }
     });
 
     // Também permitir que Enter no select dispare o Aplicar
-    select.addEventListener('keydown', function(e){
-        if(e.key === 'Enter'){
+    select.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
             e.preventDefault();
             applyBtn.click();
         }
@@ -353,87 +359,87 @@ function showOptionsPopup(anchorEl, table, toggleBtn){
 }
 
 /* Auxiliar de toast */
-function showToast(message, type){
-    try{
+function showToast(message, type) {
+    try {
         const t = document.createElement('div');
         t.className = 'myfinance-toast ' + (type || 'info');
         t.textContent = message;
         document.body.appendChild(t);
         // Disparar exibição
-        requestAnimationFrame(()=> t.classList.add('visible'));
-        setTimeout(()=>{ t.classList.remove('visible'); setTimeout(()=> t.remove(), 300); }, 3000);
-    }catch(e){ console.error('showToast error', e); }
+        requestAnimationFrame(() => t.classList.add('visible'));
+        setTimeout(() => { t.classList.remove('visible'); setTimeout(() => t.remove(), 300); }, 3000);
+    } catch (e) { console.error('showToast error', e); }
 }
 
-function updateSelectAllState(table){
-    try{
+function updateSelectAllState(table) {
+    try {
         const thead = table.tHead;
-        if(!thead) return;
+        if (!thead) return;
         const headerCheckbox = thead.querySelector('input.myfinance-select-all');
-        if(!headerCheckbox) return;
-        const tbody = table.tBodies[0]; if(!tbody) return;
+        if (!headerCheckbox) return;
+        const tbody = table.tBodies[0]; if (!tbody) return;
         const inputs = Array.from(tbody.querySelectorAll('input[type="checkbox"]'));
-        if(!inputs.length){ headerCheckbox.checked = false; headerCheckbox.indeterminate = false; return; }
+        if (!inputs.length) { headerCheckbox.checked = false; headerCheckbox.indeterminate = false; return; }
         const checkedCount = inputs.filter(i => i.checked).length;
-        if(checkedCount === 0){ headerCheckbox.checked = false; headerCheckbox.indeterminate = false; }
-        else if(checkedCount === inputs.length){ headerCheckbox.checked = true; headerCheckbox.indeterminate = false; }
+        if (checkedCount === 0) { headerCheckbox.checked = false; headerCheckbox.indeterminate = false; }
+        else if (checkedCount === inputs.length) { headerCheckbox.checked = true; headerCheckbox.indeterminate = false; }
         else { headerCheckbox.checked = false; headerCheckbox.indeterminate = true; }
-    }catch(e){ console.error('updateSelectAllState error', e); }
+    } catch (e) { console.error('updateSelectAllState error', e); }
 }
 
-function clearAllCheckboxes(table){
-    try{
-        const tbody = table.tBodies[0]; if(!tbody) return;
+function clearAllCheckboxes(table) {
+    try {
+        const tbody = table.tBodies[0]; if (!tbody) return;
         const inputs = tbody.querySelectorAll('input[type="checkbox"]');
         inputs.forEach(i => { i.checked = false; });
         updateSelectAllState(table);
-    }catch(e){ console.error('clearAllCheckboxes error', e); }
+    } catch (e) { console.error('clearAllCheckboxes error', e); }
 }
 
 // Remover popup programaticamente (usado quando a coluna de checkbox é escondida)
-function closeCheckboxPopup(){
+function closeCheckboxPopup() {
     const popup = document.querySelector('.myfinance-checkbox-popup');
-    if(!popup) return;
-    try{ if(popup._onScroll) window.removeEventListener('scroll', popup._onScroll); }catch(e){}
-    try{ if(popup._onResize) window.removeEventListener('resize', popup._onResize); }catch(e){}
+    if (!popup) return;
+    try { if (popup._onScroll) window.removeEventListener('scroll', popup._onScroll); } catch (e) { }
+    try { if (popup._onResize) window.removeEventListener('resize', popup._onResize); } catch (e) { }
     popup.remove();
 }
 
-function hideCheckedRows(table){
-    try{
+function hideCheckedRows(table) {
+    try {
         const tbody = table.tBodies[0];
-        if(!tbody) return;
+        if (!tbody) return;
         const rows = Array.from(tbody.rows);
         const applied = [];
-        for(const row of rows){
+        for (const row of rows) {
             // Encontrar o checkbox dentro da linha (input da célula de checkbox)
             const cb = row.querySelector('td.checkbox-cell input[type="checkbox"], input[type="checkbox"]');
-            if(cb && cb.checked){
+            if (cb && cb.checked) {
                 row.classList.add('row-hidden');
                 row.classList.add('row-hidden-by-manual');
                 const id = row.getAttribute('data-tx-id') || null;
-                if(id) applied.push(id);
+                if (id) applied.push(id);
             }
         }
-        try{ console.debug && console.debug('hideCheckedRows applied ids', applied); }catch(e){}
+        try { console.debug && console.debug('hideCheckedRows applied ids', applied); } catch (e) { }
         // Recalcular zebra após ocultar
         refreshZebra(table);
         recalcDashboardTotals(table);
         saveHiddenRows(table);
         showToast('Linhas ocultadas manualmente', 'success');
-        const toggleBtn = document.getElementById('toggle-checkboxes'); if(toggleBtn) updateMainToggleIcon(table, toggleBtn);
+        const toggleBtn = document.getElementById('toggle-checkboxes'); if (toggleBtn) updateMainToggleIcon(table, toggleBtn);
         // Atualizar descrições ocultas no popup se ele estiver aberto e mostrando 'Ocultar'
         const popup = document.querySelector('.myfinance-checkbox-popup');
-        if(popup){ const hd = popup.querySelector('.myfinance-hidden-descriptions'); if(hd && hd.style.display !== 'none') renderHiddenDescriptions(); }
-    }catch(e){ console.error('hideCheckedRows error', e); }
+        if (popup) { const hd = popup.querySelector('.myfinance-hidden-descriptions'); if (hd && hd.style.display !== 'none') renderHiddenDescriptions(); }
+    } catch (e) { console.error('hideCheckedRows error', e); }
 }
 
-function revealHiddenRows(table){
-    try{
+function revealHiddenRows(table) {
+    try {
         const tbody = table.tBodies[0];
-        if(!tbody) return;
+        if (!tbody) return;
         const rows = Array.from(tbody.querySelectorAll('tr.row-hidden-by-manual'));
-        for(const row of rows){
+        for (const row of rows) {
             row.classList.remove('row-hidden');
             row.classList.remove('row-hidden-by-manual');
         }
@@ -441,23 +447,23 @@ function revealHiddenRows(table){
         recalcDashboardTotals(table);
         clearHiddenRows(table);
         showToast('Linhas ocultas manualmente reveladas', 'success');
-        const toggleBtn = document.getElementById('toggle-checkboxes'); if(toggleBtn) updateMainToggleIcon(table, toggleBtn);
+        const toggleBtn = document.getElementById('toggle-checkboxes'); if (toggleBtn) updateMainToggleIcon(table, toggleBtn);
         const popup = document.querySelector('.myfinance-checkbox-popup');
-        if(popup){ const hd = popup.querySelector('.myfinance-hidden-descriptions'); if(hd && hd.style.display !== 'none') renderHiddenDescriptions(); }
-    }catch(e){ console.error('revealHiddenRows error', e); }
+        if (popup) { const hd = popup.querySelector('.myfinance-hidden-descriptions'); if (hd && hd.style.display !== 'none') renderHiddenDescriptions(); }
+    } catch (e) { console.error('revealHiddenRows error', e); }
 }
 
-function recalcDashboardTotals(table){
-    try{
+function recalcDashboardTotals(table) {
+    try {
         const tbody = table.tBodies[0];
-        if(!tbody) return;
+        if (!tbody) return;
         const rows = Array.from(tbody.rows).filter(r => !r.classList.contains('row-hidden'));
         let sum = 0;
-        for(const r of rows){
+        for (const r of rows) {
             const v = r.getAttribute('data-value');
-            if(!v) continue;
-            const n = parseFloat(String(v).replace(',','.'));
-            if(!isNaN(n)) sum += n;
+            if (!v) continue;
+            const n = parseFloat(String(v).replace(',', '.'));
+            if (!isNaN(n)) sum += n;
         }
 
         // Formatar como BRL
@@ -466,268 +472,267 @@ function recalcDashboardTotals(table){
 
         // Atualizar total do dashboard, se presente
         const dashTotal = document.querySelector('.dashboard .expenses b.font-16');
-        if(dashTotal){
+        if (dashTotal) {
             dashTotal.textContent = 'Total de gastos: ' + text;
         }
 
         // Atualizar elemento de total móvel
         const mobileTotal = document.querySelector('.mobile-total');
-        if(mobileTotal){
+        if (mobileTotal) {
             mobileTotal.textContent = 'Total: ' + text;
         }
-    }catch(e){ console.error('recalcDashboardTotals error', e); }
+    } catch (e) { console.error('recalcDashboardTotals error', e); }
 }
 
-/* Group helpers */
-function groupsStorageKey(table){
-    // Preferir uma chave de página estável se a tabela fornecer (data-page-key).
-    // caso contrário, usar o pathname.
-    try{
+/** 
+ * Resolve mes_atual no pageKey para yyyy/MM/ estável.
+ * 
+ * @param {object} table - A tabela para a qual resolver o pageKey, usada para acessar o dataset e obter o pageKey específico.
+ * @returns {string} O pageKey resolvido, com mes_atual substituído por um valor específico de ano/mês se aplicável, ou o pageKey original se não for possível resolver.
+ */
+function resolvePageKey(table) {
+    try {
         let pageKey = table && table.dataset && table.dataset.pageKey ? table.dataset.pageKey : window.location.pathname;
-        // se o pathname contém 'mes_atual', substituir por yyyy/MM/ considerando next_month_view
-        try{
-            if(String(pageKey).includes('mes_atual')){
-                const now = new Date();
-                // Ler next_month_view do sessionStorage
-                try{
-                    const raw = sessionStorage.getItem('next_month_view');
-                    if(raw){
-                        const cfg = JSON.parse(raw);
-                        if(cfg && cfg.active && typeof cfg.day === 'number'){
-                            if(now.getDate() > cfg.day){
-                                // Avançar um mês
-                                now.setMonth(now.getMonth() + 1);
-                            }
-                        }
-                    }
-                }catch(e){}
-                const yyyy = now.getFullYear();
-                const mm = String(now.getMonth() + 1).padStart(2,'0');
-                // Usar formato yyyy/MM/ (barra final) para corresponder ao padrão esperado
-                pageKey = String(pageKey).replace(/mes_atual/g, `${yyyy}/${mm}/`);
+        if (String(pageKey).includes('mes_atual')) {
+            let yyyy, mm;
+
+            try {
+                const ym = sessionStorage.getItem('year-month');
+                const arr = ym.split(',');
+                if (Array.isArray(arr) && arr.length >= 2) {
+                    yyyy = arr[0];
+                    mm = String(arr[1]).padStart(2, '0');
+                }
+            } catch (e) {
+                console.error('Year-month não encontrado ou inválido em sessionStorage', e);
             }
-        }catch(e){}
-        const key = 'myfinance:groups:' + pageKey;
-        try{ console.debug && console.debug('groupsStorageKey ->', key); }catch(e){}
-        return key;
-    }catch(e){ return 'myfinance:groups:' + window.location.pathname; }
+
+            pageKey = String(pageKey).replace(/mes_atual/g, `${yyyy}/${mm}`);
+        }
+
+        return pageKey;
+    } catch (e) {
+        return window.location.pathname;
+    }
 }
 
-function loadGroups(table){
-    try{
+/**
+ * Geração da chave de armazenamento para grupos, baseada no pageKey específico da tabela. Isso garante que os grupos sejam isolados por página/visão, evitando conflitos entre diferentes meses ou visões personalizadas.
+ * @param {object} table - A tabela para a qual gerar a chave de armazenamento, usada para resolver o pageKey específico.
+ * @returns {string} A chave de armazenamento para os grupos da tabela.
+ */
+function groupsStorageKey(table) {
+    try {
+        const pageKey = resolvePageKey(table);
+        const key = 'myfinance:groups:' + pageKey;
+        try { console.debug && console.debug('groupsStorageKey ->', key); } catch (e) { }
+        return key;
+    } catch (e) { return 'myfinance:groups:' + window.location.pathname; }
+}
+
+/**
+ * Carrega os grupos de uma tabela a partir do armazenamento local.
+ * @param {object} table - A tabela para a qual carregar os grupos.
+ * @returns {Array} Uma lista de grupos carregados. Cada grupo é um objeto com a estrutura { name: string, ids: array of transaction IDs, createdAt: ISO string }.
+ */
+function loadGroups(table) {
+    try {
         const gKey = groupsStorageKey(table);
-        try{ console.debug && console.debug('loadGroups key:', gKey); }catch(e){}
+        try { console.debug && console.debug('loadGroups key:', gKey); } catch (e) { }
         const raw = localStorage.getItem(gKey);
-        try{ console.debug && console.debug('loadGroups raw:', raw); }catch(e){}
-        if(!raw) return [];
+        try { console.debug && console.debug('loadGroups raw:', raw); } catch (e) { }
+        if (!raw) return [];
         const groups = JSON.parse(raw || '[]');
-        try{ console.debug && console.debug('loadGroups parsed count:', Array.isArray(groups)?groups.length:0); }catch(e){}
-        if(!Array.isArray(groups)) return [];
+        try { console.debug && console.debug('loadGroups parsed count:', Array.isArray(groups) ? groups.length : 0); } catch (e) { }
+        if (!Array.isArray(groups)) return [];
 
         // Tentar aplicar grupos às linhas; as linhas podem ser injetadas após o DOMContentLoaded
-        const tryApply = (attempt)=>{
-            try{ console.debug && console.debug('loadGroups tryApply attempt', attempt); }catch(e){}
+        const tryApply = (attempt) => {
+            try { console.debug && console.debug('loadGroups tryApply attempt', attempt); } catch (e) { }
             const tbody = table.tBodies[0];
-            if(!tbody){
-                try{ console.debug && console.debug('loadGroups tbody not ready, will retry', attempt); }catch(e){}
-                if(attempt < 5) setTimeout(()=> tryApply(attempt+1), 150);
+            if (!tbody) {
+                try { console.debug && console.debug('loadGroups tbody not ready, will retry', attempt); } catch (e) { }
+                if (attempt < 5) setTimeout(() => tryApply(attempt + 1), 150);
                 return;
             }
             let matchedAny = false;
-            for(const g of groups){
-                if(!g.ids || !g.name) continue;
-                for(const id of g.ids){
+            for (const g of groups) {
+                if (!g.ids || !g.name) continue;
+                for (const id of g.ids) {
                     const row = tbody.querySelector('tr[data-tx-id="' + id + '"]');
-                    if(row){
+                    if (row) {
                         row.classList.add('row-grouped');
                         row.setAttribute('data-group-name', g.name);
                         matchedAny = true;
-                        try{ console.debug && console.debug('loadGroups applied id', id, 'group', g.name); }catch(e){}
+                        try { console.debug && console.debug('loadGroups applied id', id, 'group', g.name); } catch (e) { }
                     }
                 }
             }
             // Antes de tentar aplicar grupos, carregar os grupos ocultos para esta página e aplicar a classe de oculto às linhas correspondentes. Isso garante que as linhas pertencentes a grupos ocultos sejam ocultadas mesmo que o grupo em si não seja encontrado (por exemplo, se o grupo foi salvo mas as linhas foram alteradas).
-            try{
+            try {
                 const hiddenNames = loadHiddenGroups(table);
-                if(Array.isArray(hiddenNames) && hiddenNames.length){
-                    try{ console.debug && console.debug('loadGroups applying hidden groups', hiddenNames); }catch(e){}
-                    for(const name of hiddenNames){
-                        for(const g of groups){
-                            if(g.name === name && Array.isArray(g.ids)){
-                                for(const id of g.ids){
+                if (Array.isArray(hiddenNames) && hiddenNames.length) {
+                    try { console.debug && console.debug('loadGroups applying hidden groups', hiddenNames); } catch (e) { }
+                    for (const name of hiddenNames) {
+                        for (const g of groups) {
+                            if (g.name === name && Array.isArray(g.ids)) {
+                                for (const id of g.ids) {
                                     const row = tbody.querySelector('tr[data-tx-id="' + id + '"]');
-                                    if(row){ row.classList.add('row-hidden'); row.classList.add('row-hidden-by-group'); }
+                                    if (row) { row.classList.add('row-hidden'); row.classList.add('row-hidden-by-group'); }
                                 }
                             }
                         }
                     }
                 }
-            }catch(e){ console.error('loadGroups apply hiddenGroups', e); }
+            } catch (e) { console.error('loadGroups apply hiddenGroups', e); }
             // Se não conseguiu aplicar nenhum grupo, pode ser que as linhas ainda não estejam no DOM (por exemplo, carregamento assíncrono). Tentar novamente algumas vezes antes de desistir.
-            if(!matchedAny && attempt < 5){
-                try{ console.debug && console.debug('loadGroups no matches yet, retrying', attempt); }catch(e){}
-                setTimeout(()=> tryApply(attempt+1), 150);
+            if (!matchedAny && attempt < 5) {
+                try { console.debug && console.debug('loadGroups no matches yet, retrying', attempt); } catch (e) { }
+                setTimeout(() => tryApply(attempt + 1), 150);
             }
         };
 
         tryApply(0);
         return groups;
-    }catch(e){ console.error('loadGroups error', e); return []; }
+    } catch (e) { console.error('loadGroups error', e); return []; }
 }
 
-function hiddenGroupsKey(table){
-    try{
-        let pageKey = table && table.dataset && table.dataset.pageKey ? table.dataset.pageKey : window.location.pathname;
-        try{
-            if(String(pageKey).includes('mes_atual')){
-                const now = new Date();
-                try{
-                    const raw = sessionStorage.getItem('next_month_view');
-                    if(raw){
-                        const cfg = JSON.parse(raw);
-                        if(cfg && cfg.active && typeof cfg.day === 'number'){
-                            if(now.getDate() > cfg.day){ now.setMonth(now.getMonth() + 1); }
-                        }
-                    }
-                }catch(e){}
-                const yyyy = now.getFullYear();
-                const mm = String(now.getMonth() + 1).padStart(2,'0');
-                pageKey = String(pageKey).replace(/mes_atual/g, `${yyyy}/${mm}/`);
-            }
-        }catch(e){}
+function hiddenGroupsKey(table) {
+    try {
+        const pageKey = resolvePageKey(table);
         const key = 'myfinance:hiddenGroups:' + pageKey;
-        try{ console.debug && console.debug('hiddenGroupsKey ->', key); }catch(e){}
+        try { console.debug && console.debug('hiddenGroupsKey ->', key); } catch (e) { }
         return key;
-    }catch(e){ return 'myfinance:hiddenGroups:' + window.location.pathname; }
+    } catch (e) { return 'myfinance:hiddenGroups:' + window.location.pathname; }
 }
 
-function saveHiddenGroups(table, names){
-    try{
+function saveHiddenGroups(table, names) {
+    try {
         const k = hiddenGroupsKey(table);
-        localStorage.setItem(k, JSON.stringify(Array.isArray(names)?names:[]));
-        try{ console.debug && console.debug('saveHiddenGroups', k, names); }catch(e){}
-    }catch(e){ console.error('saveHiddenGroups error', e); }
+        localStorage.setItem(k, JSON.stringify(Array.isArray(names) ? names : []));
+        try { console.debug && console.debug('saveHiddenGroups', k, names); } catch (e) { }
+    } catch (e) { console.error('saveHiddenGroups error', e); }
 }
 
-function loadHiddenGroups(table){
-    try{
+function loadHiddenGroups(table) {
+    try {
         const k = hiddenGroupsKey(table);
         const raw = localStorage.getItem(k);
-        try{ console.debug && console.debug('loadHiddenGroups', k, raw); }catch(e){}
-        if(!raw) return [];
+        try { console.debug && console.debug('loadHiddenGroups', k, raw); } catch (e) { }
+        if (!raw) return [];
         const arr = JSON.parse(raw || '[]');
         return Array.isArray(arr) ? arr : [];
-    }catch(e){ console.error('loadHiddenGroups error', e); return []; }
+    } catch (e) { console.error('loadHiddenGroups error', e); return []; }
 }
 
-function saveGroup(table, name){
-    try{
+function saveGroup(table, name) {
+    try {
         const tbody = table.tBodies[0];
-        if(!tbody) return;
+        if (!tbody) return;
         const ids = Array.from(tbody.rows).map(r => r.querySelector('td.checkbox-cell input[type="checkbox"]') ? r : null).filter(Boolean)
-            .map(r => r.getAttribute('data-tx-id')).filter(Boolean).filter(id=>{
+            .map(r => r.getAttribute('data-tx-id')).filter(Boolean).filter(id => {
                 const row = tbody.querySelector('tr[data-tx-id="' + id + '"]');
                 return row && row.querySelector('td.checkbox-cell input[type="checkbox"]') && row.querySelector('td.checkbox-cell input[type="checkbox"]').checked;
             });
-        if(!ids.length) return;
+        if (!ids.length) return;
         // persist group
         const raw = localStorage.getItem(groupsStorageKey(table));
         const groups = raw ? JSON.parse(raw) : [];
         const idx = groups.findIndex(g => g.name === name);
-        if(idx !== -1){
+        if (idx !== -1) {
             const overwrite = window.confirm('Já existe um grupo com este nome nesta página. Deseja sobrescrever?');
-            if(!overwrite) return false;
+            if (!overwrite) return false;
             groups[idx] = { name: name, ids: ids, createdAt: (new Date()).toISOString() };
         } else {
             groups.push({ name: name, ids: ids, createdAt: (new Date()).toISOString() });
         }
         const gKey = groupsStorageKey(table);
         localStorage.setItem(gKey, JSON.stringify(groups));
-        try{ console.info && console.info('saveGroup saved key', gKey, 'groupsCount', groups.length); }catch(e){}
+        try { console.info && console.info('saveGroup saved key', gKey, 'groupsCount', groups.length); } catch (e) { }
         // mark rows
-        for(const id of ids){
+        for (const id of ids) {
             const row = tbody.querySelector('tr[data-tx-id="' + id + '"]');
-            if(row){ row.classList.add('row-grouped'); row.setAttribute('data-group-name', name); }
+            if (row) { row.classList.add('row-grouped'); row.setAttribute('data-group-name', name); }
         }
         // update popup groups list if visible
         const popup = document.querySelector('.myfinance-checkbox-popup');
-        if(popup){
+        if (popup) {
             const gc = popup.querySelector('.myfinance-groups-list');
-            if(gc && gc.style.display !== 'none') renderGroupsList(gc, table);
+            if (gc && gc.style.display !== 'none') renderGroupsList(gc, table);
         }
         return true;
-    }catch(e){ console.error('saveGroup error', e); }
+    } catch (e) { console.error('saveGroup error', e); }
     return false;
 }
 
 // Helper para atualizar o ícone do toggle principal (eye/eye-slash) com base na presença de linhas ocultas, usado após ações que podem alterar o estado de oculto das linhas.
-function updateMainToggleIcon(table, toggleBtn){
-    try{
+function updateMainToggleIcon(table, toggleBtn) {
+    try {
         const anyHidden = table.querySelector('tbody tr.row-hidden') !== null;
         setToggleIcon(toggleBtn, anyHidden);
-    }catch(e){ }
+    } catch (e) { }
 }
 
-function hideGroups(table){
-    try{
+function hideGroups(table) {
+    try {
         const tbody = table.tBodies[0];
-        if(!tbody) return;
+        if (!tbody) return;
         const rows = Array.from(tbody.querySelectorAll('tr.row-grouped'));
         const applied = [];
         const groupNames = new Set();
-        for(const row of rows){
+        for (const row of rows) {
             row.classList.add('row-hidden');
             row.classList.add('row-hidden-by-group');
             const id = row.getAttribute('data-tx-id') || null;
             const gname = row.getAttribute('data-group-name') || null;
-            if(id) applied.push(id);
-            if(gname) groupNames.add(gname);
+            if (id) applied.push(id);
+            if (gname) groupNames.add(gname);
         }
-        try{ console.debug && console.debug('hideGroups applied ids', applied); }catch(e){}
+        try { console.debug && console.debug('hideGroups applied ids', applied); } catch (e) { }
         // Persistir os grupos ocultos para reaplicar a ocultação mesmo após navegação ou recarregamento da página
-        try{ saveHiddenGroups(table, Array.from(groupNames)); }catch(e){}
+        try { saveHiddenGroups(table, Array.from(groupNames)); } catch (e) { }
         refreshZebra(table);
         recalcDashboardTotals(table);
         showToast('Grupos ocultados', 'success');
         // Atualizar ícone do toggle principal
-        const toggleBtn = document.getElementById('toggle-checkboxes'); if(toggleBtn) updateMainToggleIcon(table, toggleBtn);
+        const toggleBtn = document.getElementById('toggle-checkboxes'); if (toggleBtn) updateMainToggleIcon(table, toggleBtn);
         const popup = document.querySelector('.myfinance-checkbox-popup');
-        if(popup){ const hd = popup.querySelector('.myfinance-hidden-descriptions'); if(hd && hd.style.display !== 'none') renderHiddenDescriptions(); }
-    }catch(e){ console.error('hideGroups error', e); }
+        if (popup) { const hd = popup.querySelector('.myfinance-hidden-descriptions'); if (hd && hd.style.display !== 'none') renderHiddenDescriptions(); }
+    } catch (e) { console.error('hideGroups error', e); }
 }
 
 /* Agrupamento de linhas por grupos */
-function getGroupsFromStorage(table){
-    try{
+function getGroupsFromStorage(table) {
+    try {
         const raw = localStorage.getItem(groupsStorageKey(table));
-        if(!raw) return [];
+        if (!raw) return [];
         const groups = JSON.parse(raw || '[]');
         return Array.isArray(groups) ? groups : [];
-    }catch(e){ console.error('getGroupsFromStorage', e); return []; }
+    } catch (e) { console.error('getGroupsFromStorage', e); return []; }
 }
 
-function saveGroupsToStorage(groups, table){
-    try{ localStorage.setItem(groupsStorageKey(table), JSON.stringify(groups || [])); }catch(e){ console.error('saveGroupsToStorage', e); }
+function saveGroupsToStorage(groups, table) {
+    try { localStorage.setItem(groupsStorageKey(table), JSON.stringify(groups || [])); } catch (e) { console.error('saveGroupsToStorage', e); }
 }
 
-function renderGroupsList(container, table){
+function renderGroupsList(container, table) {
     // Container: elemento onde a lista será renderizada (criado pelo popup)
-    if(!container) return;
+    if (!container) return;
     // Limpar conteúdo existente
     container.innerHTML = '';
 
     const groups = getGroupsFromStorage(table);
-    if(!groups.length){
+    if (!groups.length) {
         const empty = document.createElement('div'); empty.className = 'myfinance-groups-empty';
         empty.textContent = 'Nenhum grupo salvo';
         container.appendChild(empty);
         return;
     }
 
-    for(const g of groups){
+    for (const g of groups) {
         const row = document.createElement('div'); row.className = 'myfinance-group-item';
         const label = document.createElement('span'); label.className = 'myfinance-group-name';
-        label.textContent = g.name + ' (' + (Array.isArray(g.ids)?g.ids.length:0) + ')';
+        label.textContent = g.name + ' (' + (Array.isArray(g.ids) ? g.ids.length : 0) + ')';
         row.appendChild(label);
 
         // icon-only controls aligned to the right
@@ -736,16 +741,16 @@ function renderGroupsList(container, table){
         icons.style.gap = '8px';
         icons.style.marginLeft = 'auto';
 
-        const icHide = document.createElement('i'); icHide.className = 'fa-solid fa-eye-slash myfinance-group-hide'; icHide.title='Ocultar grupo'; icHide.style.cursor='pointer';
-        icHide.addEventListener('click', function(){ hideGroupByName(table, g.name); setToggleIcon(document.getElementById('toggle-checkboxes'), true); });
+        const icHide = document.createElement('i'); icHide.className = 'fa-solid fa-eye-slash myfinance-group-hide'; icHide.title = 'Ocultar grupo'; icHide.style.cursor = 'pointer';
+        icHide.addEventListener('click', function () { hideGroupByName(table, g.name); setToggleIcon(document.getElementById('toggle-checkboxes'), true); });
         icons.appendChild(icHide);
 
-        const icShow = document.createElement('i'); icShow.className = 'fa-solid fa-eye myfinance-group-show'; icShow.title='Mostrar grupo'; icShow.style.cursor='pointer';
-        icShow.addEventListener('click', function(){ showGroupByName(table, g.name); setToggleIcon(document.getElementById('toggle-checkboxes'), false); });
+        const icShow = document.createElement('i'); icShow.className = 'fa-solid fa-eye myfinance-group-show'; icShow.title = 'Mostrar grupo'; icShow.style.cursor = 'pointer';
+        icShow.addEventListener('click', function () { showGroupByName(table, g.name); setToggleIcon(document.getElementById('toggle-checkboxes'), false); });
         icons.appendChild(icShow);
 
-        const icDel = document.createElement('i'); icDel.className = 'fa-solid fa-trash myfinance-group-delete'; icDel.title='Remover grupo'; icDel.style.cursor='pointer'; icDel.style.color = 'inherit';
-        icDel.addEventListener('click', function(){ deleteGroupByName(table, g.name, container.closest('.myfinance-checkbox-popup')); });
+        const icDel = document.createElement('i'); icDel.className = 'fa-solid fa-trash myfinance-group-delete'; icDel.title = 'Remover grupo'; icDel.style.cursor = 'pointer'; icDel.style.color = 'inherit';
+        icDel.addEventListener('click', function () { deleteGroupByName(table, g.name, container.closest('.myfinance-checkbox-popup')); });
         icons.appendChild(icDel);
 
         row.appendChild(icons);
@@ -754,114 +759,133 @@ function renderGroupsList(container, table){
     }
 }
 
-function hideGroupByName(table, name){
-    try{
+function hideGroupByName(table, name) {
+    try {
         const groups = getGroupsFromStorage(table);
         const g = groups.find(x => x.name === name);
-        if(!g || !Array.isArray(g.ids)) return;
+        if (!g || !Array.isArray(g.ids)) return;
         const tbody = table.tBodies[0];
         const applied = [];
-        for(const id of g.ids){
+        for (const id of g.ids) {
             const row = tbody.querySelector('tr[data-tx-id="' + id + '"]');
-            if(row){ row.classList.add('row-hidden'); applied.push(id); }
-            else { try{ console.debug && console.debug('hideGroupByName missing row for id', id, 'group', name); }catch(e){} }
+            if (row) { row.classList.add('row-hidden'); applied.push(id); }
+            else { try { console.debug && console.debug('hideGroupByName missing row for id', id, 'group', name); } catch (e) { } }
         }
-        try{ console.debug && console.debug('hideGroupByName applied ids', applied, 'for group', name); }catch(e){}
+        try { console.debug && console.debug('hideGroupByName applied ids', applied, 'for group', name); } catch (e) { }
         // Adicionar ao hiddenGroups storage para reaplicar ocultação mesmo após navegação
-        try{
+        try {
             const hidden = loadHiddenGroups(table);
-            if(!hidden.includes(name)){
+            if (!hidden.includes(name)) {
                 hidden.push(name);
                 saveHiddenGroups(table, hidden);
             }
-        }catch(e){ console.error('hideGroupByName saveHiddenGroups', e); }
+        } catch (e) { console.error('hideGroupByName saveHiddenGroups', e); }
         refreshZebra(table);
         recalcDashboardTotals(table);
         saveHiddenRows(table);
-    }catch(e){ console.error('hideGroupByName', e); }
+    } catch (e) { console.error('hideGroupByName', e); }
 }
 
-function showGroupByName(table, name){
-    try{
+function showGroupByName(table, name) {
+    try {
         const groups = getGroupsFromStorage(table);
         const g = groups.find(x => x.name === name);
-        if(!g || !Array.isArray(g.ids)) return;
+        if (!g || !Array.isArray(g.ids)) return;
         const tbody = table.tBodies[0];
         const applied = [];
-        for(const id of g.ids){
+        for (const id of g.ids) {
             const row = tbody.querySelector('tr[data-tx-id="' + id + '"]');
-            if(row){
+            if (row) {
                 // Remover apenas a classe de ocultação por grupo, mantendo a ocultação manual se presente (o usuário pode ter ocultado manualmente algumas linhas do grupo, e não queremos revelar essas linhas acidentalmente)
                 row.classList.remove('row-hidden-by-group');
-                if(!row.classList.contains('row-hidden-by-manual')) row.classList.remove('row-hidden');
+                if (!row.classList.contains('row-hidden-by-manual')) row.classList.remove('row-hidden');
                 // Assegurar que o checkbox da linha esteja desmarcado para evitar confusão visual (o usuário pode ter marcado o checkbox para ocultar, mas ao mostrar o grupo queremos limpar esse estado para evitar que a linha seja ocultada novamente acidentalmente se o usuário clicar em "Ocultar" sem perceber que o checkbox ainda está marcado)
-                try{
+                try {
                     const cb = row.querySelector('td.checkbox-cell input[type="checkbox"], input[type="checkbox"]');
-                    if(cb) cb.checked = false;
-                }catch(e){}
+                    if (cb) cb.checked = false;
+                } catch (e) { }
                 applied.push(id);
-            } else { try{ console.debug && console.debug('showGroupByName missing row for id', id, 'group', name); }catch(e){} }
+            } else { try { console.debug && console.debug('showGroupByName missing row for id', id, 'group', name); } catch (e) { } }
         }
-        try{ console.debug && console.debug('showGroupByName applied ids', applied, 'for group', name); }catch(e){}
+        try { console.debug && console.debug('showGroupByName applied ids', applied, 'for group', name); } catch (e) { }
         // Remover do hiddenGroups storage
-        try{
+        try {
             const hidden = loadHiddenGroups(table);
             const idx = hidden.indexOf(name);
-            if(idx !== -1){ hidden.splice(idx,1); saveHiddenGroups(table, hidden); }
-        }catch(e){ console.error('showGroupByName saveHiddenGroups', e); }
-        try{ updateSelectAllState(table); }catch(e){}
+            if (idx !== -1) { hidden.splice(idx, 1); saveHiddenGroups(table, hidden); }
+        } catch (e) { console.error('showGroupByName saveHiddenGroups', e); }
+        try { updateSelectAllState(table); } catch (e) { }
         refreshZebra(table);
         recalcDashboardTotals(table);
         saveHiddenRows(table);
-        const toggleBtn = document.getElementById('toggle-checkboxes'); if(toggleBtn) updateMainToggleIcon(table, toggleBtn);
+        const toggleBtn = document.getElementById('toggle-checkboxes'); if (toggleBtn) updateMainToggleIcon(table, toggleBtn);
         const popup = document.querySelector('.myfinance-checkbox-popup');
-        if(popup){ const hd = popup.querySelector('.myfinance-hidden-descriptions'); if(hd && hd.style.display !== 'none') renderHiddenDescriptions(); }
-    }catch(e){ console.error('showGroupByName', e); }
+        if (popup) { const hd = popup.querySelector('.myfinance-hidden-descriptions'); if (hd && hd.style.display !== 'none') renderHiddenDescriptions(); }
+    } catch (e) { console.error('showGroupByName', e); }
 }
 
-function deleteGroupByName(table, name, popup){
-    try{
+function deleteGroupByName(table, name, popup) {
+    try {
         const groups = getGroupsFromStorage(table);
         const idx = groups.findIndex(x => x.name === name);
-        if(idx === -1) return;
-        const removed = groups.splice(idx,1)[0];
+        if (idx === -1) return;
+        const removed = groups.splice(idx, 1)[0];
         saveGroupsToStorage(groups, table);
-        // cleanup DOM markers
+        // cleanup DOM markers e desocultar linhas do grupo removido
         const tbody = table.tBodies[0];
-        for(const id of (removed.ids||[])){
+        for (const id of (removed.ids || [])) {
             const row = tbody.querySelector('tr[data-tx-id="' + id + '"]');
-            if(row){ row.classList.remove('row-grouped'); row.removeAttribute('data-group-name'); }
+            if (row) {
+                row.classList.remove('row-grouped');
+                row.removeAttribute('data-group-name');
+                row.classList.remove('row-hidden-by-group');
+                // Só remover row-hidden se não for oculto manualmente
+                if (!row.classList.contains('row-hidden-by-manual')) {
+                    row.classList.remove('row-hidden');
+                }
+            }
         }
+        // Remover do hiddenGroups storage
+        try {
+            const hidden = loadHiddenGroups(table);
+            const hIdx = hidden.indexOf(name);
+            if (hIdx !== -1) { hidden.splice(hIdx, 1); saveHiddenGroups(table, hidden); }
+        } catch (e) { console.error('deleteGroupByName removeHiddenGroup', e); }
+        // Recalcular zebra e totais
+        refreshZebra(table);
+        recalcDashboardTotals(table);
+        const toggleBtn = document.getElementById('toggle-checkboxes');
+        if (toggleBtn) updateMainToggleIcon(table, toggleBtn);
         // Renderizar lista de grupos no popup se estiver aberto
-        if(popup){
+        if (popup) {
             const gc = popup.querySelector('.myfinance-groups-list');
-            if(gc) renderGroupsList(gc, table);
-            const hd = popup.querySelector('.myfinance-hidden-descriptions'); if(hd && hd.style.display !== 'none') renderHiddenDescriptions();
+            if (gc) renderGroupsList(gc, table);
+            const hd = popup.querySelector('.myfinance-hidden-descriptions'); if (hd && hd.style.display !== 'none') renderHiddenDescriptions();
         }
-    }catch(e){ console.error('deleteGroupByName', e); }
+    } catch (e) { console.error('deleteGroupByName', e); }
 }
 
-function refreshZebra(table){
-    try{
+function refreshZebra(table) {
+    try {
         const tbody = table.tBodies[0];
-        if(!tbody) return;
+        if (!tbody) return;
         const rows = Array.from(tbody.rows).filter(r => !r.classList.contains('row-hidden'));
         // Remover classes zebra existentes
-        Array.from(tbody.rows).forEach(r => { r.classList.remove('zebra-odd','zebra-even'); });
+        Array.from(tbody.rows).forEach(r => { r.classList.remove('zebra-odd', 'zebra-even'); });
         let i = 0;
-        for(const r of rows){
+        for (const r of rows) {
             const cls = (i % 2 === 0) ? 'zebra-even' : 'zebra-odd';
             r.classList.add(cls);
             i++;
         }
-    }catch(e){ console.error('refreshZebra error', e); }
+    } catch (e) { console.error('refreshZebra error', e); }
 }
 
-function setToggleIcon(toggleBtn, hidden){
+function setToggleIcon(toggleBtn, hidden) {
     // hidden === true => eye-slash; false => eye
     const icon = toggleBtn.querySelector('i.fa-solid');
-    if(!icon) return;
-    if(hidden){
+    if (!icon) return;
+    if (hidden) {
         icon.classList.remove('fa-eye');
         icon.classList.add('fa-eye-slash');
     } else {
@@ -871,64 +895,45 @@ function setToggleIcon(toggleBtn, hidden){
 }
 
 /* Persistence helpers */
-function storageKeyForPage(table){
-    try{
-        let pageKey = table && table.dataset && table.dataset.pageKey ? table.dataset.pageKey : window.location.pathname;
-        try{
-            if(String(pageKey).includes('mes_atual')){
-                const now = new Date();
-                try{
-                    const raw = sessionStorage.getItem('next_month_view');
-                    if(raw){
-                        const cfg = JSON.parse(raw);
-                        if(cfg && cfg.active && typeof cfg.day === 'number'){
-                            if(now.getDate() > cfg.day){
-                                now.setMonth(now.getMonth() + 1);
-                            }
-                        }
-                    }
-                }catch(e){}
-                const yyyy = now.getFullYear();
-                const mm = String(now.getMonth() + 1).padStart(2,'0');
-                pageKey = String(pageKey).replace(/mes_atual/g, `${yyyy}/${mm}/`);
-            }
-        }catch(e){}
+function storageKeyForPage(table) {
+    try {
+        const pageKey = resolvePageKey(table);
         const key = 'myfinance:hiddenRows:' + pageKey;
-        try{ console.debug && console.debug('storageKeyForPage ->', key); }catch(e){}
+        try { console.debug && console.debug('storageKeyForPage ->', key); } catch (e) { }
         return key;
-    }catch(e){ return 'myfinance:hiddenRows:' + window.location.pathname; }
+    } catch (e) { return 'myfinance:hiddenRows:' + window.location.pathname; }
 }
 
-function saveHiddenRows(table){
-    try{
+function saveHiddenRows(table) {
+    try {
         const tbody = table.tBodies[0];
-        if(!tbody) return;
+        if (!tbody) return;
         const ids = Array.from(tbody.rows).filter(r => r.classList.contains('row-hidden') && r.classList.contains('row-hidden-by-manual')).map(r => r.getAttribute('data-tx-id')).filter(Boolean);
-        if(ids.length) localStorage.setItem(storageKeyForPage(table), JSON.stringify(ids));
+        if (ids.length) localStorage.setItem(storageKeyForPage(table), JSON.stringify(ids));
         else localStorage.removeItem(storageKeyForPage(table));
-    }catch(e){ console.error('saveHiddenRows error', e); }
+    } catch (e) { console.error('saveHiddenRows error', e); }
 }
 
-function loadHiddenRows(table){
-    try{
+function loadHiddenRows(table) {
+    try {
         const key = storageKeyForPage(table);
-        try{ console.debug && console.debug('loadHiddenRows key', key); }catch(e){}
+        try { console.debug && console.debug('loadHiddenRows key', key); } catch (e) { }
         const raw = localStorage.getItem(key);
-        if(!raw) return false;
+        if (!raw) return false;
         const ids = JSON.parse(raw || '[]');
-        try{ console.debug && console.debug('loadHiddenRows ids', ids); }catch(e){}
-        if(!Array.isArray(ids) || !ids.length) return false;
+        try { console.debug && console.debug('loadHiddenRows ids', ids); } catch (e) { }
+        if (!Array.isArray(ids) || !ids.length) return false;
         const tbody = table.tBodies[0];
-        if(!tbody) return false;
+        if (!tbody) return false;
         let any = false;
-        for(const id of ids){
+        for (const id of ids) {
             const row = tbody.querySelector('tr[data-tx-id="' + id + '"]');
-            if(row){ row.classList.add('row-hidden'); row.classList.add('row-hidden-by-manual'); any = true; }
+            if (row) { row.classList.add('row-hidden'); row.classList.add('row-hidden-by-manual'); any = true; }
         }
         return any;
-    }catch(e){ console.error('loadHiddenRows error', e); return false; }
+    } catch (e) { console.error('loadHiddenRows error', e); return false; }
 }
 
-function clearHiddenRows(table){
-    try{ localStorage.removeItem(storageKeyForPage(table)); }catch(e){ console.error('clearHiddenRows error', e); }
+function clearHiddenRows(table) {
+    try { localStorage.removeItem(storageKeyForPage(table)); } catch (e) { console.error('clearHiddenRows error', e); }
 }
