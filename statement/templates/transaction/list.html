@@ -139,14 +139,14 @@
                                     </tr>
                                     {% endfor %}
                                     <tr class="group-total-row">
-                                        <td colspan="7">Total: {{ group.total|to_reais }}</td>
+                                        <td colspan="7" style="text-align: right">Total: {{ group.total|to_reais }}</td>
                                     </tr>
                                 {% else %}
                                     <tr>
                                         <td colspan="7" class="group-empty">Nenhum lançamento neste cartão.</td>
                                     </tr>
                                     <tr class="group-total-row">
-                                        <td colspan="7">Total: {{ group.total|to_reais }}</td>
+                                        <td colspan="7" style="text-align: right">Total: {{ group.total|to_reais }}</td>
                                     </tr>
                                 {% endif %}
                             {% endfor %}
