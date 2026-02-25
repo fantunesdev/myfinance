@@ -1,6 +1,9 @@
 {% extends 'index.html' %}
 {% load static %}
 {% load custom_filters %}
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/transaction-list.css' %}">
+{% endblock %}
 
     {% comment %}
     Para mais informações sobre formatação de data, consultar a documentação:
@@ -57,47 +60,42 @@
                     <h3 class="box-title">Extrato {{ year_month | date:'F' }} de {{ year_month | date:'Y' }}</h3>
                 </div>
                 <div class="box-header-buttons">
+                    <div class="flex-v-center pr-10 icon-btn" id="toggle-checkboxes" role="button" title="Mostrar checkboxes" aria-label="Mostrar checkboxes">
+                        <i class="fa-solid fa-eye"></i>
+                    </div>
                     <div class="flex-v-center pr-10 icon-btn" id="download-transactions-button">
                         <i class="fa-solid fa-download"></i>
                     </div>
-                    <button type="button" id="toggle-filters" title="Filtrar" class="btn-filter" aria-label="Filtrar">
-                        <i class="fa-solid fa-filter"></i>
-                    </button>
                 </div>
             </div>
             <div class="box-body" id="statement-box">
+                {# estilos de coluna movidos para statement/static/css/styles.css #}
                 <table class="table" id="statement-table">
                     <thead>
                         <tr>
-                            <th class="sortable">Data <span class="sort-btn" data-field="0" role="button" tabindex="0" aria-label="Ordenar"><i class="fa-solid fa-arrows-up-down action-icon"></i></span></th>
-                            <th class="sortable">Banco/Cartão <span class="sort-btn" data-field="1" role="button" tabindex="0" aria-label="Ordenar"><i class="fa-solid fa-arrows-up-down action-icon"></i></span></th>
-                            <th class="sortable" style="text-align: left; max-width: 150px; min-width:115px">Categoria <span class="sort-btn" data-field="2" role="button" tabindex="0" aria-label="Ordenar"><i class="fa-solid fa-arrows-up-down action-icon"></i></span></th>
-                            <th class="sortable" style="text-align: left;">Sub-Categoria <span class="sort-btn" data-field="3" role="button" tabindex="0" aria-label="Ordenar"><i class="fa-solid fa-arrows-up-down action-icon"></i></span></th>
-                            <th class="sortable" style="text-align: left;">Descrição <span class="sort-btn" data-field="4" role="button" tabindex="0" aria-label="Ordenar"><i class="fa-solid fa-arrows-up-down action-icon"></i></span></th>
-                            <th class="sortable" style="text-align: right; max-width: 50px; min-width:30px;">Valor <span class="sort-btn" data-field="5" role="button" tabindex="0" aria-label="Ordenar"><i class="fa-solid fa-arrows-up-down action-icon"></i></span></th>
+                            <th class="no-wrap checkbox-col" style="width:40px; max-width:40px; text-align:center;"></th>
+                            <th class="sortable">Data <span class="sort-btn" data-field="1" role="button" tabindex="0" aria-label="Ordenar"><i class="fa-solid fa-sort"></i></span></th>
+                            <th class="sortable">Banco/Cartão <span class="sort-btn" data-field="2" role="button" tabindex="0" aria-label="Ordenar"><i class="fa-solid fa-sort"></i></span></th>
+                            <th class="sortable" style="text-align: left; max-width: 150px; min-width:115px">Categoria <span class="sort-btn" data-field="3" role="button" tabindex="0" aria-label="Ordenar"><i class="fa-solid fa-sort"></i></span></th>
+                            <th class="sortable" style="text-align: left;">Sub-Categoria <span class="sort-btn" data-field="4" role="button" tabindex="0" aria-label="Ordenar"><i class="fa-solid fa-sort"></i></span></th>
+                            <th class="sortable" style="text-align: left;">Descrição <span class="sort-btn" data-field="5" role="button" tabindex="0" aria-label="Ordenar"><i class="fa-solid fa-sort"></i></span></th>
+                            <th class="sortable" style="text-align: right; max-width: 50px; min-width:30px;">Valor <span class="sort-btn" data-field="6" role="button" tabindex="0" aria-label="Ordenar"><i class="fa-solid fa-sort"></i></span></th>
                             <th class="no-wrap">Ações</th>
                         </tr>
-                        <tr class="filter-row">
-                            <th><input type="text" data-field="0" class="form-control column-filter" placeholder="Filtrar"></th>
-                            <th><input type="text" data-field="1" class="form-control column-filter" placeholder="Filtrar"></th>
-                            <th><input type="text" data-field="2" class="form-control column-filter" placeholder="Filtrar"></th>
-                            <th><input type="text" data-field="3" class="form-control column-filter" placeholder="Filtrar"></th>
-                            <th><input type="text" data-field="4" class="form-control column-filter" placeholder="Filtrar"></th>
-                            <th><input type="text" data-field="5" class="form-control column-filter" placeholder="Filtrar"></th>
-                            <th class="no-wrap"></th>
-                        </tr>
+                        
                     </thead>
                     <tbody>
                         {% if 'fatura' in request.path and grouped_instances %}
                             {% for group in grouped_instances %}
                                 <tr class="group-header" data-group-index="{{ forloop.counter0 }}" {% if group.card_number %}data-card-number-id="{{ group.card_number.id }}"{% endif %}>
-                                    <td colspan="7">
+                                    <td colspan="8">
                                         <strong>{{ group.label }}</strong>
                                     </td>
                                 </tr>
                                 {% if group.transactions.exists %}
                                     {% for transaction in group.transactions %}
-                                        <tr style="border-left: solid 3px {{ transaction.category.color }}">
+                                        <tr style="border-left: solid 3px {{ transaction.category.color }}" data-value="{{ transaction.value }}" data-tx-id="{{ transaction.id }}">
+                                            <td class="checkbox-cell" style="width:40px; max-width:40px; text-align:center;"><input type="checkbox" name="id_{{ transaction.id }}" id="id_{{ transaction.id }}"></td>
                                         {% if 'pesquisa' in request.path %}
                                             <td>{{ transaction.release_date | date:"d/m/Y"}}</td>
                                         {% else %}
@@ -143,20 +141,21 @@
                                     </tr>
                                     {% endfor %}
                                     <tr class="group-total-row">
-                                        <td colspan="7" style="text-align: right">Total: {{ group.total|to_reais }}</td>
+                                        <td colspan="8" style="text-align: right">Total: {{ group.total|to_reais }}</td>
                                     </tr>
                                 {% else %}
                                     <tr>
-                                        <td colspan="7" class="group-empty">Nenhum lançamento neste cartão.</td>
+                                        <td colspan="8" class="group-empty">Nenhum lançamento neste cartão.</td>
                                     </tr>
                                     <tr class="group-total-row">
-                                        <td colspan="7" style="text-align: right">Total: {{ group.total|to_reais }}</td>
+                                        <td colspan="8" style="text-align: right">Total: {{ group.total|to_reais }}</td>
                                     </tr>
                                 {% endif %}
                             {% endfor %}
                         {% else %}
                             {% for transaction in instances %}
-                                <tr style="border-left: solid 3px {{ transaction.category.color }}">
+                                <tr style="border-left: solid 3px {{ transaction.category.color }}" data-value="{{ transaction.value }}" data-tx-id="{{ transaction.id }}">
+                                    <td class="checkbox-cell" style="width:40px; max-width:40px; text-align:center;"><input type="checkbox" name="id_{{ transaction.id }}" id="id_{{ transaction.id }}"></td>
                                     {% if 'pesquisa' in request.path %}
                                         <td>{{ transaction.release_date | date:"d/m/Y"}}</td>
                                     {% else %}
@@ -215,7 +214,8 @@
 
     {% block scripts %}
     <script src="{% static 'js/pages/get-transactions.js' %}" type="module"></script>
-    <script src="{% static 'js/pages/list-filters.js' %}"></script>
+    <script src="{% static 'js/pages/list-filters.js' %}" type="module"></script>
+    <script src="{% static 'js/pages/toggle-checkboxes.js' %}" type="module"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.0/dist/chart.min.js"></script>
     {% if 'fatura' in request.path %}
     <script src="{% static 'js/pages/invoice-group.js' %}" type="module"></script>

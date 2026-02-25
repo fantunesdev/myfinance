@@ -1,0 +1,68 @@
+/* Estilos específicos da página de listagem de transações */
+
+/* esconder coluna de checkboxes por padrão; mostrar quando tabela tiver classe show-checkboxes */
+#statement-table .checkbox-col,
+#statement-table .checkbox-cell {
+    display: none;
+    width: 40px;
+    max-width: 40px;
+    text-align: center;
+}
+#statement-table.show-checkboxes .checkbox-col,
+#statement-table.show-checkboxes .checkbox-cell {
+    display: table-cell;
+}
+
+/* popup select para o ícone de visibilidade */
+.myfinance-checkbox-popup {
+    background: #131313;
+    border: 1px solid #222;
+    padding: 12px;
+    border-radius: 6px;
+    z-index: 9999;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.6);
+}
+.myfinance-checkbox-select {
+    background: transparent;
+    color: #ccc;
+    border: none;
+    font-family: Ubuntu;
+    padding: 6px 8px;
+}
+.myfinance-checkbox-select:focus{ outline: none; }
+
+/* actions layout */
+.myfinance-checkbox-actions{ display:flex; gap:8px; align-items:center; }
+.myfinance-checkbox-apply{ padding: 6px 10px; font-size: 13px; }
+
+.myfinance-hidden-descriptions{ color:#ddd; margin-top:8px; font-size:13px; max-height:160px; overflow:auto; }
+.myfinance-hidden-descriptions ul{ margin:6px 0; padding-left:18px; }
+
+/* Esconder linha */
+.row-hidden{ display: none !important; }
+
+/* Tamanho mínimo do popup */
+.myfinance-checkbox-popup{ min-width: 220px; }
+
+/* Classes zebra para linhas */
+tbody tr.zebra-odd{ background: #191919; }
+tbody tr.zebra-even{ background: #141414; }
+
+/* lista de grupos dentro do popup */
+.myfinance-groups-list{ margin-top:8px; max-height:260px; overflow:auto; padding-top:6px; }
+.myfinance-groups-empty{ color:#999; font-size:13px; padding:8px 6px; }
+.myfinance-group-item{ display:flex; align-items:center; gap:8px; padding:6px 8px; border-radius:4px; }
+.myfinance-group-item + .myfinance-group-item{ border-top:1px solid rgba(255,255,255,0.03); }
+.myfinance-group-name{ color:#ddd; font-size:14px; }
+.myfinance-group-item i{ color:#bbb; font-size:14px; }
+.myfinance-group-item i:hover{ color:#fff; }
+.myfinance-group-item i.fa-trash{ color:#ff6666; }
+
+/* garantir que o container de ícones fique à direita quando o JS adicionar estilos inline */
+.myfinance-group-item > div{ margin-left: auto; display:flex; gap:8px; align-items:center; }
+
+/* toast */
+.myfinance-toast{ position:fixed; right:18px; top:18px; background:#1e1e1e; color:#eaeaea; padding:10px 14px; border-radius:6px; box-shadow:0 6px 18px rgba(0,0,0,0.5); opacity:0; transform:translateY(-6px); transition:all .28s ease; z-index:99999; }
+.myfinance-toast.visible{ opacity:1; transform:translateY(0); }
+.myfinance-toast.success{ background:linear-gradient(90deg,#1e6e3a,#2fb16a); color:#042108; }
+.myfinance-toast.error{ background:linear-gradient(90deg,#b33a3a,#ff6b6b); color:#2b0000; }
