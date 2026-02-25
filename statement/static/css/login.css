@@ -3,7 +3,10 @@ body {
     background: #191919;
     margin: 0;
     color: #cccccc;
-    display: grid;
+    display: flex;
+    min-height: 100vh;
+    align-items: center;
+    justify-content: center;
 }
 
 /* INÍCIO BOX */
@@ -51,15 +54,17 @@ body {
 
 .form-control{
     display: block;
-    width: 99%;
-    height: 30px;
-    margin: 10px 10px 10px 0;
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 36px;
+    height: auto;
+    margin: 10px 0;
+    padding: 6px 10px;
     background: #303030;
     border-radius: 3px;
     border: 1px solid #404040;
     color: #ccc;
     font-family: Ubuntu;
-
 }
 
 .box-500 {
@@ -67,10 +72,9 @@ body {
 }
 
 .center-div {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    /* centralização agora é feita no body via flexbox; manter margin auto como fallback */
+    position: relative;
+    margin: 0 auto;
 }
 
 .center-text {
@@ -129,4 +133,59 @@ body {
 a {
     color: #ccc;
     text-decoration: none;
+}
+
+/* Regras responsivas para telas pequenas (celulares) */
+@media (max-width: 600px) {
+    .box-500 {
+        width: 92%;
+        max-width: 420px;
+        box-sizing: border-box;
+        margin: 0 auto;
+    }
+
+    .center-div {
+        position: relative;
+        top: auto;
+        left: auto;
+        transform: none;
+        margin: 6% auto; /* espaço no topo para caber o header do celular */
+    }
+
+    .box-title {
+        font-size: 18px;
+        text-align: center;
+        margin: 6px 0;
+    }
+
+    .box-body {
+        padding: 14px;
+        font-size: 15px;
+    }
+
+    .form-control{
+        width: 100%;
+        height: auto;
+        min-height: 44px;
+        margin: 8px 0;
+        padding: 10px 12px;
+        font-size: 16px;
+    }
+
+    .btn {
+        width: 100%;
+        padding: 12px 16px;
+        font-size: 16px;
+    }
+
+    .box-footer {
+        padding: 12px 10px;
+        font-size: 14px;
+        text-align: center;
+    }
+}
+
+@media (max-width: 420px) {
+    .box-500 { max-width: 360px; }
+    .form-control{ height: 48px; font-size: 17px; }
 }

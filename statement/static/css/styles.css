@@ -343,6 +343,13 @@ header > section > div > p:last-child {
     transition: all .25s linear;
 }
 
+/* When the sidebar is toggled/hidden, let main span the full width */
+body.toggled-sidebar main {
+    grid-column: 1 / -1;
+    width: 100%;
+    margin-left: 0;
+}
+
 aside > ul {
     left: 0;
     margin: 0;
@@ -488,7 +495,7 @@ tr:hover {
 th {
     background: #131313;
     font-weight: bolder;
-}
+}16px
 
 td > a {
     text-decoration: none;
@@ -1296,4 +1303,158 @@ a {
     width: 40px !important;
     white-space: nowrap !important;
     text-align: center !important;
+}
+
+/* Mobile simplification for mes_atual: esconder dashboards e mostrar apenas Data/Descrição/Valor */
+@media (max-width: 600px) {
+    /* Esconder apenas os widgets do dashboard, não todo o box-primary (que também envolve a tabela) */
+    /* Esconder o dashboard em telas pequenas (celular) */
+    .simple-mobile .dashboard { display: none !important; }
+    .dashboard { display: none !important; }
+    /* Esconder apenas a box do dashboard (identificada) em mobile) */
+    .dashboard-box { display: none !important; }
+
+    /* Aplicar a simplificação apenas na tabela que estiver dentro do wrapper .simple-mobile */
+    .simple-mobile #statement-table thead th:not(:nth-child(1)):not(:nth-child(5)):not(:nth-child(6)),
+    .simple-mobile #statement-table tbody td:not(:nth-child(1)):not(:nth-child(5)):not(:nth-child(6)) {
+        display: none !important;
+    }
+
+    /* Ajustes visuais para células restantes */
+    .simple-mobile #statement-table thead th:nth-child(1),
+    .simple-mobile #statement-table thead th:nth-child(5),
+    .simple-mobile #statement-table thead th:nth-child(6) {
+        text-align: left;
+    }
+
+    .simple-mobile .group-header td { text-align: left; }
+    .simple-mobile .group-total-row td { text-align: right; }
+
+    /* Mobile: reduzir espaçamento e bordas das caixas para mais largura útil */
+    .box {
+        margin: 0px !important;
+        border: none !important;
+        border-radius: 5px !important;
+    }
+
+    /* Remover a borda superior específica das caixas primárias (ex.: dashboard box) */
+    .box-primary {
+        margin: 0px 5px !important;
+        border-top: 2px solid darkred !important;
+    }
+
+    /* Eliminar padding horizontal entre a tabela e a box-body */
+    .box-body {
+        padding-left: 0px !important;
+        padding-right: 0px !important;
+        border-top: none !important;
+    }
+
+    .box-footer {
+        border-top: none !important;
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+    }
+
+    /* Remove main horizontal padding on mobile to maximize space */
+    main {
+        padding-left: 0px !important;
+        padding-right: 0px !important;
+    }
+
+    /* Show the total summary only on mobile */
+    .mobile-total { display: block !important; }
+}
+
+@media (max-width: 800px) {
+    /* Prevent horizontal scrolling on mobile devices */
+    html, body { overflow-x: hidden; }
+    /* Make header use full viewport width and remove extra right padding */
+    /* Use 100% instead of 100vw to avoid scrollbar-width gap */
+    header { overflow-x: hidden !important; width: 100% !important; left: 0 !important; right: 0 !important; box-sizing: border-box !important; padding: 0 !important; margin: 0 !important; }
+    header > ul { justify-content: flex-start !important; gap: 6px !important; width: 100% !important; max-width: 100% !important; margin: 0 !important; padding: 0 4px !important; box-sizing: border-box !important; }
+    header > ul > li:first-child { margin-right: auto !important; }
+    header > ul > li { margin: 0 !important; }
+    header > ul > li > a { box-sizing: border-box !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; }
+    .align-right { margin-left: 0 !important; }
+    .profile-button { order: 999; margin-left: 0 !important; }
+    header > ul > li { flex: 0 0 auto; }
+    header > ul > li > a { padding: 8px !important; }
+
+    /* Keep the search popup within viewport on mobile */
+    #search-form {
+        left: 8px !important;
+        right: 8px !important;
+        margin-left: 0 !important;
+        width: auto !important;
+        max-width: calc(100% - 16px) !important;
+        top: 60px !important;
+        transform: none !important;
+        box-sizing: border-box;
+        padding: 0 8px;
+    }
+}
+
+/* Hide mobile total by default on larger screens */
+.mobile-total { display: none; }
+
+/* Mobile sidebar behavior: hide logo and keep only hamburger; show sidebar as overlay when opened */
+@media (max-width: 800px) {
+    /* hide the large logo area */
+    logo { display: none; }
+
+    /* collapse grid to single column layout (header + main) */
+    body {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "header"
+            "main"
+            "footer";
+    }
+
+    /* hide aside by default and position it as an overlay off-canvas */
+    aside {
+        position: fixed;
+        left: 0;
+        top: 60px;
+        bottom: 0;
+        width: 260px;
+        transform: translateX(-110%);
+        transition: transform 0.25s ease;
+        z-index: 2000;
+    }
+
+    /* when body has mobile-sidebar-open, slide the aside into view */
+    body.mobile-sidebar-open aside {
+        transform: translateX(0);
+        box-shadow: 2px 0 8px rgba(0,0,0,0.6);
+    }
+
+    /* dim the main content when sidebar is open */
+    body.mobile-sidebar-open main::after {
+        content: '';
+        position: fixed;
+        left: 0;
+        top: 60px;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.4);
+        z-index: 1500;
+    }
+
+    /* ensure header stays full width and visible */
+    header { position: fixed; left: 0; right: 0; top: 0; z-index: 2100; }
+    main { padding-top: 70px; }
+
+    /* Make header content wrap and reduce spacing on small screens so icons aren't pushed out */
+    header { overflow-x: hidden; }
+    header > ul { flex-wrap: wrap; align-items: center; }
+    header > ul > li > a { padding: 8px; font-size: 20px; }
+
+    /* Ensure main takes the full available width on small screens */
+    main {
+        grid-column: 1 / -1;
+        width: 100%;
+        margin-left: 0;
+    }
 }

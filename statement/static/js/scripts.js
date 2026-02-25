@@ -107,7 +107,10 @@ function toggleBox(id) {
 (window.onresize = () => {
     let boxes = [document.getElementById('tempo-area'), document.getElementById('graphic')];
 
-    if (body.clientWidth < 1200) {
+    // Keep desktop collapsed state between 801px and 1199px.
+    // For mobile (<=800px) we want titles visible while aside is off-canvas,
+    // so do not add the collapsed/toggled classes in that range.
+    if (body.clientWidth < 1200 && body.clientWidth > 800) {
         recallSidebar();
         for (let box of boxes) {
             if (box) {
@@ -176,13 +179,33 @@ function searchByDescription() {
 // EVENT LISTENERS
 
 // Evento do icone hamburger para encolher/expandir o menu lateral.
+// Evento do icone hamburger para encolher/expandir o menu lateral.
 sidebarButton.addEventListener('click', () => {
+    // Em telas pequenas, abrimos o sidebar como overlay (mobile). Em telas grandes, usa o comportamento atual.
+    if (window.innerWidth <= 800) {
+        if (body.classList.contains('mobile-sidebar-open')) {
+            body.classList.remove('mobile-sidebar-open');
+        } else {
+            body.classList.add('mobile-sidebar-open');
+        }
+        return;
+    }
     toggleSidebar();
 });
 
 // Expandir o menu lateral quando o mouse passar por cima.
 asides.addEventListener('mouseover', () => {
     expandSidebar();
+});
+
+// Fecha o sidebar mobile ao clicar fora dele
+document.addEventListener('click', (e) => {
+    if (!body.classList.contains('mobile-sidebar-open')) return;
+    const target = e.target;
+    const sidebarElem = document.getElementsByTagName('aside')[0];
+    if (sidebarElem && !sidebarElem.contains(target) && !sidebarButton.contains(target)) {
+        body.classList.remove('mobile-sidebar-open');
+    }
 });
 
 // Chama a função que pesquisa ao apertar enter no formulário.

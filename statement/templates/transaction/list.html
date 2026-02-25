@@ -24,6 +24,8 @@
         {% comment %}INÍCIO DASHBOARDS{% endcomment %}
         {% if request.path == '/' %}
             {% include 'transaction/elements/transaction_dashboard.html' %}
+        {% elif 'mes_atual' in request.path %}
+            {% include 'transaction/elements/transaction_dashboard.html' %}
         {% elif 'extrato' in request.path %}
             {% include 'transaction/elements/extract/extract_dashboard.html' %}
         {% elif 'fatura' in request.path %}
@@ -36,6 +38,8 @@
             {% include 'transaction/elements/transaction_dashboard.html' %}
         {% endif %}
         {% comment %}FIM DASHBOARDS{% endcomment %}
+        {# Se estivermos na visão do mês atual, habilita a classe `simple-mobile` para ajustes mobile #}
+        <div class="{% if 'mes_atual' in request.path %}simple-mobile{% endif %}">
         
         {% comment %}INÍCIO BOX DESPESAS FIXAS{% endcomment %}
         {% if '/fixed' in request.path %}
@@ -200,10 +204,12 @@
                         {% endif %}
                     </tbody>
                 </table>
+                <div class="mobile-total" style="text-align: right; padding-top: 8px; font-weight: 700;">Total: {{ total_value|to_reais }}</div>
             </div>
             <div class="box-footer">
                 <span>Total de itens listados: {{ instances.count }}</span>
             </div>
+        </div>
         </div>
     {% endblock %}
 

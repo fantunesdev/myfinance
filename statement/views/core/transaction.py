@@ -271,8 +271,16 @@ class TransactionView(BaseView):
         # form logic can populate the card_number select dynamically.
         card_numbers_qs = CardNumber.objects.select_related('card').all()
         card_numbers = list(card_numbers_qs.values('id', 'number', 'name', 'card_id'))
+        # Compute total value for the rendered set (efficiently when possible)
+        from django.db.models import Sum
+        try:
+            total_value = instances.aggregate(total=Sum('value'))['total'] or 0
+        except Exception:
+            total_value = sum((getattr(i, 'value', 0) or 0) for i in instances)
+
         return {
             'instances': instances,
+            'total_value': total_value,
             **self._set_dashboard_templatetags(instances, year, month),
             **self.set_navigation_templatetags(year, month),
             'year_month': DateTimeUtils.date(year, month, 1),
