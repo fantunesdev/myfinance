@@ -29,7 +29,7 @@ async function changePaymentDateInput() {
         let cardId = selects.card.value;
         var card = await services.getSpecificResource('cards', cardId);
     }
-    const releaseDate = selects.releaseDate.value,
+    const releaseDate = selects.postedDate ? selects.postedDate.value : selects.releaseDate.value,
         paymentDate = data.setPaymentDate(releaseDate, card);
     selects.paymentDate.value = paymentDate;
 }
@@ -71,7 +71,8 @@ selects.paymentMethod.addEventListener('change', () => selectPaymentMethod());
 
 selects.card.addEventListener('change', () => changePaymentDateInput());
 selects.account.addEventListener('change', () => changePaymentDateInput());
-selects.releaseDate.addEventListener('change', () => changePaymentDateInput());
+if (selects.postedDate) selects.postedDate.addEventListener('change', () => changePaymentDateInput());
+else if (selects.releaseDate) selects.releaseDate.addEventListener('change', () => changePaymentDateInput());
 
 selects.category.addEventListener('change', () => changeSubcategoriesInput(selects.category.value));
 selects.subcategory.addEventListener('change', () => {

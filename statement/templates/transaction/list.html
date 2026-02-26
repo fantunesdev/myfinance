@@ -97,9 +97,9 @@
                                         <tr style="border-left: solid 3px {{ transaction.category.color }}" data-value="{{ transaction.value }}" data-tx-id="{{ transaction.id }}">
                                             <td class="checkbox-cell" style="width:40px; max-width:40px; text-align:center;"><input type="checkbox" name="id_{{ transaction.id }}" id="id_{{ transaction.id }}"></td>
                                         {% if 'pesquisa' in request.path %}
-                                            <td>{{ transaction.release_date | date:"d/m/Y"}}</td>
+                                            <td>{{ transaction.posted_date | date:"d/m/Y"}}</td>
                                         {% else %}
-                                            <td>{{ transaction.release_date | date:"d/m"}}</td>
+                                            <td>{{ transaction.posted_date | date:"d/m"}}</td>
                                         {% endif %}
                                         {% if transaction.account %}
                                             <td>
@@ -157,9 +157,9 @@
                                 <tr style="border-left: solid 3px {{ transaction.category.color }}" data-value="{{ transaction.value }}" data-tx-id="{{ transaction.id }}">
                                     <td class="checkbox-cell" style="width:40px; max-width:40px; text-align:center;"><input type="checkbox" name="id_{{ transaction.id }}" id="id_{{ transaction.id }}"></td>
                                     {% if 'pesquisa' in request.path %}
-                                        <td>{{ transaction.release_date | date:"d/m/Y"}}</td>
+                                        <td>{{ transaction.posted_date | date:"d/m/Y"}}</td>
                                     {% else %}
-                                        <td>{{ transaction.release_date | date:"d/m"}}</td>
+                                        <td>{{ transaction.posted_date | date:"d/m"}}</td>
                                     {% endif %}
                                     {% if transaction.account %}
                                         <td>

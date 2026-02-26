@@ -179,7 +179,7 @@ async function downloadTransactions() {
         transaction.category = transaction.category.description;
         transaction.subcategory = transaction.subcategory.description;
         transaction.payment_date = convertDbDateForDayMonthYearDate(transaction.payment_date);
-        transaction.release_date = convertDbDateForDayMonthYearDate(transaction.release_date);
+        transaction.posted_date = convertDbDateForDayMonthYearDate(transaction.posted_date);
         transaction.value = general.handleCurrency(transaction.value);
 
         for (let property of deletedProperties) {

@@ -25,7 +25,7 @@ export async function convertTransactions(transactions) {
 
     for (const transaction of transactions) {
         let line = [
-            transaction.release_date,
+            transaction.posted_date,
             transaction.payment_date,
             transaction.type,
             transaction.account,

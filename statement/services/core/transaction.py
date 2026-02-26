@@ -99,7 +99,7 @@ class TransactionService(BaseService):
         # Reutiliza get_by_filter para garantir mesmo comportamento de visibilidade
         return cls.get_by_filter(
             payment_date__gte=start_date, payment_date__lte=end_date, user=user, home_screen=True
-        ).order_by('release_date')
+        ).order_by('posted_date')
 
     @staticmethod
     def _set_home_screen(instance):
@@ -120,27 +120,3 @@ class TransactionService(BaseService):
             return instance.account.home_screen
         # Retornar ao valor da instância (ou ao padrão do modelo) como fallback
         return instance.home_screen
-
-    @staticmethod
-    def set_card_release_date(transaction):
-        """
-        Seta uma data de vencimento para uma transação de acordo com o fechamento e o vencimento do cartão
-
-        :transaction: Uma instância do model Transaction
-        """
-        if transaction.card:
-            # Se o cartão for pré-pago, a data de pagamento é a mesma da data de lançamento
-            if getattr(transaction.card, 'prepaid', False):
-                return transaction.release_date
-
-            payment_date = date(
-                transaction.release_date.year,
-                transaction.release_date.month,
-                transaction.card.expiration_day,
-            )
-            if transaction.release_date.day >= transaction.card.closing_day:
-                payment_date += relativedelta(months=2)
-            return payment_date
-        else:
-            message = f'Nenhum cartão setado para o lançamento {transaction.description} com o id {transaction.id}.'
-            raise ValueError(message)

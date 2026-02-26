@@ -20,7 +20,7 @@
                     {% spaceless %}
                         {% if 'remover' in request.path %}
                             Atenção! Você está prestes a movimentação {{ instance.description }} do dia
-                            {{ instance.release_date }}. Esta operação é irreversível.
+                            {{ instance.posted_date }}. Esta operação é irreversível.
                         {% else %}
                             {{ instance.description }}
                         {% endif %}

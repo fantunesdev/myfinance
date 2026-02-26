@@ -230,8 +230,8 @@ class TransactionView(BaseView):
             notifications.append(
                 {
                     'id': notification.id,
-                    'date': transaction_data.get('release_date', '').strftime('%Y-%m-%d')
-                    if transaction_data.get('release_date')
+                    'date': transaction_data.get('posted_date', '').strftime('%Y-%m-%d')
+                    if transaction_data.get('posted_date')
                     else '',
                     'value': value,
                     'category': predicted['category_id'],
@@ -285,7 +285,7 @@ class TransactionView(BaseView):
 
     def _set_monthly_filter_by_date_attr(self, attr, user, year, month, **extra_filters):
         """
-        Seta os filtros por data, seja payment_date ou release_date.
+        Seta os filtros por data, seja payment_date ou posted_date.
         """
         return {
             f'{attr}_date__year': year,

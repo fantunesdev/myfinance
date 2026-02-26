@@ -49,11 +49,11 @@ class NotificationService(BaseService):
         # Extrai a data da notificação
         try:
             notification_date = datetime.strptime(notification.created_at.strftime('%Y-%m-%d'), '%Y-%m-%d').date()
-            transaction['release_date'] = notification_date
+            transaction['posted_date'] = notification_date
             transaction['payment_date'] = notification_date
         except (ValueError, AttributeError):
             # Se falhar, tenta usar o campo "date" se existir na mensagem
-            transaction['release_date'] = datetime.now().date()
+            transaction['posted_date'] = datetime.now().date()
             transaction['payment_date'] = datetime.now().date()
 
         # Extrai o valor (padrão: R$ XX,XX ou R$ XX.XXX,XX)

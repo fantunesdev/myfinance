@@ -16,7 +16,7 @@
                                 {% for i in transactions %}
                                 <tr>
                                     <td>{{ i.paid }}</td>
-                                    <td>{{ i.release_date }}</td>
+                                    <td>{{ i.posted_date }}</td>
                                     <td>{{ i.payment_date }}</td>
                                     <td>{{ i.description }}</td>
                                     <td>{{ i.currency.symbol }} {{ i.value | floatformat:2 }}</td>

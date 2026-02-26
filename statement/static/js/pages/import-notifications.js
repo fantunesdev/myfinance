@@ -482,7 +482,7 @@ function getSelectedNotificationIds() {
  */
 function getFormData(notificationId, notificationObj) {
     return {
-        release_date: document.getElementById(`id_date_${notificationId}`).value,
+        posted_date: document.getElementById(`id_date_${notificationId}`).value,
         card: notificationObj.card_id,
         card_number: notificationObj.card_number_id || null,
         category: document.getElementById(`id_category_${notificationId}`).value,

@@ -17,7 +17,7 @@ class InstallmentForm(TransactionForm):
         widget=forms.NumberInput(attrs={'class': 'form-control'}),
     )
 
-    reorder_release_dates = forms.ChoiceField(
+    reorder_posted_dates = forms.ChoiceField(
         choices=((False, 'Não'), (True, 'Sim')),
         widget=forms.Select(attrs={'class': 'form-control'}),
     )

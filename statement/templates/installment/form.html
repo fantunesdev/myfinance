@@ -46,13 +46,13 @@
                     {% if 'editar' in request.path %}
 
                     {% csrf_token %}
-                    <label for="id_release_date">Data do Lançamento</label>
-                    {{ form.release_date }}
-                    {{ form.release_date.errors }}
+                    <label for="id_posted_date">Data do Lançamento</label>
+                    {{ form.posted_date }}
+                    {{ form.posted_date.errors }}
 
-                    {% if form.reorder_release_dates %}
-                    <label for="id_reorder_release_dates">Reordenar as Datas de Lançamento</label>
-                    {{ form.reorder_release_dates }}
+                    {% if form.reorder_posted_dates %}
+                    <label for="id_reorder_posted_dates">Reordenar as Datas de Lançamento</label>
+                    {{ form.reorder_posted_dates }}
                     {% endif %}
 
                     <label for="id_installments_number">Número de Parcelas</label>

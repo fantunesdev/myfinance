@@ -37,7 +37,7 @@ class TransactionForm(BaseForm):
         fields = '__all__'
         exclude = ['user']
         widgets = {
-            'release_date': forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date', 'value': today}),
+            'posted_date': forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date', 'value': today}),
             'payment_date': forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date', 'value': today}),
             'observation': forms.Textarea(attrs={'class': 'form-control textarea'}),
         }

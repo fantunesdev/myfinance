@@ -25,7 +25,7 @@ export function setData(transaction, transactionAttrs) {
         account,
         card,
         bank,
-        releaseDateFormated = transaction.release_date.split('-').reverse().join('/');
+        releaseDateFormated = transaction.posted_date.split('-').reverse().join('/');
 
     // Column 1 - Release dates data
     data.push(releaseDateFormated);

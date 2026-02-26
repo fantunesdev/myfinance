@@ -16,7 +16,7 @@ export const selects = {
     paymentMethod: getElement('id_payment_method'),
     account: getElement('id_account'),
     card: getElement('id_card'),
-    releaseDate: getElement('id_release_date'),
+    postedDate: getElement('id_posted_date'),
     paymentDate: getElement('id_payment_date'),
     category: getElement('id_category'),
     subcategory: getElement('id_subcategory'),

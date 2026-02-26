@@ -352,7 +352,7 @@ function getSelectedTransactionIds(rows = transactionRows) {
  */
 function getFormData(transactionId, transactionObj = null) {
     return {
-        release_date: document.getElementById(`id_date_${transactionId}`).value,
+        posted_date: document.getElementById(`id_date_${transactionId}`).value,
         account: document.getElementById('id_account').value,
         card: document.getElementById('id_card').value,
         category: document.getElementById(`id_category_${transactionId}`).value,

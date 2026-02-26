@@ -254,12 +254,12 @@ class Installment(models.Model):
     Classe que representa uma parcela de um pagamento.
 
     Atributos:
-        release_date (DateField): Data de lançamento da parcela.
+        posted_date (DateField): Data de lançamento da parcela.
         description (CharField): Descrição da parcela.
         user (ForeignKey): Usuário que possui a parcela.
     """
 
-    release_date = models.DateField()
+    posted_date = models.DateField()
     description = models.CharField(max_length=50)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
@@ -273,7 +273,7 @@ class Transaction(models.Model):
     Classe que representa uma transação financeira.
 
     Atributos:
-        release_date (DateField): Data de lançamento da transação.
+        posted_date (DateField): Data de lançamento da transação.
         payment_date (DateField): Data de pagamento da transação.
         account (ForeignKey): Conta associada à transação.
         card (ForeignKey): Cartão associado à transação.
@@ -297,7 +297,7 @@ class Transaction(models.Model):
 
     TYPE_CHOICES = (('entrada', 'Entrada'), ('saida', 'Saída'))
 
-    release_date = models.DateField()
+    posted_date = models.DateField()
     payment_date = models.DateField()
     account = models.ForeignKey(Account, on_delete=models.PROTECT, null=True, blank=True)
     card = models.ForeignKey(Card, on_delete=models.PROTECT, null=True, blank=True)
@@ -327,7 +327,7 @@ class Transaction(models.Model):
     class Meta:
         """Ordena as transações pela data de lançamento."""
 
-        ordering = ['release_date']
+        ordering = ['posted_date']
 
 
 class FixedExpenses(models.Model):

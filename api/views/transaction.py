@@ -104,8 +104,8 @@ class TransactionView(BaseView):
         """
         description = request.data.get('description')
         # Normaliza possíveis campos de data recebidos no JSON
-        # Aceita 'release_date' ou 'date' (ex: '2026-02-06 02:26:55') e converte para 'YYYY-MM-DD'
-        raw_date = request.data.get('release_date') or request.data.get('date')
+        # Aceita 'posted_date' ou 'date' (ex: '2026-02-06 02:26:55') e converte para 'YYYY-MM-DD'
+        raw_date = request.data.get('posted_date') or request.data.get('date')
         if raw_date:
             try:
                 # Se vier no formato 'YYYY-MM-DD HH:MM:SS', pega a parte da data
@@ -116,7 +116,7 @@ class TransactionView(BaseView):
 
                 # If already in YYYY-MM-DD, this will validate
                 _ = DateTimeUtils.string_to_date(raw_date)
-                request.data['release_date'] = raw_date
+                request.data['posted_date'] = raw_date
             except Exception:
                 # fallback: ignore and keep whatever is in request.data; let form validation handle it
                 pass
@@ -136,12 +136,12 @@ class TransactionView(BaseView):
         # Se o lançamento for em uma conta, seta os campos necessários para o processamento
         if request.data.get('account'):
             request.data['account'] = AccountService.get_by_id(request.data.get('account'))
-            request.data['payment_date'] = request.data.get('release_date')
+            request.data['payment_date'] = request.data.get('posted_date')
 
         # Se o lançamento for em um cartão, seta os campos necessários para o processamento
         if request.data.get('card'):
             card = CardService.get_by_id(request.data.get('card'))
-            date = DateTimeUtils.string_to_date(request.data.get('release_date'))
+            date = DateTimeUtils.string_to_date(request.data.get('posted_date'))
             payment_date = CardService.set_processing_date(card, date)
 
             request.data.update(

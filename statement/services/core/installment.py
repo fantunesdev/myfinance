@@ -29,7 +29,7 @@ class InstallmentService(BaseService):
             raise ValueError("A instância de 'Transaction' é obrigatória para criar um Installment.")
 
         installment = Installment.objects.create(
-            release_date=transaction.release_date,
+            posted_date=transaction.posted_date,
             description=transaction.description,
             user=user,
         )
@@ -98,7 +98,7 @@ class InstallmentService(BaseService):
         """
         data = {'value': transaction.value, 'paid': transaction.paid, 'installment': transaction.installment}
         if transaction.card:
-            data['release_date'] = transaction.release_date
+            data['posted_date'] = transaction.posted_date
         cls.patch(transaction, data)
 
     @staticmethod
@@ -178,12 +178,12 @@ class InstallmentService(BaseService):
         Atualiza as parcelas de um parcelamento
         """
         for index, transaction in enumerate(transactions):
-            release_date = form.cleaned_data['release_date']
+            posted_date = form.cleaned_data.get('posted_date')
             if transaction.card:
-                payment_date = CardService.set_processing_date(transaction.card, release_date)
+                payment_date = CardService.set_processing_date(transaction.card, posted_date)
                 transaction.payment_date = DateTimeUtils.add_months(payment_date, index)
             else:
-                transaction.payment_date = DateTimeUtils.add_months(release_date, index)
+                transaction.payment_date = DateTimeUtils.add_months(posted_date, index)
             transaction.paid = index + 1
             transaction_form = cls._set_transaction_form(form, transaction)
             last_transaction = TransactionService.update(transaction_form, transaction)

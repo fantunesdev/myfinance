@@ -6,7 +6,7 @@ from statement.services.core.card import CardService
 class Transaction:
     def __init__(
         self,
-        release_date,
+        posted_date,
         payment_date,
         account,
         card,
@@ -27,7 +27,7 @@ class Transaction:
         user,
         installment,
     ):
-        self.release_date = release_date
+        self.posted_date = posted_date
         self.payment_date = payment_date
         self.account = account
         self.card = card
@@ -54,7 +54,7 @@ class Transaction:
     def __repr__(self) -> str:
         return f"""
         Transaction:
-            release_date: {self.release_date}
+            posted_date: {self.posted_date}
             payment_date: {self.payment_date}
             account: {self.account} 
             card: {self.card}
@@ -83,4 +83,4 @@ class Transaction:
         if self.card:
             self.card = CardService.get_by_id(self.card)
             return
-        return self.release_date
+        return self.posted_date
