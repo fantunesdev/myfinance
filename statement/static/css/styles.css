@@ -1314,9 +1314,10 @@ a {
     /* Esconder apenas a box do dashboard (identificada) em mobile) */
     .dashboard-box { display: none !important; }
 
-    /* Aplicar a simplificação apenas na tabela que estiver dentro do wrapper .simple-mobile */
-    .simple-mobile #statement-table thead th:not(:nth-child(1)):not(:nth-child(5)):not(:nth-child(6)),
-    .simple-mobile #statement-table tbody td:not(:nth-child(1)):not(:nth-child(5)):not(:nth-child(6)) {
+    /* Aplicar a simplificação apenas na tabela que estiver dentro do wrapper .simple-mobile
+       Exibir apenas: Data (coluna 2), Descrição (coluna 6) e Valor (coluna 7) */
+    .simple-mobile #statement-table thead th:not(:nth-child(2)):not(:nth-child(6)):not(:nth-child(7)),
+    .simple-mobile #statement-table tbody td:not(:nth-child(2)):not(:nth-child(6)):not(:nth-child(7)) {
         display: none !important;
     }
 
@@ -1375,9 +1376,9 @@ a {
     }
 
     /* Ajustes visuais para células restantes */
-    .simple-mobile #statement-table thead th:nth-child(1),
-    .simple-mobile #statement-table thead th:nth-child(5),
-    .simple-mobile #statement-table thead th:nth-child(6) {
+    .simple-mobile #statement-table thead th:nth-child(2),
+    .simple-mobile #statement-table thead th:nth-child(6),
+    .simple-mobile #statement-table thead th:nth-child(7) {
         text-align: left;
     }
 
