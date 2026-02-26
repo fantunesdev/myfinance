@@ -4,13 +4,21 @@ register = template.Library()
 
 
 @register.filter(name='to_currency')
-def to_currency(float, symbol):
-    return f'{symbol} {float:_.2f}'.replace('.', ',').replace('_', '.')
+def to_currency(value, symbol):
+    try:
+        v = float(value)
+    except (TypeError, ValueError):
+        v = 0.0
+    return f'{symbol} {v:_.2f}'.replace('.', ',').replace('_', '.')
 
 
 @register.filter(name='to_reais')
-def to_reais(float):
-    return f'R$ {float:_.2f}'.replace('.', ',').replace('_', '.')
+def to_reais(value):
+    try:
+        v = float(value)
+    except (TypeError, ValueError):
+        v = 0.0
+    return f'R$ {v:_.2f}'.replace('.', ',').replace('_', '.')
 
 
 @register.filter(name='handle_boolean')
@@ -38,7 +46,11 @@ def total_amount(transactions):
     total = 0
     for transaction in transactions:
         total += transaction.value
-    return f'{transactions[0].currency.symbol} {total:_.2f}'.replace('.', ',').replace('_', '.')
+    try:
+        t = float(total)
+    except (TypeError, ValueError):
+        t = 0.0
+    return f'{transactions[0].currency.symbol} {t:_.2f}'.replace('.', ',').replace('_', '.')
 
 
 @register.filter(name='paid_installments')
