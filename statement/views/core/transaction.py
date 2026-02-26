@@ -226,6 +226,7 @@ class TransactionView(BaseView):
                     'subcategory_id': None,
                     'description': transaction_data.get('description', ''),
                 }
+                print(f'Erro ao classificar transação da notificação {notification.id}:', e)
             notifications.append(
                 {
                     'id': notification.id,
@@ -251,7 +252,6 @@ class TransactionView(BaseView):
 
         # Ordena notificações por cartão e por número do cartão para facilitar agrupamento no frontend
         notifications.sort(key=lambda n: (n.get('card_id') or 0, n.get('card_number_id') or 0))
-        print(notifications)
         specific_context = {
             'file_notifications_json': json.dumps([]),
             'notifications_json': json.dumps(notifications),

@@ -98,7 +98,6 @@ def update_profile(request):
         profile_form = user_forms.ProfileForm(request.POST, request.FILES, instance=request.user)
         if profile_form.is_valid():
             profile_form.photo = profile_form.cleaned_data['photo']
-            print(profile_form.photo)
             profile_form.save()
             return redirect('get_profile')
         else:
@@ -224,7 +223,6 @@ def update_configs(request):
         profile_form = user_forms.ProfileForm(request.POST, request.FILES, instance=request.user)
         if profile_form.is_valid():
             profile_form.photo = profile_form.cleaned_data['photo']
-            print(profile_form.photo)
             profile_form.save()
             return redirect('get_profile')
         else:
