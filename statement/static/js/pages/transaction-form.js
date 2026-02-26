@@ -166,10 +166,6 @@ selectPaymentMethod();
 async function populateCardNumbersForCard(cardId) {
     const select = document.getElementById('id_card_number');
     const wrapper = document.getElementById('div-card-number');
-    console.log('populateCardNumbersForCard called with cardId=', cardId, 'selectExists=', !!select, 'wrapperExists=', !!wrapper);
-    if (!select || !wrapper) {
-        console.log('populateCardNumbersForCard: missing select or wrapper, aborting');
-        return;
     }
 
     // card_numbers_json pode ser injetado como um array JS (objeto) ou como uma string JSON.
@@ -192,10 +188,8 @@ async function populateCardNumbersForCard(cardId) {
         }
     }
 
-    console.log('populateCardNumbersForCard: parsed cardNumbers count=', cardNumbers.length);
     // Filtra por cardId
     const list = cardNumbers.filter(c => String(c.card_id) === String(cardId));
-    console.log('populateCardNumbersForCard: filtered list count=', list.length, 'sample=', list.slice(0,5));
 
     // Limpa opções existentes e adiciona placeholder
     select.innerHTML = '';
@@ -205,7 +199,6 @@ async function populateCardNumbersForCard(cardId) {
     select.appendChild(emptyOpt);
 
     if (list.length === 0) {
-        console.log('populateCardNumbersForCard: no card numbers for this cardId, hiding wrapper');
         wrapper.style.display = 'none';
         wrapper.classList.remove('active');
         return;
@@ -222,16 +215,12 @@ async function populateCardNumbersForCard(cardId) {
     const pre = select.getAttribute('data-initial');
     if (pre) select.value = pre;
 
-    console.log('populateCardNumbersForCard: populated select with', list.length, 'options, showing wrapper');
     wrapper.style.display = 'block';
     wrapper.classList.add('active');
 }
 
 // Quando um cartão é selecionado, popula o select de números de cartão relacionados a ele usando os dados injetados no template. Se nenhum cartão for selecionado, esconde o campo de número do cartão.
 function cardChangeHandler(e) {
-    try {
-        console.log('cardChangeHandler: triggered, value=', e && e.target ? e.target.value : e);
-    } catch (err) {}
     const val = e && e.target ? e.target.value : e;
     populateCardNumbersForCard(val);
 }
@@ -242,13 +231,11 @@ const attachCardChangeListener = () => {
     let attached = false;
 
     if (el) {
-        console.log('attachCardChangeListener: attaching handler to DOM element #id_card, value=', el.value);
         el.addEventListener('change', cardChangeHandler);
         attached = true;
     }
 
     if (selFromSelects && selFromSelects !== el) {
-        console.log('attachCardChangeListener: attaching handler to selects.card reference, value=', selFromSelects.value);
         selFromSelects.addEventListener('change', cardChangeHandler);
         attached = true;
     }
@@ -257,23 +244,19 @@ const attachCardChangeListener = () => {
 };
 
 if (!attachCardChangeListener()) {
-    console.log('attachCardChangeListener: element not found yet, will wait DOMContentLoaded');
     document.addEventListener('DOMContentLoaded', () => {
         const attached = attachCardChangeListener();
-        console.log('DOMContentLoaded: attachCardChangeListener returned', attached);
             // Também executa a população inicial após DOMContentLoaded
         const el = document.getElementById('id_card') || selects.card;
         if (el) {
-            console.log('DOMContentLoaded: running initial populate for #id_card value', el.value);
             populateCardNumbersForCard(el.value);
-                    // garantir que quaisquer outros scripts que setem o valor do select disparem a população
+            // garantir que quaisquer outros scripts que setem o valor do select disparem a população
             if (el.value) el.dispatchEvent(new Event('change'));
         }
     });
 } else {
     // Se o elemento já existir agora, também executar a população inicial imediatamente
     const el = document.getElementById('id_card') || selects.card;
-    console.log('attachCardChangeListener: attached immediately, running initial populate for value', el && el.value);
     if (el) {
         populateCardNumbersForCard(el.value);
         if (el.value) el.dispatchEvent(new Event('change'));

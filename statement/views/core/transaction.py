@@ -220,7 +220,7 @@ class TransactionView(BaseView):
             try:
                 microservice_client = TransactionClassifierClient(self._user)
                 predicted = microservice_client.predict(transaction_data.get('description', ''), '')
-            except Exception:
+            except Exception as e:
                 predicted = {
                     'category_id': None,
                     'subcategory_id': None,
