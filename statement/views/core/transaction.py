@@ -218,7 +218,7 @@ class TransactionView(BaseView):
                     value = 0
 
             try:
-                microservice_client = TransactionClassifierClient(self._user)
+                microservice_client = TransactionClassifierClient(request.user)
                 predicted = microservice_client.predict(transaction_data.get('description', ''), '')
             except Exception as e:
                 predicted = {

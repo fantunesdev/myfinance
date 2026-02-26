@@ -1320,6 +1320,60 @@ a {
         display: none !important;
     }
 
+    /* Styles for import notifications notice */
+    .import-notifications-body {
+        padding-top: 12px;
+    }
+    .import-notice {
+        margin-bottom: 18px;
+        display: flex;
+        gap: 16px;
+        align-items: center;
+    }
+    .import-notice p {
+        margin: 0;
+        color: #666;
+        line-height: 1.4;
+        flex: 1 1 auto;
+    }
+    .import-notice-link {
+        padding-left: 8px;
+        white-space: nowrap;
+        margin-left: auto;
+    }
+    .no-notifications {
+        padding: 12px 0 8px 0;
+    }
+    .no-notifications .text-muted {
+        color: #999;
+        margin: 0;
+    }
+
+    /* Higher-specificity rules to ensure notice styling applies */
+    .box.box-primary .import-notifications-body {
+        padding-top: 12px !important;
+    }
+    .box.box-primary .import-notifications-body .import-notice {
+        margin-bottom: 18px !important;
+        display: flex !important;
+        gap: 16px !important;
+        align-items: center !important;
+    }
+    .box.box-primary .import-notifications-body .import-notice p {
+        margin: 0 !important;
+        color: #666 !important;
+        line-height: 1.4 !important;
+        flex: 1 1 auto !important;
+    }
+    .box.box-primary .import-notifications-body .import-notice-link {
+        padding-left: 8px !important;
+        white-space: nowrap !important;
+        margin-left: 12px !important;
+    }
+    .box.box-primary .import-notifications-body form {
+        margin-top: 10px !important;
+    }
+
     /* Ajustes visuais para células restantes */
     .simple-mobile #statement-table thead th:nth-child(1),
     .simple-mobile #statement-table thead th:nth-child(5),

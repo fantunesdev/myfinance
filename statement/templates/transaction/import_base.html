@@ -166,8 +166,14 @@
             <div class="box-header">
                 <h3 class="box-title">Importar Lançamentos por Notificações</h3>
             </div>
-            {% if has_notifications %}
-            <div class="box-body" id="div-import-notifications">
+
+            <div class="box-body" id="div-import-notifications" style="padding-top:12px;">
+                <div style="margin-bottom:14px; display:flex; gap:12px; align-items:center;">
+                    <p style="margin:0; color:#666; line-height:1.4; flex:1 1 auto;">Se uma notificação não aparece aqui, provavelmente é porque os títulos de notificações não foram configurados corretamente. Verifique os títulos de notificação para garantir que as notificações que você deseja importar estão habilitadas.</p>
+                    <a href="{% url 'get_all_notification' %}?next=import" class="btn btn-link" style="padding-left:8px; white-space:nowrap; margin-left:12px;">Configurações de Notificações</a>
+                </div>
+
+                {% if has_notifications %}
                 <form method="post">
                     <table class="table">
                         <thead>
@@ -187,12 +193,10 @@
                     </table>
                     <input type="button" value="Cadastrar" class="btn btn-primary" id="send-notifications-btn">
                 </form>
+                {% else %}
+                <p style="color: #999; margin:8px 0 0 0;">Nenhuma notificação disponível para importação.</p>
+                {% endif %}
             </div>
-            {% else %}
-            <div class="box-body">
-                <p style="color: #999;">Nenhuma notificação disponível para importação.</p>
-            </div>
-            {% endif %}
         </div>
     </div>
 

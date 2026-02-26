@@ -15,7 +15,11 @@
 
 {% block content %}
     <div class="left-link-block">
-        <a href="{% url 'get_profile' %}" class="nav-back">&laquo; Voltar</a>
+        {% if request.GET.next == 'import' %}
+            <a href="{% url 'import_transactions' %}" class="nav-back">&laquo; Voltar</a>
+        {% else %}
+            <a href="{% url 'get_profile' %}" class="nav-back">&laquo; Voltar</a>
+        {% endif %}
     </div>
 
     <div class="box box-primary" style="margin-top:16px;">
