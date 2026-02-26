@@ -189,7 +189,7 @@ class TransactionView(BaseView):
 
         # Converte as notificações em transações para exibição
         for notification in user_notifications:
-            transaction_data = NotificationService.build_transaction_from_notification(notification, notification.card)
+            transaction_data = NotificationService.build_transaction_from_notification(notification, request.user, notification.card)
             # Formata para o padrão do JavaScript
             value = transaction_data.get('value', '')
             if isinstance(value, str):

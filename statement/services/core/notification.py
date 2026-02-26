@@ -26,7 +26,7 @@ class NotificationService(BaseService):
         return transactions
 
     @staticmethod
-    def build_transaction_from_notification(notification, card=None):
+    def build_transaction_from_notification(notification, user, card=None):
         """
         Monta a estrutura básica de um lançamento a partir de uma notificação.
 
@@ -81,10 +81,8 @@ class NotificationService(BaseService):
         # If global config enables classifier, try to predict category/subcategory/description
         try:
             if AppConfig.get_solo().enable_transaction_classifier:
-                microservice_client = TransactionClassifierClient(None)
-                # Use message/title for prediction
-                text_for_prediction = notification.message or notification.title
-                predicted = microservice_client.predict(text_for_prediction, '')
+                microservice_client = TransactionClassifierClient(user)
+                predicted = microservice_client.predict(transaction['description'], '')
                 if predicted:
                     transaction['category'] = predicted.get('category_id')
                     transaction['subcategory'] = predicted.get('subcategory_id')
