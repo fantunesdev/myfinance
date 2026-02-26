@@ -61,7 +61,6 @@ class CategorizationFeedbackService(BaseService):
         """
         Marca todos os feedbacks como não treinados
         """
-        print('passou aqui')
         feedbacks = cls.get_all(user)
 
         for feedback in feedbacks:

@@ -157,15 +157,12 @@ class InstallmentService(BaseService):
         transactions_number = transactions.first().installments_number
         form_number = form.cleaned_data['installments_number']
 
-        print(f'Trasações (início): {len(transactions)}')
 
         match form_number:
             case n if n > transactions_number:
-                print('adicionar parcelas')
                 last_transaction = cls._update_transactions(request, form, transactions)
                 cls._add_installments(last_transaction)
             case n if n < transactions_number:
-                print('remover parcelas')
                 total = transactions_number - form_number
                 remove = transactions[:total]
                 update = transactions[total:]

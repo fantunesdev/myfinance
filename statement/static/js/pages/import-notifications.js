@@ -12,21 +12,61 @@ const radioImportNotifications = document.querySelector('#import-type-notificati
  */
 async function renderNotificationsBox(notifications) {
     const categories = await services.getCategoriesByType('saida');
+    try {
+        const simpleList = Array.isArray(notifications) ? notifications.map(n => ({id: n.id, card_id: n.card_id, card_number_id: n.card_number_id})) : [];
+        const _groups = {};
+        if (Array.isArray(notifications)) {
+            for (const n of notifications) {
+                const key = `${n.card_id || 'none'}:${n.card_number_id || 'none'}`;
+                _groups[key] = _groups[key] || [];
+                _groups[key].push(n.id);
+            }
+        }
+    } catch (e) {
+        console.warn('Erro ao agrupar notificações', e);
+    }
 
     const notificationRows = document.querySelector('#section-notifications-import #notification-rows-section');
     notificationRows.innerHTML = '';
     notificationRows.style.display = 'table-row-group';
     const section = document.getElementById('section-notifications-import');
     if (section) section.style.display = 'block';
+    const table = notificationRows ? notificationRows.closest('table') : null;
+    // remove previously generated group tbodies
+    if (table) {
+        table.querySelectorAll('tbody.generated-group').forEach(t => t.remove());
+    }
 
 
+    // build group map so we can render a tbody per group (card_id:card_number_id)
+    const groups = new Map();
+    const COLSPAN = 6;
     for (const notification of notifications) {
         try {
             const row = document.createElement('tr');
             const subcategories = notification.category ? await services.getChildrenResource('categories', 'subcategories', notification.category) : [];
             const fields = getTransactionFields(notification, categories, subcategories);
             renderFields(row, fields);
-            notificationRows.appendChild(row);
+            // determine group key
+            const gkey = `${notification.card_id || 'none'}:${notification.card_number_id || 'none'}`;
+            let tbody = groups.get(gkey);
+            if (!tbody) {
+                tbody = document.createElement('tbody');
+                tbody.classList.add('generated-group');
+                tbody.dataset.groupKey = gkey;
+                // create header row for the group
+                const header = document.createElement('tr');
+                header.classList.add('group-header');
+                const headerCell = document.createElement('td');
+                headerCell.colSpan = COLSPAN;
+                const cardLabel = notification.card_description || `Cartão ${notification.card_id || ''}`;
+                const numberLabel = notification.card_number_display ? ` - ${notification.card_number_display}` : '';
+                headerCell.textContent = `${cardLabel}${numberLabel}`;
+                header.appendChild(headerCell);
+                tbody.appendChild(header);
+                groups.set(gkey, tbody);
+            }
+            tbody.appendChild(row);
             // Popula o select de subcategorias com base no valor atualmente selecionado
             // no select de categoria (padrão: primeira categoria). Isso garante que
             // mesmo quando a notificação não traz categoria prevista, o select de
@@ -56,6 +96,13 @@ async function renderNotificationsBox(notifications) {
             row.style.opacity = '1';
         } catch (error) {
             console.error('Erro ao renderizar notificação:', notification, error);
+        }
+    }
+
+    // append all generated group tbodies to the table
+    if (table) {
+        for (const tbody of groups.values()) {
+            table.appendChild(tbody);
         }
     }
 }
@@ -421,12 +468,12 @@ async function importNotifications(notifications) {
  */
 function getSelectedNotificationIds() {
     const ids = [];
-    for (let row of notificationRows.children) {
-        const checkbox = row.firstChild.firstChild;
-        if (checkbox.checked) {
-            ids.push(parseInt(checkbox.id));
-        }
-    }
+    const rows = document.querySelectorAll('#section-notifications-import tbody.generated-group tr');
+    rows.forEach((row) => {
+        if (row.classList.contains('group-header')) return; // skip header rows
+        const checkbox = row.querySelector('input[type="checkbox"]');
+        if (checkbox && checkbox.checked) ids.push(parseInt(checkbox.id, 10));
+    });
     return ids;
 }
 
@@ -437,6 +484,7 @@ function getFormData(notificationId, notificationObj) {
     return {
         release_date: document.getElementById(`id_date_${notificationId}`).value,
         card: notificationObj.card_id,
+        card_number: notificationObj.card_number_id || null,
         category: document.getElementById(`id_category_${notificationId}`).value,
         subcategory: document.getElementById(`id_subcategory_${notificationId}`).value,
         description: document.getElementById(`id_description_${notificationId}`).value,

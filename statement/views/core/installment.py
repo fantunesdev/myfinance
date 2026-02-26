@@ -44,7 +44,6 @@ class InstallmentView(BaseView):
         user = self._get_user(request)
         installment = self.service.get_by_id(id, user)
         transactions = TransactionService.get_by_filter(installment=installment)
-        print(transactions)
         if request.method == 'POST':
             form = AdvanceInstallmentForm(request.POST)
             if form.is_valid():

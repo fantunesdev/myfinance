@@ -190,7 +190,6 @@ class BaseView:
             **additional_context,
         }
         template = self._set_template_by_global_status('delete')
-        print(template)
         return self._render(request, None, template, specific_content)
 
     def _get_user(self, request):

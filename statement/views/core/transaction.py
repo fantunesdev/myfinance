@@ -155,11 +155,15 @@ class TransactionView(BaseView):
         # Busca os cartões do usuário para validação
         cards = CardService.get_all(request.user)
         card_ids = {card.id for card in cards}
+        
 
-        # Tenta vincular notificações que ainda não tem cartão associado
-        unlinked = [n for n in all_notifications if n.card is None]
+        # Tenta identificar proprietário (cartão e card_number quando possível) para todas as notificações
+        CardService.are_notifications_owner(cards, all_notifications)
+
+        # Tenta persistir vínculo de cartão para notificações que ainda não têm card salvo
+        unlinked = [n for n in all_notifications if getattr(n, 'card', None) is None]
+        
         if unlinked:
-            CardService.are_notifications_owner(cards, unlinked)
             for n in unlinked:
                 # Se o serviço identificou um cartão para a notificação e ela ainda não está vinculada no banco, salva
                 # essa associação.
@@ -178,13 +182,27 @@ class TransactionView(BaseView):
             from statement.services.core.notification_title import NotificationTitleService
 
             enabled_titles = NotificationTitleService.get_enabled_titles_for_user(request.user)
-        except Exception:
+        except Exception as e:
             enabled_titles = None
+
+        # normalize enabled titles for case-insensitive / substring matching
+        if enabled_titles is None:
+            def _title_allowed(n):
+                return True
+        else:
+            enabled_norm = [t.lower() for t in enabled_titles]
+
+            def _title_allowed(n):
+                t = (n.title or '').lower()
+                for et in enabled_norm:
+                    if et in t or t in et:
+                        return True
+                return False
 
         user_notifications = [
             n
             for n in all_notifications
-            if n.card_id in card_ids and (enabled_titles is None or n.title in enabled_titles)
+            if getattr(n, 'card_id', None) in card_ids and _title_allowed(n)
         ]
 
         # Converte as notificações em transações para exibição
@@ -211,10 +229,20 @@ class TransactionView(BaseView):
                     'value': value,
                     'category': None,
                     'subcategory': None,
-                    'card_id': notification.card_id,
+                    'card_id': getattr(notification, 'card_id', None),
+                    'card_description': getattr(notification.card, 'description', None) if getattr(notification, 'card', None) else None,
+                    'card_number_id': getattr(notification, 'card_number_id', None),
+                    'card_number_display': (
+                        (getattr(notification, 'card_number', None) and (notification.card_number.name or notification.card_number.number))
+                        if getattr(notification, 'card_number', None)
+                        else None
+                    ),
                     'notification_id': notification.id,
                 }
             )
+
+        # Ordena notificações por cartão e por número do cartão para facilitar agrupamento no frontend
+        notifications.sort(key=lambda n: (n.get('card_id') or 0, n.get('card_number_id') or 0))
 
         specific_context = {
             'file_notifications_json': json.dumps([]),

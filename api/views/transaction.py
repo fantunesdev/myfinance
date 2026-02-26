@@ -151,6 +151,13 @@ class TransactionView(BaseView):
                 }
             )
 
+        # Se foi informado card_number, preserva o id para o ModelForm
+        if request.data.get('card_number'):
+            try:
+                request.data['card_number'] = int(request.data.get('card_number'))
+            except Exception:
+                pass
+
         # Se for a primeira parcela de um parcelamento, atualiza o valor para o valor total.
         # O valor da parcela será dividido igualmente dentro de InstallmentService.create(),
         # mais especificamente no método _set_transaction_value(), dentro de _set_first_installment()

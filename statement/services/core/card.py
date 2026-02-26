@@ -83,13 +83,38 @@ class CardService(BaseService):
             result[notification.id] = []
             # Inicializa card_id como None
             notification.card_id = None
+            # Inicializa card_number como None
+            notification.card_number = None
+            notification.card_number_id = None
 
             for card in cards:
-                if CardService.is_notification_owner(card, notification):
+                try:
+                    is_owner = CardService.is_notification_owner(card, notification)
+                except Exception:
+                    is_owner = False
+
+
+                if is_owner:
                     result[notification.id].append(card)
                     # Adiciona o ID do cartão à notificação (usa o primeiro match)
                     if notification.card_id is None:
                         notification.card_id = card.id
                         notification.card = card
+                    # Se o cartão possui números, tenta identificar o CardNumber correspondente
+                    try:
+                        card_numbers = list(card.card_numbers.all())
+                        if card_numbers:
+                            match = re.search(r'final\s+(\d{4})', (notification.message or ''), re.IGNORECASE)
+                            if match:
+                                last_four_digits = match.group(1)
+                                for card_number in card_numbers:
+                                    number_without_spaces = (card_number.number or '').replace(' ', '')
+                                    if number_without_spaces.endswith(last_four_digits):
+                                        notification.card_number = card_number
+                                        notification.card_number_id = card_number.id
+                                        break
+                    except Exception:
+                        # Não faz nada por que alguns cartões não tem card numbers.
+                        pass
 
         return result

@@ -69,7 +69,6 @@ function collectGroups() {
 }
 
 const invoiceGroupUndoStack = [];
-const INVOICE_GROUP_DEBUG = true;
 
 function mergeGroupsCreateNew(selectedIds) {
     if (!selectedIds || selectedIds.length === 0) return;
@@ -79,7 +78,6 @@ function mergeGroupsCreateNew(selectedIds) {
     // (pode ser melhorado para permitir múltiplos agrupamentos, mas por simplicidade vamos bloquear por enquanto)
     if (document.querySelector('table[data-created-grouped="1"]')) return;
 
-    if (INVOICE_GROUP_DEBUG) console.log('[invoice-group] mergeGroupsCreateNew selectedIds=', selectedIds);
     // Tirar um snapshot completo do HTML da tabela original para podermos recriá-la do zero
     const originalSnapshot = origTable.outerHTML;
     // Remover primeiro qualquer linha de total do grupo para os grupos selecionados
@@ -90,7 +88,6 @@ function mergeGroupsCreateNew(selectedIds) {
         while (x && !x.classList.contains('group-header')) {
             const next = x.nextElementSibling;
             if (x.classList && x.classList.contains('group-total-row')) {
-                if (INVOICE_GROUP_DEBUG) console.log('[invoice-group] removing group-total-row for id=', id, 'node=', x.outerHTML.replace(/\s+/g,' ').slice(0,200));
                 x.parentElement.removeChild(x);
                 break;
             }
@@ -150,7 +147,6 @@ function mergeGroupsCreateNew(selectedIds) {
         });
 
         removedGroupsLocal.push({after: after, nodesHtml: nodeHtmls});
-        if (INVOICE_GROUP_DEBUG) console.log('[invoice-group] removed group from newTable', g.id, 'nodes=', nodeHtmls.length, 'after=', after ? after.outerHTML.replace(/\s+/g,' ').slice(0,200) : null);
     });
 
     // Calcular o total a partir das linhas criadas
@@ -220,11 +216,6 @@ function mergeGroupsCreateNew(selectedIds) {
     origTable.parentElement.replaceChild(newTable, origTable);
 
     invoiceGroupUndoStack.push({createdId: createdId, removedGroups: removedGroupsLocal, originalSnapshot: originalSnapshot});
-    if (INVOICE_GROUP_DEBUG) {
-        console.log('[invoice-group] pushed undo action createdId=', createdId, 'removedGroupsCount=', removedGroupsLocal.length);
-        const remaining = Array.from(newTable.querySelectorAll('tr.group-header')).map(h => (h.textContent||'').trim());
-        console.log('[invoice-group] remaining group-headers in newTable:', remaining);
-    }
 }
 
 function undoLastGrouping() {
@@ -248,7 +239,6 @@ function undoLastGrouping() {
     }
 
     // Restaurar o conteúdo dos grupos removidos
-    if (INVOICE_GROUP_DEBUG) console.log('[invoice-group] undoLastGrouping action=', action);
     if (action.removedGroups && action.removedGroups.length) {
         action.removedGroups.forEach(rg => {
             const parent = rg.parent;
@@ -264,7 +254,6 @@ function undoLastGrouping() {
                     parent.appendChild(src.firstChild);
                 }
             }
-            if (INVOICE_GROUP_DEBUG) console.log('[invoice-group] restored group into parent', parent.tagName, 'after=', after ? after.tagName : null);
         });
     }
 }
