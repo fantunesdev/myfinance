@@ -217,18 +217,26 @@ class TransactionView(BaseView):
                 except (ValueError, TypeError):
                     value = 0
 
-            # TODO: Quando usar notificações em produção, integrar transactionClassifier para predição de categorias
+            try:
+                microservice_client = TransactionClassifierClient(self._user)
+                predicted = microservice_client.predict(transaction_data.get('description', ''), '')
+            except Exception:
+                predicted = {
+                    'category_id': None,
+                    'subcategory_id': None,
+                    'description': transaction_data.get('description', ''),
+                }
             notifications.append(
                 {
                     'id': notification.id,
                     'date': transaction_data.get('release_date', '').strftime('%Y-%m-%d')
                     if transaction_data.get('release_date')
                     else '',
-                    'description': transaction_data.get('description', ''),
-                    'original_description': notification.message if hasattr(notification, 'message') else '',
                     'value': value,
-                    'category': None,
-                    'subcategory': None,
+                    'category': predicted['category_id'],
+                    'subcategory': predicted['subcategory_id'],
+                    'description': predicted['description'],
+                    'original_description': notification.message if hasattr(notification, 'message') else '',
                     'card_id': getattr(notification, 'card_id', None),
                     'card_description': getattr(notification.card, 'description', None) if getattr(notification, 'card', None) else None,
                     'card_number_id': getattr(notification, 'card_number_id', None),
@@ -243,7 +251,7 @@ class TransactionView(BaseView):
 
         # Ordena notificações por cartão e por número do cartão para facilitar agrupamento no frontend
         notifications.sort(key=lambda n: (n.get('card_id') or 0, n.get('card_number_id') or 0))
-
+        print(notifications)
         specific_context = {
             'file_notifications_json': json.dumps([]),
             'notifications_json': json.dumps(notifications),
