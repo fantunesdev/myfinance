@@ -129,6 +129,10 @@ class TransactionService(BaseService):
         :transaction: Uma instância do model Transaction
         """
         if transaction.card:
+            # Se o cartão for pré-pago, a data de pagamento é a mesma da data de lançamento
+            if getattr(transaction.card, 'prepaid', False):
+                return transaction.release_date
+
             payment_date = date(
                 transaction.release_date.year,
                 transaction.release_date.month,

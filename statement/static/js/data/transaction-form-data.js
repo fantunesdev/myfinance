@@ -3,6 +3,10 @@ export function setPaymentDate(releaseDate, card) {
 
     let releaseDay = parseInt(day);
     if (card) {
+        // Se o cartão for pré-pago, a data de pagamento é a mesma da data de lançamento
+        if (card.prepaid) {
+            return releaseDate;
+        }
         if (releaseDay > card.closing_day) {
             return addMonth(card.expiration_day, month, year);
         } else {

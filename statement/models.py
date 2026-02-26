@@ -196,6 +196,7 @@ class Card(models.Model):
     expiration_day = models.IntegerField(blank=False, null=False)
     closing_day = models.IntegerField(blank=False, null=False)
     home_screen = models.BooleanField(default=False)
+    prepaid = models.BooleanField(default=False)
     user = models.ForeignKey(User, on_delete=models.PROTECT)
 
     @property

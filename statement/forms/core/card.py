@@ -18,6 +18,7 @@ class CardForm(BaseForm):
             'expiration_day',
             'closing_day',
             'home_screen',
+            'prepaid',
         ]
         widgets = {
             'flag': forms.Select(),
@@ -26,6 +27,7 @@ class CardForm(BaseForm):
             'account': forms.Select(),
             'expiration_day': forms.NumberInput(),
             'closing_day': forms.NumberInput(),
+            'prepaid': forms.CheckboxInput(),
         }
 
 
