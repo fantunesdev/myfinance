@@ -1,5 +1,6 @@
 import copy
 import datetime
+from django.forms.models import model_to_dict
 
 from statement.forms.core.transaction import TransactionForm
 from statement.models import Installment
@@ -64,10 +65,26 @@ class InstallmentService(BaseService):
         """
         start = transaction.paid + 1
         stop = transaction.installments_number + 1
+
         for i in range(start, stop):
             transaction.paid = i
             transaction.payment_date = DateTimeUtils.add_months(transaction.payment_date, 1)
-            transaction_form = cls.instance_to_form(transaction, TransactionForm)
+
+            # Cria um dicionário com os dados da transação atual (sem o id)
+            data = model_to_dict(transaction)
+            data.pop('id', None)
+
+            # Formata datas e valores para o formulário
+            for key, value in list(data.items()):
+                if isinstance(value, datetime.date):
+                    data[key] = value.strftime('%Y-%m-%d')
+                elif isinstance(value, bool):
+                    data[key] = 'on' if value else ''
+                elif value is None:
+                    data[key] = ''
+
+            # Cria um formulário com dados (sem instance) para que o save crie uma nova linha
+            transaction_form = TransactionForm(transaction.user, data)
             TransactionService.create(transaction_form, transaction.user)
 
     @classmethod

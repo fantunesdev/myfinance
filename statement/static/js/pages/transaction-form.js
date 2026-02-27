@@ -69,8 +69,6 @@ buttons.otherOptions.addEventListener('click', () => showHide(divs.otherOptions)
 
 selects.paymentMethod.addEventListener('change', () => selectPaymentMethod());
 
-selects.card.addEventListener('change', () => changePaymentDateInput());
-selects.account.addEventListener('change', () => changePaymentDateInput());
 if (selects.postedDate) selects.postedDate.addEventListener('change', () => changePaymentDateInput());
 else if (selects.releaseDate) selects.releaseDate.addEventListener('change', () => changePaymentDateInput());
 
@@ -249,8 +247,6 @@ if (!attachCardChangeListener()) {
         const el = document.getElementById('id_card') || selects.card;
         if (el) {
             populateCardNumbersForCard(el.value);
-            // garantir que quaisquer outros scripts que setem o valor do select disparem a população
-            if (el.value) el.dispatchEvent(new Event('change'));
         }
     });
 } else {
@@ -258,6 +254,5 @@ if (!attachCardChangeListener()) {
     const el = document.getElementById('id_card') || selects.card;
     if (el) {
         populateCardNumbersForCard(el.value);
-        if (el.value) el.dispatchEvent(new Event('change'));
     }
 }

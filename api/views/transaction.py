@@ -91,8 +91,13 @@ class TransactionView(BaseView):
         :return: True se não for a primeira parcela, False caso contrário.
         """
         try:
-            return int(self.installment_info.group(0)) == 1
-        except (ValueError, AttributeError):
+            if not self.installment_info:
+                return False
+            # installment_info.group(0) returns '1/10' -> take the first part
+            installment_number = int(self.installment_info.group(0).split('/')[0])
+            # Retorna True se NÃO for a primeira parcela
+            return installment_number != 1
+        except (ValueError, AttributeError, IndexError):
             return False
 
     def _process_transaction_request(self, request):
@@ -194,16 +199,23 @@ class TransactionView(BaseView):
         :param description: Descrição do lançamento.
         :return: Número de parcelas.
         """
+        if not description:
+            self.installment_info = None
+            return 0
+
         installment_match = re.search(r'(\d+/\d+)', description)
 
         # Se não for encontrado o padrão 1/10 (parcela/numero_de_parcelas), retorna 0
         if not installment_match:
+            self.installment_info = None
             return 0
 
-        installments_tag = installment_match.group(0)
         self.installment_info = installment_match
-
-        return installments_tag.split('/')[1]
+        try:
+            # retorna o total de parcelas como inteiro
+            return int(installment_match.group(0).split('/')[1])
+        except (ValueError, IndexError):
+            return 0
 
     def _clean_description(self, description):
         """
