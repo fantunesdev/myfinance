@@ -50,14 +50,14 @@ class TransactionView(BaseView):
 
         return result
 
-    @action(detail=False, methods=['get'], url_path='year/(?P<year>\d{4})')
+    @action(detail=False, methods=['get'], url_path=r'year/(?P<year>\d{4})')
     def get_by_year(self, request, year):
         """
         Obtém os lançamentos por ano.
         """
         return self._get_transactions_by_date(request, year=year)
 
-    @action(detail=False, methods=['get'], url_path='year/(?P<year>\d{4})/month/(?P<month>\d{1,2})')
+    @action(detail=False, methods=['get'], url_path=r'year/(?P<year>\d{4})/month/(?P<month>\d{1,2})')
     def get_by_year_and_month(self, request, year, month):
         """
         Obtém os lançamentos por ano e mês.
@@ -67,7 +67,7 @@ class TransactionView(BaseView):
     @action(
         detail=False,
         methods=['get'],
-        url_path='accounts/(?P<account_id>\d+)/year/(?P<year>\d{4})/month/(?P<month>\d{1,2})',
+        url_path=r'accounts/(?P<account_id>\d+)/year/(?P<year>\d{4})/month/(?P<month>\d{1,2})',
     )
     def get_extract_by_year_and_month(self, request, account_id, year, month):
         """
@@ -76,7 +76,7 @@ class TransactionView(BaseView):
         return self._get_transactions_by_date(request, account=account_id, year=year, month=month)
 
     @action(
-        detail=False, methods=['get'], url_path='cards/(?P<card_id>\d+)/year/(?P<year>\d{4})/month/(?P<month>\d{1,2})'
+        detail=False, methods=['get'], url_path=r'cards/(?P<card_id>\d+)/year/(?P<year>\d{4})/month/(?P<month>\d{1,2})'
     )
     def get_invoice_by_year_and_month(self, request, card_id, year, month):
         """

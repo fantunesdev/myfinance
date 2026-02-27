@@ -166,7 +166,6 @@ selectPaymentMethod();
 async function populateCardNumbersForCard(cardId) {
     const select = document.getElementById('id_card_number');
     const wrapper = document.getElementById('div-card-number');
-    }
 
     // card_numbers_json pode ser injetado como um array JS (objeto) ou como uma string JSON.
     const raw = window.card_numbers_json || '[]';
