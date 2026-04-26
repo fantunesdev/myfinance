@@ -31,20 +31,19 @@ export async function getTransactionsByYearAndMonth(year, month) {
  * @param {string} year - O ano da pesquisa.
  * @returns Uma lista de obsjetos literais contendo todos os lançamentos do ano.
  */
-export async function getTransactionsByYear(year, filters) {
+export async function getTransactionsByYear(year, expands = false, home_screen = false) {
     let url = `/api/transactions/year/${year}`;
 
-    if (filters && (filters.home_screen || filters.expand)) {
+    if (expands || home_screen) {
         const params = new URLSearchParams();
         
-        if (filters.home_screen) params.append('home_screen', 'true');
-        if (filters.expand) params.append('expand', filters.expand);
+        if (home_screen) params.append('home_screen', 'true');
+        if (expands.expand) params.append('expand', expands.expand);
         
         const queryString = params.toString();
         if (queryString) url += '?' + queryString;
     }
 
-    console.log('URL final:', url);
     const response = await fetch(url),
         data = await response.json(),
         sessionStorageData = JSON.stringify(data);
@@ -74,7 +73,7 @@ export async function getLastTwelveMonthsTransactionsByYearAndMonth(year, month)
  * @param {string} model - O modelo do recurso. Ex: Categorias, Subcategorias, Bancos, etc.
  * @returns - Uma lista de objetos literais contendo todas as instância do modelo com todas as suas informações específicas.
  */
-export async function getResource(model) {
+export async function getResource(model, expands) {
     if (model != 'transactions') {
         const sessionData = sessionStorage.getItem(model);
         if (sessionData) {
@@ -82,10 +81,22 @@ export async function getResource(model) {
         }
     }
 
-    const url = `/api/${model}/`,
-        response = await fetch(url),
-        data = await response.json(),
-        sessionStorageData = JSON.stringify(data);
+    let url = `/api/${model}`;
+    
+    if (expands) {
+        const params = new URLSearchParams();
+        
+        for (const [key, value] of Object.entries(expands)) {
+            params.append(key, value);
+        }
+
+        const queryString = params.toString();
+        if (queryString) url += '?' + queryString;
+    }
+
+    const response = await fetch(url);
+    const data = await response.json();
+    const sessionStorageData = JSON.stringify(data);
 
     sessionStorage.setItem(`${model}`, sessionStorageData);
     return data;

@@ -19,10 +19,12 @@ export function setAnnualReport(transactions) {
         if (transaction.type == 'entrada') {
             revenues[year] += Number(transaction.value);
         } else {
-            if (transaction.category != 5 && !category.ignore) {
-                expenses[year] += Number(transaction.value);
-            } else if (transaction.category == 5) {
+            if (transaction.category == 5) {
                 investments[year] += Number(transaction.value);
+            } else {
+                if (category.ignore) continue;
+                if (transaction.card_number && !transaction.card_number.home_screen) continue;
+                expenses[year] += Number(transaction.value);
             }
         }
     }

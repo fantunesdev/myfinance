@@ -20,13 +20,12 @@ async function drawAnnualStatementChart(select) {
     await destroyCharts();
 
     const year = yearSeletct.value;
-    const filters = { expand: 'category,card,card_number' }
-    const transactions = await services.getTransactionsByYear(year, filters);
+    const expands = { expand: 'category,card,card_number' };
+    const transactions = await services.getTransactionsByYear(year, expands);
 
     const monthlyReport = monthsData.setMontlyReport(transactions);
     const lineDataset = monthsData.setMonthDataset(monthlyReport[select]);
     const doughnutDataset = monthsData.setDoughnutDataset(monthlyReport);
-    console.log(monthlyReport)
 
     const lineChart = graphics.drawLineChart(lineDataset, handleLabel(select));
     const doughnutChart = doughnut.drawDoughnutChart(
@@ -44,7 +43,8 @@ async function drawAnnualStatementChart(select) {
 async function drawAnnualOverviewChart(select) {
     await destroyCharts();
 
-    const transactions = await services.getResource('transactions');
+    const expands = { expand: 'card_number' };
+    const transactions = await services.getResource('transactions', expands);
     const annualReport = annualData.setAnnualReport(transactions);
     const lineDataset = annualData.setAnnualDataset(annualReport[select]);
     const doughnutDataset = monthsData.setDoughnutDataset(annualReport);

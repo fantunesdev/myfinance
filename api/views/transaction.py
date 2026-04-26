@@ -49,6 +49,17 @@ class TransactionView(BaseView):
             return self._handle_installment_creation(result)
 
         return result
+    
+    def list(self, request):
+        """
+        Obtém todas as instâncias do modelo
+
+        :param request: Requisição HTTP.
+        :return: Response com a lista de instâncias.
+        """
+        user = self._set_user(request)
+        transactions = self.service.get_all(user)
+        return self._serialize_and_return(transactions, request=request)
 
     @action(detail=False, methods=['get'], url_path=r'year/(?P<year>\d{4})')
     def get_by_year(self, request, year):
