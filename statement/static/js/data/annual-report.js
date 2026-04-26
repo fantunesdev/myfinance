@@ -2,8 +2,9 @@ export function setAnnualReport(transactions) {
     const revenues = {};
     const expenses = {};
     const investments = {};
-    const firstYear = transactions[0].payment_date.split('-')[0];
-    const lastYear = transactions[transactions.length - 1].payment_date.split('-')[0];
+    const years = transactions.map(t => Number(t.payment_date.split('-')[0]));
+    const firstYear = Math.min(...years);
+    const lastYear = Math.max(...years);
 
     for (let index = firstYear; index <= lastYear; index++) {
         revenues[index] = 0;
@@ -12,16 +13,16 @@ export function setAnnualReport(transactions) {
     }
 
     for (const transaction of transactions) {
-        const year = transaction.payment_date.split('-')[0];
+        const year = Number(transaction.payment_date.split('-')[0]);
         const category = getCategory(transaction.category);
 
         if (transaction.type == 'entrada') {
-            revenues[year] += transaction.value;
+            revenues[year] += Number(transaction.value);
         } else {
             if (transaction.category != 5 && !category.ignore) {
-                expenses[year] += transaction.value;
+                expenses[year] += Number(transaction.value);
             } else if (transaction.category == 5) {
-                investments[year] += transaction.value;
+                investments[year] += Number(transaction.value);
             }
         }
     }

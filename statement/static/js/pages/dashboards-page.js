@@ -77,15 +77,6 @@ async function drawExpensesCategoryChart() {
     }
 }
 
-function createSelectOptions(select, object) {
-    for (const key in object) {
-        const option = document.createElement('option');
-        option.text = object[key];
-        option.value = key;
-        select.appendChild(option);
-    }
-}
-
 function handleLabel(select) {
     if (select == 'revenues') {
         return 'Receitas';
