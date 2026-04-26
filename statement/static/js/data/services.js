@@ -15,7 +15,7 @@ export async function getTransactionsByYearAndMonth(year, month) {
         cardId = path.split('/')[3];
         url = `/api/transactions/cards/${cardId}/year/${year}/month/${month}/`;
     } else {
-        url = `/api/transactions/year/${year}/month/${month}/`;
+        url = `/api/transactions/year/${year}/month/${month}?home_screen=true`;
     }
 
     const response = await fetch(url),
@@ -31,9 +31,20 @@ export async function getTransactionsByYearAndMonth(year, month) {
  * @param {string} year - O ano da pesquisa.
  * @returns Uma lista de obsjetos literais contendo todos os lançamentos do ano.
  */
-export async function getTransactionsByYear(year) {
-    const url = `/api/transactions/year/${year}/`;
+export async function getTransactionsByYear(year, filters) {
+    let url = `/api/transactions/year/${year}`;
 
+    if (filters && (filters.home_screen || filters.expand)) {
+        const params = new URLSearchParams();
+        
+        if (filters.home_screen) params.append('home_screen', 'true');
+        if (filters.expand) params.append('expand', filters.expand);
+        
+        const queryString = params.toString();
+        if (queryString) url += '?' + queryString;
+    }
+
+    console.log('URL final:', url);
     const response = await fetch(url),
         data = await response.json(),
         sessionStorageData = JSON.stringify(data);

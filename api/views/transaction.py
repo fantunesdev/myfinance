@@ -239,6 +239,18 @@ class TransactionView(BaseView):
         # Remove múltiplos espaços e pontuação solta no final
         return re.sub(r'\s+', ' ', description).strip(' -–—:')
 
+    def _serialize_and_return(self, instances, request=None):
+        """
+        Sobrescreve o método da classe base para passar o request como contexto.
+        Necessário para que o serializer acesse query parameters como 'expand'.
+        """
+        from django.db.models import QuerySet
+        
+        context = {'request': request} if request else {}
+        has_many = isinstance(instances, QuerySet) or isinstance(instances, (list, tuple))
+        serializer = self._get_serializer(instances, many=has_many, context=context)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     def _get_transactions_by_date(self, request, account=None, card=None, year=None, month=None):
         """
         Método auxiliar para obter transações por data.
@@ -252,13 +264,22 @@ class TransactionView(BaseView):
         if card:
             kwargs['card'] = CardService.get_by_id(card)
 
+        home_screen = request.query_params.get('home_screen', '').lower() in ('true', '1', 'yes')
+
+        if home_screen:
+            kwargs['card__isnull'] = False
+            kwargs['card__home_screen'] = True
+            kwargs['card_number__isnull'] = False
+            kwargs['card_number__home_screen'] = True
+            kwargs['home_screen'] = True
+
         transactions = TransactionService.get_by_filter(**kwargs)
 
         if not transactions:
             message = 'Lançamentos não encontrados.'
             return Response({'detail': message}, status=status.HTTP_404_NOT_FOUND)
 
-        return self._serialize_and_return(transactions)
+        return self._serialize_and_return(transactions, request=request)
 
     @action(detail=False, methods=['post'], url_path='import')
     def import_transactions(self, request):

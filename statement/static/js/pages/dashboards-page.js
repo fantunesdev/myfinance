@@ -20,11 +20,13 @@ async function drawAnnualStatementChart(select) {
     await destroyCharts();
 
     const year = yearSeletct.value;
-    const transactions = await services.getTransactionsByYear(year);
+    const filters = { expand: 'category,card,card_number' }
+    const transactions = await services.getTransactionsByYear(year, filters);
 
     const monthlyReport = monthsData.setMontlyReport(transactions);
     const lineDataset = monthsData.setMonthDataset(monthlyReport[select]);
     const doughnutDataset = monthsData.setDoughnutDataset(monthlyReport);
+    console.log(monthlyReport)
 
     const lineChart = graphics.drawLineChart(lineDataset, handleLabel(select));
     const doughnutChart = doughnut.drawDoughnutChart(

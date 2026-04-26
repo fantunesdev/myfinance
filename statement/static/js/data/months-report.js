@@ -15,14 +15,14 @@ export function setMontlyReport(transactions) {
         const date = new Date(yearInt, monthInt - 1, dayInt);
         const month = date.getMonth();
         const monthInFull = handleMonth(month);
-        const category = getCategory(transaction.category);
 
         if (transaction.type == 'entrada' && transaction.home_screen) {
             revenuesByMont[monthInFull] += transaction.value;
         } else {
-            if (transaction.category != 5 && !category.ignore) {
+            if (transaction.category.id != 5 && !transaction.category.ignore) {
+                if (transaction.card_number && !transaction.card_number.home_screen) continue;
                 expensesByMonth[monthInFull] += transaction.value;
-            } else if (transaction.category == 5) {
+            } else if (transaction.category.id == 5) {
                 investimentsByMonth[monthInFull] += transaction.value;
             }
         }
