@@ -101,6 +101,42 @@ class TransactionService(BaseService):
             payment_date__gte=start_date, payment_date__lte=end_date, user=user, home_screen=True
         ).order_by('posted_date')
 
+    @classmethod
+    def recalculate_home_screen_for_card(cls, card_id):
+        """
+        Recalcula o atributo home_screen para todas as transações de um cartão.
+        
+        :param card_id: ID do cartão
+        """
+        transactions = Transaction.objects.filter(card_id=card_id)
+        for transaction in transactions:
+            transaction.home_screen = cls._set_home_screen(transaction)
+            transaction.save(update_fields=['home_screen'])
+
+    @classmethod
+    def recalculate_home_screen_for_card_number(cls, card_number_id):
+        """
+        Recalcula o atributo home_screen para todas as transações de um número de cartão.
+        
+        :param card_number_id: ID do número de cartão
+        """
+        transactions = Transaction.objects.filter(card_number_id=card_number_id)
+        for transaction in transactions:
+            transaction.home_screen = cls._set_home_screen(transaction)
+            transaction.save(update_fields=['home_screen'])
+
+    @classmethod
+    def recalculate_home_screen_for_account(cls, account_id):
+        """
+        Recalcula o atributo home_screen para todas as transações de uma conta.
+        
+        :param account_id: ID da conta
+        """
+        transactions = Transaction.objects.filter(account_id=account_id)
+        for transaction in transactions:
+            transaction.home_screen = cls._set_home_screen(transaction)
+            transaction.save(update_fields=['home_screen'])
+
     @staticmethod
     def _set_home_screen(instance):
         """

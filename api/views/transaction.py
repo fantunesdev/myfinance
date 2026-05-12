@@ -278,10 +278,6 @@ class TransactionView(BaseView):
         home_screen = request.query_params.get('home_screen', '').lower() in ('true', '1', 'yes')
 
         if home_screen:
-            kwargs['card__isnull'] = False
-            kwargs['card__home_screen'] = True
-            kwargs['card_number__isnull'] = False
-            kwargs['card_number__home_screen'] = True
             kwargs['home_screen'] = True
 
         transactions = TransactionService.get_by_filter(**kwargs)

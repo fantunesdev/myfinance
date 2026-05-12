@@ -30,13 +30,14 @@ def ensure_notification_title_exists(sender, instance, created, **kwargs):
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
-from statement.models import Card, CardNumber, Transaction
+from statement.models import Card, CardNumber, Transaction, Account
+from statement.services.core.transaction import TransactionService
 
 
 @receiver(post_save, sender=CardNumber)
 def update_transactions_on_cardnumber_save(sender, instance, **kwargs):
     """When a CardNumber is saved, update related transactions to inherit its home_screen."""
-    Transaction.objects.filter(card_number=instance).update(home_screen=instance.home_screen)
+    TransactionService.recalculate_home_screen_for_card_number(instance.id)
 
 
 @receiver(post_delete, sender=CardNumber)
@@ -47,6 +48,17 @@ def update_transactions_on_cardnumber_delete(sender, instance, **kwargs):
         home_screen=fallback, card_number=None
     )
 
+
+@receiver(post_save, sender=Card)
+def update_transactions_on_card_save(sender, instance, **kwargs):
+    """When a Card is saved, update related transactions to recalculate home_screen."""
+    TransactionService.recalculate_home_screen_for_card(instance.id)
+
+
+@receiver(post_save, sender=Account)
+def update_transactions_on_account_save(sender, instance, **kwargs):
+    """When an Account is saved, update related transactions to recalculate home_screen."""
+    TransactionService.recalculate_home_screen_for_account(instance.id)
 
 @receiver(post_save, sender=Card)
 def update_transactions_on_card_save(sender, instance, **kwargs):
