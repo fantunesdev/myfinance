@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from api.serializers.base_serializer import BaseSerializer
-from statement.models import Transaction, Card, CardNumber, Category
+from statement.models import Transaction, Card, CardNumber, Category, Dream
 
 
 class CardNumberSerializer(serializers.ModelSerializer):
@@ -22,10 +22,18 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class DreamMinimalSerializer(serializers.ModelSerializer):
+    """Serializer minimalista para Dream (para evitar recursão)."""
+    class Meta:
+        model = Dream
+        fields = ['id', 'description', 'target_value', 'status']
+
+
 class TransactionSerializer(BaseSerializer):
     card = serializers.SerializerMethodField()
     card_number = serializers.SerializerMethodField()
     category = serializers.SerializerMethodField()
+    dream = serializers.SerializerMethodField()
 
     class Meta:
         model = Transaction
@@ -60,3 +68,13 @@ class TransactionSerializer(BaseSerializer):
         if request and 'category' in request.query_params.get('expand', '').split(','):
             return CategorySerializer(obj.category).data if obj.category else None
         return obj.category_id
+
+    def get_dream(self, obj):
+        """
+        Retorna o dream expandido apenas se 'expand' foi passado na query string,
+        caso contrário retorna apenas o ID.
+        """
+        request = self.context.get('request')
+        if request and 'dream' in request.query_params.get('expand', '').split(','):
+            return DreamMinimalSerializer(obj.dream).data if obj.dream else None
+        return obj.dream_id

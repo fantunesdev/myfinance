@@ -14,13 +14,34 @@ class DreamService(BaseService):
     @classmethod
     def get_active_dreams(cls, user):
         """
-        Retorna todos os sonhos ativos de um usuário (data maior ou igual à data atual).
+        Retorna todos os sonhos com status 'active' de um usuário.
         """
-        return Dream.objects.filter(user=user, limit_date__gte=cls.today)
+        return Dream.objects.filter(user=user, status='active')
 
     @classmethod
     def get_past_dreams(cls, user):
         """
-        Retorna todos os sonhos que já foram alcançados o que não estão mais ativos.
+        Retorna todos os sonhos que não estão com status 'active'.
         """
-        return Dream.objects.filter(user=user, limit_date__lt=cls.today)
+        return Dream.objects.filter(user=user).exclude(status='active')
+
+    @classmethod
+    def get_paused_dreams(cls, user):
+        """
+        Retorna todos os sonhos pausados de um usuário.
+        """
+        return Dream.objects.filter(user=user, status='paused')
+
+    @classmethod
+    def get_completed_dreams(cls, user):
+        """
+        Retorna todos os sonhos concluídos de um usuário.
+        """
+        return Dream.objects.filter(user=user, status='completed')
+
+    @classmethod
+    def get_cancelled_dreams(cls, user):
+        """
+        Retorna todos os sonhos cancelados de um usuário.
+        """
+        return Dream.objects.filter(user=user, status='cancelled')

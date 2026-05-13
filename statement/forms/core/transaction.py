@@ -1,9 +1,10 @@
 from django import forms
 
 from statement.forms.base_form import BaseForm
-from statement.models import CardNumber, Transaction
+from statement.models import CardNumber, Transaction, Dream
 from statement.services.core.category import CategoryService
 from statement.services.core.subcategory import SubcategoryService
+from statement.services.dream.dream import DreamService
 from statement.utils.datetime import DateTimeUtils
 
 today = DateTimeUtils.today()
@@ -29,6 +30,13 @@ class TransactionForm(BaseForm):
     )
 
     home_screen = forms.BooleanField(required=False)
+    
+    dream = forms.ModelChoiceField(
+        queryset=Dream.objects.none(),
+        required=False,
+        widget=forms.Select(),
+        label='Sonho/Objetivo'
+    )
 
     class Meta:
         """Metadados do formulário."""
@@ -44,6 +52,9 @@ class TransactionForm(BaseForm):
 
     def __init__(self, user, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Filtrar sonhos ativos do usuário
+        self.fields['dream'].queryset = DreamService.get_active_dreams(user)
+        
         # On initial GET render, expose all card numbers so JS can populate the
         # select dynamically. On POST, restrict queryset to card chosen in data
         # so validation respects the selected card.

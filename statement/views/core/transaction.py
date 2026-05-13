@@ -382,9 +382,16 @@ class TransactionView(BaseView):
                     post_data = request.POST.dict()
                     post_data['type'] = self._type
                     return self.class_form(request.user, post_data, request.FILES or None)
+                
+                # Preparar dados iniciais a partir do query string
+                initial_data = {}
+                dream_id = request.GET.get('dream')
+                if dream_id:
+                    initial_data['dream'] = dream_id
+                
                 if self._type == 'entrada':
-                    return TransactionRevenueForm(request.user)
-                return TransactionExpenseForm(request.user)
+                    return TransactionRevenueForm(request.user, initial=initial_data)
+                return TransactionExpenseForm(request.user, initial=initial_data)
             case 'update':
                 if request.method == 'POST':
                     return self.class_form(request.user, request.POST, request.FILES, instance=instance)

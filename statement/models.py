@@ -136,14 +136,10 @@ class Account(models.Model):
     bank = models.ForeignKey(Bank, on_delete=models.PROTECT)
     branch = models.CharField(max_length=10, blank=True, null=True)
     number = models.CharField(max_length=20, blank=True, null=True)
-    balance = models.FloatField(
-        default=0,
-    )
+    balance = models.FloatField(default=0)
     limits = models.FloatField(default=0)
     type = models.ForeignKey(AccountType, on_delete=models.PROTECT)
-    home_screen = models.BooleanField(
-        default=False,
-    )
+    home_screen = models.BooleanField(default=False)
     user = models.ForeignKey(User, on_delete=models.PROTECT)
 
     def __str__(self):
@@ -293,6 +289,7 @@ class Transaction(models.Model):
         home_screen (BooleanField): Se a transação deve aparecer na tela inicial.
         user (ForeignKey): Usuário que possui a transação.
         installment (ForeignKey): Parcelamento associada à transação.
+        dream (ForeignKey): Sonho/objetivo associado à transação (opcional).
     """
 
     TYPE_CHOICES = (('entrada', 'Entrada'), ('saida', 'Saída'))
@@ -319,6 +316,7 @@ class Transaction(models.Model):
     user = models.ForeignKey(User, on_delete=models.PROTECT)
     installment = models.ForeignKey(Installment, null=True, blank=True, on_delete=models.CASCADE)
     original_description = models.CharField(max_length=255, blank=True, null=True)
+    dream = models.ForeignKey('Dream', null=True, blank=True, related_name='transactions', on_delete=models.SET_NULL)
 
     def __str__(self):
         """Retorna a descrição da transação."""
@@ -366,19 +364,52 @@ class Version(models.Model):
 
 
 class Dream(models.Model):
-    """Classe que representa um sonho.
+    """Classe que representa um sonho/objetivo financeiro.
 
     Atributos:
         description (CharField): Descrição do sonho.
-        value (FloatField): Valor do sonho.
-        limit_date (DateField): Data limite para realizar o sonho.
+        target_value (FloatField): Valor alvo do sonho.
+        limit_date (DateField): Data limite para realizar o sonho (opcional).
+        status (CharField): Status do sonho (ativo, pausado, concluído, cancelado).
         user (ForeignKey): Usuário que possui o sonho.
     """
 
+    STATUS_CHOICES = (
+        ('active', 'Ativo'),
+        ('paused', 'Pausado'),
+        ('completed', 'Concluído'),
+        ('cancelled', 'Cancelado'),
+    )
+
     description = models.CharField(max_length=70)
-    value = models.FloatField()
-    limit_date = models.DateField()
+    target_value = models.FloatField(default=0.0)
+    limit_date = models.DateField(null=True, blank=True)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active')
     user = models.ForeignKey(User, on_delete=models.PROTECT)
+
+    @property
+    def current_value(self):
+        """Retorna o valor total das transações associadas ao sonho."""
+        if not self.pk:
+            return 0.0
+        total = self.transactions.aggregate(total=models.Sum('value'))['total']
+        return total if total is not None else 0.0
+
+    @property
+    def remaining_value(self):
+        """Retorna o valor faltante para atingir o objetivo."""
+        remaining = self.target_value - self.current_value
+        return max(remaining, 0.0)
+
+    @property
+    def progress_percentage(self):
+        """Retorna o percentual de progresso do sonho."""
+        if self.target_value <= 0:
+            return 0.0
+        return min((self.current_value / self.target_value) * 100, 100.0)
+
+    def __str__(self):
+        return self.description
 
 
 class Portion(models.Model):

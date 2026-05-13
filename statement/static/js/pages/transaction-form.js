@@ -6,6 +6,101 @@ import * as services from '../data/services.js';
 import * as selectInput from '../layout/elements/selects.js';
 
 /**
+ * Cache para dados de home_screen na sessão
+ * Evita chamadas repetidas à API
+ */
+const homeScreenCache = {
+    cards: {},
+    cardNumbers: {},
+    accounts: {},
+    
+    getKey(type, id) {
+        return `homescreen_${type}_${id}`;
+    },
+    
+    get(type, id) {
+        const key = this.getKey(type, id);
+        const cached = sessionStorage.getItem(key);
+        return cached !== null ? JSON.parse(cached) : null;
+    },
+    
+    set(type, id, value) {
+        const key = this.getKey(type, id);
+        sessionStorage.setItem(key, JSON.stringify(value));
+    }
+};
+
+/**
+ * Busca dados de home_screen da API com cache
+ */
+async function fetchHomeScreenValue(resourceType, resourceId) {
+    if (!resourceId) return false;
+    
+    // Verificar cache primeiro
+    const cached = homeScreenCache.get(resourceType, resourceId);
+    if (cached !== null) {
+        return cached;
+    }
+    
+    try {
+        const resource = await services.getSpecificResource(resourceType, resourceId);
+        const homeScreenValue = resource && resource.home_screen ? resource.home_screen : false;
+        homeScreenCache.set(resourceType, resourceId, homeScreenValue);
+        return homeScreenValue;
+    } catch (e) {
+        console.error(`Erro ao buscar home_screen para ${resourceType} ${resourceId}:`, e);
+        return false;
+    }
+}
+
+/**
+ * Atualiza o checkbox de home_screen baseado na seleção de account/card/card_number
+ */
+async function updateHomeScreenCheckbox() {
+    const homeScreenCheckbox = document.getElementById('id_home_screen');
+    if (!homeScreenCheckbox) return;
+    
+    const accountSelect = document.getElementById('id_account');
+    const cardSelect = document.getElementById('id_card');
+    const cardNumberSelect = document.getElementById('id_card_number');
+    
+    let homeScreenValue = false;
+    
+    // Verificar card_number primeiro (se selecionado e visible)
+    if (cardNumberSelect && cardNumberSelect.offsetParent !== null) {
+        const cardNumberId = cardNumberSelect.value;
+        if (cardNumberId) {
+            homeScreenValue = await fetchHomeScreenValue('card-numbers', cardNumberId);
+            homeScreenCheckbox.checked = homeScreenValue;
+            return;
+        }
+    }
+    
+    // Depois verificar card
+    if (cardSelect) {
+        const cardId = cardSelect.value;
+        if (cardId) {
+            homeScreenValue = await fetchHomeScreenValue('cards', cardId);
+            homeScreenCheckbox.checked = homeScreenValue;
+            return;
+        }
+    }
+    
+    // Por fim, verificar account
+    if (accountSelect) {
+        const accountId = accountSelect.value;
+        if (accountId) {
+            homeScreenValue = await fetchHomeScreenValue('accounts', accountId);
+            homeScreenCheckbox.checked = homeScreenValue;
+            return;
+        }
+    }
+    
+    // Se nada foi selecionado, desmarcar
+    homeScreenCheckbox.checked = false;
+}
+
+/**
  * Mostra e oculta campos do formulário de acordo com o meio de pagamento selecionado.
  */
 function selectPaymentMethod() {
@@ -19,6 +114,8 @@ function selectPaymentMethod() {
         divs.account.classList.remove('toggled');
         selects.card.selectedIndex = 0;
     }
+    // Atualizar home_screen quando muda o payment method
+    updateHomeScreenCheckbox();
 }
 
 /**
@@ -198,6 +295,8 @@ async function populateCardNumbersForCard(cardId) {
     if (list.length === 0) {
         wrapper.style.display = 'none';
         wrapper.classList.remove('active');
+        // Atualizar home_screen quando card_number é ocultado
+        updateHomeScreenCheckbox();
         return;
     }
 
@@ -214,12 +313,17 @@ async function populateCardNumbersForCard(cardId) {
 
     wrapper.style.display = 'block';
     wrapper.classList.add('active');
+    
+    // Atualizar home_screen quando card_number aparece
+    updateHomeScreenCheckbox();
 }
 
 // Quando um cartão é selecionado, popula o select de números de cartão relacionados a ele usando os dados injetados no template. Se nenhum cartão for selecionado, esconde o campo de número do cartão.
 function cardChangeHandler(e) {
     const val = e && e.target ? e.target.value : e;
     populateCardNumbersForCard(val);
+    // Atualizar home_screen quando muda de card
+    updateHomeScreenCheckbox();
 }
 
 const attachCardChangeListener = () => {
@@ -255,4 +359,45 @@ if (!attachCardChangeListener()) {
     if (el) {
         populateCardNumbersForCard(el.value);
     }
+}
+
+/**
+ * Inicializar listeners para account e card_number mudar home_screen
+ */
+function initializeHomeScreenListeners() {
+    const accountSelect = document.getElementById('id_account');
+    const cardNumberSelect = document.getElementById('id_card_number');
+    
+    if (accountSelect) {
+        accountSelect.addEventListener('change', updateHomeScreenCheckbox);
+    }
+    
+    if (cardNumberSelect) {
+        cardNumberSelect.addEventListener('change', updateHomeScreenCheckbox);
+    }
+}
+
+/**
+ * Settar data-initial no card_number para preservar valor pré-selecionado
+ */
+function setCardNumberInitial() {
+    const sel = document.getElementById('id_card_number');
+    // Tentar pegar do template renderizado
+    const initialValue = sel && sel.value ? sel.value : '';
+    if (sel && initialValue) {
+        sel.setAttribute('data-initial', initialValue);
+    }
+}
+
+// Executar ao carregar o documento
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        setCardNumberInitial();
+        initializeHomeScreenListeners();
+        updateHomeScreenCheckbox();
+    });
+} else {
+    setCardNumberInitial();
+    initializeHomeScreenListeners();
+    updateHomeScreenCheckbox();
 }

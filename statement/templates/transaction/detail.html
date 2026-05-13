@@ -42,11 +42,15 @@
                     <p style="font-size: 18px;">Sub Categoria: <b>{{ instance.subcategory }}</b></p>
                     <p style="font-size: 18px;">Descrição: <b>{{ instance.description }}</b></p>
                     <p style="font-size: 18px;">Valor: <b>{{ instance.value | to_reais }}</b></p>
+                    {% if instance.dream %}
+                    <p style="font-size: 18px;">Sonho/Objetivo: <b>{{ instance.dream.description }} ({{ instance.dream.get_status_display }})</b></p>
+                    {% endif %}
                     <p style="font-size: 18px;">Moeda: <b>{{ instance.currency }}</b></p>
                     <p style="font-size: 18px;">Número de Parcelas: <b>{{ instance.installments_number }}</b></p>
                     <p style="font-size: 18px;">Fixo: <b>{{ instance.fixed }}</b></p>
                     <p style="font-size: 18px;">Anual: <b>{{ instance.annual }}</b></p>
                     <p style="font-size: 18px;">Lembrar: <b>{{ instance.remember }}</b></p>
+                    <p style="font-size: 18px;">Exibir na tela inicial: <b>{{ instance.home_screen }}</b></p>
                     <p style="font-size: 18px;">Tipo: <b>{{ instance.type }}</b></p>
                     <p style="font-size: 18px;">Efetivado: <b>{{ instance.effected }}</b></p>
 

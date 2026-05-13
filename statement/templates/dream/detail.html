@@ -29,31 +29,43 @@
                 </div>
                 <div class="box-body">
                     <p style="font-size: 18px;">Descrição: <b>{{ instance.description }}</b></p>
-                    <p style="font-size: 18px;">Valor Total: <b>{{ instance.value|to_reais }}</b></p>
+                    <p style="font-size: 18px;">Valor Total: <b>{{ instance.target_value|to_reais }}</b></p>
+                    <p style="font-size: 18px;">Status: <b>{{ instance.get_status_display }}</b></p>
                     <p style="font-size: 18px;">Acumulado: <b>{% get_cumulative_total_for_dream instance.id request.user %}</b></p>
-                    <p style="font-size: 18px;">Valor Restante: <b>{% get_remaining_value_for_dream instance.id instance.value request.user %}</b></p>
+                    <p style="font-size: 18px;">Valor Restante: <b>{% get_remaining_value_for_dream instance.id instance.target_value request.user %}</b></p>
+                    <p style="font-size: 18px;">Progresso: <b>{{ instance.progress_percentage|floatformat:1 }}%</b></p>
                     <p style="font-size: 18px;">Data Limite: <b>{{ instance.limit_date }}</b></p>
                     <p style="font-size: 18px;">Meses Restantes: <b>{% calculate_remaining_months instance %}</b></p>
-                    <p style="font-size: 18px;">Valor das Parcelas: <b>{% calcule_remaining_installment_value instance.id instance.value instance.limit_date request.user %}</b></p>
+                    <p style="font-size: 18px;">Valor das Parcelas: <b>{% calcule_remaining_installment_value instance.id instance.target_value instance.limit_date request.user %}</b></p>
 
                     <br><br>
-                    <a href="{% url 'create_portion' instance.id %}"><input type="button" value="Cadastrar Depósito" class="btn btn-primary"></a>
+                    <a href="{% url 'create_transaction' 'saida' %}?dream={{ instance.id }}"><input type="button" value="Cadastrar Aporte" class="btn btn-primary"></a>
                     <table class="table" id="statement-table">
                         <thead>
                             <tr>
                                 <th>Data</th>
+                                <th>Descrição</th>
+                                <th>Categoria</th>
                                 <th>Valor</th>
                                 <th>Ações</th>
                             </tr>
                         </thead>
-                            {% for portion in portions %}
+                        <tbody>
+                            {% for transaction in transactions %}
                             <tr>
-                                <td>{{ portion.date | date:"d/m/Y" }}</td>
-                                <td>{{ portion.value| to_reais}}</td>
+                                <td>{{ transaction.posted_date | date:"d/m/Y" }}</td>
+                                <td>{{ transaction.description }}</td>
+                                <td>{{ transaction.category }}</td>
+                                <td>{{ transaction.value | to_reais }}</td>
                                 <td>
-                                    <a href="{% url 'update_portion' portion.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
-                                    <a href="{% url 'delete_portion' portion.id %}"><i class="fa-solid fa-trash action-icon"></i></a>
+                                    <a href="{% url 'detail_transaction' transaction.id %}"><i class="fa-solid fa-file-lines action-icon"></i></a>
+                                    <a href="{% url 'update_transaction' transaction.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
+                                    <a href="{% url 'delete_transaction' transaction.id %}"><i class="fa-solid fa-trash action-icon"></i></a>
                                 </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 20px;">Nenhum aporte registrado ainda</td>
                             </tr>
                             {% endfor %}
                         </tbody>

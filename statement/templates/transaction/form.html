@@ -149,6 +149,18 @@
                             </div>
 
                             <div class="form-input">
+                                <label for="id_dream">Sonho/Objetivo</label>
+                                {{ form.dream }}
+                                {{ form.dream.errors }}
+                            </div>
+
+                            <div class="form-input">
+                                {{ form.home_screen }}
+                                {{ form.home_screen.errors }}
+                                <label for="id_home_screen">Exibir na tela inicial</label>
+                            </div>
+
+                            <div class="form-input">
                                 {{ form.effected }}
                                 {{ form.effected.errors }}
                                 <label for="id_effected">Efetivado</label>
@@ -171,13 +183,6 @@
         <script>
             // Injeta JSON dos números de cartão para o JS do formulário de transação
             window.card_numbers_json = {{ card_numbers_json|safe }};
-            document.addEventListener('DOMContentLoaded', function(){
-                var sel = document.getElementById('id_card_number');
-                try {
-                    var init = '{{ form.initial.card_number|default_if_none:"" }}';
-                    if (sel && init) sel.setAttribute('data-initial', init);
-                } catch (e) {}
-            });
         </script>
         {% endif %}
     {% endblock %}

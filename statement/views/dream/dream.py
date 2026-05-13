@@ -6,7 +6,6 @@ from django.utils.decorators import method_decorator
 from statement.forms.dream.dream import DreamForm
 from statement.models import Dream
 from statement.services.dream.dream import DreamService
-from statement.services.dream.portion import PortionService
 from statement.views.base_view import BaseView
 
 
@@ -52,6 +51,10 @@ class DreamView(BaseView):
         return self._render(request, None, 'dream/list.html', specific_content)
 
     def _add_context_on_templatetags(self, request, instance):
+        """
+        Retorna as transações relacionadas ao sonho.
+        A partir de agora, apenas Transactions são usadas (não mais Portion).
+        """
         return {
-            'portions': PortionService.get_portions_by_dream(instance.id, request.user),
+            'transactions': instance.transactions.filter(user=request.user).order_by('-posted_date'),
         }

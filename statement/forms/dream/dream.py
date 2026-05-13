@@ -11,12 +11,13 @@ class DreamForm(BaseForm):
         model = Dream
         fields = [
             'description',
-            'value',
+            'target_value',
             'limit_date',
+            'status',
         ]
         widgets = {
             'description': forms.TextInput(),
-            'value': forms.NumberInput(),
+            'target_value': forms.NumberInput(),
             'limit_date': forms.DateInput(
                 format='%Y-%m-%d',
                 attrs={
@@ -25,4 +26,5 @@ class DreamForm(BaseForm):
                     'class': 'form-control date-input',
                 },
             ),
+            'status': forms.Select(),
         }
