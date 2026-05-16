@@ -556,6 +556,28 @@ td a:hover {
     align-items:center;
 }
 .no-wrap{ white-space: nowrap; }
+.actions-cell{
+    text-align: center;
+    white-space: nowrap;
+}
+.actions-cell-inner{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 0;
+}
+.actions-cell-inner a{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    line-height: 1;
+}
+.actions-cell-inner .action-icon{
+    margin: 0;
+    font-size: 16px;
+}
 /* Força largura fixa da coluna de "Ações" na tabela de transações */
 #statement-table th:last-child,
 #statement-table td:last-child {

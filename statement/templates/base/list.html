@@ -81,35 +81,25 @@
                                 {% if 'message' in fields %} data-dup-message="{{ instance.message|default_if_none:''|escape }}" {% endif %}
                                 {% if 'created_at' in fields %} data-dup-created_at="{{ instance.created_at|date:"Y-m-d H:i:s" }}" {% endif %}
                             >
-                                {% for key, value in instance|get_fields %}
-                                    {% if key in fields %}
-                                            <td>
-                                                {% if key == 'created_at' %}
-                                                    {{ value|date:"d/m/Y" }}
-                                                {% elif key == 'balance' %}
-                                                    {{ value|to_reais }}
-                                                {% else %}
-                                                    {{ value }}
-                                                {% endif %}
-                                            </td>
-                                        {% endif %}
+                                {% for field in fields %}
+                                    {% with value=instance|get_field_value:field %}
+                                        <td>
+                                            {% if field == 'created_at' %}
+                                                {{ value|date:"d/m/Y" }}
+                                            {% elif field == 'balance' %}
+                                                {{ value|to_reais }}
+                                            {% else %}
+                                                {{ value }}
+                                            {% endif %}
+                                        </td>
+                                    {% endwith %}
                                 {% endfor %}
-                                <td class="no-wrap">
-                                    {% if actions_list.detail %}
-                                        <a href="{% url urls.detail instance.id %}">
-                                            <i class="fa-solid fa-file-lines action-icon"></i>
-                                        </a>
-                                    {% endif%}
-                                    {% if actions_list.update %}
-                                        <a href="{% url urls.update instance.id %}">
-                                            <i class="fa-solid fa-pen-to-square action-icon"></i>
-                                        </a>
-                                    {% endif%}
-                                    {% if actions_list.delete %}
-                                        <a href="{% url urls.delete instance.id %}">
-                                            <i class="fa-solid fa-trash action-icon"></i>
-                                        </a>
-                                    {% endif%}
+                                <td class="no-wrap actions-cell">
+                                    <div class="actions-cell-inner">
+                                        {% if actions_list.detail %}<a href="{% url urls.detail instance.id %}"><i class="fa-solid fa-file-lines action-icon"></i></a>{% endif %}
+                                        {% if actions_list.update %}<a href="{% url urls.update instance.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>{% endif %}
+                                        {% if actions_list.delete %}<a href="{% url urls.delete instance.id %}"><i class="fa-solid fa-trash action-icon"></i></a>{% endif %}
+                                    </div>
                                 </td>
                             </tr>
                         {% endfor %}

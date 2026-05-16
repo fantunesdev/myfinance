@@ -54,10 +54,12 @@
                                 <td>{{ entry.date | date:"d/m/Y" }}</td>
                                 <td>{{ entry.description }}</td>
                                 <td>{{ entry.value | to_reais }}</td>
-                                <td>
-                                    <a href="{% url 'detail_loan_entry' entry.id %}"><i class="fa-solid fa-file-lines action-icon"></i></a>
-                                    <a href="{% url 'update_loan_entry' entry.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
-                                    <a href="{% url 'delete_loan_entry' entry.id %}"><i class="fa-solid fa-trash action-icon"></i></a>
+                                <td class="no-wrap actions-cell">
+                                    <div class="actions-cell-inner">
+                                        <a href="{% url 'detail_loan_entry' entry.id %}"><i class="fa-solid fa-file-lines action-icon"></i></a>
+                                        <a href="{% url 'update_loan_entry' entry.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
+                                        <a href="{% url 'delete_loan_entry' entry.id %}"><i class="fa-solid fa-trash action-icon"></i></a>
+                                    </div>
                                 </td>
                             </tr>
                             {% empty %}
