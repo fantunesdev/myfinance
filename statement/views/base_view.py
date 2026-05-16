@@ -263,6 +263,7 @@ class BaseView:
                 'delete': f'delete_{self.snake_case_classname}',
             },
             'actions_list': self.actions_list,
+            'show_duplicate_checker': True,
             'context': self._context,
         }
 

@@ -41,7 +41,7 @@
                         {% endif %}
                     </div>
                     <div class="toolbar-right">
-                        {% if actions_list.create %}
+                        {% if actions_list.create and show_duplicate_checker %}
                         <button type="button" id="mark-duplicates" class="btn btn-danger" title="Marcar duplicações">
                             <i class="fa-solid fa-eye"></i> Duplicações
                         </button>

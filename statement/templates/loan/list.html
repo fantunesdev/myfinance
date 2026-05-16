@@ -1,0 +1,12 @@
+{% extends 'base/list.html' %}
+
+{% block navigation %}
+    <div class="mb-15">
+        <a href="{% url 'get_loans_by_status' 'ativos' %}" class="btn {% if loan_status == 'ativos' %}btn-primary{% else %}btn-info{% endif %}">
+            Ativos
+        </a>
+        <a href="{% url 'get_loans_by_status' 'inativos' %}" class="btn {% if loan_status == 'inativos' %}btn-primary{% else %}btn-info{% endif %}">
+            Histórico
+        </a>
+    </div>
+{% endblock %}

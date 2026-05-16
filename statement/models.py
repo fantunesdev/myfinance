@@ -429,6 +429,54 @@ class Portion(models.Model):
     user = models.ForeignKey(User, on_delete=models.PROTECT)
 
 
+class Loan(models.Model):
+    """
+    Classe que representa um empréstimo.
+
+    Atributos:
+        description (CharField): Descrição do empréstimo.
+        status (CharField): Status do empréstimo (ativo ou inativo).
+        user (ForeignKey): Usuário que possui o empréstimo.
+    """
+
+    STATUS_CHOICES = (
+        ('active', 'Ativo'),
+        ('inactive', 'Finalizado'),
+    )
+
+    description = models.CharField(max_length=70)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active')
+    user = models.ForeignKey(User, on_delete=models.PROTECT)
+
+    def __str__(self):
+        return self.description
+
+
+class LoanEntry(models.Model):
+    """
+    Classe que representa um lançamento de empréstimo.
+
+    Atributos:
+        loan (ForeignKey): Empréstimo associado ao lançamento.
+        date (DateField): Data do lançamento.
+        description (CharField): Descrição do lançamento.
+        value (FloatField): Valor do lançamento.
+        user (ForeignKey): Usuário que possui o lançamento.
+    """
+
+    loan = models.ForeignKey(Loan, related_name='entries', on_delete=models.CASCADE)
+    date = models.DateField()
+    description = models.CharField(max_length=255)
+    value = models.FloatField(default=0)
+    user = models.ForeignKey(User, on_delete=models.PROTECT)
+
+    def __str__(self):
+        return self.description
+
+    class Meta:
+        ordering = ['date']
+
+
 class Index(models.Model):
     """
     Indice financeiro utilizado para cálculos de rendimento.

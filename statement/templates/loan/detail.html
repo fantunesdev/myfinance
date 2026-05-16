@@ -1,0 +1,87 @@
+{% extends "index.html" %}
+{% load custom_filters %}
+{% load custom_tags %}
+
+    {% block title %}
+        {% spaceless %}
+            {% if 'remover' in request.path %}
+                Excluir Empréstimo
+            {% else %}
+                Detalhar Empréstimo
+            {% endif %}
+        {% endspaceless %}
+    {% endblock %}
+
+    {% block content %}
+        <div class="box box-primary">
+            <form method="post">
+                <div class="box-title">
+                    <h3>
+                    {% spaceless %}
+                        {% if 'remover' in request.path %}
+                            Atenção! Você está prestes a excluir {{ instance.description }}. Esta operação é irreversível.
+                        {% else %}
+                            {{ instance.description }}
+                        {% endif %}
+                    {% endspaceless %}
+                    </h3>
+                </div>
+                <div class="box-body">
+                    <p style="font-size: 18px;">Descrição: <b>{{ instance.description }}</b></p>
+                    <p style="font-size: 18px;">Status: <b>{{ instance.get_status_display }}</b></p>
+                    <p style="font-size: 18px;">Saldo: <b>{{ balance|to_reais }}</b></p>
+
+                    <br><br>
+                    <a href="{% url 'create_loan_entry' %}?loan={{ instance.id }}"><input type="button" value="Cadastrar Lançamento" class="btn btn-primary"></a>
+                    <table class="table" id="statement-table">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Descrição</th>
+                                <th>Valor</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for entry in entries %}
+                            <tr>
+                                <td>{{ entry.date | date:"d/m/Y" }}</td>
+                                <td>{{ entry.description }}</td>
+                                <td>{{ entry.value | to_reais }}</td>
+                                <td>
+                                    <a href="{% url 'detail_loan_entry' entry.id %}"><i class="fa-solid fa-file-lines action-icon"></i></a>
+                                    <a href="{% url 'update_loan_entry' entry.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
+                                    <a href="{% url 'delete_loan_entry' entry.id %}"><i class="fa-solid fa-trash action-icon"></i></a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" style="text-align: center; padding: 20px;">Nenhum lançamento registrado ainda</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <br>
+                    {% if 'remover' in request.path %}
+                    <div class="btn-danger">
+                        <p>
+                        {% csrf_token %}
+                        {{ exclusion_form }}
+                        Sim, desejo excluir e estou ciente de que esta operação é irreversível.
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="box-footer">
+                    <a href="{{request.META.HTTP_REFERER}}"><input type="button" value="Voltar" class="btn btn-primary"></a>
+                    {% if 'remover' in request.path %}
+                    {% csrf_token %}
+                    <input type="submit" value="Excluir" class="btn btn-danger">
+                    {% elif instance.status == 'active' %}
+                    <a href="{% url 'update_loan' instance.id %}" class="btn btn-primary">Editar</a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+
+    {% endblock content %}
