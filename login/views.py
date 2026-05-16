@@ -135,7 +135,7 @@ def get_profile(request):
         except Exception:
             appcfg_enabled = False
 
-        transaction_classifier_enabled = appcfg_enabled and (ENVIRONMENT != 'development')
+        transaction_classifier_enabled = appcfg_enabled
 
         if transaction_classifier_enabled:
             microservice_client = TransactionClassifierClient(request.user)
