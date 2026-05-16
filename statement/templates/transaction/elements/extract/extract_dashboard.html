@@ -33,8 +33,8 @@
                         <b class="font-16 green">{{ dashboard.difference | to_reais }}</b>
                         {% endif %}
                     </div>
-                    <a href="{% url 'get_fixed_transactions_by_year_and_month' year_month|date:'Y' year_month|date:'m' %}">
-                        <div class="fixed">
+                    <a class="fixed" href="{% url 'get_fixed_transactions_by_year_and_month' year_month|date:'Y' year_month|date:'m' %}">
+                        <div>
                             <h3>Gastos Fixos</h3>
                             <b class="font-16">{{ dashboard.fixed | to_reais }}</b>
                         </div>
