@@ -78,15 +78,15 @@ export function setURLs(transaction) {
 
     if (transaction.installment) {
         urls = [
-            `/parcelamento/${transaction.installment}/`,
-            `/parcelamento/editar/${transaction.installment}`,
-            `/parcelamento/remover/${transaction.installment}`,
+            `/relatorio_financeiro/parcelamento/${transaction.installment}/`,
+            `/relatorio_financeiro/parcelamento/editar/${transaction.installment}/`,
+            `/relatorio_financeiro/parcelamento/remover/${transaction.installment}/`,
         ];
     } else {
         urls = [
-            `/movimentacao/${transaction.id}/`,
-            `/movimentacao/editar/${transaction.id}`,
-            `/movimentacao/remover/${transaction.id}`,
+            `/relatorio_financeiro/${transaction.id}/`,
+            `/relatorio_financeiro/editar/${transaction.id}/`,
+            `/relatorio_financeiro/remover/${transaction.id}`,
         ];
     }
     return urls;

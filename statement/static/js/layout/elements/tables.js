@@ -46,9 +46,12 @@ function createRow(row, type, data, anchors) {
         row.appendChild(column);
     }
     if (anchors) {
+        const actionsColumn = document.createElement(type);
+        actionsColumn.classList.add('no-wrap');
         for (let anchor of anchors) {
-            row.appendChild(anchor);
+            actionsColumn.appendChild(anchor);
         }
+        row.appendChild(actionsColumn);
     }
     return row;
 }
