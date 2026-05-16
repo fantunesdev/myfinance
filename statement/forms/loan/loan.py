@@ -10,8 +10,15 @@ class LoanForm(BaseForm):
         fields = [
             'description',
             'status',
+            'notes',
         ]
         widgets = {
             'description': forms.TextInput(),
             'status': forms.Select(),
+            'notes': forms.Textarea(
+                attrs={
+                    'class': 'form-control textarea',
+                    'rows': 6,
+                },
+            ),
         }

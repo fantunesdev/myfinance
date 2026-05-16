@@ -86,6 +86,8 @@
                                             <td>
                                                 {% if key == 'created_at' %}
                                                     {{ value|date:"d/m/Y" }}
+                                                {% elif key == 'balance' %}
+                                                    {{ value|to_reais }}
                                                 {% else %}
                                                     {{ value }}
                                                 {% endif %}

@@ -71,4 +71,10 @@ def bool_to_portuguese(boolean):
 @register.filter
 def get_fields(instance):
     """Retorna uma lista de tuplas (campo, valor) da instância do modelo."""
-    return [(field.name, getattr(instance, field.name)) for field in instance._meta.fields]
+    fields = [(field.name, getattr(instance, field.name)) for field in instance._meta.fields]
+    properties = [
+        (name, getattr(instance, name))
+        for name, attr in vars(type(instance)).items()
+        if isinstance(attr, property)
+    ]
+    return fields + properties

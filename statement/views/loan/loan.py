@@ -20,8 +20,8 @@ class LoanView(BaseView):
     model = Loan
     service = LoanService
     redirect_url = reverse_lazy('get_loans_by_status', args=['ativos'])
-    column_names = ['Descrição', 'Status']
-    list_fields = ['description', 'status']
+    column_names = ['Descrição', 'Saldo']
+    list_fields = ['description', 'balance']
 
     def __init__(self):
         super().__init__()

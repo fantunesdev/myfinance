@@ -346,6 +346,14 @@ class FixedExpenses(models.Model):
     value = models.FloatField(default=0)
     user = models.ForeignKey(User, on_delete=models.PROTECT)
 
+    @property
+    def balance(self):
+        """Retorna o saldo atual do empréstimo."""
+        if not self.pk:
+            return 0.0
+        total = self.entries.aggregate(total=models.Sum('value'))['total']
+        return total if total is not None else 0.0
+
     def __str__(self):
         return self.description
 
@@ -440,6 +448,7 @@ class Loan(models.Model):
     Atributos:
         description (CharField): Descrição do empréstimo.
         status (CharField): Status do empréstimo (ativo ou inativo).
+        notes (TextField): Anotações sobre o empréstimo (opcional).
         user (ForeignKey): Usuário que possui o empréstimo.
     """
 
@@ -450,6 +459,7 @@ class Loan(models.Model):
 
     description = models.CharField(max_length=70)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active')
+    notes = models.TextField(blank=True, verbose_name='Anotações')
     user = models.ForeignKey(User, on_delete=models.PROTECT)
 
     def __str__(self):

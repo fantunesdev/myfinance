@@ -30,6 +30,12 @@
                     <p style="font-size: 18px;">Descrição: <b>{{ instance.description }}</b></p>
                     <p style="font-size: 18px;">Status: <b>{{ instance.get_status_display }}</b></p>
                     <p style="font-size: 18px;">Saldo: <b>{{ balance|to_reais }}</b></p>
+                    {% if instance.notes %}
+                    <p style="font-size: 18px;">Anotações:</p>
+                    <div class="box-observation">
+                        {{ instance.notes | linebreaks }}
+                    </div>
+                    {% endif %}
 
                     <br><br>
                     <a href="{% url 'create_loan_entry' %}?loan={{ instance.id }}"><input type="button" value="Cadastrar Lançamento" class="btn btn-primary"></a>
