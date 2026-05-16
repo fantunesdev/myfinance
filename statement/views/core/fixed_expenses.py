@@ -6,6 +6,7 @@ from statement.models import FixedExpenses
 from statement.services.core.fixed_expenses import FixedExpensesService
 from statement.services.core.transaction import TransactionService
 from statement.utils.datetime import DateTimeUtils
+from statement.views.base_view import BaseView
 from statement.views.core.transaction import TransactionView
 
 
@@ -54,5 +55,9 @@ class FixedExpensesView(TransactionView):
         return self._render(request, None, 'transaction/list.html', specific_context)
 
     def create(self, request, id=None):
-        """Wrapper to call TransactionView.create with a default type for fixed expenses."""
-        return super().create(request, type='saida', id=id)
+        """Usa o fluxo CRUD padrão; despesa fixa não tem o campo type de Transaction."""
+        return BaseView.create(self, request, id=id)
+
+    def _set_form(self, request, instance):
+        """Usa a assinatura padrão do ModelForm, sem injetar request.user como argumento."""
+        return BaseView._set_form(self, request, instance)
