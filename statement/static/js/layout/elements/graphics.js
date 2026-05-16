@@ -66,15 +66,17 @@ function handleBarClick(event, elements) {
             labelClicked = chart.data.labels[clickedIndex],
             barChartLevel = sessionStorage.getItem('bar_chart_level');
 
-        sessionStorage.setItem('bar_label_clicked', labelClicked);
-
-        if (barChartLevel == 'categories') {
-            updateBarChart(chart);
+        if (barChartLevel !== 'categories') {
+            return;
         }
+
+        sessionStorage.setItem('bar_label_clicked', labelClicked);
         sessionStorage.setItem('bar_chart_level', 'subcategories');
-    } else {
         updateBarChart(chart);
+    } else {
+        sessionStorage.removeItem('bar_label_clicked');
         sessionStorage.setItem('bar_chart_level', 'categories');
+        updateBarChart(chart);
     }
 }
 

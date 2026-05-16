@@ -50,6 +50,13 @@ export async function updateBarChart(barChart) {
                 var expenses = await subcategoryData.setSubcategoryDataset(category.id);
             }
         }
+
+        if (!expenses) {
+            sessionStorage.removeItem('bar_label_clicked');
+            sessionStorage.setItem('bar_chart_level', 'categories');
+            const report = categoryData.setCategoriesReport(transactions, categories);
+            expenses = report.expenses;
+        }
     } else {
         const categories = JSON.parse(sessionStorage.getItem('categories')),
             report = categoryData.setCategoriesReport(transactions, categories);
@@ -199,8 +206,9 @@ function convertDbDateForDayMonthYearDate(date) {
 
 const resetDashboardButton = document.querySelector('#reset-dashboard-button');
 resetDashboardButton.addEventListener('click', () => {
-    updateBarChart(barChart);
+    sessionStorage.removeItem('bar_label_clicked');
     sessionStorage.setItem('bar_chart_level', 'categories');
+    updateBarChart(barChart);
 });
 
 let barChart = await draw();
