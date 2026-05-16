@@ -370,7 +370,9 @@ class Dream(models.Model):
         description (CharField): Descrição do sonho.
         target_value (FloatField): Valor alvo do sonho.
         limit_date (DateField): Data limite para realizar o sonho (opcional).
+        completion_date (DateField): Data de conclusão do sonho (opcional).
         status (CharField): Status do sonho (ativo, pausado, concluído, cancelado).
+        notes (TextField): Anotações sobre o sonho (opcional).
         user (ForeignKey): Usuário que possui o sonho.
     """
 
@@ -384,7 +386,9 @@ class Dream(models.Model):
     description = models.CharField(max_length=70)
     target_value = models.FloatField(default=0.0)
     limit_date = models.DateField(null=True, blank=True)
+    completion_date = models.DateField(null=True, blank=True, verbose_name='Data de conclusão')
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active')
+    notes = models.TextField(blank=True, verbose_name='Anotações')
     user = models.ForeignKey(User, on_delete=models.PROTECT)
 
     @property

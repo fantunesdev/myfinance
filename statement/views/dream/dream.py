@@ -51,8 +51,40 @@ class DreamView(BaseView):
             dreams = self.service.get_cancelled_dreams(request.user)
         else:
             raise Http404('Status inválido')
-        specific_content = {'instances': dreams, 'dream_status': status}
+        specific_content = {
+            'instances': dreams,
+            'dream_status': status,
+            'completed_dream_groups': self._group_completed_dreams_by_year(dreams) if status == 'realizados' else [],
+        }
         return self._render(request, None, 'dream/list.html', specific_content)
+
+    def _group_completed_dreams_by_year(self, dreams):
+        """
+        Agrupa sonhos realizados pelo ano da data de conclusão.
+        """
+        groups_by_year = {}
+        for dream in dreams:
+            year = dream.completion_date.year if dream.completion_date else None
+            groups_by_year.setdefault(year, []).append(dream)
+
+        sorted_years = sorted((year for year in groups_by_year if year), reverse=True)
+        grouped_dreams = [
+            {
+                'title': year,
+                'instances': groups_by_year[year],
+            }
+            for year in sorted_years
+        ]
+
+        if None in groups_by_year:
+            grouped_dreams.append(
+                {
+                    'title': 'Sem data de conclusão',
+                    'instances': groups_by_year[None],
+                }
+            )
+
+        return grouped_dreams
 
     def _add_context_on_templatetags(self, request, instance):
         """

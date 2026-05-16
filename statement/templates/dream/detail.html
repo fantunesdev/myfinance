@@ -35,8 +35,17 @@
                     <p style="font-size: 18px;">Valor Restante: <b>{% get_remaining_value_for_dream instance.id instance.target_value request.user %}</b></p>
                     <p style="font-size: 18px;">Progresso: <b>{{ instance.progress_percentage|floatformat:1 }}%</b></p>
                     <p style="font-size: 18px;">Data Limite: <b>{{ instance.limit_date }}</b></p>
+                    {% if instance.completion_date %}
+                    <p style="font-size: 18px;">Data de Conclusão: <b>{{ instance.completion_date }}</b></p>
+                    {% endif %}
                     <p style="font-size: 18px;">Meses Restantes: <b>{% calculate_remaining_months instance %}</b></p>
                     <p style="font-size: 18px;">Valor das Parcelas: <b>{% calcule_remaining_installment_value instance.id instance.target_value instance.limit_date request.user %}</b></p>
+                    {% if instance.notes %}
+                    <p style="font-size: 18px;">Anotações:</p>
+                    <div class="box-observation">
+                        {{ instance.notes | linebreaks }}
+                    </div>
+                    {% endif %}
 
                     <br><br>
                     <a href="{% url 'create_transaction' 'saida' %}?dream={{ instance.id }}"><input type="button" value="Cadastrar Aporte" class="btn btn-primary"></a>

@@ -26,6 +26,44 @@
                 <h3 class="box-title">Sonhos</h3>
             </div>
             <div class="box-body" id="statement-box">
+                <a href="{% url urls.create %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
+                {% if dream_status == 'realizados' %}
+                {% for group in completed_dream_groups %}
+                <h4>{{ group.title }}</h4>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Descrição</th>
+                            <th>Valor Total</th>
+                            <th>Acumulado</th>
+                            <th>Desconto</th>
+                            <th>Data Limite</th>
+                            <th>Data de Conclusão</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for instance in group.instances %}
+                        <tr>
+                            <td>{{ instance.description }}</td>
+                            <td>{{ instance.target_value | to_reais }}</td>
+                            <td>{% get_cumulative_total_for_dream instance.id request.user.id %}</td>
+                            <td>{% get_remaining_value_for_dream instance.id instance.target_value request.user.id %}</td>
+                            <td>{{ instance.limit_date | date:'d/m/Y' }}</td>
+                            <td>{{ instance.completion_date | date:'d/m/Y' }}</td>
+                            <td>
+                                <a href="{% url urls.detail instance.id %}"><i class="fa-solid fa-file-lines action-icon"></i></a>
+                                <a href="{% url urls.update instance.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
+                                <a href="{% url urls.delete instance.id %}"><i class="fa-solid fa-trash action-icon"></i></a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% empty %}
+                <p class="mt-30 font-14">Nenhum sonho realizado encontrado.</p>
+                {% endfor %}
+                {% else %}
                 <table class="table" id="statement-table">
                     <thead>
                         <tr>
@@ -40,7 +78,6 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <a href="{% url urls.create %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
                         {% for instance in instances %}
                         <tr>
                             <td>{{ instance.description }}</td>
@@ -66,6 +103,7 @@
                         {% endif %}
                     </tbody>
                 </table>
+                {% endif %}
             </div>
             <div class="box-footer">
                 <span>Total de itens listados: {{ instances.count }}</span>

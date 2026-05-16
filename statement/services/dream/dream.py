@@ -37,7 +37,7 @@ class DreamService(BaseService):
         """
         Retorna todos os sonhos concluídos de um usuário.
         """
-        return Dream.objects.filter(user=user, status='completed')
+        return Dream.objects.filter(user=user, status='completed').order_by('-completion_date', 'description')
 
     @classmethod
     def get_cancelled_dreams(cls, user):

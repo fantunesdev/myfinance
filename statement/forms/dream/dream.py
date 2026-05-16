@@ -13,7 +13,9 @@ class DreamForm(BaseForm):
             'description',
             'target_value',
             'limit_date',
+            'completion_date',
             'status',
+            'notes',
         ]
         widgets = {
             'description': forms.TextInput(),
@@ -26,5 +28,18 @@ class DreamForm(BaseForm):
                     'class': 'form-control date-input',
                 },
             ),
+            'completion_date': forms.DateInput(
+                format='%Y-%m-%d',
+                attrs={
+                    'type': 'date',
+                    'class': 'form-control date-input',
+                },
+            ),
             'status': forms.Select(),
+            'notes': forms.Textarea(
+                attrs={
+                    'class': 'form-control textarea',
+                    'rows': 6,
+                },
+            ),
         }
