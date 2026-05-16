@@ -377,7 +377,7 @@ class Dream(models.Model):
     STATUS_CHOICES = (
         ('active', 'Ativo'),
         ('paused', 'Pausado'),
-        ('completed', 'Concluído'),
+        ('completed', 'Realizado'),
         ('cancelled', 'Cancelado'),
     )
 

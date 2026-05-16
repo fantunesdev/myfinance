@@ -43,11 +43,15 @@ class DreamView(BaseView):
         """
         if status == 'ativos':
             dreams = self.service.get_active_dreams(request.user)
-        elif status == 'inativos':
-            dreams = self.service.get_past_dreams(request.user)
+        elif status == 'realizados':
+            dreams = self.service.get_completed_dreams(request.user)
+        elif status == 'pausados':
+            dreams = self.service.get_paused_dreams(request.user)
+        elif status == 'cancelados':
+            dreams = self.service.get_cancelled_dreams(request.user)
         else:
             raise Http404('Status inválido')
-        specific_content = {'instances': dreams}
+        specific_content = {'instances': dreams, 'dream_status': status}
         return self._render(request, None, 'dream/list.html', specific_content)
 
     def _add_context_on_templatetags(self, request, instance):

@@ -6,6 +6,20 @@
     {% block title %}Sonhos{% endblock %}
 
     {% block content %}
+        <div class="mb-15">
+            <a href="{% url 'get_dreams_by_status' 'ativos' %}" class="btn {% if dream_status == 'ativos' %}btn-primary{% else %}btn-info{% endif %}">
+                Ativos
+            </a>
+            <a href="{% url 'get_dreams_by_status' 'realizados' %}" class="btn {% if dream_status == 'realizados' %}btn-primary{% else %}btn-info{% endif %}">
+                Realizados
+            </a>
+            <a href="{% url 'get_dreams_by_status' 'pausados' %}" class="btn {% if dream_status == 'pausados' %}btn-primary{% else %}btn-info{% endif %}">
+                Pausados
+            </a>
+            <a href="{% url 'get_dreams_by_status' 'cancelados' %}" class="btn {% if dream_status == 'cancelados' %}btn-primary{% else %}btn-info{% endif %}">
+                Cancelados
+            </a>
+        </div>
         
         <div class="box box-primary">
             <div class="box-header">
@@ -43,18 +57,18 @@
                             </td>
                         </tr>
                         {% endfor %}
+                        {% if dream_status == 'ativos' %}
+                        <tr>
+                            <td colspan="6"><strong>Total</strong></td>
+                            <td><strong>{% total_remaining_installment_value_for_dreams instances %}</strong></td>
+                            <td></td>
+                        </tr>
+                        {% endif %}
                     </tbody>
                 </table>
-                {% if 'inativos' in request.path %}
-                    <a href="{% url 'get_dreams' %}" class="decoration-none"><p class="mt-30 font-14">Ver todos</p></a>
-                {% elif 'todos' in request.path %}
-                    <a href="{% url 'get_dreams_by_status' 'ativos' %}" class="decoration-none"><p class="mt-30 font-14">Ver ativos</p></a>
-                {% else %}
-                    <a href="{% url 'get_dreams_by_status' 'inativos' %}" class="decoration-none"><p class="mt-30 font-14">Ver inativos</p></a>
-                {% endif %}
             </div>
             <div class="box-footer">
-                <span>Total de itens listados: {{ dreams.count }}</span>
+                <span>Total de itens listados: {{ instances.count }}</span>
             </div>
         </div>
     {% endblock %}
