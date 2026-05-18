@@ -10,6 +10,7 @@ from api.views.base_view import BaseView
 from statement.models import Notification
 from statement.services.core.card import CardService
 from statement.services.core.notification import NotificationService
+from statement.utils.text import sanitize_utf8mb3
 from statement.views.core.notification import NotificationView as StatementView
 
 
@@ -48,8 +49,13 @@ class NotificationView(BaseView):
         Se fornecido, tenta parsear a data e atribuí-la antes de salvar a instância.
         """
         # Reaproveita a lógica de form do BaseView, mas define created_at manualmente
+        data = request.data.copy()
+        for field in ('app', 'title', 'message'):
+            if field in data:
+                data[field] = sanitize_utf8mb3(data[field])
+
         form_class = modelform_factory(self.model, exclude=['user'])
-        form = form_class(request.data)
+        form = form_class(data)
 
         if not form.is_valid():
             return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -75,7 +81,7 @@ class NotificationView(BaseView):
             pass
 
         # Procura por campos de data no payload (client pode enviar 'created_at' ou 'date')
-        raw_date = request.data.get('created_at') or request.data.get('date')
+        raw_date = data.get('created_at') or data.get('date')
         if raw_date:
             # Tenta parse seguro com parse_datetime, caindo para formato comum se necessário
             dt = parse_datetime(raw_date)
