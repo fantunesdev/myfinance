@@ -1,9 +1,83 @@
 import * as services from '../data/services.js';
 
-const notificationRows = document.querySelector('#section-notifications-import #notification-rows-section');
 const checkboxCheckAllNotifications = document.querySelector('#checkall-notifications');
 const sendNotificationsBtn = document.querySelector('#send-notifications-btn');
 const radioImportNotifications = document.querySelector('#import-type-notifications');
+
+/**
+ * Retorna o tbody usado para renderizar as notificações de importação.
+ *
+ * @returns {HTMLTableSectionElement|null} O container das linhas de notificação, se existir.
+ */
+function getNotificationRowsContainer() {
+    return document.querySelector('#section-notifications-import #notification-rows-section')
+        || document.querySelector('#notification-rows-section')
+        || document.querySelector('#notification-rows-card');
+}
+
+/**
+ * Retorna as notificações disponíveis para importação, considerando os nomes usados nas telas existentes.
+ *
+ * @returns {array} Lista de notificações convertidas em transações.
+ */
+function getNotificationsForImport() {
+    return (window.myFinance && (window.myFinance.notifications || window.myFinance.importedTransactions)) || [];
+}
+
+/**
+ * Retorna a tabela onde ficam o checkbox "marcar todos" e as linhas de notificações.
+ *
+ * @returns {HTMLTableElement|null} A tabela de notificações, se existir.
+ */
+function getNotificationsTable() {
+    const notificationRows = getNotificationRowsContainer();
+    return (notificationRows && notificationRows.closest('table'))
+        || (checkboxCheckAllNotifications && checkboxCheckAllNotifications.closest('table'));
+}
+
+/**
+ * Retorna somente as linhas selecionáveis da tabela de notificações.
+ *
+ * @returns {HTMLTableRowElement[]} Linhas com checkbox, excluindo cabeçalhos de agrupamento.
+ */
+function getNotificationSelectionRows() {
+    const table = getNotificationsTable();
+    if (!table) return [];
+
+    return Array.from(table.querySelectorAll('tbody tr')).filter((row) => (
+        !row.classList.contains('group-header')
+        && row.querySelector('input[type="checkbox"]')
+    ));
+}
+
+/**
+ * Marca ou desmarca uma linha de notificação e atualiza seu estado visual.
+ *
+ * @param {HTMLTableRowElement} row - Linha de notificação.
+ * @param {boolean} checked - Define se o checkbox da linha deve ficar marcado.
+ */
+function setNotificationRowChecked(row, checked) {
+    const checkbox = row.querySelector('input[type="checkbox"]');
+    if (!checkbox) return;
+
+    checkbox.checked = checked;
+    row.classList.toggle('row-disabled', !checked);
+}
+
+/**
+ * Atualiza o estado do checkbox "marcar todos" com base nas linhas selecionáveis.
+ */
+function updateCheckAllNotificationsState() {
+    if (!checkboxCheckAllNotifications) return;
+
+    const checkboxes = getNotificationSelectionRows()
+        .map((row) => row.querySelector('input[type="checkbox"]'))
+        .filter(Boolean);
+    const checkedCount = checkboxes.filter((checkbox) => checkbox.checked).length;
+
+    checkboxCheckAllNotifications.checked = checkboxes.length > 0 && checkedCount === checkboxes.length;
+    checkboxCheckAllNotifications.indeterminate = checkedCount > 0 && checkedCount < checkboxes.length;
+}
 
 /**
  * Renderiza a tabela de notificações para importação.
@@ -26,7 +100,9 @@ async function renderNotificationsBox(notifications) {
         console.warn('Erro ao agrupar notificações', e);
     }
 
-    const notificationRows = document.querySelector('#section-notifications-import #notification-rows-section');
+    const notificationRows = getNotificationRowsContainer();
+    if (!notificationRows) return;
+
     notificationRows.innerHTML = '';
     notificationRows.style.display = 'table-row-group';
     const section = document.getElementById('section-notifications-import');
@@ -105,6 +181,8 @@ async function renderNotificationsBox(notifications) {
             table.appendChild(tbody);
         }
     }
+
+    updateCheckAllNotificationsState();
 }
 
 /**
@@ -126,6 +204,7 @@ function getTransactionFields(transaction, categories, subcategories) {
                 checkbox.id = transaction.id;
                 checkbox.addEventListener('change', () => {
                     row.classList.toggle('row-disabled', !checkbox.checked);
+                    updateCheckAllNotificationsState();
                 });
                 if (!checkbox.checked) {
                     row.classList.add('row-disabled');
@@ -468,11 +547,11 @@ async function importNotifications(notifications) {
  */
 function getSelectedNotificationIds() {
     const ids = [];
-    const rows = document.querySelectorAll('#section-notifications-import tbody.generated-group tr');
+    const rows = getNotificationSelectionRows();
     rows.forEach((row) => {
-        if (row.classList.contains('group-header')) return; // skip header rows
         const checkbox = row.querySelector('input[type="checkbox"]');
-        if (checkbox && checkbox.checked) ids.push(parseInt(checkbox.id, 10));
+        const id = checkbox ? parseInt(checkbox.id, 10) : NaN;
+        if (checkbox && checkbox.checked && !Number.isNaN(id)) ids.push(id);
     });
     return ids;
 }
@@ -542,25 +621,16 @@ async function createNewResource(model, instance) {
 }
 
 // Event listeners - apenas adiciona se os elementos existem
-if (checkboxCheckAllNotifications && notificationRows) {
+if (checkboxCheckAllNotifications) {
     checkboxCheckAllNotifications.addEventListener('change', function () {
-        for (const row of notificationRows.children) {
-            const checkbox = row.children[0].children[0];
-            checkbox.checked = this.checked;
-
-            // Adiciona ou remove a classe 'row-disabled' com base no estado do checkbox
-            if (checkbox.checked) {
-                row.classList.remove('row-disabled');
-            } else {
-                row.classList.add('row-disabled');
-            }
-        }
+        getNotificationSelectionRows().forEach((row) => setNotificationRowChecked(row, this.checked));
+        updateCheckAllNotificationsState();
     });
 }
 
 if (sendNotificationsBtn) {
     sendNotificationsBtn.addEventListener('click', () => {
-        const notifications = window.myFinance.notifications;
+        const notifications = getNotificationsForImport();
         importNotifications(notifications);
     });
 }
@@ -575,7 +645,7 @@ if (radioImportNotifications) {
             const fileSection = document.getElementById('section-file-import');
             fileSection.classList.add('toggled');
             // Renderiza as notificações
-            const notifications = window.myFinance.notifications;
+            const notifications = getNotificationsForImport();
             await renderNotificationsBox(notifications);
         }
     });
@@ -584,16 +654,23 @@ if (radioImportNotifications) {
 // Inicializa a renderização das notificações assim que o módulo carrega
 (async () => {
     const radioImportNotifications = document.querySelector('#import-type-notifications');
-    const notifications = window.myFinance ? window.myFinance.notifications : [];
+    const notifications = getNotificationsForImport();
 
     // Se o radio de importação por notificações estiver selecionado,
     // sempre exibe a seção de notificações (mesmo que esteja vazia) e
     // oculta a seção de importação por arquivo. Só renderiza as linhas
     // quando houver notificações.
+    if (!radioImportNotifications && getNotificationRowsContainer()) {
+        if (notifications && notifications.length > 0) {
+            await renderNotificationsBox(notifications);
+        }
+        return;
+    }
+
     if (radioImportNotifications && radioImportNotifications.checked) {
         const section = document.getElementById('section-notifications-import');
         const fileSection = document.getElementById('section-file-import');
-        const notificationRows = document.getElementById('notification-rows-section');
+        const notificationRows = getNotificationRowsContainer();
 
         if (section) {
             section.classList.remove('toggled');
