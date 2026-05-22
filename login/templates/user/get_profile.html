@@ -121,6 +121,32 @@
 
     <div class="box box-primary">
         <div class="box-header">
+            <h3 class="box-title">Combustível</h3>
+        </div>
+        <div class="box-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Acompanhar consumo</th>
+                        <th>Subcategoria</th>
+                        <th style="width: 250px; white-space: nowrap;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{{ profile.configs.enable_fuel_tracking|handle_boolean }}</td>
+                        <td>{{ profile.configs.fuel_subcategory|default_if_none:'-' }}</td>
+                        <td><a href="{% url 'update_fuel_tracking' %}"><i class="fa-solid fa-pen-to-square action-icon cursor-pointer"></i></a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="box-footer">
+        </div>
+    </div>
+
+    <div class="box box-primary">
+        <div class="box-header">
             <h3 class="box-title">Inteligências Artificiais</h3>
         </div>
         <div class="box-body">

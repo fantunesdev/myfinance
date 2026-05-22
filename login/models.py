@@ -37,6 +37,13 @@ class Profile(models.Model):
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     use_next_month = models.BooleanField(default=False)
+    enable_fuel_tracking = models.BooleanField(default=False)
+    fuel_subcategory = models.ForeignKey(
+        'statement.Subcategory',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
     next_month_day = models.PositiveSmallIntegerField(
         default=10,
         validators=[MinValueValidator(1), MaxValueValidator(31)],
