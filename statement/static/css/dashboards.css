@@ -70,9 +70,33 @@
     vertical-align: middle;
 }
 
+.expenses-category-table th.sortable {
+    cursor: default;
+    white-space: nowrap;
+}
+
+.expenses-category-table th.sortable .sort-btn {
+    cursor: pointer;
+    display: inline-block;
+}
+
 .expenses-category-table .numeric {
     text-align: right;
     white-space: nowrap;
+}
+
+.expenses-category-table .category-cell {
+    max-width: 150px;
+    min-width: 115px;
+    text-align: left;
+}
+
+.expenses-category-table .category-cell i {
+    padding: 10px;
+}
+
+.expenses-category-table img {
+    max-height: 25px;
 }
 
 .expenses-category-table tfoot tr {

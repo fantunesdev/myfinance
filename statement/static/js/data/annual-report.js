@@ -2,6 +2,15 @@ export function setAnnualReport(transactions) {
     const revenues = {};
     const expenses = {};
     const investments = {};
+
+    if (!transactions.length) {
+        return {
+            revenues: revenues,
+            expenses: expenses,
+            investments: investments,
+        };
+    }
+
     const years = transactions.map(t => Number(t.payment_date.split('-')[0]));
     const firstYear = Math.min(...years);
     const lastYear = Math.max(...years);
@@ -13,6 +22,9 @@ export function setAnnualReport(transactions) {
     }
 
     for (const transaction of transactions) {
+        if (!transaction.home_screen) continue;
+        if (transaction.card_number && !transaction.card_number.home_screen) continue;
+
         const year = Number(transaction.payment_date.split('-')[0]);
         const category = getCategory(transaction.category);
 
@@ -22,8 +34,7 @@ export function setAnnualReport(transactions) {
             if (transaction.category == 5) {
                 investments[year] += Number(transaction.value);
             } else {
-                if (category.ignore) continue;
-                if (transaction.card_number && !transaction.card_number.home_screen) continue;
+                if (category && category.ignore) continue;
                 expenses[year] += Number(transaction.value);
             }
         }

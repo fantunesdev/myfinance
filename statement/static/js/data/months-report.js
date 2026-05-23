@@ -11,16 +11,18 @@ export function setMontlyReport(transactions) {
     }
 
     for (const transaction of transactions) {
+        if (!transaction.home_screen) continue;
+        if (transaction.card_number && !transaction.card_number.home_screen) continue;
+
         let [yearInt, monthInt, dayInt] = transaction.payment_date.split('-').map(Number);
         const date = new Date(yearInt, monthInt - 1, dayInt);
         const month = date.getMonth();
         const monthInFull = handleMonth(month);
 
-        if (transaction.type == 'entrada' && transaction.home_screen) {
+        if (transaction.type == 'entrada') {
             revenuesByMont[monthInFull] += transaction.value;
         } else {
             if (transaction.category.id != 5 && !transaction.category.ignore) {
-                if (transaction.card_number && !transaction.card_number.home_screen) continue;
                 expensesByMonth[monthInFull] += transaction.value;
             } else if (transaction.category.id == 5) {
                 investimentsByMonth[monthInFull] += transaction.value;

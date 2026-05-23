@@ -24,9 +24,10 @@ async function drawAnnualStatementChart(select) {
 
     const year = yearSeletct.value;
     const expands = { expand: 'category,card,card_number' };
-    const transactions = await services.getTransactionsByYear(year, expands);
+    const transactions = await services.getTransactionsByYear(year, expands, true);
+    const visibleTransactions = Array.isArray(transactions) ? transactions.filter(isHomeScreenTransaction) : [];
 
-    const monthlyReport = monthsData.setMontlyReport(transactions);
+    const monthlyReport = monthsData.setMontlyReport(visibleTransactions);
     const lineDataset = monthsData.setMonthDataset(monthlyReport[select]);
     const doughnutDataset = monthsData.setDoughnutDataset(monthlyReport);
 
@@ -48,7 +49,10 @@ async function drawAnnualOverviewChart(select) {
 
     const expands = { expand: 'card_number' };
     const transactions = await services.getResource('transactions', expands);
-    const annualReport = annualData.setAnnualReport(transactions);
+    await services.getResource('categories');
+
+    const visibleTransactions = Array.isArray(transactions) ? transactions.filter(isHomeScreenTransaction) : [];
+    const annualReport = annualData.setAnnualReport(visibleTransactions);
     const lineDataset = annualData.setAnnualDataset(annualReport[select]);
     const doughnutDataset = monthsData.setDoughnutDataset(annualReport);
 
@@ -114,17 +118,22 @@ async function drawExpensesCategoryChart() {
 
     const year = yearSeletct.value;
     const expands = { expand: 'category,subcategory,card,card_number,account' };
-    const transactions = await services.getTransactionsByYear(year, expands);
+    const transactions = await services.getTransactionsByYear(year, expands, true);
     const categories = await services.getResource('categories');
+    const visibleTransactions = Array.isArray(transactions) ? transactions.filter(isHomeScreenTransaction) : [];
 
     // Normalizar IDs sem perder os nomes usados no detalhe da tabela.
-    const normalizedTransactions = transactions.map(t => ({
+    const normalizedTransactions = visibleTransactions.map(t => ({
         ...t,
         category: getResourceId(t.category),
         category_name: getResourceDescription(t.category),
+        category_color: getCategoryColor(t.category),
+        category_icon: getCategoryIcon(t.category),
         subcategory: getResourceId(t.subcategory),
         subcategory_name: getResourceDescription(t.subcategory),
         card_name: getPaymentDescription(t),
+        payment_icon: getPaymentIcon(t),
+        payment_url: getPaymentUrl(t),
     }));
 
     const report = categoryData.setCategoriesReport(normalizedTransactions, categories);
@@ -364,6 +373,7 @@ function renderExpensesCategoryTable(itemName, itemId, itemType = 'categories') 
     if (tableContainer) {
         tableContainer.innerHTML = tableHTML;
         tableContainer.style.display = 'block';
+        initializeExpensesCategoryTableSort(tableContainer);
     }
 }
 
@@ -387,15 +397,16 @@ function generateExpensesTableHTML(transactions, categoryName) {
                 <h4>Transações de <strong>${escapeHtml(categoryName)}</strong> (${transactions.length})</h4>
                 <strong>${formatCurrency(totalValue)}</strong>
             </div>
-            <table class="table table-striped">
+            <table class="table" id="expenses-category-statement-table">
                 <thead>
                     <tr>
-                        <th>Data</th>
-                        <th>Descrição</th>
-                        <th>Categoria</th>
-                        <th>Subcategoria</th>
-                        <th>Meio de Pagamento</th>
-                        <th class="numeric">Valor</th>
+                        <th class="sortable">Data <span class="sort-btn" data-field="0" role="button" tabindex="0" aria-label="Ordenar"><i class="fa-solid fa-sort"></i></span></th>
+                        <th class="sortable">Banco/Cartão <span class="sort-btn" data-field="1" role="button" tabindex="0" aria-label="Ordenar"><i class="fa-solid fa-sort"></i></span></th>
+                        <th class="sortable">Categoria <span class="sort-btn" data-field="2" role="button" tabindex="0" aria-label="Ordenar"><i class="fa-solid fa-sort"></i></span></th>
+                        <th class="sortable">Sub-Categoria <span class="sort-btn" data-field="3" role="button" tabindex="0" aria-label="Ordenar"><i class="fa-solid fa-sort"></i></span></th>
+                        <th class="sortable">Descrição <span class="sort-btn" data-field="4" role="button" tabindex="0" aria-label="Ordenar"><i class="fa-solid fa-sort"></i></span></th>
+                        <th class="sortable numeric">Valor <span class="sort-btn" data-field="5" role="button" tabindex="0" aria-label="Ordenar"><i class="fa-solid fa-sort"></i></span></th>
+                        <th class="no-wrap">Ações</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -403,13 +414,14 @@ function generateExpensesTableHTML(transactions, categoryName) {
 
     transactions.forEach(transaction => {
         tableHTML += `
-            <tr>
+            <tr style="border-left: solid 3px ${escapeHtml(getTransactionCategoryColor(transaction))}" data-value="${Number(transaction.value || 0)}" data-tx-id="${transaction.id || ''}">
                 <td>${escapeHtml(formatDate(transaction.posted_date))}</td>
-                <td>${escapeHtml(transaction.description || '-')}</td>
-                <td>${escapeHtml(transaction.category_name || getCategoryName(transaction.category) || '-')}</td>
+                <td>${getPaymentCellHTML(transaction)}</td>
+                <td class="category-cell">${getCategoryCellHTML(transaction)}</td>
                 <td>${escapeHtml(transaction.subcategory_name || getSubcategoryName(transaction.subcategory) || '-')}</td>
-                <td>${escapeHtml(transaction.card_name || '-')}</td>
+                <td>${escapeHtml(getTransactionDescription(transaction))}</td>
                 <td class="numeric">${formatCurrency(transaction.value)}</td>
+                <td>${getActionsCellHTML(transaction)}</td>
             </tr>
         `;
     });
@@ -420,6 +432,7 @@ function generateExpensesTableHTML(transactions, categoryName) {
                     <tr>
                         <td colspan="5" class="numeric">TOTAL:</td>
                         <td class="numeric">${formatCurrency(totalValue)}</td>
+                        <td></td>
                     </tr>
                 </tfoot>
             </table>
@@ -427,6 +440,86 @@ function generateExpensesTableHTML(transactions, categoryName) {
     `;
 
     return tableHTML;
+}
+
+function initializeExpensesCategoryTableSort(container) {
+    const table = container.querySelector('#expenses-category-statement-table');
+    if (!table || !table.tBodies.length) return;
+
+    const tbody = table.tBodies[0];
+    const sortButtons = Array.from(table.querySelectorAll('.sort-btn'));
+    const sortState = { index: null, asc: true };
+
+    function getCellValue(row, idx) {
+        if (idx === 5) return Number(row.dataset.value || 0);
+
+        const cell = row.cells[idx];
+        if (!cell) return '';
+
+        if (idx === 0) return getDateSortValue(cell.innerText.trim());
+
+        return cell.innerText.trim().toLowerCase();
+    }
+
+    function sortByColumn(idx) {
+        const asc = sortState.index === idx ? !sortState.asc : true;
+        const rows = Array.from(tbody.rows);
+
+        rows.sort((a, b) => {
+            const valueA = getCellValue(a, idx);
+            const valueB = getCellValue(b, idx);
+
+            if (typeof valueA === 'number' && typeof valueB === 'number') {
+                return asc ? valueA - valueB : valueB - valueA;
+            }
+
+            return asc ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+        });
+
+        for (const row of rows) tbody.appendChild(row);
+
+        sortState.index = idx;
+        sortState.asc = asc;
+
+        sortButtons.forEach(btn => {
+            btn.innerHTML = '<i class="fa-solid fa-arrows-up-down action-icon"></i>';
+            btn.classList.remove('active');
+        });
+
+        const activeBtn = table.querySelector(`.sort-btn[data-field="${idx}"]`);
+        if (activeBtn) {
+            activeBtn.innerHTML = `<i class="fa-solid ${asc ? 'fa-sort-up' : 'fa-sort-down'} action-icon"></i>`;
+            activeBtn.classList.add('active');
+        }
+    }
+
+    sortButtons.forEach(btn => {
+        const onSort = () => {
+            const idx = Number(btn.getAttribute('data-field'));
+            if (Number.isNaN(idx)) return;
+            sortByColumn(idx);
+        };
+
+        btn.addEventListener('click', onSort);
+        btn.addEventListener('keydown', event => {
+            if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
+                event.preventDefault();
+                onSort();
+            }
+        });
+    });
+}
+
+function getDateSortValue(value) {
+    const [day, month, year] = value.split('/').map(Number);
+    return new Date(year || Number(yearSeletct.value), (month || 1) - 1, day || 1).getTime();
+}
+
+function isHomeScreenTransaction(transaction) {
+    if (!transaction.home_screen) return false;
+    if (transaction.card_number && transaction.card_number.home_screen === false) return false;
+
+    return true;
 }
 
 function getResourceId(resource) {
@@ -438,10 +531,20 @@ function getResourceDescription(resource) {
     return resource.description || resource.name || resource.number || '';
 }
 
+function getCategoryColor(category) {
+    if (typeof category !== 'object' || category === null) return '';
+    return category.color || '';
+}
+
+function getCategoryIcon(category) {
+    if (typeof category !== 'object' || category === null) return '';
+    return category.icon || '';
+}
+
 function getPaymentDescription(transaction) {
     const cardDescription = getResourceDescription(transaction.card);
     const cardNumberDescription = getResourceDescription(transaction.card_number);
-    const accountDescription = getResourceDescription(transaction.account);
+    const accountDescription = getResourceDescription(transaction.account) || getNestedValue(transaction.account, ['bank', 'description']);
 
     if (cardDescription && cardNumberDescription) {
         return `${cardDescription} - ${cardNumberDescription}`;
@@ -450,6 +553,30 @@ function getPaymentDescription(transaction) {
     if (accountDescription) return accountDescription;
 
     return transaction.payment_method_display || '-';
+}
+
+function getPaymentIcon(transaction) {
+    const accountIcon = getNestedValue(transaction.account, ['bank', 'icon']) || getNestedValue(transaction.account, ['icon']);
+    const cardIcon = getNestedValue(transaction.card, ['icon']);
+    const cardNumberCardIcon = getNestedValue(transaction.card_number, ['card', 'icon']);
+
+    return accountIcon || cardIcon || cardNumberCardIcon || '';
+}
+
+function getPaymentUrl(transaction) {
+    const year = String(transaction.payment_date || transaction.posted_date || '').split('-')[0];
+    const month = String(transaction.payment_date || transaction.posted_date || '').split('-')[1];
+    const accountId = getResourceId(transaction.account);
+    const cardId = getResourceId(transaction.card) || getNestedValue(transaction.card_number, ['card', 'id']) || getNestedValue(transaction.card_number, ['card']);
+
+    if (accountId && year && month) {
+        return `/relatorio_financeiro/contas/${accountId}/extrato/${year}/${month}/`;
+    }
+    if (cardId && year && month) {
+        return `/relatorio_financeiro/cartoes/${cardId}/fatura/${year}/${month}/`;
+    }
+
+    return '';
 }
 
 function getCategoryName(categoryId) {
@@ -474,6 +601,84 @@ function formatCurrency(value) {
         style: 'currency',
         currency: 'BRL',
     });
+}
+
+function getTransactionCategoryColor(transaction) {
+    return transaction.category_color || getCategoryColorById(transaction.category) || 'transparent';
+}
+
+function getCategoryColorById(categoryId) {
+    const categories = JSON.parse(sessionStorage.getItem('annual_categories') || '[]');
+    const category = categories.find(item => item.id === categoryId);
+    return category ? category.color : '';
+}
+
+function getCategoryIconById(categoryId) {
+    const categories = JSON.parse(sessionStorage.getItem('annual_categories') || '[]');
+    const category = categories.find(item => item.id === categoryId);
+    return category ? category.icon : '';
+}
+
+function getCategoryCellHTML(transaction) {
+    const icon = transaction.category_icon || getCategoryIconById(transaction.category);
+    const name = transaction.category_name || getCategoryName(transaction.category) || '-';
+    const iconHTML = icon ? `<i class="${escapeHtml(icon)}"></i>` : '';
+
+    return `${iconHTML} ${escapeHtml(name)}`;
+}
+
+function getPaymentCellHTML(transaction) {
+    const icon = transaction.payment_icon;
+    const label = getPaymentLabel(transaction);
+    const content = icon ? `<img src="${escapeHtml(icon)}" alt="${escapeHtml(label)}">` : escapeHtml(label);
+    const cardNumberDescription = getResourceDescription(transaction.card_number);
+    const cardNumberHTML = cardNumberDescription ? `<div class="small">${escapeHtml(cardNumberDescription)}</div>` : '';
+
+    if (transaction.payment_url) {
+        return `<a href="${escapeHtml(transaction.payment_url)}">${content}</a>${cardNumberHTML}`;
+    }
+
+    return `${content}${cardNumberHTML}`;
+}
+
+function getPaymentLabel(transaction) {
+    const cardDescription = getResourceDescription(transaction.card);
+    const accountDescription = getResourceDescription(transaction.account) || getNestedValue(transaction.account, ['bank', 'description']);
+
+    return cardDescription || accountDescription || transaction.card_name || '-';
+}
+
+function getTransactionDescription(transaction) {
+    if (!transaction.installments_number) return transaction.description || '-';
+    return `${transaction.description || '-'} (${transaction.paid}/${transaction.installments_number})`;
+}
+
+function getActionsCellHTML(transaction) {
+    if (!transaction.id && !transaction.installment) return '';
+
+    const detailUrl = transaction.installment
+        ? `/relatorio_financeiro/parcelamento/${transaction.installment}/`
+        : `/relatorio_financeiro/${transaction.id}/`;
+    const updateUrl = transaction.installment
+        ? `/relatorio_financeiro/parcelamento/editar/${transaction.installment}/`
+        : `/relatorio_financeiro/editar/${transaction.id}/`;
+    const deleteUrl = transaction.installment
+        ? `/relatorio_financeiro/parcelamento/remover/${transaction.installment}/`
+        : `/relatorio_financeiro/remover/${transaction.id}`;
+
+    return `
+        <a href="${detailUrl}"><i class="fa-solid fa-file-lines action-icon"></i></a>
+        <a href="${updateUrl}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
+        <a href="${deleteUrl}"><i class="fa-solid fa-trash action-icon"></i></a>
+    `;
+}
+
+function getNestedValue(object, path) {
+    if (typeof object !== 'object' || object === null) return '';
+    return path.reduce((value, key) => {
+        if (typeof value !== 'object' || value === null) return '';
+        return value[key] || '';
+    }, object);
 }
 
 function escapeHtml(value) {
