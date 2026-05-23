@@ -14,6 +14,7 @@ const expensesCategoryTab = document.getElementById('expenses-category-tab');
 
 let expensesCategoryBarChart = null;
 let activeDashboardTab = 'annual-statement';
+let dashboardLookups = null;
 
 /**
  * Busca todas as informações para desenhar os gráficos de linhas do demonstrativo anual.
@@ -23,9 +24,8 @@ async function drawAnnualStatementChart(select) {
     await destroyCharts();
 
     const year = yearSeletct.value;
-    const expands = { expand: 'category,subcategory,card,card_number,account' };
-    const transactions = await services.getTransactionsByYear(year, expands, true);
-    await services.getResource('categories');
+    const transactions = await services.getTransactionsByYear(year, false, true);
+    await loadDashboardLookups();
 
     const visibleTransactions = Array.isArray(transactions) ? transactions.filter(isHomeScreenTransaction) : [];
     const normalizedTransactions = normalizeTransactions(visibleTransactions);
@@ -52,9 +52,8 @@ async function drawAnnualStatementChart(select) {
 async function drawAnnualOverviewChart(select) {
     await destroyCharts();
 
-    const expands = { expand: 'card_number' };
-    const transactions = await services.getResource('transactions', expands);
-    await services.getResource('categories');
+    const transactions = await services.getResource('transactions');
+    await loadDashboardLookups();
 
     const visibleTransactions = Array.isArray(transactions) ? transactions.filter(isHomeScreenTransaction) : [];
     const annualReport = annualData.setAnnualReport(visibleTransactions);
@@ -122,9 +121,9 @@ async function drawExpensesCategoryChart() {
     if (expensesCategoryChart) expensesCategoryChart.style.display = 'block';
 
     const year = yearSeletct.value;
-    const expands = { expand: 'category,subcategory,card,card_number,account' };
-    const transactions = await services.getTransactionsByYear(year, expands, true);
-    const categories = await services.getResource('categories');
+    const transactions = await services.getTransactionsByYear(year, false, true);
+    await loadDashboardLookups();
+    const categories = dashboardLookups.categories;
     const visibleTransactions = Array.isArray(transactions) ? transactions.filter(isHomeScreenTransaction) : [];
 
     const normalizedTransactions = normalizeTransactions(visibleTransactions);
@@ -512,19 +511,70 @@ function getDateSortValue(value) {
     return new Date(year || Number(yearSeletct.value), (month || 1) - 1, day || 1).getTime();
 }
 
+async function loadDashboardLookups() {
+    if (dashboardLookups) return dashboardLookups;
+
+    const [categories, subcategories, accounts, cards, banks] = await Promise.all([
+        services.getResource('categories'),
+        services.getResource('subcategories'),
+        services.getResource('accounts'),
+        services.getResource('cards'),
+        services.getResource('banks'),
+    ]);
+
+    dashboardLookups = {
+        categories,
+        subcategories,
+        accounts,
+        cards,
+        banks,
+        categoryById: mapById(categories),
+        subcategoryById: mapById(subcategories),
+        accountById: mapById(accounts),
+        cardById: mapById(cards),
+        bankById: mapById(banks),
+    };
+
+    return dashboardLookups;
+}
+
 function normalizeTransactions(transactions) {
-    return transactions.map(t => ({
-        ...t,
-        category: getResourceId(t.category),
-        category_name: getResourceDescription(t.category),
-        category_color: getCategoryColor(t.category),
-        category_icon: getCategoryIcon(t.category),
-        subcategory: getResourceId(t.subcategory),
-        subcategory_name: getResourceDescription(t.subcategory),
-        card_name: getPaymentDescription(t),
-        payment_icon: getPaymentIcon(t),
-        payment_url: getPaymentUrl(t),
-    }));
+    return transactions.map(t => {
+        const categoryId = getResourceId(t.category);
+        const subcategoryId = getResourceId(t.subcategory);
+        const accountId = getResourceId(t.account);
+        const cardId = getResourceId(t.card);
+        const category = getLookupResource('categoryById', categoryId) || t.category;
+        const subcategory = getLookupResource('subcategoryById', subcategoryId) || t.subcategory;
+        const account = getLookupResource('accountById', accountId) || t.account;
+        const card = getLookupResource('cardById', cardId) || t.card;
+        const bank = getLookupResource('bankById', getResourceId(account && account.bank));
+
+        return {
+            ...t,
+            category: categoryId,
+            category_name: getResourceDescription(category),
+            category_color: getCategoryColor(category),
+            category_icon: getCategoryIcon(category),
+            subcategory: subcategoryId,
+            subcategory_name: getResourceDescription(subcategory),
+            card_name: getPaymentDescription({ ...t, account, card, bank }),
+            payment_icon: getPaymentIcon({ ...t, account, card, bank }),
+            payment_url: getPaymentUrl({ ...t, account, card }),
+        };
+    });
+}
+
+function mapById(resources) {
+    return (resources || []).reduce((map, resource) => {
+        map[resource.id] = resource;
+        return map;
+    }, {});
+}
+
+function getLookupResource(mapName, id) {
+    if (!dashboardLookups || !id) return null;
+    return dashboardLookups[mapName][id] || null;
 }
 
 function getStatementTransactionsBySelect(select) {
@@ -577,7 +627,7 @@ function getCategoryIcon(category) {
 function getPaymentDescription(transaction) {
     const cardDescription = getResourceDescription(transaction.card);
     const cardNumberDescription = getResourceDescription(transaction.card_number);
-    const accountDescription = getResourceDescription(transaction.account) || getNestedValue(transaction.account, ['bank', 'description']);
+    const accountDescription = getResourceDescription(transaction.account) || getResourceDescription(transaction.bank) || getNestedValue(transaction.account, ['bank', 'description']);
 
     if (cardDescription && cardNumberDescription) {
         return `${cardDescription} - ${cardNumberDescription}`;
@@ -589,7 +639,7 @@ function getPaymentDescription(transaction) {
 }
 
 function getPaymentIcon(transaction) {
-    const accountIcon = getNestedValue(transaction.account, ['bank', 'icon']) || getNestedValue(transaction.account, ['icon']);
+    const accountIcon = getNestedValue(transaction.account, ['bank', 'icon']) || getNestedValue(transaction.account, ['icon']) || getNestedValue(transaction.bank, ['icon']);
     const cardIcon = getNestedValue(transaction.card, ['icon']);
     const cardNumberCardIcon = getNestedValue(transaction.card_number, ['card', 'icon']);
 
@@ -685,7 +735,7 @@ function getPaymentCellHTML(transaction) {
 
 function getPaymentLabel(transaction) {
     const cardDescription = getResourceDescription(transaction.card);
-    const accountDescription = getResourceDescription(transaction.account) || getNestedValue(transaction.account, ['bank', 'description']);
+    const accountDescription = getResourceDescription(transaction.account) || getResourceDescription(transaction.bank) || getNestedValue(transaction.account, ['bank', 'description']);
 
     return cardDescription || accountDescription || transaction.card_name || '-';
 }
