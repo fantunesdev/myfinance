@@ -174,12 +174,14 @@ selects.subcategory.addEventListener('change', () => {
     if (selects.subcategory.value == 5) {
         general.toggle('div-fuel');
         selects.price.required = true;
-        selects.km.required = true;
 
         selects.price.addEventListener('keyup', () => {
             selects.observation.value = returnFuelObservation();
         });
         selects.value.addEventListener('keyup', () => {
+            selects.observation.value = returnFuelObservation();
+        });
+        selects.liters.addEventListener('keyup', () => {
             selects.observation.value = returnFuelObservation();
         });
         selects.km.addEventListener('keyup', () => {
@@ -188,8 +190,34 @@ selects.subcategory.addEventListener('change', () => {
     }
 });
 
-selects.value.addEventListener('keyup', twoDigitFloatHandler);
+selects.value.addEventListener('keyup', function(e) {
+    twoDigitFloatHandler.call(this, e);
+    calculateFuelPrice();
+});
 selects.price.addEventListener('keyup', twoDigitFloatHandler);
+selects.liters.addEventListener('keyup', function(e) {
+    twoDigitFloatHandler.call(this, e);
+    calculateFuelPrice();
+});
+
+/**
+ * Calcula o preço por litro automaticamente baseado em Valor / Litros
+ */
+function calculateFuelPrice() {
+    const value = parseFloat(selects.value.value) || 0;
+    const liters = parseFloat(selects.liters.value) || 0;
+    
+    if (value > 0 && liters > 0) {
+        const calculatedPrice = (value / liters).toFixed(2);
+        selects.price.value = calculatedPrice;
+    }
+}
+
+// Adiciona listeners para recalcular o preço quando Valor ou Litros mudam (enquanto digita e ao sair do campo)
+selects.value.addEventListener('input', calculateFuelPrice);
+selects.liters.addEventListener('input', calculateFuelPrice);
+selects.value.addEventListener('change', calculateFuelPrice);
+selects.liters.addEventListener('change', calculateFuelPrice);
 
 const divFuelToggler = document.querySelector('#div-fuel-toggler');
 divFuelToggler.addEventListener('click', () => {
@@ -197,15 +225,17 @@ divFuelToggler.addEventListener('click', () => {
     selects.subcategory.value = 0;
     selects.price.required = false;
     selects.km.required = false;
+    selects.liters.required = false;
 });
 
 function returnFuelObservation() {
-    let price = selects.price.value,
-        km = selects.km.value,
-        value = selects.value.value,
-        liters = (value / price).toFixed(2),
-        kmPerL = (km / liters).toFixed(1),
-        realPerKm = (value / km).toFixed(2);
+    let price = parseFloat(selects.price.value) || 0;
+    let km = parseFloat(selects.km.value) || 0;
+    let value = parseFloat(selects.value.value) || 0;
+    let liters = parseFloat(selects.liters.value) || 0;
+    
+    let kmPerL = liters > 0 ? (km / liters).toFixed(1) : '—';
+    let realPerKm = km > 0 ? (value / km).toFixed(2) : '—';
 
     return `##########  CÁLCULOS DE COMBUSTÍVEL ##########
 
