@@ -38,3 +38,49 @@
 .dashboard a {
     text-decoration: none;
 }
+
+.expenses-category-chart {
+    grid-column: 1 / -1;
+}
+
+#expenses-category-table-container {
+    overflow-x: auto;
+}
+
+.expenses-category-table {
+    border-top: 1px solid #ddd;
+    margin-top: 30px;
+    padding-top: 20px;
+}
+
+.expenses-category-table-header {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 15px;
+}
+
+.expenses-category-table table {
+    width: 100%;
+}
+
+.expenses-category-table th,
+.expenses-category-table td {
+    vertical-align: middle;
+}
+
+.expenses-category-table .numeric {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.expenses-category-table tfoot tr {
+    background-color: rgba(139, 0, 0, 0.1);
+    font-weight: bold;
+}
+
+.expenses-category-table-empty {
+    padding: 20px;
+    text-align: center;
+}
