@@ -13,6 +13,7 @@
 
 .line {
     grid-area: line;
+    position: relative;
 }
 
 .doughnut {
@@ -39,8 +40,22 @@
     text-decoration: none;
 }
 
+.dashboard-chart-toggle {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    position: absolute;
+    right: 8px;
+    top: 4px;
+    z-index: 1;
+}
+
+.dashboard-chart-toggle[hidden] {
+    display: none;
+}
+
 .expenses-category-chart {
-    grid-column: 1 / -1;
+    text-align: center;
 }
 
 #expenses-category-table-container {

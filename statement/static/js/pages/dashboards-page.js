@@ -10,7 +10,7 @@ const decreaseButton = document.getElementById('id_decrease');
 const increaseButton = document.getElementById('id_increase');
 const annualStatementTab = document.getElementById('annual-statement-tab');
 const annualOverviewTab = document.getElementById('annual-overview-tab');
-const expensesCategoryTab = document.getElementById('expenses-category-tab');
+const expensesCategoryToggle = document.getElementById('expenses-category-toggle');
 
 let expensesCategoryBarChart = null;
 let activeDashboardTab = 'annual-statement';
@@ -22,6 +22,7 @@ let dashboardLookups = null;
  */
 async function drawAnnualStatementChart(select) {
     await destroyCharts();
+    setExpensesCategoryToggleMode('bar');
 
     const year = yearSeletct.value;
     const transactions = await services.getTransactionsByYear(year, false, true);
@@ -51,6 +52,7 @@ async function drawAnnualStatementChart(select) {
 
 async function drawAnnualOverviewChart(select) {
     await destroyCharts();
+    setExpensesCategoryToggleVisibility(false);
 
     const transactions = await services.getResource('transactions');
     await loadDashboardLookups();
@@ -75,7 +77,7 @@ async function drawAnnualOverviewChart(select) {
 
 async function destroyCharts() {
     // Restaurar visibilidade dos gráficos
-    const lineChart = document.getElementById('line-chart').parentElement;
+    const lineChart = document.getElementById('line-chart');
     const doughnutChart = document.getElementById('donnut-chart').parentElement;
     const expensesCategoryChart = document.querySelector('.expenses-category-chart');
 
@@ -106,18 +108,20 @@ async function destroyCharts() {
 }
 
 async function drawExpensesCategoryChart() {
+    setExpensesCategoryToggleMode('line');
+
     if (window.expensesCategoryBarChart) {
         window.expensesCategoryBarChart.destroy();
         window.expensesCategoryBarChart = null;
     }
 
     // Mostrar o canvas de gastos por categoria
-    const lineChart = document.getElementById('line-chart').parentElement;
+    const lineChart = document.getElementById('line-chart');
     const doughnutChart = document.getElementById('donnut-chart').parentElement;
     const expensesCategoryChart = document.querySelector('.expenses-category-chart');
 
     if (lineChart) lineChart.style.display = 'none';
-    if (doughnutChart) doughnutChart.style.display = 'none';
+    if (doughnutChart) doughnutChart.style.display = 'block';
     if (expensesCategoryChart) expensesCategoryChart.style.display = 'block';
 
     const year = yearSeletct.value;
@@ -801,6 +805,27 @@ function handleAnnualSOverviewDoughnutClick(newSelect) {
     drawAnnualOverviewChart(select);
 }
 
+function setExpensesCategoryToggleVisibility(visible) {
+    if (!expensesCategoryToggle) return;
+    expensesCategoryToggle.hidden = !visible;
+}
+
+function setExpensesCategoryToggleMode(mode) {
+    if (!expensesCategoryToggle) return;
+
+    setExpensesCategoryToggleVisibility(true);
+    if (mode === 'line') {
+        expensesCategoryToggle.innerHTML = '<i class="fa-solid fa-chart-line"></i>';
+        expensesCategoryToggle.setAttribute('title', 'Demonstrativo');
+        expensesCategoryToggle.setAttribute('aria-label', 'Demonstrativo');
+        return;
+    }
+
+    expensesCategoryToggle.innerHTML = '<i class="fa-solid fa-chart-column"></i>';
+    expensesCategoryToggle.setAttribute('title', 'Gastos por categoria');
+    expensesCategoryToggle.setAttribute('aria-label', 'Gastos por categoria');
+}
+
 yearSeletct.addEventListener('change', () => {
     if (activeDashboardTab === 'expenses-category') {
         drawExpensesCategoryChart();
@@ -839,10 +864,24 @@ annualOverviewTab.addEventListener('click', () => {
     activeDashboardTab = 'annual-overview';
     drawAnnualOverviewChart('revenues');
 });
-expensesCategoryTab.addEventListener('click', async () => {
-    activeDashboardTab = 'expenses-category';
-    await destroyCharts();
-    drawExpensesCategoryChart();
-});
+if (expensesCategoryToggle) {
+    expensesCategoryToggle.addEventListener('click', async () => {
+        if (activeDashboardTab === 'expenses-category') {
+            activeDashboardTab = 'annual-statement';
+            await drawAnnualStatementChart('revenues');
+            return;
+        }
+
+        activeDashboardTab = 'expenses-category';
+        drawExpensesCategoryChart();
+    });
+
+    expensesCategoryToggle.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
+            event.preventDefault();
+            expensesCategoryToggle.click();
+        }
+    });
+}
 
 let lineChart = await drawAnnualStatementChart('revenues');
