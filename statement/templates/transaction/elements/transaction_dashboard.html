@@ -15,7 +15,11 @@
             <div class="box-body">
                 <div class="dashboard">
                     <div class="expenses">
+                        <div class="icon-btn dashboard-chart-toggle" id="monthly-expenses-chart-toggle" role="button" title="Gastos ao longo do mês" aria-label="Gastos ao longo do mês" tabindex="0">
+                            <i class="fa-solid fa-chart-line"></i>
+                        </div>
                         <canvas id="expenses-bar-chart" width="40" height="15"></canvas>
+                        <canvas id="monthly-expenses-line-chart" width="40" height="15" style="display: none;"></canvas>
                         <br>
                         <b class="font-16">Total de gastos: {{ dashboard.expenses | to_reais }}</b>
                     </div>

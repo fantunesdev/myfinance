@@ -11,7 +11,12 @@ import * as general from '../data/general.js';
 
 const yearNavigation = document.getElementById('id_year'),
     monthNavigation = document.getElementById('id_month'),
-    transactionDownloadButton = document.getElementById('download-transactions-button');
+    transactionDownloadButton = document.getElementById('download-transactions-button'),
+    monthlyExpensesChartToggle = document.getElementById('monthly-expenses-chart-toggle');
+
+let monthlyExpensesLineChart = null;
+let activeExpensesChart = 'bar';
+let dashboardTransactions = [];
 
 /**
  * Busca todas as informações para desenhar os gráficos de barras e de donuts.
@@ -26,6 +31,8 @@ async function draw() {
         revenue = categoryData.setCategoriesDataset(report.revenue, true),
         expenses = categoryData.setCategoriesDataset(report.expenses),
         amount = categoryData.setAmountDataset(report.amount);
+
+    dashboardTransactions = transactions;
 
     const barChart = graphics.drawBarChart(expenses, 'Despesas');
     graphics.drawDoughnutChart(revenue, 'revenue', 'Receitas');
@@ -204,8 +211,165 @@ function convertDbDateForDayMonthYearDate(date) {
     return `${day}/${month}/${year}`;
 }
 
+function drawMonthlyExpensesLineChart() {
+    const canvas = document.getElementById('monthly-expenses-line-chart');
+    if (!canvas) return null;
+
+    if (monthlyExpensesLineChart) {
+        monthlyExpensesLineChart.destroy();
+        monthlyExpensesLineChart = null;
+    }
+
+    const categories = JSON.parse(sessionStorage.getItem('categories') || '[]');
+    const dataset = setMonthlyExpensesLineDataset(dashboardTransactions, categories);
+
+    monthlyExpensesLineChart = new Chart(canvas.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: dataset.names,
+            datasets: [
+                {
+                    label: 'Gastos no mês',
+                    data: dataset.values,
+                    borderColor: 'rgba(139, 0, 0, 1)',
+                    backgroundColor: 'rgba(139, 0, 0, 0.15)',
+                    fill: true,
+                    tension: 0.2,
+                },
+            ],
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginZero: true,
+                },
+            },
+            plugins: {
+                legend: {
+                    display: false,
+                },
+                title: {
+                    display: true,
+                    text: 'Gastos no mês',
+                    font: {
+                        size: 18,
+                        family: 'Ubuntu',
+                    },
+                    color: 'rgba(204,204,204,1)',
+                },
+            },
+            animation: {
+                duration: 200,
+            },
+        },
+    });
+
+    return monthlyExpensesLineChart;
+}
+
+function setMonthlyExpensesLineDataset(transactions, categories) {
+    const [year, month] = sessionStorage.getItem('year-month').split(',');
+    const selectedYear = Number(year);
+    const selectedMonth = Number(month);
+    const daysInMonth = new Date(selectedYear, selectedMonth, 0).getDate();
+    const dailyExpenses = Array(daysInMonth).fill(0);
+    const labels = Array.from({ length: daysInMonth }, (_, index) => String(index + 1).padStart(2, '0'));
+    let accumulated = 0;
+
+    for (const transaction of transactions) {
+        if (transaction.type === 'entrada') continue;
+        if (!isDashboardExpense(transaction, categories)) continue;
+
+        const transactionDay = getMonthlyExpenseDay(transaction, selectedYear, selectedMonth, daysInMonth);
+        if (!transactionDay) continue;
+
+        dailyExpenses[transactionDay - 1] += Number(transaction.value || 0);
+    }
+
+    const values = dailyExpenses.map(value => {
+        accumulated += value;
+        return accumulated;
+    });
+
+    return { names: labels, values };
+}
+
+function getMonthlyExpenseDay(transaction, selectedYear, selectedMonth, daysInMonth) {
+    const postedDate = parseDbDateParts(transaction.posted_date);
+    const isInstallment = Boolean(
+        transaction.installment || transaction.installment_id || Number(transaction.installments_number) > 1
+    );
+    const isLaterInstallment = isInstallment && Number(transaction.paid || 0) > 1;
+
+    if (isLaterInstallment && postedDate && isBeforeMonth(postedDate, selectedYear, selectedMonth)) {
+        return 1;
+    }
+
+    if (postedDate) {
+        return Math.min(postedDate.day, daysInMonth);
+    }
+
+    return null;
+}
+
+function parseDbDateParts(date) {
+    if (!date) return null;
+
+    if (date.includes('/')) {
+        const [day, month, year] = date.split('/').map(Number);
+        if (!year || !month || !day) return null;
+
+        return { year, month, day };
+    }
+
+    const [year, month, day] = date.split('-').map(Number);
+    if (!year || !month || !day) return null;
+
+    return { year, month, day };
+}
+
+function isBeforeMonth(date, year, month) {
+    return date.year < year || (date.year === year && date.month < month);
+}
+
+function isDashboardExpense(transaction, categories) {
+    const category = categories.find(item => item.id === transaction.category);
+    return !(category && category.ignore);
+}
+
+async function setMonthlyExpensesChartMode(mode) {
+    const barCanvas = document.getElementById('expenses-bar-chart');
+    const lineCanvas = document.getElementById('monthly-expenses-line-chart');
+    if (!barCanvas || !lineCanvas || !monthlyExpensesChartToggle) return;
+
+    activeExpensesChart = mode;
+
+    if (mode === 'line') {
+        sessionStorage.removeItem('bar_label_clicked');
+        sessionStorage.setItem('bar_chart_level', 'categories');
+        await updateBarChart(barChart);
+        drawMonthlyExpensesLineChart();
+        barCanvas.style.display = 'none';
+        lineCanvas.style.display = 'block';
+        monthlyExpensesChartToggle.innerHTML = '<i class="fa-solid fa-chart-column"></i>';
+        monthlyExpensesChartToggle.setAttribute('title', 'Gastos por categoria');
+        monthlyExpensesChartToggle.setAttribute('aria-label', 'Gastos por categoria');
+        return;
+    }
+
+    barCanvas.style.display = 'block';
+    lineCanvas.style.display = 'none';
+    monthlyExpensesChartToggle.innerHTML = '<i class="fa-solid fa-chart-line"></i>';
+    monthlyExpensesChartToggle.setAttribute('title', 'Gastos ao longo do mês');
+    monthlyExpensesChartToggle.setAttribute('aria-label', 'Gastos ao longo do mês');
+}
+
 const resetDashboardButton = document.querySelector('#reset-dashboard-button');
-resetDashboardButton.addEventListener('click', () => {
+resetDashboardButton.addEventListener('click', async () => {
+    if (activeExpensesChart === 'line') {
+        await setMonthlyExpensesChartMode('bar');
+    }
     sessionStorage.removeItem('bar_label_clicked');
     sessionStorage.setItem('bar_chart_level', 'categories');
     updateBarChart(barChart);
@@ -228,3 +392,16 @@ monthNavigation.addEventListener('change', () => {
 transactionDownloadButton.addEventListener('click', () => {
     downloadTransactions();
 });
+
+if (monthlyExpensesChartToggle) {
+    monthlyExpensesChartToggle.addEventListener('click', async () => {
+        await setMonthlyExpensesChartMode(activeExpensesChart === 'bar' ? 'line' : 'bar');
+    });
+
+    monthlyExpensesChartToggle.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
+            event.preventDefault();
+            monthlyExpensesChartToggle.click();
+        }
+    });
+}

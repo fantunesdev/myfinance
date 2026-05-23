@@ -19,6 +19,17 @@
 
 .expenses {
     grid-area: expenses;
+    position: relative;
+}
+
+.dashboard-chart-toggle {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    position: absolute;
+    right: 8px;
+    top: 4px;
+    z-index: 1;
 }
 
 .revenue-expenses {
