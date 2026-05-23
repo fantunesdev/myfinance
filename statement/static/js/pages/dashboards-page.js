@@ -23,9 +23,14 @@ async function drawAnnualStatementChart(select) {
     await destroyCharts();
 
     const year = yearSeletct.value;
-    const expands = { expand: 'category,card,card_number' };
+    const expands = { expand: 'category,subcategory,card,card_number,account' };
     const transactions = await services.getTransactionsByYear(year, expands, true);
+    await services.getResource('categories');
+
     const visibleTransactions = Array.isArray(transactions) ? transactions.filter(isHomeScreenTransaction) : [];
+    const normalizedTransactions = normalizeTransactions(visibleTransactions);
+
+    sessionStorage.setItem('annual_statement_transactions', JSON.stringify(normalizedTransactions));
 
     const monthlyReport = monthsData.setMontlyReport(visibleTransactions);
     const lineDataset = monthsData.setMonthDataset(monthlyReport[select]);
@@ -122,19 +127,7 @@ async function drawExpensesCategoryChart() {
     const categories = await services.getResource('categories');
     const visibleTransactions = Array.isArray(transactions) ? transactions.filter(isHomeScreenTransaction) : [];
 
-    // Normalizar IDs sem perder os nomes usados no detalhe da tabela.
-    const normalizedTransactions = visibleTransactions.map(t => ({
-        ...t,
-        category: getResourceId(t.category),
-        category_name: getResourceDescription(t.category),
-        category_color: getCategoryColor(t.category),
-        category_icon: getCategoryIcon(t.category),
-        subcategory: getResourceId(t.subcategory),
-        subcategory_name: getResourceDescription(t.subcategory),
-        card_name: getPaymentDescription(t),
-        payment_icon: getPaymentIcon(t),
-        payment_url: getPaymentUrl(t),
-    }));
+    const normalizedTransactions = normalizeTransactions(visibleTransactions);
 
     const report = categoryData.setCategoriesReport(normalizedTransactions, categories);
     const expenses = categoryData.setCategoriesDataset(report.expenses);
@@ -366,7 +359,11 @@ function renderExpensesCategoryTable(itemName, itemId, itemType = 'categories') 
     filteredTransactions.sort((a, b) => new Date(b.posted_date) - new Date(a.posted_date));
 
     // Gerar HTML da tabela
-    const tableHTML = generateExpensesTableHTML(filteredTransactions, itemName);
+    renderDashboardTransactionsTable(itemName, filteredTransactions);
+}
+
+function renderDashboardTransactionsTable(title, transactions) {
+    const tableHTML = generateExpensesTableHTML(transactions, title);
 
     // Inserir na página
     const tableContainer = document.getElementById('expenses-category-table-container');
@@ -515,6 +512,42 @@ function getDateSortValue(value) {
     return new Date(year || Number(yearSeletct.value), (month || 1) - 1, day || 1).getTime();
 }
 
+function normalizeTransactions(transactions) {
+    return transactions.map(t => ({
+        ...t,
+        category: getResourceId(t.category),
+        category_name: getResourceDescription(t.category),
+        category_color: getCategoryColor(t.category),
+        category_icon: getCategoryIcon(t.category),
+        subcategory: getResourceId(t.subcategory),
+        subcategory_name: getResourceDescription(t.subcategory),
+        card_name: getPaymentDescription(t),
+        payment_icon: getPaymentIcon(t),
+        payment_url: getPaymentUrl(t),
+    }));
+}
+
+function getStatementTransactionsBySelect(select) {
+    const transactions = JSON.parse(sessionStorage.getItem('annual_statement_transactions') || '[]');
+    const categories = JSON.parse(sessionStorage.getItem('categories') || '[]');
+
+    if (select === 'revenues') {
+        return transactions.filter(transaction => transaction.type === 'entrada');
+    }
+
+    if (select === 'investments') {
+        return transactions.filter(transaction => transaction.type !== 'entrada' && transaction.category === 5);
+    }
+
+    return transactions.filter(transaction => {
+        if (transaction.type === 'entrada') return false;
+        if (transaction.category === 5) return false;
+
+        const category = categories.find(item => item.id === transaction.category);
+        return !(category && category.ignore);
+    });
+}
+
 function isHomeScreenTransaction(transaction) {
     if (!transaction.home_screen) return false;
     if (transaction.card_number && transaction.card_number.home_screen === false) return false;
@@ -630,7 +663,16 @@ function getCategoryCellHTML(transaction) {
 function getPaymentCellHTML(transaction) {
     const icon = transaction.payment_icon;
     const label = getPaymentLabel(transaction);
-    const content = icon ? `<img src="${escapeHtml(icon)}" alt="${escapeHtml(label)}">` : escapeHtml(label);
+    if (icon) {
+        const content = `<img src="${escapeHtml(icon)}" alt="${escapeHtml(label)}">`;
+        if (transaction.payment_url) {
+            return `<a href="${escapeHtml(transaction.payment_url)}">${content}</a>`;
+        }
+
+        return content;
+    }
+
+    const content = escapeHtml(label);
     const cardNumberDescription = getResourceDescription(transaction.card_number);
     const cardNumberHTML = cardNumberDescription ? `<div class="small">${escapeHtml(cardNumberDescription)}</div>` : '';
 
@@ -697,9 +739,11 @@ function handleLabel(select) {
     }
 }
 
-function handleAnnualStatementDoughnutClick(newSelect) {
+async function handleAnnualStatementDoughnutClick(newSelect) {
     let select = newSelect;
-    drawAnnualStatementChart(select);
+    await drawAnnualStatementChart(select);
+    const transactions = getStatementTransactionsBySelect(select);
+    renderDashboardTransactionsTable(handleLabel(select), transactions);
 }
 
 function handleAnnualSOverviewDoughnutClick(newSelect) {
