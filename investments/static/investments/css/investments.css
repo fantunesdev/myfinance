@@ -1,0 +1,62 @@
+.investments-dashboard {
+    display: block;
+}
+
+.investment-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.investment-summary {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    margin-bottom: 24px;
+}
+
+.investment-card {
+    background: #202020;
+    border: 1px solid #343434;
+    border-radius: 6px;
+    color: azure;
+    min-height: 96px;
+    padding: 18px;
+    text-decoration: none;
+}
+
+.investment-card span,
+.investment-card strong {
+    display: block;
+}
+
+.investment-card span {
+    font-size: 14px;
+    margin-bottom: 12px;
+}
+
+.investment-card strong {
+    font-size: 24px;
+}
+
+.investment-card-total {
+    background: #163127;
+    border-color: #255f48;
+}
+
+.investment-grid {
+    display: grid;
+    gap: 24px;
+    grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
+}
+
+.investment-grid h4 {
+    margin-bottom: 12px;
+}
+
+@media (max-width: 900px) {
+    .investment-grid {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,0 +1,108 @@
+{% extends 'index.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}Investimentos{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{% static 'investments/css/investments.css' %}">
+{% endblock %}
+
+{% block content %}
+    <div class="box box-primary box-max-width-2000 v-center-div">
+        <div class="box-header">
+            <div class="box-header-inner">
+                <h3 class="box-title">Investimentos</h3>
+                <div class="box-header-actions">
+                    <a href="{% url 'create_investment_transaction' %}" class="btn btn-primary">Movimentar</a>
+                </div>
+            </div>
+        </div>
+        <div class="box-body investments-dashboard">
+            <div class="investment-actions">
+                <a href="{% url 'create_broker' %}" class="btn btn-info">Novo broker</a>
+                <a href="{% url 'create_asset' %}" class="btn btn-info">Novo ativo</a>
+                <a href="{% url 'create_investment' %}" class="btn btn-info">Novo investimento</a>
+                <a href="{% url 'get_all_investment_transaction' %}" class="btn btn-info">Movimentações</a>
+            </div>
+
+            <div class="investment-summary">
+                <a href="{% url 'get_all_investment' %}" class="investment-card investment-card-total">
+                    <span>Patrimônio total</span>
+                    <strong>{{ total|to_reais }}</strong>
+                </a>
+                {% for label, amount in by_type %}
+                    <div class="investment-card">
+                        <span>{{ label }}</span>
+                        <strong>{{ amount|to_reais }}</strong>
+                    </div>
+                {% empty %}
+                    <div class="investment-card">
+                        <span>Sem investimentos</span>
+                        <strong>{{ 0|to_reais }}</strong>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="investment-grid">
+                <section>
+                    <h4>Posições</h4>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Investimento</th>
+                                <th>Tipo</th>
+                                <th>Broker</th>
+                                <th>Quantidade</th>
+                                <th>Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for position in positions %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'detail_investment' position.investment.id %}">
+                                            {{ position.investment }}
+                                        </a>
+                                    </td>
+                                    <td>{{ position.asset_type_label }}</td>
+                                    <td>{{ position.broker }}</td>
+                                    <td>{{ position.quantity }}</td>
+                                    <td>{{ position.value|to_reais }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="5">Nenhum investimento cadastrado.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </section>
+
+                <section>
+                    <h4>Por broker</h4>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Broker</th>
+                                <th>Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for broker, amount in by_broker %}
+                                <tr>
+                                    <td>{{ broker }}</td>
+                                    <td>{{ amount|to_reais }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="2">Nenhum broker com posição.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </section>
+            </div>
+        </div>
+    </div>
+{% endblock %}
