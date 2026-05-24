@@ -15,15 +15,25 @@
                 <h3 class="box-title">Investimentos</h3>
                 <div class="box-header-actions">
                     <a href="{% url 'create_investment_transaction' %}" class="btn btn-primary">Movimentar</a>
+                    <div class="investment-settings">
+                        <button type="button" class="investment-settings-button" aria-label="Configurações">
+                            <i class="fa-solid fa-gear"></i>
+                        </button>
+                        <div class="investment-settings-menu">
+                            <a href="{% url 'get_all_broker' %}">Brokers</a>
+                            <a href="{% url 'get_all_asset' %}">Ativos</a>
+                            <a href="{% url 'get_all_investment' %}">Investimentos</a>
+                            <a href="{% url 'get_all_investment_transaction' %}">Movimentações</a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
         <div class="box-body investments-dashboard">
             <div class="investment-actions">
+                <a href="{% url 'create_investment' %}" class="btn btn-info">Novo investimento</a>
                 <a href="{% url 'create_broker' %}" class="btn btn-info">Novo broker</a>
                 <a href="{% url 'create_asset' %}" class="btn btn-info">Novo ativo</a>
-                <a href="{% url 'create_investment' %}" class="btn btn-info">Novo investimento</a>
-                <a href="{% url 'get_all_investment_transaction' %}" class="btn btn-info">Movimentações</a>
             </div>
 
             <div class="investment-summary">

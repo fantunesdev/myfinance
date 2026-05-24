@@ -2,13 +2,6 @@
     display: block;
 }
 
-.investment-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 20px;
-}
-
 .investment-summary {
     display: grid;
     gap: 12px;
@@ -43,6 +36,61 @@
 .investment-card-total {
     background: #163127;
     border-color: #255f48;
+}
+
+.investment-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.investment-settings {
+    display: inline-block;
+    position: relative;
+}
+
+.investment-settings-button {
+    align-items: center;
+    background: transparent;
+    border: 0;
+    color: azure;
+    cursor: pointer;
+    display: inline-flex;
+    font-size: 18px;
+    height: 36px;
+    justify-content: center;
+    width: 36px;
+}
+
+.investment-settings-menu {
+    background: #202020;
+    border: 1px solid #343434;
+    border-radius: 6px;
+    box-shadow: 0 8px 18px rgb(0 0 0 / 35%);
+    display: none;
+    min-width: 180px;
+    padding: 8px 0;
+    position: absolute;
+    right: 0;
+    top: 40px;
+    z-index: 10;
+}
+
+.investment-settings:hover .investment-settings-menu,
+.investment-settings:focus-within .investment-settings-menu {
+    display: block;
+}
+
+.investment-settings-menu a {
+    color: azure;
+    display: block;
+    padding: 10px 14px;
+    text-decoration: none;
+}
+
+.investment-settings-menu a:hover {
+    background: #2a2a2a;
 }
 
 .investment-grid {
