@@ -34,6 +34,12 @@
                 <a href="{% url 'create_investment' %}" class="btn btn-info">Novo investimento</a>
                 <a href="{% url 'create_broker' %}" class="btn btn-info">Novo broker</a>
                 <a href="{% url 'create_asset' %}" class="btn btn-info">Novo ativo</a>
+                {% if not default_wallet %}
+                    <form method="post" action="{% url 'create_default_investment_wallet' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-info">Criar carteira default</button>
+                    </form>
+                {% endif %}
             </div>
 
             <div class="investment-summary">

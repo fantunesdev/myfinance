@@ -11,6 +11,6 @@ class BrokerView(InvestmentCrudView):
     class_form = BrokerForm
     model = Broker
     service = BrokerService
-    redirect_url = reverse_lazy('get_all_broker')
+    redirect_url = reverse_lazy('investments_dashboard')
     column_names = ['Descrição', 'Tipo']
     list_fields = ['description', 'kind_label']

@@ -1,5 +1,6 @@
 from investments.forms.base import DateInput, UserFilteredModelForm
 from investments.models import Investment
+from investments.models import InvestmentTransaction
 
 
 class InvestmentForm(UserFilteredModelForm):
@@ -20,4 +21,18 @@ class InvestmentForm(UserFilteredModelForm):
         widgets = {
             'start_date': DateInput(),
             'due_date': DateInput(),
+        }
+
+
+class InvestmentCashMovementForm(UserFilteredModelForm):
+    class Meta:
+        model = InvestmentTransaction
+        fields = ['date', 'amount', 'notes']
+        labels = {
+            'date': 'Data',
+            'amount': 'Valor',
+            'notes': 'Anotações',
+        }
+        widgets = {
+            'date': DateInput(),
         }

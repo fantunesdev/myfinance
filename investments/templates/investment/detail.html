@@ -1,0 +1,103 @@
+{% extends "index.html" %}
+{% load custom_filters %}
+{% load custom_tags %}
+
+{% block title %}
+    {% if delete %}
+        Excluir Investimento
+    {% else %}
+        Detalhar Investimento
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    <div class="box box-primary">
+        <form method="post">
+            <div class="box-title">
+                <h3>
+                    {% if delete %}
+                        Atenção! Você está prestes a excluir {{ instance.description }}. Esta operação é irreversível.
+                    {% else %}
+                        {{ instance.description }}
+                    {% endif %}
+                </h3>
+            </div>
+            <div class="box-body">
+                <p class="font-16">Ativo: <strong>{{ instance.asset }}</strong></p>
+                <p class="font-16">Broker: <strong>{{ instance.broker }}</strong></p>
+                <p class="font-16">Status: <strong>{{ instance.get_status_display }}</strong></p>
+                <p class="font-16">Data inicial: <strong>{{ instance.start_date|date:"d/m/Y" }}</strong></p>
+                {% if instance.due_date %}
+                    <p class="font-16">Vencimento: <strong>{{ instance.due_date|date:"d/m/Y" }}</strong></p>
+                {% endif %}
+                <p class="font-16">Valor atual: <strong>{{ position.value|to_reais }}</strong></p>
+
+                {% if instance.notes %}
+                    <p class="font-16">Anotações:</p>
+                    <div class="box-observation">
+                        {{ instance.notes|linebreaks }}
+                    </div>
+                {% endif %}
+
+                {% if not delete and default_wallet and instance.id != default_wallet.id %}
+                    <div class="investment-actions">
+                        <a href="{% url 'apply_investment_from_wallet' instance.id %}" class="btn btn-primary">Aplicar do caixa</a>
+                        <a href="{% url 'redeem_investment_to_wallet' instance.id %}" class="btn btn-info">Resgatar para caixa</a>
+                    </div>
+                {% endif %}
+
+                <table class="table" id="statement-table">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Tipo</th>
+                            <th>Valor</th>
+                            <th>Anotações</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for transaction in transactions %}
+                            <tr>
+                                <td>{{ transaction.date|date:"d/m/Y" }}</td>
+                                <td>{{ transaction.get_type_display }}</td>
+                                <td>{{ transaction.amount|to_reais }}</td>
+                                <td>{{ transaction.notes }}</td>
+                                <td class="no-wrap actions-cell">
+                                    <div class="actions-cell-inner">
+                                        <a href="{% url 'detail_investment_transaction' transaction.id %}"><i class="fa-solid fa-file-lines action-icon"></i></a>
+                                        <a href="{% url 'update_investment_transaction' transaction.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
+                                        <a href="{% url 'delete_investment_transaction' transaction.id %}"><i class="fa-solid fa-trash action-icon"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 20px;">Nenhuma movimentação registrada ainda</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                {% if delete %}
+                    <div class="btn-danger">
+                        <p>
+                            {% csrf_token %}
+                            {{ exclusion_form }}
+                            Sim, desejo excluir e estou ciente de que esta operação é irreversível.
+                        </p>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="box-footer">
+                <a href="{{ request.META.HTTP_REFERER }}"><input type="button" value="Voltar" class="btn btn-primary"></a>
+                {% if delete %}
+                    {% csrf_token %}
+                    <input type="submit" value="Excluir" class="btn btn-danger">
+                {% else %}
+                    <a href="{% url 'update_investment' instance.id %}" class="btn btn-primary">Editar</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+{% endblock content %}

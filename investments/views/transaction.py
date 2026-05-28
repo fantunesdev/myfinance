@@ -11,6 +11,6 @@ class InvestmentTransactionView(InvestmentCrudView):
     class_form = InvestmentTransactionForm
     model = InvestmentTransaction
     service = InvestmentTransactionService
-    redirect_url = reverse_lazy('get_all_investment_transaction')
+    redirect_url = reverse_lazy('investments_dashboard')
     column_names = ['Data', 'Investimento', 'Tipo', 'Valor']
     list_fields = ['date', 'investment', 'type_label', 'amount']

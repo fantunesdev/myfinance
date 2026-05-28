@@ -107,6 +107,14 @@ class InvestmentTransaction(models.Model):
     quantity = models.DecimalField(max_digits=20, decimal_places=8, null=True, blank=True)
     unit_price = models.DecimalField(max_digits=14, decimal_places=6, null=True, blank=True)
     current_value = models.DecimalField(max_digits=14, decimal_places=2, null=True, blank=True)
+    statement_transaction = models.OneToOneField(
+        'statement.Transaction',
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name='investment_transaction',
+    )
+    operation_id = models.UUIDField(null=True, blank=True, db_index=True)
     notes = models.TextField(blank=True)
     user = models.ForeignKey(User, on_delete=models.PROTECT)
 

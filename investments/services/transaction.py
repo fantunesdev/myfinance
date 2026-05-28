@@ -1,6 +1,279 @@
-from investments.models import InvestmentTransaction
+import uuid
+from decimal import Decimal
+
+from django.core.exceptions import ObjectDoesNotExist
+from django.db import transaction
+from django.utils import timezone
+
+from investments.models import Asset, Broker, Investment, InvestmentTransaction
 from investments.services.base import InvestmentBaseService
+
+DEFAULT_WALLET_BROKER_DESCRIPTION = 'Caixa de investimentos'
+DEFAULT_WALLET_ASSET_DESCRIPTION = 'Disponível para investir'
+DEFAULT_WALLET_ASSET_SYMBOL = 'CASH-BRL'
+DEFAULT_WALLET_INVESTMENT_DESCRIPTION = 'Caixa de investimentos BRL'
 
 
 class InvestmentTransactionService(InvestmentBaseService):
     model = InvestmentTransaction
+
+    @classmethod
+    @transaction.atomic
+    def create(cls, form, user=None, id=None):
+        instance = form.save(commit=False)
+        instance = cls.verify_user_field(instance, user)
+        instance.save()
+        cls.sync_manual_wallet_counterpart(instance)
+        return instance
+
+    @classmethod
+    @transaction.atomic
+    def update(cls, form, instance):
+        instance = super().update(form, instance)
+        cls.sync_manual_wallet_counterpart(instance)
+        return instance
+
+    @classmethod
+    @transaction.atomic
+    def delete(cls, instance):
+        cls.delete_manual_wallet_counterpart(instance)
+        return super().delete(instance)
+
+    @classmethod
+    def get_default_wallet(cls, user):
+        try:
+            return Investment.objects.select_related('asset', 'broker').get(
+                description=DEFAULT_WALLET_INVESTMENT_DESCRIPTION,
+                asset__symbol=DEFAULT_WALLET_ASSET_SYMBOL,
+                broker__description=DEFAULT_WALLET_BROKER_DESCRIPTION,
+                user=user,
+            )
+        except Investment.DoesNotExist:
+            return None
+
+    @classmethod
+    def get_or_create_default_wallet(cls, user):
+        broker, _ = Broker.objects.get_or_create(
+            description=DEFAULT_WALLET_BROKER_DESCRIPTION,
+            user=user,
+            defaults={'kind': 'wallet'},
+        )
+        asset, _ = Asset.objects.get_or_create(
+            description=DEFAULT_WALLET_ASSET_DESCRIPTION,
+            symbol=DEFAULT_WALLET_ASSET_SYMBOL,
+            user=user,
+            defaults={
+                'asset_type': 'currency',
+                'income_behavior': 'none',
+                'currency': 'BRL',
+            },
+        )
+        investment, _ = Investment.objects.get_or_create(
+            description=DEFAULT_WALLET_INVESTMENT_DESCRIPTION,
+            asset=asset,
+            broker=broker,
+            user=user,
+            defaults={
+                'start_date': timezone.localdate(),
+                'status': 'active',
+            },
+        )
+        return investment
+
+    @classmethod
+    @transaction.atomic
+    def create_wallet_contribution_from_statement_transaction(cls, statement_transaction, wallet=None, notes=''):
+        existing_contribution = cls._get_statement_investment_transaction(statement_transaction)
+        if existing_contribution:
+            return existing_contribution
+
+        user = statement_transaction.user
+        wallet = wallet or cls.get_or_create_default_wallet(user)
+        if wallet.user_id != user.id:
+            raise ValueError('A wallet deve pertencer ao mesmo usuário da transação financeira.')
+
+        amount = cls._absolute_amount(statement_transaction.value)
+        cls._validate_positive_amount(amount)
+
+        return cls.model.objects.create(
+            investment=wallet,
+            date=statement_transaction.payment_date,
+            type='aporte',
+            amount=amount,
+            statement_transaction=statement_transaction,
+            notes=notes or statement_transaction.description,
+            user=user,
+        )
+
+    @classmethod
+    @transaction.atomic
+    def sync_wallet_contribution_from_statement_transaction(cls, statement_transaction):
+        existing_contribution = cls._get_statement_investment_transaction(statement_transaction)
+
+        if not cls._should_sync_statement_transaction(statement_transaction):
+            if existing_contribution:
+                existing_contribution.delete()
+            return None
+
+        wallet = cls.get_or_create_default_wallet(statement_transaction.user)
+        amount = cls._absolute_amount(statement_transaction.value)
+        cls._validate_positive_amount(amount)
+
+        if existing_contribution:
+            existing_contribution.investment = wallet
+            existing_contribution.date = statement_transaction.payment_date
+            existing_contribution.type = 'aporte'
+            existing_contribution.amount = amount
+            existing_contribution.notes = statement_transaction.description
+            existing_contribution.user = statement_transaction.user
+            existing_contribution.save(
+                update_fields=[
+                    'investment',
+                    'date',
+                    'type',
+                    'amount',
+                    'notes',
+                    'user',
+                ]
+            )
+            return existing_contribution
+
+        return cls.create_wallet_contribution_from_statement_transaction(statement_transaction, wallet=wallet)
+
+    @classmethod
+    @transaction.atomic
+    def transfer_between_investments(cls, source, destination, amount, date=None, notes=''):
+        if source.id == destination.id:
+            raise ValueError('Os investimentos de origem e destino devem ser diferentes.')
+
+        if source.user_id != destination.user_id:
+            raise ValueError('Os investimentos devem pertencer ao mesmo usuário.')
+
+        operation_id = uuid.uuid4()
+        transaction_date = date or timezone.localdate()
+        amount = cls._absolute_amount(amount)
+        cls._validate_positive_amount(amount)
+
+        source_transaction = cls.model.objects.create(
+            investment=source,
+            date=transaction_date,
+            type='resgate',
+            amount=amount,
+            operation_id=operation_id,
+            notes=notes,
+            user=source.user,
+        )
+        destination_transaction = cls.model.objects.create(
+            investment=destination,
+            date=transaction_date,
+            type='aporte',
+            amount=amount,
+            operation_id=operation_id,
+            notes=notes,
+            user=destination.user,
+        )
+        return source_transaction, destination_transaction
+
+    @classmethod
+    def sync_manual_wallet_counterpart(cls, instance):
+        if not cls._needs_manual_wallet_counterpart(instance):
+            cls.delete_manual_wallet_counterpart(instance, clear_operation_id=True)
+            return None
+
+        wallet = cls.get_or_create_default_wallet(instance.user)
+        if instance.investment_id == wallet.id:
+            return None
+
+        operation_id = instance.operation_id or uuid.uuid4()
+        wallet_transaction_type = 'resgate' if instance.type == 'aporte' else 'aporte'
+        if not instance.operation_id:
+            instance.operation_id = operation_id
+            instance.save(update_fields=['operation_id'])
+
+        cls.model.objects.filter(operation_id=operation_id, investment=wallet).exclude(
+            id=instance.id
+        ).exclude(type=wallet_transaction_type).delete()
+
+        wallet_transaction = (
+            cls.model.objects.filter(operation_id=operation_id, type=wallet_transaction_type, investment=wallet)
+            .exclude(id=instance.id)
+            .first()
+        )
+        notes = instance.notes or cls._get_wallet_counterpart_notes(instance)
+
+        if wallet_transaction:
+            wallet_transaction.date = instance.date
+            wallet_transaction.amount = instance.amount
+            wallet_transaction.notes = notes
+            wallet_transaction.user = instance.user
+            wallet_transaction.save(update_fields=['date', 'amount', 'notes', 'user'])
+            return wallet_transaction
+
+        return cls.model.objects.create(
+            investment=wallet,
+            date=instance.date,
+            type=wallet_transaction_type,
+            amount=instance.amount,
+            operation_id=operation_id,
+            notes=notes,
+            user=instance.user,
+        )
+
+    @classmethod
+    def delete_manual_wallet_counterpart(cls, instance, clear_operation_id=False):
+        if not instance.operation_id:
+            return
+
+        wallet = cls.get_default_wallet(instance.user)
+        if wallet:
+            cls.model.objects.filter(operation_id=instance.operation_id, investment=wallet).exclude(id=instance.id).delete()
+
+        if clear_operation_id and instance.pk:
+            instance.operation_id = None
+            instance.save(update_fields=['operation_id'])
+
+    @staticmethod
+    def _absolute_amount(value):
+        return abs(Decimal(str(value or 0)))
+
+    @staticmethod
+    def _validate_positive_amount(amount):
+        if amount <= Decimal('0'):
+            raise ValueError('O valor deve ser maior que zero.')
+
+    @staticmethod
+    def _get_statement_investment_transaction(statement_transaction):
+        try:
+            return statement_transaction.investment_transaction
+        except ObjectDoesNotExist:
+            return None
+
+    @staticmethod
+    def _should_sync_statement_transaction(statement_transaction):
+        subcategory = getattr(statement_transaction, 'subcategory', None)
+        return (
+            getattr(statement_transaction, 'type', None) == 'saida'
+            and bool(subcategory)
+            and bool(getattr(subcategory, 'is_investment', False))
+        )
+
+    @classmethod
+    def _needs_manual_wallet_counterpart(cls, instance):
+        if instance.type not in ['aporte', 'resgate']:
+            return False
+        if instance.statement_transaction_id:
+            return False
+        if not instance.user_id:
+            return False
+
+        wallet = cls.get_default_wallet(instance.user)
+        if wallet and instance.investment_id == wallet.id:
+            return False
+
+        return True
+
+    @staticmethod
+    def _get_wallet_counterpart_notes(instance):
+        if instance.type == 'aporte':
+            return f'Transferência para {instance.investment}'
+        return f'Transferência de {instance.investment}'

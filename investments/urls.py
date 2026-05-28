@@ -14,6 +14,7 @@ transaction_view = InvestmentTransactionView()
 
 urlpatterns = [
     path('', dashboard_view.dashboard, name='investments_dashboard'),
+    path('wallet/default/criar/', dashboard_view.create_default_wallet, name='create_default_investment_wallet'),
     path('brokers/cadastrar/', broker_view.create, name='create_broker'),
     path('brokers/<int:id>/', broker_view.detail, name='detail_broker'),
     path('brokers/editar/<int:id>/', broker_view.update, name='update_broker'),
@@ -25,6 +26,8 @@ urlpatterns = [
     path('ativos/remover/<int:id>/', asset_view.delete, name='delete_asset'),
     path('ativos/', asset_view.get_all, name='get_all_asset'),
     path('investimentos/cadastrar/', investment_view.create, name='create_investment'),
+    path('investimentos/<int:id>/aplicar/', investment_view.apply_from_wallet, name='apply_investment_from_wallet'),
+    path('investimentos/<int:id>/resgatar/', investment_view.redeem_to_wallet, name='redeem_investment_to_wallet'),
     path('investimentos/<int:id>/', investment_view.detail, name='detail_investment'),
     path('investimentos/editar/<int:id>/', investment_view.update, name='update_investment'),
     path('investimentos/remover/<int:id>/', investment_view.delete, name='delete_investment'),

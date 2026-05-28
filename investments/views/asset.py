@@ -11,6 +11,6 @@ class AssetView(InvestmentCrudView):
     class_form = AssetForm
     model = Asset
     service = AssetService
-    redirect_url = reverse_lazy('get_all_asset')
+    redirect_url = reverse_lazy('investments_dashboard')
     column_names = ['Descrição', 'Código', 'Tipo', 'Moeda']
     list_fields = ['description', 'symbol', 'asset_type_label', 'currency']
