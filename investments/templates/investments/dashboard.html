@@ -30,6 +30,7 @@
             </div>
         </div>
         <div class="box-body investments-dashboard">
+            {{ progression_datasets|json_script:"investment-progression-datasets" }}
             <div class="investment-actions">
                 <a href="{% url 'create_investment' %}" class="btn btn-info">Novo investimento</a>
                 <a href="{% url 'create_broker' %}" class="btn btn-info">Novo broker</a>
@@ -40,6 +41,10 @@
                         <button type="submit" class="btn btn-info">Criar carteira default</button>
                     </form>
                 {% endif %}
+            </div>
+
+            <div class="investment-chart">
+                <canvas id="line-chart" width="40" height="15"></canvas>
             </div>
 
             <div class="investment-summary">
@@ -121,4 +126,9 @@
             </div>
         </div>
     </div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.0/dist/chart.min.js"></script>
+    <script src="{% static 'js/pages/investments-dashboard.js' %}" type="module"></script>
 {% endblock %}

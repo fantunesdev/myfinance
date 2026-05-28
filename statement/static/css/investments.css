@@ -9,6 +9,11 @@
     margin-bottom: 24px;
 }
 
+.investment-chart {
+    margin-bottom: 24px;
+    position: relative;
+}
+
 .investment-card {
     background: #202020;
     border: 1px solid #343434;

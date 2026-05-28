@@ -1,7 +1,7 @@
 from collections import defaultdict
 from decimal import Decimal
 
-from investments.models import Investment
+from investments.models import Investment, InvestmentTransaction
 from investments.services.base import InvestmentBaseService
 
 
@@ -76,4 +76,73 @@ class InvestmentService(InvestmentBaseService):
             'total': total,
             'by_type': sorted(by_type.items()),
             'by_broker': sorted(by_broker.items()),
+            'progression_datasets': cls.get_progression_datasets(user),
         }
+
+    @classmethod
+    def get_progression_datasets(cls, user):
+        investments = {
+            investment.id: investment
+            for investment in cls.filter_by_user(user).select_related('asset', 'broker')
+        }
+        transactions = (
+            InvestmentTransaction.objects.filter(investment__user=user)
+            .select_related('investment__asset')
+            .order_by('date', 'id')
+        )
+        investment_values = defaultdict(Decimal)
+        snapshots_by_date = {}
+
+        for transaction in transactions:
+            current_value = investment_values[transaction.investment_id]
+            amount = transaction.amount or Decimal('0')
+
+            match transaction.type:
+                case 'aporte' | 'rendimento':
+                    current_value += amount
+                case 'resgate' | 'custo':
+                    current_value -= amount
+                case 'atualizacao':
+                    if transaction.current_value is not None:
+                        current_value = transaction.current_value
+
+            investment_values[transaction.investment_id] = current_value
+            snapshots_by_date[transaction.date] = cls._build_progression_snapshot(investments, investment_values)
+
+        labels = [date.strftime('%d/%m/%Y') for date in snapshots_by_date.keys()]
+        asset_type_labels = sorted(
+            {
+                investment.asset.get_asset_type_display()
+                for investment in investments.values()
+            }
+        )
+        colors = {
+            'Renda fixa': 'rgba(46, 125, 90, 1)',
+            'Renda variável': 'rgba(139, 0, 0, 1)',
+            'Cripto': 'rgba(255, 191, 0, 1)',
+            'Moeda': 'rgba(42, 92, 148, 1)',
+            'Outro': 'rgba(120, 120, 120, 1)',
+        }
+
+        return [
+            {
+                'label': label,
+                'color': colors.get(label, 'rgba(120, 120, 120, 1)'),
+                'names': labels,
+                'values': [
+                    float(snapshot.get(label, Decimal('0')))
+                    for snapshot in snapshots_by_date.values()
+                ],
+            }
+            for label in asset_type_labels
+        ]
+
+    @staticmethod
+    def _build_progression_snapshot(investments, investment_values):
+        snapshot = defaultdict(Decimal)
+        for investment_id, value in investment_values.items():
+            investment = investments.get(investment_id)
+            if not investment:
+                continue
+            snapshot[investment.asset.get_asset_type_display()] += value
+        return snapshot
