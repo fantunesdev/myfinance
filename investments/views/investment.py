@@ -25,6 +25,9 @@ class InvestmentView(InvestmentCrudView):
         self.template_is_global.update({'detail': False})
 
     def _add_context_on_templatetags(self, request, instance):
+        if self._context == 'get_all':
+            return {}
+
         return {
             'transactions': instance.transactions.filter(user=request.user).order_by('-date', '-id'),
             'position': InvestmentService.get_position(instance),
