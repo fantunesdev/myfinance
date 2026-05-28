@@ -31,7 +31,7 @@ export function setAnnualReport(transactions) {
         if (transaction.type == 'entrada') {
             revenues[year] += Number(transaction.value);
         } else {
-            if (transaction.category == 5) {
+            if (isInvestmentTransaction(transaction)) {
                 investments[year] += Number(transaction.value);
             } else {
                 if (category && category.ignore) continue;
@@ -62,11 +62,39 @@ export function setAnnualDataset(report) {
 }
 
 function getCategory(categoryId) {
-    const categories = JSON.parse(sessionStorage.getItem('categories'));
+    const categories = getSessionArray('categories');
 
     for (const category of categories) {
         if (category.id == categoryId) {
             return category;
         }
+    }
+}
+
+function isInvestmentTransaction(transaction) {
+    if (transaction.subcategory_is_investment !== undefined) {
+        return Boolean(transaction.subcategory_is_investment);
+    }
+
+    const subcategory = getSubcategory(transaction.subcategory);
+    return Boolean(subcategory && subcategory.is_investment);
+}
+
+function getSubcategory(subcategoryId) {
+    const subcategories = getSessionArray('subcategories');
+
+    for (const subcategory of subcategories) {
+        if (subcategory.id == subcategoryId) {
+            return subcategory;
+        }
+    }
+}
+
+function getSessionArray(key) {
+    try {
+        const data = JSON.parse(sessionStorage.getItem(key) || '[]');
+        return Array.isArray(data) ? data : [];
+    } catch (error) {
+        return [];
     }
 }

@@ -354,7 +354,7 @@ class TransactionView(BaseView):
 
                     # Contagem total de gastos
                     expenses += instance.value
-                if instance.category.id == 5:   # Força a contagem para categorias do tipo Aplicação
+                if instance.subcategory.is_investment:
                     expenses += instance.value
             else:   # Entradas
                 revenue += instance.value

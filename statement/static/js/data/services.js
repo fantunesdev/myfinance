@@ -94,12 +94,33 @@ export async function getResource(model, expands) {
         if (queryString) url += '?' + queryString;
     }
 
-    const response = await fetch(url);
-    const data = await response.json();
+    const data = await fetchJsonResource(url);
     const sessionStorageData = JSON.stringify(data);
 
     sessionStorage.setItem(`${model}`, sessionStorageData);
     return data;
+}
+
+async function fetchJsonResource(url) {
+    try {
+        const response = await fetch(url);
+        const contentType = response.headers.get('content-type') || '';
+
+        if (!response.ok) {
+            console.error(`Failed to fetch ${url}: ${response.status} ${response.statusText}`);
+            return [];
+        }
+
+        if (!contentType.includes('application/json')) {
+            console.error(`Expected JSON from ${url} but got ${contentType}`);
+            return [];
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error(`Error fetching ${url}:`, error);
+        return [];
+    }
 }
 
 /**

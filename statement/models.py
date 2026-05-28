@@ -44,6 +44,7 @@ class Subcategory(models.Model):
 
     description = models.CharField(max_length=30)
     category = models.ForeignKey(Category, related_name='subcategories', on_delete=models.PROTECT)
+    is_investment = models.BooleanField(default=False)
 
     def __str__(self):
         """Retorna a descrição da subcategoria."""

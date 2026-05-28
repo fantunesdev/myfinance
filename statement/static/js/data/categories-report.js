@@ -94,7 +94,7 @@ export function setCategoriesReport(transactions, categories) {
             } else {
                 if (!ignoredCategories.includes(transaction.category)) {
                     amount.expenses += transaction.value;
-                } else if (transaction.category == 5) {
+                } else if (isInvestmentTransaction(transaction)) {
                     amount.expenses += transaction.value;
                 }
             }
@@ -105,6 +105,34 @@ export function setCategoriesReport(transactions, categories) {
     expenses.sort((a, b) => (a.amount < b.amount ? 1 : a.amount > b.amount ? -1 : 0));
 
     return { revenue, expenses, amount };
+}
+
+function isInvestmentTransaction(transaction) {
+    if (transaction.subcategory_is_investment !== undefined) {
+        return Boolean(transaction.subcategory_is_investment);
+    }
+
+    const subcategory = getSubcategory(transaction.subcategory);
+    return Boolean(subcategory && subcategory.is_investment);
+}
+
+function getSubcategory(subcategoryId) {
+    const subcategories = getSessionArray('subcategories');
+
+    for (const subcategory of subcategories) {
+        if (subcategory.id == subcategoryId) {
+            return subcategory;
+        }
+    }
+}
+
+function getSessionArray(key) {
+    try {
+        const data = JSON.parse(sessionStorage.getItem(key) || '[]');
+        return Array.isArray(data) ? data : [];
+    } catch (error) {
+        return [];
+    }
 }
 
 /**

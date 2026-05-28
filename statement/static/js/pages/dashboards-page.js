@@ -33,7 +33,7 @@ async function drawAnnualStatementChart(select) {
 
     sessionStorage.setItem('annual_statement_transactions', JSON.stringify(normalizedTransactions));
 
-    const monthlyReport = monthsData.setMontlyReport(visibleTransactions);
+    const monthlyReport = monthsData.setMontlyReport(normalizedTransactions);
     const lineDataset = monthsData.setMonthDataset(monthlyReport[select]);
     const doughnutDataset = monthsData.setDoughnutDataset(monthlyReport);
 
@@ -58,7 +58,8 @@ async function drawAnnualOverviewChart(select) {
     await loadDashboardLookups();
 
     const visibleTransactions = Array.isArray(transactions) ? transactions.filter(isHomeScreenTransaction) : [];
-    const annualReport = annualData.setAnnualReport(visibleTransactions);
+    const normalizedTransactions = normalizeTransactions(visibleTransactions);
+    const annualReport = annualData.setAnnualReport(normalizedTransactions);
     const lineDataset = annualData.setAnnualDataset(annualReport[select]);
     const doughnutDataset = monthsData.setDoughnutDataset(annualReport);
 
@@ -562,6 +563,7 @@ function normalizeTransactions(transactions) {
             category_icon: getCategoryIcon(category),
             subcategory: subcategoryId,
             subcategory_name: getResourceDescription(subcategory),
+            subcategory_is_investment: Boolean(subcategory && subcategory.is_investment),
             card_name: getPaymentDescription({ ...t, account, card, bank }),
             payment_icon: getPaymentIcon({ ...t, account, card, bank }),
             payment_url: getPaymentUrl({ ...t, account, card }),
@@ -590,16 +592,26 @@ function getStatementTransactionsBySelect(select) {
     }
 
     if (select === 'investments') {
-        return transactions.filter(transaction => transaction.type !== 'entrada' && transaction.category === 5);
+        return transactions.filter(transaction => transaction.type !== 'entrada' && isInvestmentTransaction(transaction));
     }
 
     return transactions.filter(transaction => {
         if (transaction.type === 'entrada') return false;
-        if (transaction.category === 5) return false;
+        if (isInvestmentTransaction(transaction)) return false;
 
         const category = categories.find(item => item.id === transaction.category);
         return !(category && category.ignore);
     });
+}
+
+function isInvestmentTransaction(transaction) {
+    if (transaction.subcategory_is_investment !== undefined) {
+        return Boolean(transaction.subcategory_is_investment);
+    }
+
+    const subcategories = JSON.parse(sessionStorage.getItem('subcategories') || '[]');
+    const subcategory = subcategories.find(item => item.id === transaction.subcategory);
+    return Boolean(subcategory && subcategory.is_investment);
 }
 
 function isHomeScreenTransaction(transaction) {
