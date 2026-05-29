@@ -4,22 +4,59 @@ const datasetsElement = document.getElementById('investment-progression-datasets
 const datasets = datasetsElement ? JSON.parse(datasetsElement.textContent) : [];
 const interestDatasetsElement = document.getElementById('investment-interest-datasets');
 const interestDatasets = interestDatasetsElement ? JSON.parse(interestDatasetsElement.textContent) : [];
+const chartToggle = document.getElementById('investment-chart-toggle');
 
-if (datasets.length && datasets[0].names.length) {
-    window.investmentProgressionChart = stackedAreaChart.drawStackedAreaChart(
+let activeChart = 'progression';
+
+function destroyInvestmentChart() {
+    if (window.investmentChart) {
+        window.investmentChart.destroy();
+        window.investmentChart = null;
+    }
+}
+
+function setChartToggleMode(mode) {
+    if (!chartToggle) return;
+
+    if (mode === 'interest') {
+        chartToggle.innerHTML = '<i class="fa-solid fa-chart-area"></i>';
+        chartToggle.setAttribute('title', 'Evolução patrimonial');
+        chartToggle.setAttribute('aria-label', 'Evolução patrimonial');
+        return;
+    }
+
+    chartToggle.innerHTML = '<i class="fa-solid fa-percent"></i>';
+    chartToggle.setAttribute('title', 'Juros e rendimentos');
+    chartToggle.setAttribute('aria-label', 'Juros e rendimentos');
+}
+
+function drawProgressionChart() {
+    destroyInvestmentChart();
+    activeChart = 'progression';
+    setChartToggleMode('progression');
+
+    if (!datasets.length || !datasets[0].names.length) return;
+
+    window.investmentChart = stackedAreaChart.drawStackedAreaChart(
         datasets,
         'Evolução Patrimonial'
     );
 }
 
-if (interestDatasets.length && interestDatasets[0].names.length) {
-    const canvas = document.getElementById('interest-chart');
+function drawInterestChart() {
+    destroyInvestmentChart();
+    activeChart = 'interest';
+    setChartToggleMode('interest');
+
+    if (!interestDatasets.length || !interestDatasets[0].names.length) return;
+
+    const canvas = document.getElementById('line-chart');
     const formatter = new Intl.NumberFormat('pt-BR', {
         style: 'currency',
         currency: 'BRL',
     });
 
-    window.investmentInterestChart = new Chart(canvas.getContext('2d'), {
+    window.investmentChart = new Chart(canvas.getContext('2d'), {
         type: 'line',
         data: {
             labels: interestDatasets[0].names,
@@ -68,3 +105,23 @@ if (interestDatasets.length && interestDatasets[0].names.length) {
         },
     });
 }
+
+if (chartToggle) {
+    chartToggle.addEventListener('click', () => {
+        if (activeChart === 'interest') {
+            drawProgressionChart();
+            return;
+        }
+
+        drawInterestChart();
+    });
+
+    chartToggle.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
+            event.preventDefault();
+            chartToggle.click();
+        }
+    });
+}
+
+drawProgressionChart();
