@@ -7,6 +7,7 @@ from statement.views.base_view import BaseView
 
 class InvestmentCrudView(BaseView):
     class_has_user = True
+    show_duplicate_checker = False
 
     def _set_form(self, request, instance):
         match self._context:

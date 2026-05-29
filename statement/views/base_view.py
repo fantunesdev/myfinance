@@ -34,6 +34,7 @@ class BaseView:
     model = None
     redirect_url = None
     service = None
+    show_duplicate_checker = True
     template_is_global = {
         'create': True,
         'delete': True,
@@ -263,7 +264,7 @@ class BaseView:
                 'delete': f'delete_{self.snake_case_classname}',
             },
             'actions_list': self.actions_list,
-            'show_duplicate_checker': True,
+            'show_duplicate_checker': self.show_duplicate_checker,
             'context': self._context,
         }
 
