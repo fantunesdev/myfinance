@@ -175,6 +175,68 @@ class InvestmentTransactionService(InvestmentBaseService):
         return source_transaction, destination_transaction
 
     @classmethod
+    @transaction.atomic
+    def redeem_to_wallet(cls, source, gross_amount, principal_amount, date=None, notes=''):
+        wallet = cls.get_or_create_default_wallet(source.user)
+        if source.id == wallet.id:
+            raise ValueError('A carteira default não pode ser resgatada para ela mesma.')
+
+        operation_id = uuid.uuid4()
+        transaction_date = date or timezone.localdate()
+        gross_amount = cls._absolute_amount(gross_amount)
+        principal_amount = cls._absolute_amount(principal_amount)
+        cls._validate_positive_amount(gross_amount)
+        cls._validate_positive_amount(principal_amount)
+
+        created_transactions = []
+        result_amount = gross_amount - principal_amount
+        if result_amount > Decimal('0'):
+            created_transactions.append(
+                cls.model.objects.create(
+                    investment=source,
+                    date=transaction_date,
+                    type='rendimento',
+                    amount=result_amount,
+                    operation_id=operation_id,
+                    notes=notes,
+                    user=source.user,
+                )
+            )
+        elif result_amount < Decimal('0'):
+            created_transactions.append(
+                cls.model.objects.create(
+                    investment=source,
+                    date=transaction_date,
+                    type='custo',
+                    amount=abs(result_amount),
+                    operation_id=operation_id,
+                    notes=notes,
+                    user=source.user,
+                )
+            )
+
+        source_transaction = cls.model.objects.create(
+            investment=source,
+            date=transaction_date,
+            type='resgate',
+            amount=gross_amount,
+            operation_id=operation_id,
+            notes=notes,
+            user=source.user,
+        )
+        wallet_transaction = cls.model.objects.create(
+            investment=wallet,
+            date=transaction_date,
+            type='aporte',
+            amount=gross_amount,
+            operation_id=operation_id,
+            notes=notes,
+            user=source.user,
+        )
+        created_transactions.extend([source_transaction, wallet_transaction])
+        return created_transactions
+
+    @classmethod
     def sync_manual_wallet_counterpart(cls, instance):
         if not cls._needs_manual_wallet_counterpart(instance):
             cls.delete_manual_wallet_counterpart(instance, clear_operation_id=True)

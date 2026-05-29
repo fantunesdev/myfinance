@@ -31,6 +31,7 @@
         </div>
         <div class="box-body investments-dashboard">
             {{ progression_datasets|json_script:"investment-progression-datasets" }}
+            {{ interest_datasets|json_script:"investment-interest-datasets" }}
             <div class="investment-actions">
                 <a href="{% url 'create_investment' %}" class="btn btn-info">Novo investimento</a>
                 <a href="{% url 'create_broker' %}" class="btn btn-info">Novo broker</a>
@@ -47,11 +48,27 @@
                 <canvas id="line-chart" width="40" height="15"></canvas>
             </div>
 
+            <div class="investment-chart">
+                <canvas id="interest-chart" width="40" height="12"></canvas>
+            </div>
+
             <div class="investment-summary">
                 <a href="{% url 'get_all_investment' %}" class="investment-card investment-card-total">
                     <span>Patrimônio total</span>
                     <strong>{{ total|to_reais }}</strong>
                 </a>
+                <div class="investment-card investment-card-income">
+                    <span>Rendimentos</span>
+                    <strong>{{ total_income|to_reais }}</strong>
+                </div>
+                <div class="investment-card investment-card-cost">
+                    <span>Custos</span>
+                    <strong>{{ total_costs|to_reais }}</strong>
+                </div>
+                <div class="investment-card investment-card-net-income">
+                    <span>Juros líquidos</span>
+                    <strong>{{ net_income|to_reais }}</strong>
+                </div>
                 {% for label, amount in by_type %}
                     <div class="investment-card">
                         <span>{{ label }}</span>

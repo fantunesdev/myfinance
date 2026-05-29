@@ -71,12 +71,19 @@ class InvestmentService(InvestmentBaseService):
             by_type[position['asset_type_label']] += position['value']
             by_broker[position['broker'].description] += position['value']
 
+        total_income = sum((position['income'] for position in positions), Decimal('0'))
+        total_costs = sum((position['costs'] for position in positions), Decimal('0'))
+
         return {
             'positions': positions,
             'total': total,
+            'total_income': total_income,
+            'total_costs': total_costs,
+            'net_income': total_income - total_costs,
             'by_type': sorted(by_type.items()),
             'by_broker': sorted(by_broker.items()),
             'progression_datasets': cls.get_progression_datasets(user),
+            'interest_datasets': cls.get_interest_datasets(user),
         }
 
     @classmethod
@@ -146,3 +153,49 @@ class InvestmentService(InvestmentBaseService):
                 continue
             snapshot[investment.asset.get_asset_type_display()] += value
         return snapshot
+
+    @classmethod
+    def get_interest_datasets(cls, user):
+        transactions = (
+            InvestmentTransaction.objects.filter(investment__user=user, type__in=['rendimento', 'custo'])
+            .order_by('date', 'id')
+        )
+        labels = []
+        income_values = []
+        cost_values = []
+        net_values = []
+        income = Decimal('0')
+        costs = Decimal('0')
+
+        for transaction in transactions:
+            amount = transaction.amount or Decimal('0')
+            if transaction.type == 'rendimento':
+                income += amount
+            else:
+                costs += amount
+
+            labels.append(transaction.date.strftime('%d/%m/%Y'))
+            income_values.append(float(income))
+            cost_values.append(float(costs * Decimal('-1')))
+            net_values.append(float(income - costs))
+
+        return [
+            {
+                'label': 'Rendimentos acumulados',
+                'color': 'rgba(46, 125, 90, 1)',
+                'names': labels,
+                'values': income_values,
+            },
+            {
+                'label': 'Custos acumulados',
+                'color': 'rgba(139, 0, 0, 1)',
+                'names': labels,
+                'values': cost_values,
+            },
+            {
+                'label': 'Juros líquidos',
+                'color': 'rgba(42, 92, 148, 1)',
+                'names': labels,
+                'values': net_values,
+            },
+        ]

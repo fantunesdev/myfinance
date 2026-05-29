@@ -1,3 +1,5 @@
+from django import forms
+
 from investments.forms.base import DateInput, UserFilteredModelForm
 from investments.models import Investment
 from investments.models import InvestmentTransaction
@@ -36,3 +38,29 @@ class InvestmentCashMovementForm(UserFilteredModelForm):
         widgets = {
             'date': DateInput(),
         }
+
+
+class InvestmentRedemptionForm(forms.Form):
+    date = forms.DateField(label='Data', input_formats=['%Y-%m-%d'], widget=DateInput())
+    principal_amount = forms.DecimalField(
+        label='Principal resgatado',
+        max_digits=10,
+        decimal_places=2,
+        min_value=0.01,
+    )
+    amount = forms.DecimalField(
+        label='Valor recebido no caixa',
+        max_digits=10,
+        decimal_places=2,
+        min_value=0.01,
+    )
+    notes = forms.CharField(
+        label='Anotações',
+        required=False,
+        widget=forms.Textarea(attrs={'rows': 3}),
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs.setdefault('class', 'form-control')

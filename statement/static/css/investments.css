@@ -43,6 +43,21 @@
     border-color: #255f48;
 }
 
+.investment-card-income {
+    background: #172d23;
+    border-color: #2f7b58;
+}
+
+.investment-card-cost {
+    background: #321d20;
+    border-color: #8b3038;
+}
+
+.investment-card-net-income {
+    background: #182638;
+    border-color: #2a5c94;
+}
+
 .investment-actions {
     display: flex;
     flex-wrap: wrap;

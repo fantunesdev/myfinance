@@ -4,7 +4,7 @@ from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 
-from investments.forms.investment import InvestmentCashMovementForm, InvestmentForm
+from investments.forms.investment import InvestmentCashMovementForm, InvestmentForm, InvestmentRedemptionForm
 from investments.models import Investment
 from investments.services.investment import InvestmentService
 from investments.services.transaction import InvestmentTransactionService
@@ -77,18 +77,18 @@ class InvestmentView(InvestmentCrudView):
             return redirect('detail_investment', id=investment.id)
 
         if request.method == 'POST':
-            form = InvestmentCashMovementForm(request.POST)
+            form = InvestmentRedemptionForm(request.POST)
             if form.is_valid():
-                InvestmentTransactionService.transfer_between_investments(
+                InvestmentTransactionService.redeem_to_wallet(
                     source=investment,
-                    destination=wallet,
-                    amount=form.cleaned_data['amount'],
+                    gross_amount=form.cleaned_data['amount'],
+                    principal_amount=form.cleaned_data['principal_amount'],
                     date=form.cleaned_data['date'],
                     notes=form.cleaned_data['notes'],
                 )
                 return redirect('investments_dashboard')
         else:
-            form = InvestmentCashMovementForm()
+            form = InvestmentRedemptionForm()
 
         self._context = 'redeem_to_wallet'
         return self._render(
