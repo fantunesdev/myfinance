@@ -66,6 +66,9 @@
                                 <td class="no-wrap actions-cell">
                                     <div class="actions-cell-inner">
                                         <a href="{% url 'detail_investment_transaction' transaction.id %}"><i class="fa-solid fa-file-lines action-icon"></i></a>
+                                        {% if default_wallet and instance.id == default_wallet.id and transaction.type == 'aporte' %}
+                                            <a href="{% url 'apply_from_wallet_transaction' transaction.id %}" title="Aplicar a partir desta movimentação"><i class="fa-solid fa-arrow-right action-icon"></i></a>
+                                        {% endif %}
                                         <a href="{% url 'update_investment_transaction' transaction.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
                                         <a href="{% url 'delete_investment_transaction' transaction.id %}"><i class="fa-solid fa-trash action-icon"></i></a>
                                     </div>

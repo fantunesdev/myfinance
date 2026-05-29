@@ -33,6 +33,11 @@ urlpatterns = [
     path('investimentos/remover/<int:id>/', investment_view.delete, name='delete_investment'),
     path('investimentos/', investment_view.get_all, name='get_all_investment'),
     path('movimentacoes/cadastrar/', transaction_view.create, name='create_investment_transaction'),
+    path(
+        'movimentacoes/<int:id>/aplicar/',
+        transaction_view.apply_from_wallet_transaction,
+        name='apply_from_wallet_transaction',
+    ),
     path('movimentacoes/<int:id>/', transaction_view.detail, name='detail_investment_transaction'),
     path('movimentacoes/editar/<int:id>/', transaction_view.update, name='update_investment_transaction'),
     path('movimentacoes/remover/<int:id>/', transaction_view.delete, name='delete_investment_transaction'),

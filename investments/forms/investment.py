@@ -40,6 +40,33 @@ class InvestmentCashMovementForm(UserFilteredModelForm):
         }
 
 
+class InvestmentApplicationFromWalletForm(forms.Form):
+    investment = forms.ModelChoiceField(label='Investimento de destino', queryset=Investment.objects.none())
+    date = forms.DateField(label='Data', input_formats=['%Y-%m-%d'], widget=DateInput())
+    amount = forms.DecimalField(
+        label='Valor',
+        max_digits=10,
+        decimal_places=2,
+        min_value=0.01,
+    )
+    notes = forms.CharField(
+        label='Anotações',
+        required=False,
+        widget=forms.Textarea(attrs={'rows': 3}),
+    )
+
+    def __init__(self, *args, user=None, wallet=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if user:
+            queryset = Investment.objects.filter(user=user)
+            if wallet:
+                queryset = queryset.exclude(id=wallet.id)
+            self.fields['investment'].queryset = queryset
+
+        for field in self.fields.values():
+            field.widget.attrs.setdefault('class', 'form-control')
+
+
 class InvestmentRedemptionForm(forms.Form):
     date = forms.DateField(label='Data', input_formats=['%Y-%m-%d'], widget=DateInput())
     principal_amount = forms.DecimalField(
