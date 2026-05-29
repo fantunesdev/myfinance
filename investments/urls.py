@@ -38,6 +38,11 @@ urlpatterns = [
         transaction_view.apply_from_wallet_transaction,
         name='apply_from_wallet_transaction',
     ),
+    path(
+        'movimentacoes/<int:id>/resgatar/',
+        transaction_view.redeem_from_investment_transaction,
+        name='redeem_from_investment_transaction',
+    ),
     path('movimentacoes/<int:id>/', transaction_view.detail, name='detail_investment_transaction'),
     path('movimentacoes/editar/<int:id>/', transaction_view.update, name='update_investment_transaction'),
     path('movimentacoes/remover/<int:id>/', transaction_view.delete, name='delete_investment_transaction'),
