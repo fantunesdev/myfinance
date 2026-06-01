@@ -102,6 +102,7 @@ class InvestmentTransaction(models.Model):
 
     investment = models.ForeignKey(Investment, on_delete=models.CASCADE, related_name='transactions')
     date = models.DateField()
+    due_date = models.DateField(null=True, blank=True)
     type = models.CharField(max_length=20, choices=TYPE_CHOICES)
     amount = models.DecimalField(max_digits=14, decimal_places=2, default=0)
     quantity = models.DecimalField(max_digits=20, decimal_places=8, null=True, blank=True)

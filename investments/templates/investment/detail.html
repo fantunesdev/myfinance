@@ -50,6 +50,7 @@
                     <thead>
                         <tr>
                             <th>Data</th>
+                            <th>Vencimento</th>
                             <th>Tipo</th>
                             <th>Valor</th>
                             <th>Anotações</th>
@@ -60,6 +61,7 @@
                         {% for transaction in transactions %}
                             <tr>
                                 <td>{{ transaction.date|date:"d/m/Y" }}</td>
+                                <td>{{ transaction.due_date|date:"d/m/Y"|default:"-" }}</td>
                                 <td>{{ transaction.get_type_display }}</td>
                                 <td>{{ transaction.amount|to_reais }}</td>
                                 <td>{{ transaction.notes }}</td>
@@ -79,7 +81,7 @@
                             </tr>
                         {% empty %}
                             <tr>
-                                <td colspan="5" style="text-align: center; padding: 20px;">Nenhuma movimentação registrada ainda</td>
+                                <td colspan="6" style="text-align: center; padding: 20px;">Nenhuma movimentação registrada ainda</td>
                             </tr>
                         {% endfor %}
                     </tbody>

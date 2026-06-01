@@ -50,11 +50,12 @@ class InvestmentView(InvestmentCrudView):
                     destination=investment,
                     amount=form.cleaned_data['amount'],
                     date=form.cleaned_data['date'],
+                    due_date=form.cleaned_data['due_date'],
                     notes=form.cleaned_data['notes'],
                 )
                 return redirect('investments_dashboard')
         else:
-            form = InvestmentCashMovementForm()
+            form = InvestmentCashMovementForm(initial={'due_date': investment.due_date})
 
         self._context = 'apply_from_wallet'
         return self._render(

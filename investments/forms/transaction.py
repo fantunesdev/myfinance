@@ -11,6 +11,7 @@ class InvestmentTransactionForm(UserFilteredModelForm):
         labels = {
             'investment': 'Investimento',
             'date': 'Data',
+            'due_date': 'Vencimento',
             'type': 'Tipo',
             'amount': 'Valor',
             'quantity': 'Quantidade',
@@ -20,4 +21,5 @@ class InvestmentTransactionForm(UserFilteredModelForm):
         }
         widgets = {
             'date': DateInput(),
+            'due_date': DateInput(),
         }

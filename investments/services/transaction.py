@@ -22,6 +22,7 @@ class InvestmentTransactionService(InvestmentBaseService):
     def create(cls, form, user=None, id=None):
         instance = form.save(commit=False)
         instance = cls.verify_user_field(instance, user)
+        cls.set_default_due_date(instance)
         instance.save()
         cls.sync_manual_wallet_counterpart(instance)
         return instance
@@ -29,6 +30,7 @@ class InvestmentTransactionService(InvestmentBaseService):
     @classmethod
     @transaction.atomic
     def update(cls, form, instance):
+        cls.set_default_due_date(form.instance)
         instance = super().update(form, instance)
         cls.sync_manual_wallet_counterpart(instance)
         return instance
@@ -142,7 +144,7 @@ class InvestmentTransactionService(InvestmentBaseService):
 
     @classmethod
     @transaction.atomic
-    def transfer_between_investments(cls, source, destination, amount, date=None, notes=''):
+    def transfer_between_investments(cls, source, destination, amount, date=None, due_date=None, notes=''):
         if source.id == destination.id:
             raise ValueError('Os investimentos de origem e destino devem ser diferentes.')
 
@@ -166,6 +168,7 @@ class InvestmentTransactionService(InvestmentBaseService):
         destination_transaction = cls.model.objects.create(
             investment=destination,
             date=transaction_date,
+            due_date=due_date or destination.due_date,
             type='aporte',
             amount=amount,
             operation_id=operation_id,
@@ -265,15 +268,17 @@ class InvestmentTransactionService(InvestmentBaseService):
 
         if wallet_transaction:
             wallet_transaction.date = instance.date
+            wallet_transaction.due_date = None
             wallet_transaction.amount = instance.amount
             wallet_transaction.notes = notes
             wallet_transaction.user = instance.user
-            wallet_transaction.save(update_fields=['date', 'amount', 'notes', 'user'])
+            wallet_transaction.save(update_fields=['date', 'due_date', 'amount', 'notes', 'user'])
             return wallet_transaction
 
         return cls.model.objects.create(
             investment=wallet,
             date=instance.date,
+            due_date=None,
             type=wallet_transaction_type,
             amount=instance.amount,
             operation_id=operation_id,
@@ -297,6 +302,11 @@ class InvestmentTransactionService(InvestmentBaseService):
     @staticmethod
     def _absolute_amount(value):
         return abs(Decimal(str(value or 0)))
+
+    @staticmethod
+    def set_default_due_date(instance):
+        if instance.type == 'aporte' and not instance.due_date and instance.investment_id:
+            instance.due_date = instance.investment.due_date
 
     @staticmethod
     def _validate_positive_amount(amount):

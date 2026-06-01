@@ -29,20 +29,23 @@ class InvestmentForm(UserFilteredModelForm):
 class InvestmentCashMovementForm(UserFilteredModelForm):
     class Meta:
         model = InvestmentTransaction
-        fields = ['date', 'amount', 'notes']
+        fields = ['date', 'due_date', 'amount', 'notes']
         labels = {
             'date': 'Data',
+            'due_date': 'Vencimento',
             'amount': 'Valor',
             'notes': 'Anotações',
         }
         widgets = {
             'date': DateInput(),
+            'due_date': DateInput(),
         }
 
 
 class InvestmentApplicationFromWalletForm(forms.Form):
     investment = forms.ModelChoiceField(label='Investimento de destino', queryset=Investment.objects.none())
     date = forms.DateField(label='Data', input_formats=['%Y-%m-%d'], widget=DateInput())
+    due_date = forms.DateField(label='Vencimento', input_formats=['%Y-%m-%d'], required=False, widget=DateInput())
     amount = forms.DecimalField(
         label='Valor',
         max_digits=10,

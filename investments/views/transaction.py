@@ -43,6 +43,7 @@ class InvestmentTransactionView(InvestmentCrudView):
                     destination=form.cleaned_data['investment'],
                     amount=form.cleaned_data['amount'],
                     date=form.cleaned_data['date'],
+                    due_date=form.cleaned_data['due_date'],
                     notes=form.cleaned_data['notes'],
                 )
                 wallet_transaction.operation_id = source_transaction.operation_id
