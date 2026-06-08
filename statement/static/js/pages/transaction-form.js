@@ -30,6 +30,24 @@ const homeScreenCache = {
     }
 };
 
+function getCardNumbersFromTemplate() {
+    const raw = window.card_numbers_json || '[]';
+    if (typeof raw === 'string') {
+        try {
+            return JSON.parse(raw);
+        } catch (e) {
+            return [];
+        }
+    }
+    return Array.isArray(raw) ? raw : [];
+}
+
+function getCardNumberHomeScreen(cardNumberId) {
+    const cardNumber = getCardNumbersFromTemplate().find(item => String(item.id) === String(cardNumberId));
+    if (!cardNumber || cardNumber.home_screen === undefined) return null;
+    return Boolean(cardNumber.home_screen);
+}
+
 /**
  * Busca dados de home_screen da API com cache
  */
@@ -70,7 +88,11 @@ async function updateHomeScreenCheckbox() {
     if (cardNumberSelect && cardNumberSelect.offsetParent !== null) {
         const cardNumberId = cardNumberSelect.value;
         if (cardNumberId) {
-            homeScreenValue = await fetchHomeScreenValue('card-numbers', cardNumberId);
+            const cardNumberHomeScreen = getCardNumberHomeScreen(cardNumberId);
+            homeScreenValue =
+                cardNumberHomeScreen !== null
+                    ? cardNumberHomeScreen
+                    : await fetchHomeScreenValue('cards', cardSelect ? cardSelect.value : null);
             homeScreenCheckbox.checked = homeScreenValue;
             return;
         }
@@ -293,26 +315,7 @@ selectPaymentMethod();
 async function populateCardNumbersForCard(cardId) {
     const select = document.getElementById('id_card_number');
     const wrapper = document.getElementById('div-card-number');
-
-    // card_numbers_json pode ser injetado como um array JS (objeto) ou como uma string JSON.
-    const raw = window.card_numbers_json || '[]';
-    let cardNumbers = [];
-    if (typeof raw === 'string') {
-        try {
-            cardNumbers = JSON.parse(raw);
-        } catch (e) {
-            cardNumbers = [];
-        }
-    } else if (Array.isArray(raw)) {
-        cardNumbers = raw;
-    } else {
-        // Tipo inesperado, tentar converter
-        try {
-            cardNumbers = JSON.parse(JSON.stringify(raw));
-        } catch (e) {
-            cardNumbers = [];
-        }
-    }
+    const cardNumbers = getCardNumbersFromTemplate();
 
     // Filtra por cardId
     const list = cardNumbers.filter(c => String(c.card_id) === String(cardId));

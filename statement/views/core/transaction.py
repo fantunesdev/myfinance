@@ -67,7 +67,7 @@ class TransactionView(BaseView):
 
         # Fornece os números de cartão em JSON para uso pelo JavaScript do formulário
         card_numbers_qs = CardNumber.objects.select_related('card').all()
-        card_numbers = list(card_numbers_qs.values('id', 'number', 'name', 'card_id'))
+        card_numbers = list(card_numbers_qs.values('id', 'number', 'name', 'card_id', 'home_screen'))
 
         specific_content = {
             'create': True,
@@ -305,11 +305,16 @@ class TransactionView(BaseView):
         """
         return {}
 
+    def _add_context_on_templatetags(self, request, instance):
+        card_numbers_qs = CardNumber.objects.select_related('card').all()
+        card_numbers = list(card_numbers_qs.values('id', 'number', 'name', 'card_id', 'home_screen'))
+        return {'card_numbers_json': json.dumps(card_numbers)}
+
     def _set_specific_context(self, instances, year, month, **kwargs):
         # Fornece os números de cartão para os templates (em JSON) para que
         # a lógica cliente-populada possa preencher dinamicamente o select de card_number.
         card_numbers_qs = CardNumber.objects.select_related('card').all()
-        card_numbers = list(card_numbers_qs.values('id', 'number', 'name', 'card_id'))
+        card_numbers = list(card_numbers_qs.values('id', 'number', 'name', 'card_id', 'home_screen'))
         # Calcula o valor total para o conjunto renderizado (de forma eficiente quando possível)
         from django.db.models import Sum
 
