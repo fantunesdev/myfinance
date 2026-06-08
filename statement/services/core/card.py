@@ -1,5 +1,7 @@
 import re
 
+from dateutil.relativedelta import relativedelta
+
 from statement.models import Card
 from statement.services.base_service import BaseService
 
@@ -15,9 +17,11 @@ class CardService(BaseService):
         """
         Determina a data de vencimento a partir da data de fechamento do cartão
         """
+        if card.prepaid:
+            return date
+
         if card.closing_day < date.day:
-            month = date.month + 1
-            return date.replace(day=card.expiration_day, month=month)
+            date = date + relativedelta(months=1)
         return date.replace(day=card.expiration_day)
 
     @staticmethod

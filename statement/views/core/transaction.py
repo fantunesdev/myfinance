@@ -415,7 +415,9 @@ class TransactionView(BaseView):
                     user = self._get_user(request)
                     InstallmentService.create(form=form, user=user, transaction=instance)
             case 'update':
-                pass
+                if instance.installments_number > 0 and not instance.installment:
+                    user = self._get_user(request)
+                    InstallmentService.create(form=form, user=user, transaction=instance)
 
     def set_navigation_templatetags(self, year, month):
         """

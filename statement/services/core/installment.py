@@ -52,6 +52,8 @@ class InstallmentService(BaseService):
         """
         transaction.installment = installment
         transaction.paid = 1
+        if transaction.card:
+            transaction.payment_date = CardService.set_processing_date(transaction.card, transaction.posted_date)
         transaction.value = cls._set_transaction_value(transaction)
         cls._update_first_transaction(transaction)
         return transaction
@@ -66,12 +68,14 @@ class InstallmentService(BaseService):
         start = transaction.paid + 1
         stop = transaction.installments_number + 1
 
+        next_transaction = copy.copy(transaction)
+
         for i in range(start, stop):
-            transaction.paid = i
-            transaction.payment_date = DateTimeUtils.add_months(transaction.payment_date, 1)
+            next_transaction.paid = i
+            next_transaction.payment_date = DateTimeUtils.add_months(next_transaction.payment_date, 1)
 
             # Cria um dicionário com os dados da transação atual (sem o id)
-            data = model_to_dict(transaction)
+            data = model_to_dict(next_transaction)
             data.pop('id', None)
 
             # Formata datas e valores para o formulário
@@ -84,8 +88,8 @@ class InstallmentService(BaseService):
                     data[key] = ''
 
             # Cria um formulário com dados (sem instance) para que o save crie uma nova linha
-            transaction_form = TransactionForm(transaction.user, data)
-            TransactionService.create(transaction_form, transaction.user)
+            transaction_form = TransactionForm(next_transaction.user, data)
+            TransactionService.create(transaction_form, next_transaction.user)
 
     @classmethod
     def _remove_installments(cls, form, transactions):
@@ -113,7 +117,12 @@ class InstallmentService(BaseService):
         :transaction (models.Transaction): Uma instância do model Transaction.
         :value (float): O valor a ser atualizado.
         """
-        data = {'value': transaction.value, 'paid': transaction.paid, 'installment': transaction.installment}
+        data = {
+            'value': transaction.value,
+            'paid': transaction.paid,
+            'payment_date': transaction.payment_date,
+            'installment': transaction.installment,
+        }
         if transaction.card:
             data['posted_date'] = transaction.posted_date
         cls.patch(transaction, data)
