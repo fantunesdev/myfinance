@@ -203,7 +203,6 @@ class InstallmentService(BaseService):
                 cls._remove_installments(form, remove)
                 cls._update_transactions(request, form, update)
             case transactions_number:
-                print('apenas atualiza')
                 cls._update_transactions(request, form, transactions)
 
     @classmethod
