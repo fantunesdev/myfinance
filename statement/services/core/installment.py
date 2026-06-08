@@ -16,6 +16,10 @@ class InstallmentService(BaseService):
     model = Installment
     user_field = 'user'
 
+    @staticmethod
+    def _is_truthy(value):
+        return value is True or str(value).lower() == 'true'
+
     @classmethod
     def create(cls, form, user=None, id=None, transaction=None):
         """
@@ -148,7 +152,7 @@ class InstallmentService(BaseService):
             form_data = form.data.copy() if hasattr(form.data, 'copy') else dict(form.data)
 
             # Dinamicamente adiciona todos os campos obrigatórios que não estão no formulário
-            for field_name, field in TransactionForm().fields.items():
+            for field_name, field in TransactionForm(transaction.user).fields.items():
                 # Verifica se o campo é obrigatório e não está nos dados do formulário
                 if field.required and (field_name not in form_data or not form_data[field_name]):
                     # Obtém o valor do campo da transação original
@@ -169,10 +173,14 @@ class InstallmentService(BaseService):
             if hasattr(transaction, 'installment') and transaction.installment:
                 new_transaction.installment = transaction.installment
                 # Adiciona o ID do installment nos dados do formulário se for um campo no formulário
-                if 'installment' in TransactionForm().fields:
+                if 'installment' in TransactionForm(transaction.user).fields:
                     form_data['installment'] = str(transaction.installment.pk)
 
-            return TransactionForm(data=form_data, files=form.files, instance=new_transaction)
+            if InstallmentService._is_truthy(form.cleaned_data.get('reorder_posted_dates')):
+                new_transaction.posted_date = transaction.posted_date
+                form_data['posted_date'] = transaction.posted_date.strftime('%Y-%m-%d')
+
+            return TransactionForm(transaction.user, data=form_data, files=form.files, instance=new_transaction)
         return form
 
     @classmethod
@@ -203,13 +211,27 @@ class InstallmentService(BaseService):
         """
         Atualiza as parcelas de um parcelamento
         """
+        reorder_posted_dates = cls._is_truthy(form.cleaned_data.get('reorder_posted_dates'))
+        base_posted_date = form.cleaned_data.get('posted_date')
+
         for index, transaction in enumerate(transactions):
-            posted_date = form.cleaned_data.get('posted_date')
-            if transaction.card:
-                payment_date = CardService.set_processing_date(transaction.card, posted_date)
-                transaction.payment_date = DateTimeUtils.add_months(payment_date, index)
+            if reorder_posted_dates:
+                transaction.posted_date = DateTimeUtils.add_months(base_posted_date, index)
             else:
-                transaction.payment_date = DateTimeUtils.add_months(posted_date, index)
+                transaction.posted_date = base_posted_date
+
+            if transaction.card:
+                if reorder_posted_dates:
+                    transaction.payment_date = (
+                        transaction.posted_date
+                        if transaction.card.prepaid
+                        else transaction.posted_date.replace(day=transaction.card.expiration_day)
+                    )
+                else:
+                    payment_date = CardService.set_processing_date(transaction.card, transaction.posted_date)
+                    transaction.payment_date = DateTimeUtils.add_months(payment_date, index)
+            else:
+                transaction.payment_date = DateTimeUtils.add_months(base_posted_date, index)
             transaction.paid = index + 1
             transaction_form = cls._set_transaction_form(form, transaction)
             last_transaction = TransactionService.update(transaction_form, transaction)
@@ -229,11 +251,11 @@ class InstallmentService(BaseService):
             if transaction.payment_date > initial_date:
                 if advanced < quantity:
                     transaction.payment_date = next_expiration
-                    form_transaction = TransactionForm(instance=transaction)
+                    form_transaction = TransactionForm(transaction.user, instance=transaction)
                     TransactionService.update(form_transaction, transaction)
                     advanced += 1
                 else:
                     not_advanced += 1
                     transaction.payment_date = DateTimeUtils.add_months(next_expiration, not_advanced)
-                    form_transaction = TransactionForm(instance=transaction)
+                    form_transaction = TransactionForm(transaction.user, instance=transaction)
                     TransactionService.update(form_transaction, transaction)

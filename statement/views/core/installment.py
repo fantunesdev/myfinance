@@ -35,9 +35,25 @@ class InstallmentView(BaseView):
         )
         self._first_transaction = None
 
+    @method_decorator(login_required)
     def update(self, request, id):
         self._first_transaction = self._get_transaction(request, id)
-        return super().update(request, id)
+        self._context = 'update'
+        instance = self.service.get_by_id(id)
+        form = self._set_form(request, instance)
+        if form.is_valid():
+            self._preserve_unrendered_fields_after_validation(form, self._first_transaction)
+            self._custom_actions(request=request, form=form, instance=form.instance)
+            return redirect(self.redirect_url)
+
+        additional_context = self._add_context_on_templatetags(request, instance)
+        specific_content = {
+            'old_instance': instance,
+            'update': True,
+            **additional_context,
+        }
+        template = self._set_template_by_global_status('update')
+        return self._render(request, form, template, specific_content)
 
     @method_decorator(login_required)
     def advance_transactions(self, request, id):
@@ -91,7 +107,11 @@ class InstallmentView(BaseView):
         """
         Sobrescreve a função da classe pai para retornar um formulário customizado
         """
-        return InstallmentForm(request.POST or None, instance=self._first_transaction)
+        return InstallmentForm(request.user, request.POST or None, instance=self._first_transaction)
+
+    def _preserve_unrendered_fields_after_validation(self, form, original_instance):
+        original_transaction = type(self._first_transaction).objects.get(pk=self._first_transaction.pk)
+        super()._preserve_unrendered_fields_after_validation(form, original_transaction)
 
     def _custom_actions(self, request, form, instance):
         """
@@ -104,5 +124,5 @@ class InstallmentView(BaseView):
         """
         match self._context:
             case 'update':
-                transactions = self._get_transactions(request, instance.id)
+                transactions = self._get_transactions(request, instance.installment_id)
                 InstallmentService.update_installment_plan(request, form, transactions)
