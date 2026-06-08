@@ -116,15 +116,17 @@ function selectPaymentMethod() {
     }
     // Atualizar home_screen quando muda o payment method
     updateHomeScreenCheckbox();
+    changePaymentDateInput();
 }
 
 /**
  * Altera a dada de efetivação de acordo com o meio de pagamento e a data do lançamento.
  */
 async function changePaymentDateInput() {
-    if (selects.paymentMethod.value == 1) {
+    let card = null;
+    if (selects.card.value) {
         let cardId = selects.card.value;
-        var card = await services.getSpecificResource('cards', cardId);
+        card = await services.getSpecificResource('cards', cardId);
     }
     const releaseDate = selects.postedDate ? selects.postedDate.value : selects.releaseDate.value,
         paymentDate = data.setPaymentDate(releaseDate, card);
@@ -351,7 +353,12 @@ async function populateCardNumbersForCard(cardId) {
 // Quando um cartão é selecionado, popula o select de números de cartão relacionados a ele usando os dados injetados no template. Se nenhum cartão for selecionado, esconde o campo de número do cartão.
 function cardChangeHandler(e) {
     const val = e && e.target ? e.target.value : e;
+    if (val) {
+        selects.paymentMethod.value = 1;
+        selectPaymentMethod();
+    }
     populateCardNumbersForCard(val);
+    changePaymentDateInput();
     // Atualizar home_screen quando muda de card
     updateHomeScreenCheckbox();
 }
