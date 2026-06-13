@@ -588,7 +588,12 @@ function getStatementTransactionsBySelect(select) {
     const categories = JSON.parse(sessionStorage.getItem('categories') || '[]');
 
     if (select === 'revenues') {
-        return transactions.filter(transaction => transaction.type === 'entrada');
+        return transactions.filter(transaction => {
+            if (transaction.type !== 'entrada') return false;
+
+            const category = categories.find(item => item.id === transaction.category);
+            return !(category && category.ignore);
+        });
     }
 
     if (select === 'investments') {

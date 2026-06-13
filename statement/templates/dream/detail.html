@@ -49,6 +49,7 @@
 
                     <br><br>
                     <a href="{% url 'create_transaction' 'saida' %}?dream={{ instance.id }}"><input type="button" value="Cadastrar Aporte" class="btn btn-primary"></a>
+                    <a href="{% url 'create_transaction' 'entrada' %}?dream={{ instance.id }}"><input type="button" value="Cadastrar Rendimento" class="btn btn-primary"></a>
                     <table class="table" id="statement-table">
                         <thead>
                             <tr>

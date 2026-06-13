@@ -57,6 +57,11 @@ export function setCategoriesReport(transactions, categories) {
 
     // Separa as categorias de receitas e de despesas.
     for (category of categories) {
+        if (category.ignore) {
+            ignoredCategories.push(category.id);
+            continue;
+        }
+
         let object = {
             id: category.id,
             name: category.description,
@@ -66,17 +71,15 @@ export function setCategoriesReport(transactions, categories) {
         if (category.type === 'entrada') {
             revenue.push(object);
         } else {
-            if (!category.ignore) {
-                expenses.push(object);
-            } else {
-                ignoredCategories.push(category.id);
-            }
+            expenses.push(object);
         }
     }
 
     // Classifica os lançamentos como receitas e despesas e calcula o montante total de ambas.
     if (Array.isArray(transactions)) {
         for (let transaction of transactions) {
+            if (ignoredCategories.includes(transaction.category)) continue;
+
             for (category of revenue) {
                 if (transaction.category === category.id) {
                     category.amount += transaction.value;
@@ -92,11 +95,7 @@ export function setCategoriesReport(transactions, categories) {
             if (transaction.type === 'entrada') {
                 amount.revenue += transaction.value;
             } else {
-                if (!ignoredCategories.includes(transaction.category)) {
-                    amount.expenses += transaction.value;
-                } else if (isInvestmentTransaction(transaction)) {
-                    amount.expenses += transaction.value;
-                }
+                amount.expenses += transaction.value;
             }
         }
     }
@@ -105,34 +104,6 @@ export function setCategoriesReport(transactions, categories) {
     expenses.sort((a, b) => (a.amount < b.amount ? 1 : a.amount > b.amount ? -1 : 0));
 
     return { revenue, expenses, amount };
-}
-
-function isInvestmentTransaction(transaction) {
-    if (transaction.subcategory_is_investment !== undefined) {
-        return Boolean(transaction.subcategory_is_investment);
-    }
-
-    const subcategory = getSubcategory(transaction.subcategory);
-    return Boolean(subcategory && subcategory.is_investment);
-}
-
-function getSubcategory(subcategoryId) {
-    const subcategories = getSessionArray('subcategories');
-
-    for (const subcategory of subcategories) {
-        if (subcategory.id == subcategoryId) {
-            return subcategory;
-        }
-    }
-}
-
-function getSessionArray(key) {
-    try {
-        const data = JSON.parse(sessionStorage.getItem(key) || '[]');
-        return Array.isArray(data) ? data : [];
-    } catch (error) {
-        return [];
-    }
 }
 
 /**

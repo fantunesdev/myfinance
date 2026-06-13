@@ -343,22 +343,23 @@ class TransactionView(BaseView):
         cash = 0
         fixed = 0
         for instance in instances:
+            if instance.category.ignore:
+                continue
+
             if instance.type == 'saida':   # Saídas
-                # Contabiliza apenas os lançamentos das categorias não ignoradas.
-                if not instance.category.ignore:
-                    # Despesas com cartão
-                    if instance.card:
-                        card += instance.value
-                    # Despesas à vista
-                    else:
-                        cash += instance.value
+                # Despesas com cartão
+                if instance.card:
+                    card += instance.value
+                # Despesas à vista
+                else:
+                    cash += instance.value
 
-                    # Contagem das despesas fixas
-                    if instance.fixed:
-                        fixed += instance.value
+                # Contagem das despesas fixas
+                if instance.fixed:
+                    fixed += instance.value
 
-                    # Contagem total de gastos
-                    expenses += instance.value
+                # Contagem total de gastos
+                expenses += instance.value
                 if instance.subcategory.is_investment:
                     expenses += instance.value
             else:   # Entradas
