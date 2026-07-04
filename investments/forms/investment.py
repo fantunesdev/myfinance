@@ -29,17 +29,31 @@ class InvestmentForm(UserFilteredModelForm):
 class InvestmentCashMovementForm(UserFilteredModelForm):
     class Meta:
         model = InvestmentTransaction
-        fields = ['date', 'due_date', 'amount', 'notes']
+        fields = ['date', 'due_date', 'amount', 'quantity', 'unit_price', 'notes']
         labels = {
             'date': 'Data',
             'due_date': 'Vencimento',
             'amount': 'Valor',
+            'quantity': 'Quantidade',
+            'unit_price': 'Preço unitário',
             'notes': 'Anotações',
         }
         widgets = {
             'date': DateInput(),
             'due_date': DateInput(),
         }
+
+    def __init__(self, *args, investment=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not self._show_quantity_fields(investment):
+            self.fields.pop('quantity', None)
+            self.fields.pop('unit_price', None)
+
+    @staticmethod
+    def _show_quantity_fields(investment):
+        if not investment:
+            return False
+        return investment.asset.asset_type in ['variable_income', 'crypto', 'currency']
 
 
 class InvestmentApplicationFromWalletForm(forms.Form):
@@ -51,6 +65,20 @@ class InvestmentApplicationFromWalletForm(forms.Form):
         max_digits=10,
         decimal_places=2,
         min_value=0.01,
+    )
+    quantity = forms.DecimalField(
+        label='Quantidade',
+        max_digits=20,
+        decimal_places=8,
+        min_value=0.00000001,
+        required=False,
+    )
+    unit_price = forms.DecimalField(
+        label='Preço unitário',
+        max_digits=14,
+        decimal_places=6,
+        min_value=0.000001,
+        required=False,
     )
     notes = forms.CharField(
         label='Anotações',
@@ -84,13 +112,31 @@ class InvestmentRedemptionForm(forms.Form):
         decimal_places=2,
         min_value=0.01,
     )
+    quantity = forms.DecimalField(
+        label='Quantidade',
+        max_digits=20,
+        decimal_places=8,
+        min_value=0.00000001,
+        required=False,
+    )
+    unit_price = forms.DecimalField(
+        label='Preço unitário',
+        max_digits=14,
+        decimal_places=6,
+        min_value=0.000001,
+        required=False,
+    )
     notes = forms.CharField(
         label='Anotações',
         required=False,
         widget=forms.Textarea(attrs={'rows': 3}),
     )
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, investment=None, **kwargs):
         super().__init__(*args, **kwargs)
+        if not InvestmentCashMovementForm._show_quantity_fields(investment):
+            self.fields.pop('quantity', None)
+            self.fields.pop('unit_price', None)
+
         for field in self.fields.values():
             field.widget.attrs.setdefault('class', 'form-control')

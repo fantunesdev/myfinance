@@ -181,19 +181,19 @@ class InvestmentService(InvestmentBaseService):
 
         return [
             {
-                'label': 'Rendimentos acumulados',
+                'label': 'Ganhos',
                 'color': 'rgba(46, 125, 90, 1)',
                 'names': labels,
                 'values': income_values,
             },
             {
-                'label': 'Custos acumulados',
+                'label': 'Custos',
                 'color': 'rgba(139, 0, 0, 1)',
                 'names': labels,
                 'values': cost_values,
             },
             {
-                'label': 'Juros líquidos',
+                'label': 'Resultado',
                 'color': 'rgba(42, 92, 148, 1)',
                 'names': labels,
                 'values': net_values,

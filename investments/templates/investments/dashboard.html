@@ -45,7 +45,7 @@
             </div>
 
             <div class="investment-chart">
-                <div class="icon-btn investment-chart-toggle" id="investment-chart-toggle" role="button" title="Juros e rendimentos" aria-label="Juros e rendimentos" tabindex="0">
+                <div class="icon-btn investment-chart-toggle" id="investment-chart-toggle" role="button" title="Ganhos" aria-label="Ganhos" tabindex="0">
                     <i class="fa-solid fa-percent"></i>
                 </div>
                 <canvas id="line-chart" width="40" height="15"></canvas>
@@ -57,7 +57,7 @@
                     <strong>{{ total|to_reais }}</strong>
                 </a>
                 <div class="investment-card investment-card-income">
-                    <span>Rendimentos</span>
+                    <span>Ganhos</span>
                     <strong>{{ total_income|to_reais }}</strong>
                 </div>
                 <div class="investment-card investment-card-cost">
@@ -65,7 +65,7 @@
                     <strong>{{ total_costs|to_reais }}</strong>
                 </div>
                 <div class="investment-card investment-card-net-income">
-                    <span>Juros líquidos</span>
+                    <span>Resultado</span>
                     <strong>{{ net_income|to_reais }}</strong>
                 </div>
                 {% for label, amount in by_type %}

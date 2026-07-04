@@ -43,7 +43,7 @@ class InvestmentView(InvestmentCrudView):
             return redirect('detail_investment', id=investment.id)
 
         if request.method == 'POST':
-            form = InvestmentCashMovementForm(request.POST)
+            form = InvestmentCashMovementForm(request.POST, investment=investment)
             if form.is_valid():
                 InvestmentTransactionService.transfer_between_investments(
                     source=wallet,
@@ -51,11 +51,13 @@ class InvestmentView(InvestmentCrudView):
                     amount=form.cleaned_data['amount'],
                     date=form.cleaned_data['date'],
                     due_date=form.cleaned_data['due_date'],
+                    quantity=form.cleaned_data.get('quantity'),
+                    unit_price=form.cleaned_data.get('unit_price'),
                     notes=form.cleaned_data['notes'],
                 )
                 return redirect('investments_dashboard')
         else:
-            form = InvestmentCashMovementForm(initial={'due_date': investment.due_date})
+            form = InvestmentCashMovementForm(initial={'due_date': investment.due_date}, investment=investment)
 
         self._context = 'apply_from_wallet'
         return self._render(
@@ -78,18 +80,20 @@ class InvestmentView(InvestmentCrudView):
             return redirect('detail_investment', id=investment.id)
 
         if request.method == 'POST':
-            form = InvestmentRedemptionForm(request.POST)
+            form = InvestmentRedemptionForm(request.POST, investment=investment)
             if form.is_valid():
                 InvestmentTransactionService.redeem_to_wallet(
                     source=investment,
                     gross_amount=form.cleaned_data['amount'],
                     principal_amount=form.cleaned_data['principal_amount'],
                     date=form.cleaned_data['date'],
+                    quantity=form.cleaned_data.get('quantity'),
+                    unit_price=form.cleaned_data.get('unit_price'),
                     notes=form.cleaned_data['notes'],
                 )
                 return redirect('investments_dashboard')
         else:
-            form = InvestmentRedemptionForm()
+            form = InvestmentRedemptionForm(investment=investment)
 
         self._context = 'redeem_to_wallet'
         return self._render(

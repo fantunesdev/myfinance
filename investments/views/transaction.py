@@ -44,6 +44,8 @@ class InvestmentTransactionView(InvestmentCrudView):
                     amount=form.cleaned_data['amount'],
                     date=form.cleaned_data['date'],
                     due_date=form.cleaned_data['due_date'],
+                    quantity=form.cleaned_data.get('quantity'),
+                    unit_price=form.cleaned_data.get('unit_price'),
                     notes=form.cleaned_data['notes'],
                 )
                 wallet_transaction.operation_id = source_transaction.operation_id
@@ -77,22 +79,26 @@ class InvestmentTransactionView(InvestmentCrudView):
             'date': investment_transaction.date,
             'principal_amount': investment_transaction.amount,
             'amount': investment_transaction.amount,
+            'quantity': investment_transaction.quantity,
+            'unit_price': investment_transaction.unit_price,
             'notes': investment_transaction.notes,
         }
 
         if request.method == 'POST':
-            form = InvestmentRedemptionForm(request.POST)
+            form = InvestmentRedemptionForm(request.POST, investment=investment_transaction.investment)
             if form.is_valid():
                 InvestmentTransactionService.redeem_to_wallet(
                     source=investment_transaction.investment,
                     gross_amount=form.cleaned_data['amount'],
                     principal_amount=form.cleaned_data['principal_amount'],
                     date=form.cleaned_data['date'],
+                    quantity=form.cleaned_data.get('quantity'),
+                    unit_price=form.cleaned_data.get('unit_price'),
                     notes=form.cleaned_data['notes'],
                 )
                 return redirect('investments_dashboard')
         else:
-            form = InvestmentRedemptionForm(initial=initial)
+            form = InvestmentRedemptionForm(initial=initial, investment=investment_transaction.investment)
 
         self._context = 'redeem_from_investment_transaction'
         return self._render(

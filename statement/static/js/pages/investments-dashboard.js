@@ -26,8 +26,8 @@ function setChartToggleMode(mode) {
     }
 
     chartToggle.innerHTML = '<i class="fa-solid fa-percent"></i>';
-    chartToggle.setAttribute('title', 'Juros e rendimentos');
-    chartToggle.setAttribute('aria-label', 'Juros e rendimentos');
+    chartToggle.setAttribute('title', 'Ganhos');
+    chartToggle.setAttribute('aria-label', 'Ganhos');
 }
 
 function drawProgressionChart() {
@@ -68,7 +68,7 @@ function drawInterestChart() {
                 borderWidth: 2,
                 pointRadius: 4,
                 tension: 0.2,
-                fill: dataset.label === 'Juros líquidos',
+                fill: dataset.label === 'Resultado',
             })),
         },
         options: {
@@ -86,7 +86,7 @@ function drawInterestChart() {
                 },
                 title: {
                     display: true,
-                    text: 'Juros e Rendimentos',
+                    text: 'Ganhos',
                     font: {
                         size: 18,
                         family: 'Ubuntu',

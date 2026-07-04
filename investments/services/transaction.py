@@ -144,7 +144,17 @@ class InvestmentTransactionService(InvestmentBaseService):
 
     @classmethod
     @transaction.atomic
-    def transfer_between_investments(cls, source, destination, amount, date=None, due_date=None, notes=''):
+    def transfer_between_investments(
+        cls,
+        source,
+        destination,
+        amount,
+        date=None,
+        due_date=None,
+        quantity=None,
+        unit_price=None,
+        notes='',
+    ):
         if source.id == destination.id:
             raise ValueError('Os investimentos de origem e destino devem ser diferentes.')
 
@@ -171,6 +181,8 @@ class InvestmentTransactionService(InvestmentBaseService):
             due_date=due_date or destination.due_date,
             type='aporte',
             amount=amount,
+            quantity=quantity,
+            unit_price=unit_price,
             operation_id=operation_id,
             notes=notes,
             user=destination.user,
@@ -179,7 +191,16 @@ class InvestmentTransactionService(InvestmentBaseService):
 
     @classmethod
     @transaction.atomic
-    def redeem_to_wallet(cls, source, gross_amount, principal_amount, date=None, notes=''):
+    def redeem_to_wallet(
+        cls,
+        source,
+        gross_amount,
+        principal_amount,
+        date=None,
+        quantity=None,
+        unit_price=None,
+        notes='',
+    ):
         wallet = cls.get_or_create_default_wallet(source.user)
         if source.id == wallet.id:
             raise ValueError('A carteira default não pode ser resgatada para ela mesma.')
@@ -223,6 +244,8 @@ class InvestmentTransactionService(InvestmentBaseService):
             date=transaction_date,
             type='resgate',
             amount=gross_amount,
+            quantity=quantity,
+            unit_price=unit_price,
             operation_id=operation_id,
             notes=notes,
             user=source.user,
