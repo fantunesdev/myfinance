@@ -30,15 +30,24 @@ class InvestmentTransactionService(InvestmentBaseService):
     @classmethod
     @transaction.atomic
     def update(cls, form, instance):
+        original_instance = cls.model.objects.get(pk=instance.pk)
         cls.set_default_due_date(form.instance)
         instance = super().update(form, instance)
+
+        original_counterpart_type = cls._manual_wallet_counterpart_type(original_instance)
+        current_counterpart_type = cls._manual_wallet_counterpart_type(instance)
+        if original_counterpart_type and original_counterpart_type != current_counterpart_type:
+            cls.delete_manual_wallet_counterpart(original_instance, transaction_type=original_counterpart_type)
+
         cls.sync_manual_wallet_counterpart(instance)
         return instance
 
     @classmethod
     @transaction.atomic
     def delete(cls, instance):
-        cls.delete_manual_wallet_counterpart(instance)
+        counterpart_type = cls._manual_wallet_counterpart_type(instance)
+        if counterpart_type:
+            cls.delete_manual_wallet_counterpart(instance, transaction_type=counterpart_type)
         return super().delete(instance)
 
     @classmethod
@@ -264,23 +273,15 @@ class InvestmentTransactionService(InvestmentBaseService):
 
     @classmethod
     def sync_manual_wallet_counterpart(cls, instance):
-        if not cls._needs_manual_wallet_counterpart(instance):
-            cls.delete_manual_wallet_counterpart(instance, clear_operation_id=True)
+        wallet_transaction_type = cls._manual_wallet_counterpart_type(instance)
+        if not wallet_transaction_type:
             return None
 
         wallet = cls.get_or_create_default_wallet(instance.user)
-        if instance.investment_id == wallet.id:
-            return None
-
         operation_id = instance.operation_id or uuid.uuid4()
-        wallet_transaction_type = 'resgate' if instance.type == 'aporte' else 'aporte'
         if not instance.operation_id:
             instance.operation_id = operation_id
             instance.save(update_fields=['operation_id'])
-
-        cls.model.objects.filter(operation_id=operation_id, investment=wallet).exclude(
-            id=instance.id
-        ).exclude(type=wallet_transaction_type).delete()
 
         wallet_transaction = (
             cls.model.objects.filter(operation_id=operation_id, type=wallet_transaction_type, investment=wallet)
@@ -310,13 +311,16 @@ class InvestmentTransactionService(InvestmentBaseService):
         )
 
     @classmethod
-    def delete_manual_wallet_counterpart(cls, instance, clear_operation_id=False):
+    def delete_manual_wallet_counterpart(cls, instance, transaction_type=None, clear_operation_id=False):
         if not instance.operation_id:
             return
 
         wallet = cls.get_default_wallet(instance.user)
         if wallet:
-            cls.model.objects.filter(operation_id=instance.operation_id, investment=wallet).exclude(id=instance.id).delete()
+            queryset = cls.model.objects.filter(operation_id=instance.operation_id, investment=wallet).exclude(id=instance.id)
+            if transaction_type:
+                queryset = queryset.filter(type=transaction_type)
+            queryset.delete()
 
         if clear_operation_id and instance.pk:
             instance.operation_id = None
@@ -354,18 +358,22 @@ class InvestmentTransactionService(InvestmentBaseService):
 
     @classmethod
     def _needs_manual_wallet_counterpart(cls, instance):
+        return cls._manual_wallet_counterpart_type(instance) is not None
+
+    @classmethod
+    def _manual_wallet_counterpart_type(cls, instance):
         if instance.type not in ['aporte', 'resgate']:
-            return False
+            return None
         if instance.statement_transaction_id:
-            return False
+            return None
         if not instance.user_id:
-            return False
+            return None
 
         wallet = cls.get_default_wallet(instance.user)
         if wallet and instance.investment_id == wallet.id:
-            return False
+            return None
 
-        return True
+        return 'resgate' if instance.type == 'aporte' else 'aporte'
 
     @staticmethod
     def _get_wallet_counterpart_notes(instance):
