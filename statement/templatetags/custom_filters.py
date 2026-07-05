@@ -1,4 +1,5 @@
 from django import template
+from decimal import Decimal, InvalidOperation
 
 register = template.Library()
 
@@ -19,6 +20,22 @@ def to_reais(value):
     except (TypeError, ValueError):
         v = 0.0
     return f'R$ {v:_.2f}'.replace('.', ',').replace('_', '.')
+
+
+@register.filter(name='format_quantity')
+def format_quantity(value):
+    if value in [None, '']:
+        return ''
+
+    try:
+        quantity = Decimal(str(value))
+    except (InvalidOperation, TypeError, ValueError):
+        return value
+
+    if quantity == quantity.to_integral_value():
+        return str(quantity.quantize(Decimal('1')))
+
+    return format(quantity.normalize(), 'f').rstrip('0').rstrip('.').replace('.', ',')
 
 
 @register.filter(name='handle_boolean')

@@ -104,7 +104,7 @@
                                     </td>
                                     <td>{{ position.asset_type_label }}</td>
                                     <td>{{ position.broker }}</td>
-                                    <td>{{ position.quantity }}</td>
+                                    <td>{{ position.quantity|format_quantity }}</td>
                                     <td>{{ position.value|to_reais }}</td>
                                 </tr>
                             {% empty %}
