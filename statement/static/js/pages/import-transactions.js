@@ -7,6 +7,29 @@ const boxTransactions = document.querySelector('#box-transactions');
 const transactionRows = document.querySelector('#transaction-rows');
 const checkboxCheckAll = document.querySelector('#checkall');
 const sendTransactionsBtn = document.querySelector('#send-transactions-btn');
+const fileTypeCSV = document.querySelector('#file-type-csv');
+const fileTypeConfigurableCSV = document.querySelector('#file-type-configurable-csv');
+const fileTypeTasker = document.querySelector('#file-type-tasker');
+const targetModelSelect = document.querySelector('#id_target_model');
+const investmentImportTypeGroup = document.querySelector('#investment-import-type-group');
+const investmentImportTypeSelect = document.querySelector('#id_investment_import_type');
+const dateColumnInput = document.querySelector('#id_date_column');
+const descriptionColumnInput = document.querySelector('#id_description_column');
+const valueColumnInput = document.querySelector('#id_value_column');
+const defaultCSVFields = document.querySelector('#default-csv-fields');
+const configurableCSVFields = document.querySelector('#configurable-csv-fields');
+const csvFileLabel = document.querySelector('#csv-file-label');
+const importHeadings = document.querySelectorAll('.import-heading');
+
+const targetModels = {
+    statement: 'statement_transaction',
+    investment: 'investments_investmenttransaction',
+};
+
+const investmentTransactionTypes = [
+    { id: 'aporte', description: 'Depósito' },
+    { id: 'rendimento', description: 'Provento (dividendo/JCP)' },
+];
 
 selects.paymentMethod.value = 2;
 divs.card.classList.add('toggled');
@@ -15,6 +38,14 @@ divs.card.classList.add('toggled');
  * Configura os selects relacionados ao meio de pagamento.
  */
 export function selectPaymentMethod() {
+    if (isConfigurableCSV() && getTargetModel() === targetModels.investment) {
+        divs.account.classList.add('toggled');
+        divs.card.classList.add('toggled');
+        selects.account.required = false;
+        selects.card.required = false;
+        return;
+    }
+
     const paymentMethod = selects.paymentMethod.value;
     if (paymentMethod == 1) {
         divs.account.classList.add('toggled');
@@ -41,14 +72,26 @@ async function sendFile() {
     formData.append('file', fileInput.files[0]);
     formData.append('account', isNaN(parseInt(selects.account.value)) ? '' : parseInt(selects.account.value));
     formData.append('card', isNaN(parseInt(selects.card.value)) ? '' : parseInt(selects.card.value));
+    formData.append('csv_mode', isConfigurableCSV() ? 'configurable' : 'default');
+    formData.append('target_model', getTargetModel());
+    formData.append('date_column', isConfigurableCSV() ? dateColumnInput.value.trim() : 'date');
+    formData.append('description_column', isConfigurableCSV() ? descriptionColumnInput.value.trim() : 'title');
+    formData.append('value_column', isConfigurableCSV() ? valueColumnInput.value.trim() : 'amount');
 
     if (!fileInput.files[0]) {
         alert('Selecione um arquivo para continuar.');
         return;
     }
-    if (selects.paymentMethod.value == 1 && !selects.card.value) {
+    if (
+        isConfigurableCSV()
+        && (!dateColumnInput.value.trim() || !descriptionColumnInput.value.trim() || !valueColumnInput.value.trim())
+    ) {
+        alert('Informe as colunas de data, descrição e valor.');
+        return;
+    }
+    if (getTargetModel() === targetModels.statement && selects.paymentMethod.value == 1 && !selects.card.value) {
         alert('Selecione um cartão para continuar.');
-    } else if (selects.paymentMethod.value == 2 && !selects.account.value) {
+    } else if (getTargetModel() === targetModels.statement && selects.paymentMethod.value == 2 && !selects.account.value) {
         alert('Selecione uma conta para continuar.');
     } else {
         const transactions = await services.importTransactions(formData);
@@ -73,18 +116,35 @@ async function sendFile() {
  * @param {array} transactions - Um array de transações importadas do arquivo da instituição financeira.
  */
 async function renderBox(transactions) {
-    const categories = await services.getCategoriesByType('saida');
+    const isInvestmentImport = isConfigurableCSV() && getTargetModel() === targetModels.investment;
+    const categories = isInvestmentImport ? [] : await services.getCategoriesByType('saida');
+    const investments = isInvestmentImport ? await services.getResource('investments') : [];
 
     boxTransactions.classList.remove('toggled');
     transactionRows.innerHTML = '';
+    renderHeadings(isInvestmentImport);
 
     for (const transaction of transactions) {
         const row = document.createElement('tr');
-        const subcategories = await services.getChildrenResource('categories', 'subcategories', transaction.category);
-        const fields = getTransactionFields(transaction, categories, subcategories);
+        const subcategories = isInvestmentImport
+            ? []
+            : await services.getChildrenResource('categories', 'subcategories', transaction.category);
+        const fields = isInvestmentImport
+            ? getInvestmentTransactionFields(transaction, investments)
+            : getTransactionFields(transaction, categories, subcategories);
         renderFields(row, fields);
         transactionRows.appendChild(row);
     }
+}
+
+function renderHeadings(isInvestmentImport) {
+    const headings = isInvestmentImport
+        ? ['Data', 'Investimento', 'Tipo', 'Descrição', 'Valor']
+        : ['Data', 'Categoria', 'Subcategoria', 'Descrição', 'Valor'];
+
+    importHeadings.forEach((heading, index) => {
+        heading.textContent = headings[index];
+    });
 }
 
 /**
@@ -98,25 +158,7 @@ async function renderBox(transactions) {
  */
 function getTransactionFields(transaction, categories, subcategories) {
     return [
-        {
-            type: 'checkbox',
-            id: transaction.id,
-            render: (cell, row) => {
-                const checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.id = transaction.id;
-
-                checkbox.addEventListener('change', () => {
-                    row.classList.toggle('row-disabled', !checkbox.checked);
-                });
-
-                if (!checkbox.checked) {
-                    row.classList.add('row-disabled');
-                }
-
-                cell.appendChild(checkbox);
-            },
-        },
+        getCheckboxField(transaction),
         {
             id: `id_date_${transaction.id}`,
             type: 'date',
@@ -152,6 +194,61 @@ function getTransactionFields(transaction, categories, subcategories) {
             disabled: true,
         },
     ];
+}
+
+function getInvestmentTransactionFields(transaction, investments) {
+    return [
+        getCheckboxField(transaction),
+        {
+            id: `id_date_${transaction.id}`,
+            type: 'date',
+            value: transaction.date,
+        },
+        {
+            id: `id_investment_${transaction.id}`,
+            type: 'select',
+            options: investments,
+        },
+        {
+            id: `id_investment_type_${transaction.id}`,
+            type: 'select',
+            options: investmentTransactionTypes,
+            selected: getInvestmentImportType(),
+        },
+        {
+            id: `id_description_${transaction.id}`,
+            type: 'text',
+            value: transaction.description,
+            title: `Original: ${transaction.original_description}`,
+        },
+        {
+            id: `id_value_${transaction.id}`,
+            type: 'text',
+            value: transaction.value,
+        },
+    ];
+}
+
+function getCheckboxField(transaction) {
+    return {
+        type: 'checkbox',
+        id: transaction.id,
+        render: (cell, row) => {
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = transaction.id;
+
+            checkbox.addEventListener('change', () => {
+                row.classList.toggle('row-disabled', !checkbox.checked);
+            });
+
+            if (!checkbox.checked) {
+                row.classList.add('row-disabled');
+            }
+
+            cell.appendChild(checkbox);
+        },
+    };
 }
 
 /**
@@ -311,26 +408,30 @@ function updateSelectOptions(select, options) {
  */
 async function importTransactions(transactions) {
     const selectedIds = getSelectedTransactionIds(transactionRows);
+    const isInvestmentImport = isConfigurableCSV() && getTargetModel() === targetModels.investment;
 
     for (let transaction of transactions) {
         if (!selectedIds.includes(transaction.id)) continue;
 
-        const newTransaction = getFormData(transaction.id, transaction);
-        const feedback = buildFeedback(transaction, newTransaction);
+        const newTransaction = isInvestmentImport
+            ? getInvestmentTransactionFormData(transaction.id)
+            : getFormData(transaction.id, transaction);
 
-        const created = await createNewResource('transactions', newTransaction, true);
+        const created = await createNewResource(isInvestmentImport ? 'investment-transactions' : 'transactions', newTransaction);
         if (!created) return;
 
+        const feedback = isInvestmentImport ? null : buildFeedback(transaction, newTransaction);
         if (feedback) {
             await services.createResource('categorization-feedback', JSON.stringify(feedback));
         }
     }
 
-    // Envia para o backend uma requisição para treinar o Transaction Classifier a partir dos feedbacks
-    await services.sendRequisition('transaction-classifier/train', 'POST');
+    if (!isInvestmentImport) {
+        // Envia para o backend uma requisição para treinar o Transaction Classifier a partir dos feedbacks
+        await services.sendRequisition('transaction-classifier/train', 'POST');
+    }
 
-    // Redireciona para o mês atual
-    window.location.href = '/relatorio_financeiro/mes_atual/';
+    window.location.href = isInvestmentImport ? '/investimentos/' : '/relatorio_financeiro/mes_atual/';
 }
 
 /**
@@ -359,6 +460,16 @@ function getFormData(transactionId, transactionObj = null) {
         subcategory: document.getElementById(`id_subcategory_${transactionId}`).value,
         description: document.getElementById(`id_description_${transactionId}`).value,
         value: document.getElementById(`id_value_${transactionId}`).value,
+    };
+}
+
+function getInvestmentTransactionFormData(transactionId) {
+    return {
+        date: document.getElementById(`id_date_${transactionId}`).value,
+        investment: document.getElementById(`id_investment_${transactionId}`).value,
+        type: document.getElementById(`id_investment_type_${transactionId}`).value,
+        amount: document.getElementById(`id_value_${transactionId}`).value,
+        notes: document.getElementById(`id_description_${transactionId}`).value,
     };
 }
 
@@ -421,6 +532,22 @@ if (selects && selects.paymentMethod) {
     selects.paymentMethod.addEventListener('change', () => selectPaymentMethod());
 }
 
+if (targetModelSelect) {
+    targetModelSelect.addEventListener('change', () => selectTargetModel());
+}
+
+if (fileTypeCSV) {
+    fileTypeCSV.addEventListener('change', () => selectCSVMode());
+}
+
+if (fileTypeConfigurableCSV) {
+    fileTypeConfigurableCSV.addEventListener('change', () => selectCSVMode());
+}
+
+if (fileTypeTasker) {
+    fileTypeTasker.addEventListener('change', () => selectCSVMode());
+}
+
 if (checkboxCheckAll && transactionRows) {
     checkboxCheckAll.addEventListener('change', function () {
         for (const row of transactionRows.children) {
@@ -444,4 +571,52 @@ if (sendTransactionsBtn) {
     });
 }
 
+function getTargetModel() {
+    if (!isConfigurableCSV()) return targetModels.statement;
+    return targetModelSelect ? targetModelSelect.value : targetModels.statement;
+}
 
+function isConfigurableCSV() {
+    return Boolean(fileTypeConfigurableCSV && fileTypeConfigurableCSV.checked);
+}
+
+function getInvestmentImportType() {
+    return investmentImportTypeSelect ? investmentImportTypeSelect.value : 'aporte';
+}
+
+function selectTargetModel() {
+    const isInvestmentImport = isConfigurableCSV() && getTargetModel() === targetModels.investment;
+    const paymentMethodGroup = selects.paymentMethod.closest('.form-group');
+
+    if (paymentMethodGroup) {
+        paymentMethodGroup.classList.toggle('toggled', isInvestmentImport);
+    }
+
+    if (investmentImportTypeGroup) {
+        investmentImportTypeGroup.classList.toggle('hide', !isInvestmentImport);
+    }
+
+    selectPaymentMethod();
+}
+
+function selectCSVMode() {
+    if (defaultCSVFields) {
+        defaultCSVFields.classList.toggle('hide', isConfigurableCSV());
+    }
+
+    if (configurableCSVFields) {
+        configurableCSVFields.classList.toggle('hide', !isConfigurableCSV());
+    }
+
+    if (csvFileLabel) {
+        csvFileLabel.textContent = isConfigurableCSV() ? 'Arquivo CSV configurável: ' : 'Arquivo CSV: ';
+    }
+
+    if (importBtn) {
+        importBtn.value = isConfigurableCSV() ? 'Importar CSV configurável' : 'Importar CSV';
+    }
+
+    selectTargetModel();
+}
+
+selectCSVMode();

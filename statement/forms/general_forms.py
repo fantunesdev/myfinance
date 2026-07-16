@@ -50,6 +50,29 @@ class UploadFileForm(forms.Form):
         )
 
     file = forms.FileField()
+    target_model = forms.ChoiceField(
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        choices=(
+            ('statement_transaction', 'Lançamento financeiro'),
+            ('investments_investmenttransaction', 'Movimentação de investimento'),
+        ),
+    )
+    date_column = forms.CharField(
+        required=False,
+        initial='date',
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'date'}),
+    )
+    description_column = forms.CharField(
+        required=False,
+        initial='title',
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'title'}),
+    )
+    value_column = forms.CharField(
+        required=False,
+        initial='amount',
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'amount'}),
+    )
     payment_method = forms.ChoiceField(
         required=False,
         widget=forms.Select(attrs={'class': 'form-control'}),

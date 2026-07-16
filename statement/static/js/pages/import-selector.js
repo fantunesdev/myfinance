@@ -9,6 +9,7 @@ const importTypeNotifications = document.querySelector('#import-type-notificatio
 const sectionFileImport = document.querySelector('#section-file-import');
 const sectionNotificationsImport = document.querySelector('#section-notifications-import');
 const fileTypeCSV = document.querySelector('#file-type-csv');
+const fileTypeConfigurableCSV = document.querySelector('#file-type-configurable-csv');
 const fileTypeTasker = document.querySelector('#file-type-tasker');
 const sectionFileTitle = sectionFileImport ? sectionFileImport.querySelector('.box-header .box-title') : null;
 
@@ -32,6 +33,12 @@ if (importTypeNotifications) {
 if (fileTypeCSV) {
     fileTypeCSV.addEventListener('change', () => {
         if (sectionFileTitle) sectionFileTitle.textContent = 'Importar Lançamentos por Arquivo';
+    });
+}
+
+if (fileTypeConfigurableCSV) {
+    fileTypeConfigurableCSV.addEventListener('change', () => {
+        if (sectionFileTitle) sectionFileTitle.textContent = 'Importar CSV configurável';
     });
 }
 

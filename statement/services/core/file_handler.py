@@ -1,6 +1,6 @@
 import csv
 import json
-from datetime import datetime
+from decimal import Decimal, InvalidOperation
 
 from clients.transaction_classifier.transaction_classifier import TransactionClassifierClient
 from statement.models import AppConfig
@@ -27,6 +27,18 @@ class FileHandlerService:
         self._user = request.user
         self._account = self._set_account(request)
         self._card = self._set_card(request)
+        self._is_configurable_csv = request.data.get('csv_mode') == 'configurable'
+        self._target_model = (
+            request.data.get('target_model', 'statement_transaction')
+            if self._is_configurable_csv
+            else 'statement_transaction'
+        )
+        self._date_column = request.data.get('date_column') if self._is_configurable_csv else 'date'
+        self._description_column = request.data.get('description_column') if self._is_configurable_csv else 'title'
+        self._value_column = request.data.get('value_column') if self._is_configurable_csv else 'amount'
+        self._date_column = self._date_column or 'date'
+        self._description_column = self._description_column or 'title'
+        self._value_column = self._value_column or 'amount'
 
     def _set_account(self, request):
         """
@@ -75,23 +87,45 @@ class FileHandlerService:
         transactions = []
         reader = csv.DictReader(self._file.read().decode('utf-8').splitlines())
         for i, row in enumerate(reader):
+            self._validate_csv_columns(row, i + 1)
+            date = row[self._date_column]
+            description = row[self._description_column]
+            value = (
+                self._normalize_value(row[self._value_column])
+                if self._is_configurable_csv
+                else row[self._value_column]
+            )
+
+            if self._target_model in ('investment_transaction', 'investments_investmenttransaction'):
+                transactions.append(
+                    {
+                        'id': i + 1,
+                        'target_model': self._target_model,
+                        'date': date,
+                        'description': description,
+                        'original_description': description,
+                        'value': value,
+                    }
+                )
+                continue
+
             predicted = {
                 'category_id': None,
                 'subcategory_id': None,
-                'description': row['title'],
+                'description': description,
             }
 
             # Only call classifier if global toggle enabled
             try:
                 if AppConfig.get_solo().enable_transaction_classifier:
                     microservice_client = TransactionClassifierClient(self._user)
-                    predicted = microservice_client.predict(row['title'], row.get('category', ''))
+                    predicted = microservice_client.predict(description, row.get('category', ''))
             except Exception:
                 # On any failure, fallback to original values
                 predicted = {
                     'category_id': None,
                     'subcategory_id': None,
-                    'description': row['title'],
+                    'description': description,
                 }
 
             # If classifier returned a category id, instantiate to obtain type (entrada/saída)
@@ -103,20 +137,46 @@ class FileHandlerService:
                     category = None
             transaction = {
                 'id': i + 1,
-                'date': row['date'],
+                'target_model': self._target_model,
+                'date': date,
                 'type': category.type if category else 'saida',
                 'account': self._account.id if self._account else None,
                 'card': self._card.id if self._card else None,
                 'category': predicted['category_id'],
                 'subcategory': predicted['subcategory_id'],
                 'description': predicted['description'],
-                'original_description': row.get('title') or row.get('description') or '',
-                'value': row['amount'],
+                'original_description': description,
+                'value': value,
             }
             transactions.append(transaction)
         if not transactions:
             raise ValueError('O arquivo está vazio.')
         return transactions
+
+    def _validate_csv_columns(self, row, line_number):
+        missing_columns = [
+            column
+            for column in [self._date_column, self._description_column, self._value_column]
+            if column not in row
+        ]
+        if missing_columns:
+            columns = ', '.join(missing_columns)
+            raise ValueError(f'Coluna(s) não encontrada(s) no CSV na linha {line_number}: {columns}')
+
+    def _normalize_value(self, value):
+        if value is None:
+            return ''
+
+        value = str(value).strip().replace('R$', '').replace(' ', '')
+        if ',' in value and '.' in value:
+            value = value.replace('.', '').replace(',', '.')
+        elif ',' in value:
+            value = value.replace(',', '.')
+
+        try:
+            return str(Decimal(value).quantize(Decimal('0.01')))
+        except (InvalidOperation, ValueError):
+            return value
 
     def _read_tasker_json(self):
         """

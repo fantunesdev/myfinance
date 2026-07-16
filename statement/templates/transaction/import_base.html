@@ -39,6 +39,10 @@
                         <input type="radio" name="file-type" value="csv" checked id="file-type-csv">
                         <span>Arquivo CSV</span>
                     </label>
+                    <label style="margin-right: 30px;">
+                        <input type="radio" name="file-type" value="configurable_csv" id="file-type-configurable-csv">
+                        <span>CSV configurável</span>
+                    </label>
                     <label>
                         <input type="radio" name="file-type" value="tasker" id="file-type-tasker">
                         <span>JSON Tasker</span>
@@ -50,9 +54,51 @@
                     <form method="post" enctype="multipart/form-data">
                         {% csrf_token %}
 
+                        <div id="default-csv-fields">
+                            <h4>CSV padrão</h4>
+                        </div>
+
+                        <div id="configurable-csv-fields" class="hide">
+                            <h4>CSV configurável</h4>
+
+                            <div class="form-group mt-15">
+                                <label for="id_target_model">Importar para: </label><br>
+                                <select name="target_model" id="id_target_model" class="form-control">
+                                    <option value="statement_transaction">Statement transaction</option>
+                                    <option value="investments_investmenttransaction">Investment transaction</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group mt-15 hide" id="investment-import-type-group">
+                                <label for="id_investment_import_type">Tipo de investimento: </label><br>
+                                <select name="investment_import_type" id="id_investment_import_type" class="form-control">
+                                    <option value="aporte">Depósito</option>
+                                    <option value="rendimento">Provento (dividendo/JCP)</option>
+                                </select>
+                            </div>
+
+                            <div class="form-input">
+                                <div>
+                                    {{ form.date_column.errors }}
+                                    <label for="id_date_column">Coluna de data</label>
+                                    {{ form.date_column }}
+                                </div>
+                                <div>
+                                    {{ form.description_column.errors }}
+                                    <label for="id_description_column">Coluna de descrição</label>
+                                    {{ form.description_column }}
+                                </div>
+                                <div>
+                                    {{ form.value_column.errors }}
+                                    <label for="id_value_column">Coluna de valor</label>
+                                    {{ form.value_column }}
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="form-group">
                             {{ form.file.errors }}
-                            <label>Arquivo CSV: </label><br>
+                            <label id="csv-file-label">Arquivo CSV: </label><br>
                             {{ form.file }}
                         </div>
 
@@ -144,11 +190,11 @@
                                 <th>
                                     <input type="checkbox" id="checkall">
                                 </th>
-                                <th>Data</th>
-                                <th>Categoria</th>
-                                <th>Subcategoria</th>
-                                <th>Descrição</th>
-                                <th>Valor</th>
+                                <th class="import-heading">Data</th>
+                                <th class="import-heading">Categoria</th>
+                                <th class="import-heading">Subcategoria</th>
+                                <th class="import-heading">Descrição</th>
+                                <th class="import-heading">Valor</th>
                             </tr>
                         </thead>
                         <tbody id="transaction-rows">
@@ -211,6 +257,37 @@
         window.myFinance.importedTransactions = {{ file_notifications_json|safe }};
     </script>
     <script src="{% static 'js/pages/import-selector.js' %}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const standardRadio = document.querySelector('#file-type-csv');
+            const configurableRadio = document.querySelector('#file-type-configurable-csv');
+            const taskerRadio = document.querySelector('#file-type-tasker');
+            const standardPanel = document.querySelector('#default-csv-fields');
+            const configurablePanel = document.querySelector('#configurable-csv-fields');
+            const targetModel = document.querySelector('#id_target_model');
+            const investmentImportTypeGroup = document.querySelector('#investment-import-type-group');
+            const csvFileLabel = document.querySelector('#csv-file-label');
+            const importButton = document.querySelector('#import-btn');
+
+            function toggleCSVPanels() {
+                const isConfigurable = configurableRadio && configurableRadio.checked;
+                const isInvestmentImport = isConfigurable
+                    && targetModel
+                    && targetModel.value === 'investments_investmenttransaction';
+                if (standardPanel) standardPanel.classList.toggle('hide', isConfigurable);
+                if (configurablePanel) configurablePanel.classList.toggle('hide', !isConfigurable);
+                if (investmentImportTypeGroup) investmentImportTypeGroup.classList.toggle('hide', !isInvestmentImport);
+                if (csvFileLabel) csvFileLabel.textContent = isConfigurable ? 'Arquivo CSV configurável: ' : 'Arquivo CSV: ';
+                if (importButton) importButton.value = isConfigurable ? 'Importar CSV configurável' : 'Importar CSV';
+            }
+
+            [standardRadio, configurableRadio, taskerRadio].forEach(function (radio) {
+                if (radio) radio.addEventListener('change', toggleCSVPanels);
+            });
+            if (targetModel) targetModel.addEventListener('change', toggleCSVPanels);
+            toggleCSVPanels();
+        });
+    </script>
     <script src="{% static 'js/pages/import-transactions.js' %}" type="module"></script>
     <script src="{% static 'js/pages/import-notifications.js' %}" type="module"></script>
     <script src="{% static 'js/pages/import-tasker.js' %}" type="module"></script>

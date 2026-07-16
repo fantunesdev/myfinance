@@ -7,6 +7,7 @@ import * as services from '../data/services.js';
 
 // Elementos DOM
 const fileTypeCSV = document.querySelector('#file-type-csv');
+const fileTypeConfigurableCSV = document.querySelector('#file-type-configurable-csv');
 const fileTypeTasker = document.querySelector('#file-type-tasker');
 const formCSV = document.querySelector('#form-csv');
 const formTasker = document.querySelector('#form-tasker');
@@ -17,7 +18,7 @@ const importTaskerBtn = document.querySelector('#import-tasker-btn');
  * Alterna entre os formulários CSV e Tasker
  */
 function toggleFileType() {
-    const isCSV = fileTypeCSV.checked;
+    const isCSV = fileTypeCSV.checked || (fileTypeConfigurableCSV && fileTypeConfigurableCSV.checked);
     
     if (isCSV) {
         formCSV.classList.remove('toggled');
@@ -348,6 +349,9 @@ function sanitizeText(text) {
 // Event listeners
 if (fileTypeCSV && fileTypeTasker) {
     fileTypeCSV.addEventListener('change', toggleFileType);
+    if (fileTypeConfigurableCSV) {
+        fileTypeConfigurableCSV.addEventListener('change', toggleFileType);
+    }
     fileTypeTasker.addEventListener('change', toggleFileType);
 }
 

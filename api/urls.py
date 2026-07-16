@@ -8,6 +8,7 @@ from api.views.card import CardView
 from api.views.categorization_feedback import CategorizationFeedbackView
 from api.views.category import CategoryView
 from api.views.default_views import Defaults
+from api.views.investment import InvestmentTransactionView, InvestmentView
 from api.views.next_month_view_view import NextMonthView
 from api.views.notification import NotificationView
 from api.views.portfolio.fixed_income_views import FixedIncomeProgressionList
@@ -26,6 +27,8 @@ router.register(r'cards', CardView, basename='cards')
 router.register(r'notifications', NotificationView, basename='notifications')
 router.register(r'transactions', TransactionView, basename='transactions')
 router.register(r'transaction-classifier', TransactionClassifierView, basename='transaction_classifier')
+router.register(r'investments', InvestmentView, basename='investments')
+router.register(r'investment-transactions', InvestmentTransactionView, basename='investment_transactions')
 
 urlpatterns = [
     path('', include(router.urls)),
