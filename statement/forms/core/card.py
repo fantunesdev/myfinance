@@ -32,9 +32,16 @@ class CardForm(BaseForm):
 
 
 class CardNumberForm(forms.ModelForm):
+    visible_to = forms.ModelMultipleChoiceField(
+        queryset=User.objects.all(),
+        required=False,
+        widget=forms.SelectMultiple(attrs={'class': 'form-control', 'size': '6'}),
+        label='Dependentes com acesso a este número',
+    )
+
     class Meta:
         model = CardNumber
-        fields = ['number', 'name', 'home_screen', 'dependente']
+        fields = ['number', 'name', 'home_screen', 'dependente', 'visible_to']
         widgets = {
             'number': forms.TextInput(attrs={'placeholder': 'Número do cartão'}),
         }
@@ -42,6 +49,11 @@ class CardNumberForm(forms.ModelForm):
     dependente = forms.ModelChoiceField(
         queryset=User.objects.all(), required=False, widget=forms.Select(), label='Dependente'
     )
+
+    def __init__(self, *args, card=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if card is not None:
+            self.fields['visible_to'].queryset = User.objects.filter(dependent_card_numbers__card=card).distinct()
 
 
 # Formset para gerenciar múltiplos números de cartão

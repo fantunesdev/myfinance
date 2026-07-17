@@ -221,6 +221,7 @@ class CardNumber(models.Model):
     dependente = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, blank=True, related_name='dependent_card_numbers'
     )
+    visible_to = models.ManyToManyField(User, blank=True, related_name='visible_card_numbers')
 
     def __str__(self):
         """Retorna o número do cartão de crédito."""

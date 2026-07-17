@@ -31,10 +31,11 @@ class InvoiceView(TransactionView):
         from django.db.models import Q
 
         card = CardService.get_by_id(self._card_id)
-        # Se o usuário for dependente de algum card_number desse cartão, mostrar
-        # apenas os lançamentos do(s) card_number(s) dele, independente do campo
-        # `home_screen`. Para o proprietário do cartão, manter o filtro por usuário.
-        is_dependent = card.card_numbers.filter(dependente=request.user).exists() and card.user_id != request.user.id
+        # Se o usuário for dependente de algum card_number desse cartão, por padrão
+        # mostrar apenas os lançamentos do(s) card_number(s) dele. O proprietário
+        # do cartão continua vendo tudo.
+        dep_card_numbers = card.card_numbers.filter(dependente=request.user)
+        is_dependent = dep_card_numbers.exists() and card.user_id != request.user.id
 
         # date filters: monta usando o usuário e, se for dependente, remove o filtro 'user'
         # para não filtrar por dono da transação (dependentes veem apenas seus card_numbers)
@@ -47,9 +48,12 @@ class InvoiceView(TransactionView):
             Q(card=card) | Q(card_number__card=card), **date_filters
         ).select_related('card_number', 'card', 'account')
 
-        # Se for dependente, restringe às transações cujo card_number.dependente seja o usuário
+        # Se for dependente, restringe às transações do seu card_number ou de
+        # card_numbers para os quais ele recebeu acesso específico.
         if is_dependent:
-            instances = instances.filter(card_number__dependente=request.user)
+            instances = instances.filter(
+                Q(card_number__dependente=request.user) | Q(card_number__visible_to=request.user)
+            )
 
         # Monta a estrutura agrupada por CardNumber. Primeiro agrupa transações que
         # referenciam o Card diretamente (card set, card_number null), depois um
@@ -78,7 +82,10 @@ class InvoiceView(TransactionView):
         # template mostre a mensagem "Nenhum lançamento neste cartão.". Se o
         # usuário for dependente, incluir apenas o(s) card_number(s) dele.
         for cn in card.card_numbers.all().order_by('number'):
-            if is_dependent and getattr(cn, 'dependente_id', None) != request.user.id:
+            if is_dependent and not (
+                getattr(cn, 'dependente_id', None) == request.user.id
+                or cn.visible_to.filter(id=request.user.id).exists()
+            ):
                 continue
             cn_qs = instances.filter(card_number=cn)
             cn_total = cn_qs.aggregate(total=Sum('value'))['total'] or 0

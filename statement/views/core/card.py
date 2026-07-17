@@ -1,6 +1,7 @@
 import json
 
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.shortcuts import redirect
 from django.utils.decorators import method_decorator
 from django.utils.timezone import now
@@ -40,7 +41,7 @@ class CardView(BaseView):
 
         if request.method == 'POST':
             form = self._set_form(request, instance=None)
-            formset = CardNumberFormSet(request.POST, instance=None)
+            formset = CardNumberFormSet(request.POST, instance=None, form_kwargs={'card': None})
 
             if form.is_valid() and formset.is_valid():
                 instance = form.save(commit=False)
@@ -61,7 +62,7 @@ class CardView(BaseView):
                     print('Erros do formset:', formset.errors)
         else:
             form = self._set_form(request, instance=None)
-            formset = CardNumberFormSet(instance=None)
+            formset = CardNumberFormSet(instance=None, form_kwargs={'card': None})
 
         specific_content = {
             'create': True,
@@ -76,11 +77,15 @@ class CardView(BaseView):
         """
         self._context = 'update'
         instance = self.service.get_by_id(id)
+        # Only staff or the card owner may edit the card here
+        if not (request.user.is_staff or instance.user_id == request.user.id):
+            messages.warning(request, 'Você não tem permissão para editar este cartão.')
+            return redirect(self.redirect_url)
         original_instance = type(instance).objects.get(pk=instance.pk)
 
         if request.method == 'POST':
             form = self._set_form(request, instance)
-            formset = CardNumberFormSet(request.POST, instance=instance)
+            formset = CardNumberFormSet(request.POST, instance=instance, form_kwargs={'card': instance})
 
             if form.is_valid() and formset.is_valid():
                 self._preserve_unrendered_fields_after_validation(form, original_instance)
@@ -115,7 +120,7 @@ class CardView(BaseView):
                     print('Erros do formset:', formset.errors)
         else:
             form = self._set_form(request, instance)
-            formset = CardNumberFormSet(instance=instance)
+            formset = CardNumberFormSet(instance=instance, form_kwargs={'card': instance})
 
         additional_context = self._add_context_on_templatetags(request, instance)
         specific_content = {
