@@ -1117,6 +1117,18 @@ option {
     font-size: 15px;
 }
 
+.col-monetary {
+    width: 110px;
+}
+
+.col-date {
+    width: 110px;
+}
+
+.col-actions {
+    width: 110px;
+}
+
 .navigation-form {
     background-color: transparent;
     color: #ccc;
@@ -1412,6 +1424,47 @@ a {
 
     .simple-mobile .group-header td { text-align: left; }
     .simple-mobile .group-total-row td { text-align: right; }
+
+    .dream-mobile,
+    .dream-mobile .box,
+    .dream-mobile .box-body,
+    .dream-mobile .table {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 100% !important;
+    }
+
+    .dream-mobile .box {
+        margin: 0 !important;
+    }
+
+    .dream-mobile .box-body {
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+    }
+
+    .dream-mobile .table {
+        table-layout: auto !important;
+    }
+
+    .dream-mobile .table thead th:not(:nth-child(1)):not(:nth-child(3)),
+    .dream-mobile .table tbody tr:not(.dream-total-row) td:not(:nth-child(1)):not(:nth-child(3)) {
+        display: none !important;
+    }
+
+    .dream-mobile .table tbody tr.dream-total-row td:not(:first-child) {
+        display: none !important;
+    }
+
+    .dream-mobile .table tbody tr.dream-total-row td:first-child {
+        display: table-cell !important;
+        width: 100% !important;
+        white-space: normal !important;
+    }
+
+    .col-description {
+        text-align: left;
+    }
 
     /* Mobile: reduzir espaçamento e bordas das caixas para mais largura útil */
     .box {

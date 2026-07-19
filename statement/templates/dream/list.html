@@ -21,7 +21,7 @@
             </a>
         </div>
         
-        <div class="box box-primary">
+        <div class="box box-primary dream-mobile">
             <div class="box-header">
                 <h3 class="box-title">Sonhos</h3>
             </div>
@@ -30,22 +30,22 @@
                 {% if dream_status == 'realizados' %}
                 {% for group in completed_dream_groups %}
                 <h4>{{ group.title }}</h4>
-                <table class="table">
+                <table class="table dream-completed-table">
                     <thead>
                         <tr>
                             <th>Descrição</th>
-                            <th>Valor Total</th>
-                            <th>Acumulado</th>
-                            <th>Desconto</th>
-                            <th>Data Limite</th>
-                            <th>Data de Conclusão</th>
-                            <th>Ações</th>
+                            <th class="col-monetary">Valor Total</th>
+                            <th class="col-monetary">Acumulado</th>
+                            <th class="col-monetary">Desconto</th>
+                            <th class="col-date">Data Limite</th>
+                            <th class="col-date">Data de Conclusão</th>
+                            <th class="col-actions">Ações</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for instance in group.instances %}
                         <tr>
-                            <td>{{ instance.description }}</td>
+                            <td class="col-description">{{ instance.description }}</td>
                             <td>{{ instance.target_value | to_reais }}</td>
                             <td>{% get_cumulative_total_for_dream instance.id request.user.id %}</td>
                             <td>{% get_remaining_value_for_dream instance.id instance.target_value request.user.id %}</td>
@@ -68,19 +68,19 @@
                     <thead>
                         <tr>
                             <th>Descrição</th>
-                            <th>Valor Total</th>
-                            <th>Acumulado</th>
-                            <th>Valor Restante</th>
-                            <th>Data Limite</th>
-                            <th>Meses Restantes</th>
-                            <th>Valor das Parcelas</th>
-                            <th>Ações</th>
+                            <th class="col-monetary">Valor Total</th>
+                            <th class="col-monetary">Acumulado</th>
+                            <th class="col-monetary">Restante</th>
+                            <th class="col-date">Data Limite</th>
+                            <th class="col-numeric">Meses Restantes</th>
+                            <th class="col-monetary">Valor das Parcelas</th>
+                            <th class="col-actions">Ações</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for instance in instances %}
                         <tr>
-                            <td>{{ instance.description }}</td>
+                            <td class="col-description">{{ instance.description }}</td>
                             <td>{{ instance.target_value | to_reais }}</td>
                             <td>{% get_cumulative_total_for_dream instance.id request.user.id %}</td>
                             <td>{% get_remaining_value_for_dream instance.id instance.target_value request.user.id %}</td>
@@ -95,7 +95,7 @@
                         </tr>
                         {% endfor %}
                         {% if dream_status == 'ativos' %}
-                        <tr>
+                        <tr class="dream-total-row">
                             <td colspan="6"><strong>Total</strong></td>
                             <td><strong>{% total_remaining_installment_value_for_dreams instances %}</strong></td>
                             <td></td>
