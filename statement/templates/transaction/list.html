@@ -42,7 +42,7 @@
         {% endif %}
         {% comment %}FIM DASHBOARDS{% endcomment %}
         {# Se estivermos na visão do mês atual, habilita a classe `simple-mobile` para ajustes mobile #}
-        <div class="{% if 'mes_atual' in request.path or 'extrato' not in request.path and 'fatura' not in request.path and 'pesquisa' not in request.path and '/ano' not in request.path and 'relatorio_financeiro' in request.path %}simple-mobile{% endif %}">
+        <div class="{% if 'mes_atual' in request.path %}simple-mobile{% elif 'relatorio_financeiro' in request.path and 'extrato' not in request.path and 'pesquisa' not in request.path and '/ano' not in request.path %}simple-mobile{% endif %}">
         
         {% comment %}INÍCIO BOX DESPESAS FIXAS{% endcomment %}
         {% if '/fixed' in request.path %}

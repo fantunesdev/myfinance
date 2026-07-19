@@ -1339,8 +1339,14 @@ a {
     /* Aplicar a simplificação apenas na tabela que estiver dentro do wrapper .simple-mobile
        Exibir apenas: Data (coluna 2), Descrição (coluna 6) e Valor (coluna 7) */
     .simple-mobile #statement-table thead th:not(:nth-child(2)):not(:nth-child(6)):not(:nth-child(7)),
-    .simple-mobile #statement-table tbody td:not(:nth-child(2)):not(:nth-child(6)):not(:nth-child(7)) {
+    .simple-mobile #statement-table tbody tr:not(.group-header):not(.group-total-row):not(.group-empty) td:not(:nth-child(2)):not(:nth-child(6)):not(:nth-child(7)) {
         display: none !important;
+    }
+
+    .simple-mobile #statement-table tbody tr.group-header td,
+    .simple-mobile #statement-table tbody tr.group-total-row td,
+    .simple-mobile #statement-table tbody tr.group-empty td {
+        display: table-cell !important;
     }
 
     /* Styles for import notifications notice */
