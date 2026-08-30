@@ -33,14 +33,10 @@
                 <h3 class="box-title">Importar Lançamentos por Arquivo</h3>
             </div>
             <div class="box-body">
-                <!-- Sub-seletor: CSV ou Tasker JSON -->
+                <!-- Sub-seletor: CSV configurável ou Tasker JSON -->
                 <div class="form-group" style="margin-bottom: 20px;">
                     <label style="margin-right: 30px;">
-                        <input type="radio" name="file-type" value="csv" checked id="file-type-csv">
-                        <span>Arquivo CSV</span>
-                    </label>
-                    <label style="margin-right: 30px;">
-                        <input type="radio" name="file-type" value="configurable_csv" id="file-type-configurable-csv">
+                        <input type="radio" name="file-type" value="configurable_csv" checked id="file-type-configurable-csv">
                         <span>CSV configurável</span>
                     </label>
                     <label>
@@ -54,14 +50,29 @@
                     <form method="post" enctype="multipart/form-data">
                         {% csrf_token %}
 
-                        <div id="default-csv-fields">
-                            <h4>CSV padrão</h4>
-                        </div>
-
-                        <div id="configurable-csv-fields" class="hide">
+                        <div id="configurable-csv-fields">
                             <h4>CSV configurável</h4>
 
-                            <div class="form-group mt-15">
+                            <div class="form-group mt-15 csv-import-config-group">
+                                <label for="id_csv_import_config">Configuração: </label><br>
+                                <select name="csv_import_config" id="id_csv_import_config" class="form-control">
+                                    <option value="">Selecione uma configuração</option>
+                                    {% for csv_config in csv_import_configs %}
+                                        <option value="{{ csv_config.id }}">{{ csv_config.name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="csv-import-config-actions">
+                                    <a href="{% url 'create_csv_import_config' %}" class="btn btn-danger">Cadastrar configuração</a>
+                                    <a
+                                        href="#"
+                                        id="edit-csv-import-config-btn"
+                                        class="btn btn-danger hide"
+                                        data-url-template="{% url 'update_csv_import_config' 0 %}"
+                                    >Editar configuração</a>
+                                </div>
+                            </div>
+
+                            <div class="form-group mt-15 csv-config-managed hide">
                                 <label for="id_target_model">Importar para: </label><br>
                                 <select name="target_model" id="id_target_model" class="form-control">
                                     <option value="statement_transaction">Statement transaction</option>
@@ -69,7 +80,7 @@
                                 </select>
                             </div>
 
-                            <div class="form-group mt-15 hide" id="investment-import-type-group">
+                            <div class="form-group mt-15 hide csv-config-managed" id="investment-import-type-group">
                                 <label for="id_investment_import_type">Tipo de investimento: </label><br>
                                 <select name="investment_import_type" id="id_investment_import_type" class="form-control">
                                     <option value="aporte">Depósito</option>
@@ -77,7 +88,7 @@
                                 </select>
                             </div>
 
-                            <div class="form-input">
+                            <div class="form-input csv-config-managed hide">
                                 <div>
                                     {{ form.date_column.errors }}
                                     <label for="id_date_column">Coluna de data</label>
@@ -96,19 +107,19 @@
                             </div>
                         </div>
 
-                        <div class="form-group">
+                        <div class="form-group csv-import-file-group">
                             {{ form.file.errors }}
-                            <label id="csv-file-label">Arquivo CSV: </label><br>
+                            <label id="csv-file-label">Arquivo CSV configurável: </label><br>
                             {{ form.file }}
                         </div>
 
-                        <div class="form-group mt-15">
+                        <div class="form-group mt-15" id="payment-method-group">
                             {{ form.payment_method.errors }}
                             <label>Meio de Pagamento: </label><br>
                             {{ form.payment_method }}
                         </div>
 
-                        <div class="form-input">
+                        <div class="form-input" id="payment-target-fields">
                             <div id="div-account">
                                 <label for="id_account">Conta</label>
                                 {{ form.account }}
@@ -121,8 +132,8 @@
                             </div>
                         </div>
 
-                        <div class="form-group">
-                            <input type="button" value="Importar CSV" class="btn btn-primary" id="import-btn">
+                        <div class="form-group csv-import-submit-group">
+                            <input type="button" value="Importar CSV configurável" class="btn btn-primary" id="import-btn">
                             <input type="hidden" id="import-type-field" value="csv">
                         </div>
                     </form>
@@ -191,6 +202,7 @@
                                     <input type="checkbox" id="checkall">
                                 </th>
                                 <th class="import-heading">Data</th>
+                                <th class="import-card-number-heading hide">Número do cartão</th>
                                 <th class="import-heading">Categoria</th>
                                 <th class="import-heading">Subcategoria</th>
                                 <th class="import-heading">Descrição</th>
@@ -255,33 +267,38 @@
         window.myFinance.fileTransactions = {{ file_notifications_json|safe }};
         window.myFinance.notifications = {{ notifications_json|safe }};
         window.myFinance.importedTransactions = {{ file_notifications_json|safe }};
+        window.myFinance.csvImportConfigs = {{ csv_import_configs_json|safe }};
+        window.myFinance.cardNumbers = {{ card_numbers_json|safe }};
+        window.card_numbers_json = {{ card_numbers_json|safe }};
     </script>
     <script src="{% static 'js/pages/import-selector.js' %}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const standardRadio = document.querySelector('#file-type-csv');
             const configurableRadio = document.querySelector('#file-type-configurable-csv');
             const taskerRadio = document.querySelector('#file-type-tasker');
-            const standardPanel = document.querySelector('#default-csv-fields');
             const configurablePanel = document.querySelector('#configurable-csv-fields');
             const targetModel = document.querySelector('#id_target_model');
             const investmentImportTypeGroup = document.querySelector('#investment-import-type-group');
+            const csvConfigManagedFields = document.querySelectorAll('.csv-config-managed');
+            const paymentMethodGroup = document.querySelector('#payment-method-group');
+            const paymentTargetFields = document.querySelector('#payment-target-fields');
             const csvFileLabel = document.querySelector('#csv-file-label');
             const importButton = document.querySelector('#import-btn');
 
             function toggleCSVPanels() {
                 const isConfigurable = configurableRadio && configurableRadio.checked;
-                const isInvestmentImport = isConfigurable
-                    && targetModel
-                    && targetModel.value === 'investments_investmenttransaction';
-                if (standardPanel) standardPanel.classList.toggle('hide', isConfigurable);
                 if (configurablePanel) configurablePanel.classList.toggle('hide', !isConfigurable);
-                if (investmentImportTypeGroup) investmentImportTypeGroup.classList.toggle('hide', !isInvestmentImport);
-                if (csvFileLabel) csvFileLabel.textContent = isConfigurable ? 'Arquivo CSV configurável: ' : 'Arquivo CSV: ';
-                if (importButton) importButton.value = isConfigurable ? 'Importar CSV configurável' : 'Importar CSV';
+                csvConfigManagedFields.forEach(function (fieldGroup) {
+                    fieldGroup.classList.add('hide');
+                });
+                if (investmentImportTypeGroup) investmentImportTypeGroup.classList.add('hide');
+                if (paymentMethodGroup) paymentMethodGroup.classList.toggle('hide', isConfigurable);
+                if (paymentTargetFields) paymentTargetFields.classList.toggle('hide', isConfigurable);
+                if (csvFileLabel) csvFileLabel.textContent = 'Arquivo CSV configurável: ';
+                if (importButton) importButton.value = 'Importar CSV configurável';
             }
 
-            [standardRadio, configurableRadio, taskerRadio].forEach(function (radio) {
+            [configurableRadio, taskerRadio].forEach(function (radio) {
                 if (radio) radio.addEventListener('change', toggleCSVPanels);
             });
             if (targetModel) targetModel.addEventListener('change', toggleCSVPanels);

@@ -1,5 +1,6 @@
 import logging
 import re
+from datetime import datetime
 
 import requests
 from rest_framework import status
@@ -42,6 +43,17 @@ class TransactionView(BaseView):
             return Response({'detail': 'Parcela já cadastrada'}, status=status.HTTP_200_OK)
 
         self._process_transaction_request(request)
+
+        duplicate = self._find_duplicate_transaction(request)
+        if duplicate:
+            return Response(
+                {
+                    'detail': 'Lançamento duplicado ignorado.',
+                    'duplicate': True,
+                    'duplicate_id': duplicate.id,
+                },
+                status=status.HTTP_200_OK,
+            )
 
         result = super().create(request)
 
@@ -187,6 +199,87 @@ class TransactionView(BaseView):
             except (ValueError, AttributeError):
                 pass
 
+    def _find_duplicate_transaction(self, request):
+        matching_fields = self._get_duplicate_matching_fields(request)
+        if not matching_fields:
+            return None
+
+        filters = {'user': request.user}
+        if request.data.get('account'):
+            filters['account_id'] = self._get_fk_id(request.data.get('account'))
+        if request.data.get('card'):
+            filters['card_id'] = self._get_fk_id(request.data.get('card'))
+
+        for field in matching_fields:
+            field_filter = self._build_duplicate_filter(field, request.data)
+            if field_filter is None:
+                return None
+            filters.update(field_filter)
+
+        return Transaction.objects.filter(**filters).first()
+
+    def _get_duplicate_matching_fields(self, request):
+        raw_fields = request.data.get('matching_fields') or request.data.get('duplicate_match_fields')
+        if isinstance(raw_fields, str):
+            try:
+                import json
+
+                raw_fields = json.loads(raw_fields)
+            except Exception:
+                raw_fields = raw_fields.split(',')
+        return [field for field in (raw_fields or []) if field]
+
+    def _build_duplicate_filter(self, field, data):
+        match field:
+            case 'posted_date':
+                date_value = self._normalize_date(data.get('posted_date') or data.get('date'))
+                return {'posted_date': date_value} if date_value else None
+            case 'description':
+                return {'description': data.get('description') or ''}
+            case 'original_description':
+                return {'original_description': data.get('original_description') or ''}
+            case 'value':
+                try:
+                    return {'value': float(data.get('value'))}
+                except (TypeError, ValueError):
+                    return None
+            case 'account':
+                account_id = self._get_fk_id(data.get('account'))
+                return {'account_id': account_id} if account_id else {'account__isnull': True}
+            case 'card':
+                card_id = self._get_fk_id(data.get('card'))
+                return {'card_id': card_id} if card_id else {'card__isnull': True}
+            case 'card_number':
+                card_number_id = self._get_fk_id(data.get('card_number'))
+                return {'card_number_id': card_number_id} if card_number_id else {'card_number__isnull': True}
+            case 'category':
+                return {'category_id': self._get_fk_id(data.get('category'))} if data.get('category') else None
+            case 'subcategory':
+                return {'subcategory_id': self._get_fk_id(data.get('subcategory'))} if data.get('subcategory') else None
+            case 'type':
+                return {'type': data.get('type') or 'saida'}
+            case _:
+                return None
+
+    def _get_fk_id(self, value):
+        return getattr(value, 'id', value)
+
+    def _normalize_date(self, value):
+        if not value:
+            return None
+        value = str(value).strip()
+        for fmt in ('%Y-%m-%d', '%d/%m/%Y'):
+            try:
+                return datetime.strptime(value[:10], fmt).date()
+            except ValueError:
+                continue
+        try:
+            from dateutil.parser import parse
+
+            return parse(value).date()
+        except Exception:
+            return None
+
     def _handle_installment_creation(self, result):
         """
         Método auxiliar para criar o parcelamento.
@@ -310,7 +403,7 @@ class TransactionView(BaseView):
                 # O frontend vai lidar com a criação de Notification records
                 return Response(notifications_data, status=status.HTTP_200_OK)
 
-            # CSV padrão
+            # CSV configurável
             transactions = file_handler.read_file(file_type='csv')
             return Response(transactions, status=status.HTTP_200_OK)
         except requests.exceptions.JSONDecodeError as e:

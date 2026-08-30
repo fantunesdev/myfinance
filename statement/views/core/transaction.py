@@ -12,6 +12,7 @@ from statement.forms.core.transaction import TransactionExpenseForm, Transaction
 from statement.forms.general_forms import NavigationForm, UploadFileForm
 from statement.models import CardNumber, Transaction
 from statement.services.core.card import CardService
+from statement.services.core.csv_import_config import CSVImportConfigService
 from statement.services.core.fixed_expenses import FixedExpensesService
 from statement.services.core.installment import InstallmentService
 from statement.services.core.notification import NotificationService
@@ -147,6 +148,9 @@ class TransactionView(BaseView):
         Página que oferece opções de importação: por arquivo ou por notificações
         """
         form = UploadFileForm(request.user)
+        csv_import_configs = CSVImportConfigService.get_all(request.user).select_related('account', 'card')
+        card_numbers_qs = CardNumber.objects.select_related('card').filter(card__user=request.user)
+        card_numbers = list(card_numbers_qs.values('id', 'number', 'name', 'card_id', 'home_screen'))
 
         # Busca as notificações não usadas (vinculadas e não vinculadas)
         notifications = []
@@ -256,6 +260,25 @@ class TransactionView(BaseView):
             'file_notifications_json': json.dumps([]),
             'notifications_json': json.dumps(notifications),
             'has_notifications': len(notifications) > 0,
+            'csv_import_configs': csv_import_configs,
+            'csv_import_configs_json': json.dumps(
+                [
+                    {
+                        'id': config.id,
+                        'name': config.name,
+                        'target_model': config.target_model,
+                        'date_column': config.date_column,
+                        'description_column': config.description_column,
+                        'value_column': config.value_column,
+                        'payment_method': config.payment_method,
+                        'account': config.account_id,
+                        'card': config.card_id,
+                        'matching_fields': config.matching_fields or [],
+                    }
+                    for config in csv_import_configs
+                ]
+            ),
+            'card_numbers_json': json.dumps(card_numbers),
         }
 
         return self._render(request, form, 'transaction/import_base.html', specific_context)

@@ -7,19 +7,23 @@ const boxTransactions = document.querySelector('#box-transactions');
 const transactionRows = document.querySelector('#transaction-rows');
 const checkboxCheckAll = document.querySelector('#checkall');
 const sendTransactionsBtn = document.querySelector('#send-transactions-btn');
-const fileTypeCSV = document.querySelector('#file-type-csv');
 const fileTypeConfigurableCSV = document.querySelector('#file-type-configurable-csv');
 const fileTypeTasker = document.querySelector('#file-type-tasker');
 const targetModelSelect = document.querySelector('#id_target_model');
+const csvImportConfigSelect = document.querySelector('#id_csv_import_config');
 const investmentImportTypeGroup = document.querySelector('#investment-import-type-group');
 const investmentImportTypeSelect = document.querySelector('#id_investment_import_type');
 const dateColumnInput = document.querySelector('#id_date_column');
 const descriptionColumnInput = document.querySelector('#id_description_column');
 const valueColumnInput = document.querySelector('#id_value_column');
-const defaultCSVFields = document.querySelector('#default-csv-fields');
 const configurableCSVFields = document.querySelector('#configurable-csv-fields');
+const csvConfigManagedFields = document.querySelectorAll('.csv-config-managed');
 const csvFileLabel = document.querySelector('#csv-file-label');
 const importHeadings = document.querySelectorAll('.import-heading');
+const importCardNumberHeading = document.querySelector('.import-card-number-heading');
+const editCSVImportConfigBtn = document.querySelector('#edit-csv-import-config-btn');
+const paymentMethodGroup = document.querySelector('#payment-method-group');
+const paymentTargetFields = document.querySelector('#payment-target-fields');
 
 const targetModels = {
     statement: 'statement_transaction',
@@ -68,25 +72,25 @@ export function selectPaymentMethod() {
  */
 async function sendFile() {
     const formData = new FormData();
+    const csvImportConfig = getSelectedCSVImportConfig();
 
     formData.append('file', fileInput.files[0]);
     formData.append('account', isNaN(parseInt(selects.account.value)) ? '' : parseInt(selects.account.value));
     formData.append('card', isNaN(parseInt(selects.card.value)) ? '' : parseInt(selects.card.value));
-    formData.append('csv_mode', isConfigurableCSV() ? 'configurable' : 'default');
+    formData.append('csv_import_config', csvImportConfig ? csvImportConfig.id : '');
+    formData.append('csv_mode', 'configurable');
     formData.append('target_model', getTargetModel());
-    formData.append('date_column', isConfigurableCSV() ? dateColumnInput.value.trim() : 'date');
-    formData.append('description_column', isConfigurableCSV() ? descriptionColumnInput.value.trim() : 'title');
-    formData.append('value_column', isConfigurableCSV() ? valueColumnInput.value.trim() : 'amount');
+    formData.append('date_column', dateColumnInput.value.trim());
+    formData.append('description_column', descriptionColumnInput.value.trim());
+    formData.append('value_column', valueColumnInput.value.trim());
+    formData.append('matching_fields', csvImportConfig ? csvImportConfig.matching_fields.join(',') : '');
 
     if (!fileInput.files[0]) {
         alert('Selecione um arquivo para continuar.');
         return;
     }
-    if (
-        isConfigurableCSV()
-        && (!dateColumnInput.value.trim() || !descriptionColumnInput.value.trim() || !valueColumnInput.value.trim())
-    ) {
-        alert('Informe as colunas de data, descrição e valor.');
+    if (!csvImportConfig || !dateColumnInput.value.trim() || !descriptionColumnInput.value.trim() || !valueColumnInput.value.trim()) {
+        alert('Selecione uma configuração de CSV com as colunas de data, descrição e valor.');
         return;
     }
     if (getTargetModel() === targetModels.statement && selects.paymentMethod.value == 1 && !selects.card.value) {
@@ -126,6 +130,10 @@ async function renderBox(transactions) {
 
     for (const transaction of transactions) {
         const row = document.createElement('tr');
+        if (transaction.is_duplicate) {
+            row.classList.add('row-duplicate');
+            row.title = `Duplicado do lançamento #${transaction.duplicate_id}`;
+        }
         const subcategories = isInvestmentImport
             ? []
             : await services.getChildrenResource('categories', 'subcategories', transaction.category);
@@ -141,6 +149,11 @@ function renderHeadings(isInvestmentImport) {
     const headings = isInvestmentImport
         ? ['Data', 'Investimento', 'Tipo', 'Descrição', 'Valor']
         : ['Data', 'Categoria', 'Subcategoria', 'Descrição', 'Valor'];
+    const shouldShowCardNumber = !isInvestmentImport && getCardNumbersByCard(selects.card.value).length > 0;
+
+    if (importCardNumberHeading) {
+        importCardNumberHeading.classList.toggle('hide', !shouldShowCardNumber);
+    }
 
     importHeadings.forEach((heading, index) => {
         heading.textContent = headings[index];
@@ -157,7 +170,7 @@ function renderHeadings(isInvestmentImport) {
  * @returns Uma lista de objetos literais com os campos a serem renderizados.
  */
 function getTransactionFields(transaction, categories, subcategories) {
-    return [
+    const fields = [
         getCheckboxField(transaction),
         {
             id: `id_date_${transaction.id}`,
@@ -194,6 +207,21 @@ function getTransactionFields(transaction, categories, subcategories) {
             disabled: true,
         },
     ];
+
+    const cardNumbers = getCardNumbersByCard(transaction.card || selects.card.value);
+    if (cardNumbers.length > 0) {
+        fields.splice(2, 0, {
+            id: `id_card_number_${transaction.id}`,
+            type: 'select',
+            options: cardNumbers.map((cardNumber) => ({
+                id: cardNumber.id,
+                description: cardNumber.name || cardNumber.number,
+            })),
+            selected: transaction.card_number || cardNumbers[0].id,
+        });
+    }
+
+    return fields;
 }
 
 function getInvestmentTransactionFields(transaction, investments) {
@@ -237,6 +265,8 @@ function getCheckboxField(transaction) {
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
             checkbox.id = transaction.id;
+            checkbox.checked = !transaction.is_duplicate;
+            checkbox.disabled = Boolean(transaction.is_duplicate);
 
             checkbox.addEventListener('change', () => {
                 row.classList.toggle('row-disabled', !checkbox.checked);
@@ -456,11 +486,19 @@ function getFormData(transactionId, transactionObj = null) {
         posted_date: document.getElementById(`id_date_${transactionId}`).value,
         account: document.getElementById('id_account').value,
         card: document.getElementById('id_card').value,
+        card_number: getCardNumberValue(transactionId),
         category: document.getElementById(`id_category_${transactionId}`).value,
         subcategory: document.getElementById(`id_subcategory_${transactionId}`).value,
         description: document.getElementById(`id_description_${transactionId}`).value,
+        original_description: transactionObj ? transactionObj.original_description : '',
         value: document.getElementById(`id_value_${transactionId}`).value,
+        matching_fields: transactionObj ? transactionObj.matching_fields || [] : [],
     };
+}
+
+function getCardNumberValue(transactionId) {
+    const cardNumberSelect = document.getElementById(`id_card_number_${transactionId}`);
+    return cardNumberSelect ? cardNumberSelect.value : '';
 }
 
 function getInvestmentTransactionFormData(transactionId) {
@@ -536,8 +574,8 @@ if (targetModelSelect) {
     targetModelSelect.addEventListener('change', () => selectTargetModel());
 }
 
-if (fileTypeCSV) {
-    fileTypeCSV.addEventListener('change', () => selectCSVMode());
+if (csvImportConfigSelect) {
+    csvImportConfigSelect.addEventListener('change', () => applySelectedCSVImportConfig());
 }
 
 if (fileTypeConfigurableCSV) {
@@ -552,6 +590,7 @@ if (checkboxCheckAll && transactionRows) {
     checkboxCheckAll.addEventListener('change', function () {
         for (const row of transactionRows.children) {
             const checkbox = row.children[0].children[0];
+            if (checkbox.disabled) continue;
             checkbox.checked = this.checked;
 
             // Adiciona ou remove a classe 'row-disabled' com base no estado do checkbox
@@ -572,7 +611,6 @@ if (sendTransactionsBtn) {
 }
 
 function getTargetModel() {
-    if (!isConfigurableCSV()) return targetModels.statement;
     return targetModelSelect ? targetModelSelect.value : targetModels.statement;
 }
 
@@ -584,11 +622,38 @@ function getInvestmentImportType() {
     return investmentImportTypeSelect ? investmentImportTypeSelect.value : 'aporte';
 }
 
+function getSelectedCSVImportConfig() {
+    if (!csvImportConfigSelect || !csvImportConfigSelect.value) return null;
+    const configs = (window.myFinance && window.myFinance.csvImportConfigs) || [];
+    return configs.find((config) => String(config.id) === String(csvImportConfigSelect.value)) || null;
+}
+
+function getCardNumbersByCard(cardId) {
+    if (!cardId) return [];
+    const cardNumbers = (window.myFinance && window.myFinance.cardNumbers) || window.card_numbers_json || [];
+    return cardNumbers.filter((cardNumber) => String(cardNumber.card_id) === String(cardId));
+}
+
+function applySelectedCSVImportConfig() {
+    const config = getSelectedCSVImportConfig();
+    updateCSVImportConfigActions(config);
+    if (!config) return;
+
+    if (targetModelSelect) targetModelSelect.value = config.target_model;
+    if (dateColumnInput) dateColumnInput.value = config.date_column;
+    if (descriptionColumnInput) descriptionColumnInput.value = config.description_column;
+    if (valueColumnInput) valueColumnInput.value = config.value_column;
+    if (selects.paymentMethod) selects.paymentMethod.value = config.payment_method;
+    if (selects.account) selects.account.value = config.account || '';
+    if (selects.card) selects.card.value = config.card || '';
+
+    selectTargetModel();
+}
+
 function selectTargetModel() {
     const isInvestmentImport = isConfigurableCSV() && getTargetModel() === targetModels.investment;
-    const paymentMethodGroup = selects.paymentMethod.closest('.form-group');
 
-    if (paymentMethodGroup) {
+    if (paymentMethodGroup && !isConfigurableCSV()) {
         paymentMethodGroup.classList.toggle('toggled', isInvestmentImport);
     }
 
@@ -600,23 +665,42 @@ function selectTargetModel() {
 }
 
 function selectCSVMode() {
-    if (defaultCSVFields) {
-        defaultCSVFields.classList.toggle('hide', isConfigurableCSV());
-    }
+    const configurable = isConfigurableCSV();
 
     if (configurableCSVFields) {
-        configurableCSVFields.classList.toggle('hide', !isConfigurableCSV());
+        configurableCSVFields.classList.toggle('hide', !configurable);
+    }
+
+    csvConfigManagedFields.forEach((fieldGroup) => {
+        fieldGroup.classList.add('hide');
+    });
+
+    if (paymentMethodGroup) {
+        paymentMethodGroup.classList.toggle('hide', configurable);
+    }
+
+    if (paymentTargetFields) {
+        paymentTargetFields.classList.toggle('hide', configurable);
     }
 
     if (csvFileLabel) {
-        csvFileLabel.textContent = isConfigurableCSV() ? 'Arquivo CSV configurável: ' : 'Arquivo CSV: ';
+        csvFileLabel.textContent = 'Arquivo CSV configurável: ';
     }
 
     if (importBtn) {
-        importBtn.value = isConfigurableCSV() ? 'Importar CSV configurável' : 'Importar CSV';
+        importBtn.value = 'Importar CSV configurável';
     }
 
+    updateCSVImportConfigActions(getSelectedCSVImportConfig());
     selectTargetModel();
+}
+
+function updateCSVImportConfigActions(config) {
+    if (!editCSVImportConfigBtn) return;
+    editCSVImportConfigBtn.classList.toggle('hide', !config);
+    if (config) {
+        editCSVImportConfigBtn.href = editCSVImportConfigBtn.dataset.urlTemplate.replace('/0/', `/${config.id}/`);
+    }
 }
 
 selectCSVMode();

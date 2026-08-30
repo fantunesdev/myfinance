@@ -514,6 +514,45 @@ td a:hover {
     opacity: 0.5;
 }
 
+.row-duplicate td {
+    background: rgba(150, 70, 35, 0.18);
+}
+
+.csv-import-config-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 20px;
+    margin-bottom: 26px;
+}
+
+.csv-import-config-actions .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    box-sizing: border-box;
+    line-height: 1.2;
+}
+
+.csv-import-config-actions .hide {
+    display: none;
+}
+
+.csv-import-config-group {
+    margin-bottom: 0;
+}
+
+.csv-import-file-group {
+    margin-top: 0;
+    margin-bottom: 22px;
+}
+
+.csv-import-submit-group {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
 /* Cabeçalho de grupo para seções da fatura */
 .group-header td {
     background: #131313;

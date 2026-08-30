@@ -8,6 +8,7 @@ from statement.services.core.account import AccountService
 from statement.services.core.bank import BankService
 from statement.services.core.card import CardService
 from statement.services.core.category import CategoryService
+from statement.services.core.csv_import_config import CSVImportConfigService
 from statement.services.core.fixed_expenses import FixedExpensesService
 from statement.services.core.flag import FlagService
 from statement.services.core.notification import NotificationService
@@ -51,6 +52,7 @@ class SettingsView(BaseView):
             'categories': CategoryService.get_all(),
             'subcategories': SubcategoryService.get_all(),
             'fixed_expenses': FixedExpensesService.get_all(request.user),
+            'csv_import_configs': CSVImportConfigService.get_all(request.user),
             # Renda Fixa
             'indexes': IndexService.get_all(request.user),
             'fixed_income_securities': FixedIncomeSecurityService.get_all(request.user),

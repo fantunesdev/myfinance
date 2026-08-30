@@ -330,6 +330,43 @@ class Transaction(models.Model):
         ordering = ['posted_date']
 
 
+class CSVImportConfig(models.Model):
+    """
+    Configuração reutilizável para importação de arquivos CSV.
+    """
+
+    TARGET_MODEL_CHOICES = (
+        ('statement_transaction', 'Lançamento financeiro'),
+        ('investments_investmenttransaction', 'Movimentação de investimento'),
+    )
+    PAYMENT_METHOD_CHOICES = (
+        (1, 'Cartão de Crédito'),
+        (2, 'Conta Corrente'),
+    )
+
+    name = models.CharField(max_length=80)
+    target_model = models.CharField(
+        max_length=40, choices=TARGET_MODEL_CHOICES, default='statement_transaction'
+    )
+    date_column = models.CharField(max_length=80, default='date')
+    description_column = models.CharField(max_length=80, default='title')
+    value_column = models.CharField(max_length=80, default='amount')
+    payment_method = models.IntegerField(choices=PAYMENT_METHOD_CHOICES, default=2)
+    account = models.ForeignKey(Account, on_delete=models.PROTECT, null=True, blank=True)
+    card = models.ForeignKey(Card, on_delete=models.PROTECT, null=True, blank=True)
+    matching_fields = models.JSONField(default=list, blank=True)
+    user = models.ForeignKey(User, on_delete=models.PROTECT)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ['name']
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'name'], name='unique_csv_import_config_name_by_user')
+        ]
+
+
 class FixedExpenses(models.Model):
     """
     Classe que representa uma despesa fixa.

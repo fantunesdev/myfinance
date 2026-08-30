@@ -3,7 +3,7 @@ import json
 from decimal import Decimal, InvalidOperation
 
 from clients.transaction_classifier.transaction_classifier import TransactionClassifierClient
-from statement.models import AppConfig
+from statement.models import AppConfig, CSVImportConfig, Transaction
 from statement.services.core.account import AccountService
 from statement.services.core.card import CardService
 from statement.services.core.category import CategoryService
@@ -25,20 +25,45 @@ class FileHandlerService:
         self._file = request.FILES.get('file')
         self._extension = self._file.name.split('.')[-1].lower()
         self._user = request.user
+        self._csv_config = self._set_csv_config(request)
         self._account = self._set_account(request)
         self._card = self._set_card(request)
-        self._is_configurable_csv = request.data.get('csv_mode') == 'configurable'
+        self._is_configurable_csv = request.data.get('csv_mode') == 'configurable' or bool(self._csv_config)
         self._target_model = (
-            request.data.get('target_model', 'statement_transaction')
+            self._csv_config.target_model
+            if self._csv_config
+            else request.data.get('target_model', 'statement_transaction')
             if self._is_configurable_csv
             else 'statement_transaction'
         )
-        self._date_column = request.data.get('date_column') if self._is_configurable_csv else 'date'
-        self._description_column = request.data.get('description_column') if self._is_configurable_csv else 'title'
-        self._value_column = request.data.get('value_column') if self._is_configurable_csv else 'amount'
-        self._date_column = self._date_column or 'date'
-        self._description_column = self._description_column or 'title'
-        self._value_column = self._value_column or 'amount'
+        self._date_column = self._get_configured_value(request, 'date_column', 'date')
+        self._description_column = self._get_configured_value(request, 'description_column', 'title')
+        self._value_column = self._get_configured_value(request, 'value_column', 'amount')
+        self._date_column = self._normalize_csv_header(self._date_column or 'date')
+        self._description_column = self._normalize_csv_header(self._description_column or 'title')
+        self._value_column = self._normalize_csv_header(self._value_column or 'amount')
+        self._matching_fields = self._set_matching_fields(request)
+
+    def _set_csv_config(self, request):
+        config_id = request.data.get('csv_import_config') or request.data.get('csv_import_config_id')
+        if not config_id:
+            return None
+        return CSVImportConfig.objects.get(id=config_id, user=self._user)
+
+    def _get_configured_value(self, request, field_name, default):
+        if not self._is_configurable_csv:
+            return default
+        if self._csv_config:
+            return getattr(self._csv_config, field_name)
+        return request.data.get(field_name)
+
+    def _set_matching_fields(self, request):
+        if self._csv_config:
+            return self._csv_config.matching_fields or []
+        raw_fields = request.data.get('matching_fields', '')
+        if isinstance(raw_fields, str):
+            return [field for field in raw_fields.split(',') if field]
+        return raw_fields or []
 
     def _set_account(self, request):
         """
@@ -47,7 +72,7 @@ class FileHandlerService:
         :param request: Objeto de requisição do Django.
         :return: Conta associada ao arquivo.
         """
-        account_id = request.data['account']
+        account_id = self._csv_config.account_id if self._csv_config else request.data['account']
         if account_id:
             return AccountService.get_by_id(account_id, user=self._user)
         return None
@@ -59,7 +84,7 @@ class FileHandlerService:
         :param request: Objeto de requisição do Django.
         :return: Cartão associado ao arquivo.
         """
-        card_id = request.data['card']
+        card_id = self._csv_config.card_id if self._csv_config else request.data['card']
         if card_id:
             return CardService.get_by_id(card_id, user=self._user)
         return None
@@ -85,9 +110,11 @@ class FileHandlerService:
         :return: Lista de dicionários com os dados do arquivo CSV.
         """
         transactions = []
-        reader = csv.DictReader(self._file.read().decode('utf-8').splitlines())
-        for i, row in enumerate(reader):
-            self._validate_csv_columns(row, i + 1)
+        file_content = self._file.read().decode('utf-8-sig')
+        reader = self._get_csv_reader(file_content)
+        for i, row in enumerate(reader, start=1):
+            row = self._normalize_csv_row(row)
+            self._validate_csv_columns(row, i)
             date = row[self._date_column]
             description = row[self._description_column]
             value = (
@@ -147,11 +174,27 @@ class FileHandlerService:
                 'description': predicted['description'],
                 'original_description': description,
                 'value': value,
+                'matching_fields': self._matching_fields,
             }
+            duplicate = self._find_duplicate_transaction(transaction)
+            transaction.update(
+                {
+                    'is_duplicate': duplicate is not None,
+                    'duplicate_id': duplicate.id if duplicate else None,
+                }
+            )
             transactions.append(transaction)
         if not transactions:
             raise ValueError('O arquivo está vazio.')
         return transactions
+
+    def _get_csv_reader(self, file_content):
+        lines = file_content.splitlines()
+        try:
+            dialect = csv.Sniffer().sniff(file_content[:2048], delimiters=',;')
+            return csv.DictReader(lines, dialect=dialect)
+        except csv.Error:
+            return csv.DictReader(lines)
 
     def _validate_csv_columns(self, row, line_number):
         missing_columns = [
@@ -163,11 +206,19 @@ class FileHandlerService:
             columns = ', '.join(missing_columns)
             raise ValueError(f'Coluna(s) não encontrada(s) no CSV na linha {line_number}: {columns}')
 
+    def _normalize_csv_row(self, row):
+        return {self._normalize_csv_header(key): value for key, value in row.items() if key is not None}
+
+    def _normalize_csv_header(self, header):
+        if header is None:
+            return ''
+        return str(header).replace('\ufeff', '').strip().strip('"').strip("'").strip()
+
     def _normalize_value(self, value):
         if value is None:
             return ''
 
-        value = str(value).strip().replace('R$', '').replace(' ', '')
+        value = str(value).strip().replace('R$', '').replace(' ', '').replace('\xa0', '')
         if ',' in value and '.' in value:
             value = value.replace('.', '').replace(',', '.')
         elif ',' in value:
@@ -177,6 +228,71 @@ class FileHandlerService:
             return str(Decimal(value).quantize(Decimal('0.01')))
         except (InvalidOperation, ValueError):
             return value
+
+    def _find_duplicate_transaction(self, transaction):
+        if not self._matching_fields:
+            return None
+
+        filters = {'user': self._user}
+        if self._account:
+            filters['account'] = self._account
+        if self._card:
+            filters['card'] = self._card
+
+        for field in self._matching_fields:
+            field_filter = self._build_duplicate_filter(field, transaction)
+            if field_filter is None:
+                return None
+            filters.update(field_filter)
+
+        return Transaction.objects.filter(**filters).first()
+
+    def _build_duplicate_filter(self, field, transaction):
+        match field:
+            case 'posted_date':
+                date_value = self._normalize_date(transaction.get('date'))
+                return {'posted_date': date_value} if date_value else None
+            case 'description':
+                return {'description': transaction.get('description') or ''}
+            case 'original_description':
+                return {'original_description': transaction.get('original_description') or ''}
+            case 'value':
+                try:
+                    return {'value': float(transaction.get('value'))}
+                except (TypeError, ValueError):
+                    return None
+            case 'account':
+                return {'account': self._account} if self._account else {'account__isnull': True}
+            case 'card':
+                return {'card': self._card} if self._card else {'card__isnull': True}
+            case 'card_number':
+                return None
+            case 'category':
+                return {'category_id': transaction.get('category')} if transaction.get('category') else None
+            case 'subcategory':
+                return {'subcategory_id': transaction.get('subcategory')} if transaction.get('subcategory') else None
+            case 'type':
+                return {'type': transaction.get('type') or 'saida'}
+            case _:
+                return None
+
+    def _normalize_date(self, value):
+        if not value:
+            return None
+        value = str(value).strip()
+        for fmt in ('%Y-%m-%d', '%d/%m/%Y'):
+            try:
+                from datetime import datetime
+
+                return datetime.strptime(value[:10], fmt).date()
+            except ValueError:
+                continue
+        try:
+            from dateutil.parser import parse
+
+            return parse(value).date()
+        except Exception:
+            return None
 
     def _read_tasker_json(self):
         """
