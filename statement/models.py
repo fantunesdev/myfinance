@@ -343,6 +343,11 @@ class CSVImportConfig(models.Model):
         (1, 'Cartão de Crédito'),
         (2, 'Conta Corrente'),
     )
+    INSTALLMENT_FORMAT_CHOICES = (
+        ('auto', 'Automático'),
+        ('slash', 'x/y'),
+        ('dash', 'x-y'),
+    )
 
     name = models.CharField(max_length=80)
     target_model = models.CharField(
@@ -351,6 +356,8 @@ class CSVImportConfig(models.Model):
     date_column = models.CharField(max_length=80, default='date')
     description_column = models.CharField(max_length=80, default='title')
     value_column = models.CharField(max_length=80, default='amount')
+    installment_column = models.CharField(max_length=80, blank=True, null=True)
+    installment_format = models.CharField(max_length=10, choices=INSTALLMENT_FORMAT_CHOICES, default='auto')
     payment_method = models.IntegerField(choices=PAYMENT_METHOD_CHOICES, default=2)
     account = models.ForeignKey(Account, on_delete=models.PROTECT, null=True, blank=True)
     card = models.ForeignKey(Card, on_delete=models.PROTECT, null=True, blank=True)

@@ -270,6 +270,8 @@ class TransactionView(BaseView):
                         'date_column': config.date_column,
                         'description_column': config.description_column,
                         'value_column': config.value_column,
+                        'installment_column': config.installment_column,
+                        'installment_format': config.installment_format,
                         'payment_method': config.payment_method,
                         'account': config.account_id,
                         'card': config.card_id,

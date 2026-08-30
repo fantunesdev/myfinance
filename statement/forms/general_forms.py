@@ -73,6 +73,20 @@ class UploadFileForm(forms.Form):
         initial='amount',
         widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'amount'}),
     )
+    installment_column = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Tipo'}),
+    )
+    installment_format = forms.ChoiceField(
+        required=False,
+        initial='auto',
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        choices=(
+            ('auto', 'Automático'),
+            ('slash', 'x/y'),
+            ('dash', 'x-y'),
+        ),
+    )
     payment_method = forms.ChoiceField(
         required=False,
         widget=forms.Select(attrs={'class': 'form-control'}),

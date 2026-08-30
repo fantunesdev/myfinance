@@ -518,29 +518,8 @@ td a:hover {
     background: rgba(150, 70, 35, 0.18);
 }
 
-.csv-import-config-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 20px;
-    margin-bottom: 26px;
-}
-
-.csv-import-config-actions .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 38px;
-    box-sizing: border-box;
-    line-height: 1.2;
-}
-
-.csv-import-config-actions .hide {
-    display: none;
-}
-
 .csv-import-config-group {
-    margin-bottom: 0;
+    margin-bottom: 18px;
 }
 
 .csv-import-file-group {
@@ -1376,6 +1355,65 @@ a {
     width: 40px !important;
     white-space: nowrap !important;
     text-align: center !important;
+}
+
+.import-preview-table {
+    table-layout: fixed !important;
+    width: 100%;
+}
+
+.import-preview-table th,
+.import-preview-table td {
+    min-width: 0 !important;
+    overflow: hidden;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.import-preview-table .import-col-check {
+    width: 4ch !important;
+    text-align: center !important;
+}
+
+.import-preview-table .import-col-date {
+    width: 14ch !important;
+}
+
+.import-preview-table .import-col-card-number {
+    width: 26ch !important;
+}
+
+.import-preview-table .import-col-installment {
+    width: 9ch !important;
+}
+
+.import-preview-table .import-col-category {
+    width: 18ch !important;
+}
+
+.import-preview-table .import-col-subcategory {
+    width: 24ch !important;
+}
+
+.import-preview-table .import-col-value {
+    width: 12ch !important;
+}
+
+.import-preview-table .import-col-description {
+    width: auto !important;
+}
+
+.import-preview-table td input:not([type="checkbox"]),
+.import-preview-table td select,
+.import-preview-table td textarea {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 2px 0;
+}
+
+.import-preview-table .import-col-value input {
+    text-align: right;
 }
 
 /* Mobile simplification for mes_atual: esconder dashboards e mostrar apenas Data/Descrição/Valor */

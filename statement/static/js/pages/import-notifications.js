@@ -116,7 +116,7 @@ async function renderNotificationsBox(notifications) {
 
     // build group map so we can render a tbody per group (card_id:card_number_id)
     const groups = new Map();
-    const COLSPAN = 6;
+    const COLSPAN = 7;
     for (const notification of notifications) {
         try {
             const row = document.createElement('tr');
@@ -226,6 +226,20 @@ function getTransactionFields(transaction, categories, subcategories) {
             },
         },
         {
+            id: `id_installment_text_${transaction.id}`,
+            type: 'text',
+            value: transaction.installment_text || '',
+            render: (cell) => {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.id = `id_installment_text_${transaction.id}`;
+                input.value = transaction.installment_text || '';
+                input.placeholder = '1/2';
+                input.classList.add('form-control');
+                cell.appendChild(input);
+            },
+        },
+        {
             id: `id_category_${transaction.id}`,
             type: 'select',
             options: categories,
@@ -288,6 +302,7 @@ function renderFields(row, fields) {
     fields.forEach((field) => {
         try {
             const cell = row.insertCell();
+            applyImportCellClass(cell, field);
 
                 if (field.render) {
                     field.render(cell, row);
@@ -303,19 +318,6 @@ function renderFields(row, fields) {
                     }
                 }
 
-                // Ajusta largura da célula para valor/descrição garantindo layout
-                const fid = String(field.id || '');
-                if (fid.startsWith('id_value_')) {
-                    cell.classList.add('value-cell');
-                    cell.style.setProperty('max-width', '120px', 'important');
-                    cell.style.setProperty('min-width', '0px', 'important');
-                    cell.style.whiteSpace = 'nowrap';
-                    cell.style.overflow = 'hidden';
-                } else if (fid.startsWith('id_description_')) {
-                    cell.classList.add('description-cell');
-                    cell.style.setProperty('min-width', '360px', 'important');
-                }
-
                 // Adiciona listener de change para selects (se aplicável)
                 if (field.onChange && field.type === 'select') {
                     const selectElem = cell.querySelector('select');
@@ -325,6 +327,25 @@ function renderFields(row, fields) {
             console.error('Erro ao renderizar field:', field, error);
         }
     });
+}
+
+function applyImportCellClass(cell, field) {
+    const fieldId = String(field.id || '');
+    if (field.type === 'checkbox') {
+        cell.classList.add('import-col-check');
+    } else if (fieldId.startsWith('id_date_')) {
+        cell.classList.add('import-col-date');
+    } else if (fieldId.startsWith('id_installment_text_')) {
+        cell.classList.add('import-col-installment');
+    } else if (fieldId.startsWith('id_category_')) {
+        cell.classList.add('import-col-category');
+    } else if (fieldId.startsWith('id_subcategory_')) {
+        cell.classList.add('import-col-subcategory');
+    } else if (fieldId.startsWith('id_description_')) {
+        cell.classList.add('import-col-description');
+    } else if (fieldId.startsWith('id_value_')) {
+        cell.classList.add('import-col-value');
+    }
 }
 
 /**
@@ -347,27 +368,18 @@ function createInput(field) {
         input.value = field.value || '';
     }
     input.classList.add('form-control');
-    // Ajustes de tamanho e limites específicos para campos description/value
     if (input.id && input.id.startsWith('id_value_')) {
-        // Numeric input: up to 6 digits + 2 decimals. Use number type attributes.
         input.type = 'number';
         input.step = '0.01';
         input.min = '0';
         input.inputMode = 'decimal';
-        input.maxLength = 9; // visual limit (doesn't strictly limit number input in all browsers)
+        input.maxLength = 9;
         input.pattern = '^[0-9]{1,6}(\\.[0-9]{2})?$';
-        // input ocupa 100% da célula, mas também define max-width para proteção contra CSS global
-        input.style.setProperty('width', '100%', 'important');
-        input.style.setProperty('max-width', '120px', 'important');
-        input.style.setProperty('box-sizing', 'border-box', 'important');
         input.style.textAlign = 'right';
         input.classList.add('value-input');
     }
     if (input.id && input.id.startsWith('id_description_')) {
-        // garantir que a descrição tenha espaço suficiente
         input.maxLength = 255;
-        input.style.setProperty('width', '100%', 'important');
-        input.style.setProperty('min-width', '300px', 'important');
         input.classList.add('description-input');
     }
     if (field.disabled) input.disabled = true;
@@ -568,7 +580,14 @@ function getFormData(notificationId, notificationObj) {
         subcategory: document.getElementById(`id_subcategory_${notificationId}`).value,
         description: document.getElementById(`id_description_${notificationId}`).value,
         value: document.getElementById(`id_value_${notificationId}`).value,
+        installment_text: getInstallmentTextValue(notificationId),
+        installment_value_mode: 'total',
     };
+}
+
+function getInstallmentTextValue(notificationId) {
+    const installmentInput = document.getElementById(`id_installment_text_${notificationId}`);
+    return installmentInput ? installmentInput.value : '';
 }
 
 /**

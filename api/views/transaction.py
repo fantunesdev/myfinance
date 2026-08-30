@@ -3,6 +3,7 @@ import re
 from datetime import datetime
 
 import requests
+from django.db.models import Q
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -36,7 +37,7 @@ class TransactionView(BaseView):
 
     def create(self, request):
         description = request.data.get('description')
-        self._get_installments_number(description)
+        self._get_installments_number(description, request.data.get('installment_text'))
 
         # Se for um parcelamento, mas não for a primeira parcela, a parcela já foi cadastrada anteriormente.
         if self._is_installment_but_not_first():
@@ -116,8 +117,7 @@ class TransactionView(BaseView):
         try:
             if not self.installment_info:
                 return False
-            # installment_info.group(0) returns '1/10' -> take the first part
-            installment_number = int(self.installment_info.group(0).split('/')[0])
+            installment_number = int(self.installment_info.group(1))
             # Retorna True se NÃO for a primeira parcela
             return installment_number != 1
         except (ValueError, AttributeError, IndexError):
@@ -154,7 +154,7 @@ class TransactionView(BaseView):
         request.data.update(
             {
                 'user': request.user.id,
-                'installments_number': self._get_installments_number(description),
+                'installments_number': self._get_installments_number(description, request.data.get('installment_text')),
                 'paid': 0,
                 'currency': 'BRL',
                 'type': CategoryService.get_by_id(request.data.get('category')).type,
@@ -191,15 +191,23 @@ class TransactionView(BaseView):
         # mais especificamente no método _set_transaction_value(), dentro de _set_first_installment()
         if self.installment_info:
             try:
-                installment_number = int(self.installment_info.group(0).split('/')[0])
+                installment_number = int(self.installment_info.group(1))
                 if installment_number == 1:
                     value = float(request.data.get('value', 0))
                     installments_number = int(request.data.get('installments_number'))
-                    request.data['value'] = value * installments_number
+                    if request.data.get('installment_value_mode') == 'total':
+                        request.data['_duplicate_value'] = value / installments_number
+                    else:
+                        request.data['_duplicate_value'] = request.data.get('value')
+                        request.data['value'] = value * installments_number
             except (ValueError, AttributeError):
                 pass
 
     def _find_duplicate_transaction(self, request):
+        installment_duplicate = self._find_installment_duplicate(request)
+        if installment_duplicate:
+            return installment_duplicate
+
         matching_fields = self._get_duplicate_matching_fields(request)
         if not matching_fields:
             return None
@@ -217,6 +225,60 @@ class TransactionView(BaseView):
             filters.update(field_filter)
 
         return Transaction.objects.filter(**filters).first()
+
+    def _find_installment_duplicate(self, request):
+        if not request.data.get('installments_number'):
+            return None
+
+        posted_date = self._normalize_date(request.data.get('posted_date') or request.data.get('date'))
+        if not posted_date:
+            return None
+
+        filters = {
+            'user': request.user,
+            'posted_date': posted_date,
+            'paid': self._get_current_installment_number(),
+            'installments_number': request.data.get('installments_number'),
+        }
+        if request.data.get('account'):
+            filters['account_id'] = self._get_fk_id(request.data.get('account'))
+        card_id = self._get_fk_id(request.data.get('card')) if request.data.get('card') else None
+        if request.data.get('card_number'):
+            filters['card_number_id'] = self._get_fk_id(request.data.get('card_number'))
+
+        transactions = Transaction.objects.filter(**filters)
+        if card_id:
+            transactions = transactions.filter(Q(card_id=card_id) | Q(card_number__card_id=card_id))
+
+        matching_fields = self._get_duplicate_matching_fields(request)
+        disambiguator_fields = self._get_installment_disambiguator_fields(matching_fields)
+        if disambiguator_fields:
+            narrowed_transactions = self._narrow_installment_duplicates(
+                transactions,
+                request.data,
+                disambiguator_fields,
+            )
+            if narrowed_transactions is None:
+                return None
+            candidates = list(narrowed_transactions[:2])
+            return candidates[0] if len(candidates) == 1 else None
+
+        candidates = list(transactions[:2])
+        if len(candidates) == 1:
+            return candidates[0]
+        return None
+
+    def _get_installment_disambiguator_fields(self, matching_fields):
+        ignored_fields = {'posted_date', 'account', 'card', 'card_number'}
+        return [field for field in matching_fields if field not in ignored_fields]
+
+    def _narrow_installment_duplicates(self, transactions, data, matching_fields):
+        for field in matching_fields:
+            field_filter = self._build_duplicate_filter(field, data)
+            if field_filter is None:
+                return None
+            transactions = transactions.filter(**field_filter)
+        return transactions
 
     def _get_duplicate_matching_fields(self, request):
         raw_fields = request.data.get('matching_fields') or request.data.get('duplicate_match_fields')
@@ -240,7 +302,8 @@ class TransactionView(BaseView):
                 return {'original_description': data.get('original_description') or ''}
             case 'value':
                 try:
-                    return {'value': float(data.get('value'))}
+                    value = data.get('_duplicate_value') or data.get('value')
+                    return {'value': float(value)}
                 except (TypeError, ValueError):
                     return None
             case 'account':
@@ -263,6 +326,14 @@ class TransactionView(BaseView):
 
     def _get_fk_id(self, value):
         return getattr(value, 'id', value)
+
+    def _get_current_installment_number(self):
+        if not self.installment_info:
+            return 1
+        try:
+            return int(self.installment_info.group(1))
+        except (ValueError, AttributeError, IndexError):
+            return 1
 
     def _normalize_date(self, value):
         if not value:
@@ -296,18 +367,19 @@ class TransactionView(BaseView):
         serializer = BaseSerializer(installment, model=InstallmentService.model)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def _get_installments_number(self, description):
+    def _get_installments_number(self, description, installment_text=None):
         """
         Método auxiliar para obter o número de parcelas.
 
         :param description: Descrição do lançamento.
         :return: Número de parcelas.
         """
-        if not description:
+        source = installment_text or description
+        if not source:
             self.installment_info = None
             return 0
 
-        installment_match = re.search(r'(\d+/\d+)', description)
+        installment_match = re.search(r'(\d+)\s*[/\-]\s*(\d+)', source)
 
         # Se não for encontrado o padrão 1/10 (parcela/numero_de_parcelas), retorna 0
         if not installment_match:
@@ -317,7 +389,7 @@ class TransactionView(BaseView):
         self.installment_info = installment_match
         try:
             # retorna o total de parcelas como inteiro
-            return int(installment_match.group(0).split('/')[1])
+            return int(installment_match.group(2))
         except (ValueError, IndexError):
             return 0
 

@@ -1,6 +1,9 @@
 import csv
 import json
+import re
 from decimal import Decimal, InvalidOperation
+
+from django.db.models import Q
 
 from clients.transaction_classifier.transaction_classifier import TransactionClassifierClient
 from statement.models import AppConfig, CSVImportConfig, Transaction
@@ -39,9 +42,12 @@ class FileHandlerService:
         self._date_column = self._get_configured_value(request, 'date_column', 'date')
         self._description_column = self._get_configured_value(request, 'description_column', 'title')
         self._value_column = self._get_configured_value(request, 'value_column', 'amount')
+        self._installment_column = self._get_configured_value(request, 'installment_column', '')
+        self._installment_format = self._get_configured_value(request, 'installment_format', 'auto') or 'auto'
         self._date_column = self._normalize_csv_header(self._date_column or 'date')
         self._description_column = self._normalize_csv_header(self._description_column or 'title')
         self._value_column = self._normalize_csv_header(self._value_column or 'amount')
+        self._installment_column = self._normalize_csv_header(self._installment_column or '')
         self._matching_fields = self._set_matching_fields(request)
 
     def _set_csv_config(self, request):
@@ -117,6 +123,8 @@ class FileHandlerService:
             self._validate_csv_columns(row, i)
             date = row[self._date_column]
             description = row[self._description_column]
+            installment_text = self._extract_installment_text(row)
+            installment_paid, installments_number = self._parse_installment_numbers(installment_text)
             value = (
                 self._normalize_value(row[self._value_column])
                 if self._is_configurable_csv
@@ -131,6 +139,9 @@ class FileHandlerService:
                         'date': date,
                         'description': description,
                         'original_description': description,
+                        'installment_text': installment_text,
+                        'paid': installment_paid,
+                        'installments_number': installments_number,
                         'value': value,
                     }
                 )
@@ -173,6 +184,9 @@ class FileHandlerService:
                 'subcategory': predicted['subcategory_id'],
                 'description': predicted['description'],
                 'original_description': description,
+                'installment_text': installment_text,
+                'paid': installment_paid,
+                'installments_number': installments_number,
                 'value': value,
                 'matching_fields': self._matching_fields,
             }
@@ -197,9 +211,13 @@ class FileHandlerService:
             return csv.DictReader(lines)
 
     def _validate_csv_columns(self, row, line_number):
+        required_columns = [self._date_column, self._description_column, self._value_column]
+        if self._installment_column:
+            required_columns.append(self._installment_column)
+
         missing_columns = [
             column
-            for column in [self._date_column, self._description_column, self._value_column]
+            for column in required_columns
             if column not in row
         ]
         if missing_columns:
@@ -213,6 +231,37 @@ class FileHandlerService:
         if header is None:
             return ''
         return str(header).replace('\ufeff', '').strip().strip('"').strip("'").strip()
+
+    def _extract_installment_text(self, row):
+        if not self._installment_column:
+            return ''
+        if self._installment_column not in row:
+            return ''
+        raw_value = row.get(self._installment_column) or ''
+        return self._parse_installment_text(raw_value)
+
+    def _parse_installment_text(self, value):
+        value = str(value).strip()
+        if not value:
+            return ''
+
+        patterns = {
+            'slash': r'(\d+)\s*/\s*(\d+)',
+            'dash': r'(\d+)\s*-\s*(\d+)',
+            'auto': r'(\d+)\s*[/\-]\s*(\d+)',
+        }
+        match = re.search(patterns.get(self._installment_format, patterns['auto']), value, re.IGNORECASE)
+        if not match:
+            return ''
+        return f'{int(match.group(1))}/{int(match.group(2))}'
+
+    def _parse_installment_numbers(self, installment_text):
+        if not installment_text:
+            return 0, 0
+        match = re.search(r'(\d+)\s*/\s*(\d+)', installment_text)
+        if not match:
+            return 0, 0
+        return int(match.group(1)), int(match.group(2))
 
     def _normalize_value(self, value):
         if value is None:
@@ -230,6 +279,10 @@ class FileHandlerService:
             return value
 
     def _find_duplicate_transaction(self, transaction):
+        installment_duplicate = self._find_installment_duplicate(transaction)
+        if installment_duplicate:
+            return installment_duplicate
+
         if not self._matching_fields:
             return None
 
@@ -246,6 +299,51 @@ class FileHandlerService:
             filters.update(field_filter)
 
         return Transaction.objects.filter(**filters).first()
+
+    def _find_installment_duplicate(self, transaction):
+        if not transaction.get('installments_number'):
+            return None
+
+        posted_date = self._normalize_date(transaction.get('date'))
+        if not posted_date:
+            return None
+
+        filters = {
+            'user': self._user,
+            'posted_date': posted_date,
+            'paid': transaction.get('paid') or 1,
+            'installments_number': transaction.get('installments_number'),
+        }
+        if self._account:
+            filters['account'] = self._account
+        transactions = Transaction.objects.filter(**filters)
+        if self._card:
+            transactions = transactions.filter(Q(card=self._card) | Q(card_number__card=self._card))
+
+        matching_fields = self._get_installment_disambiguator_fields()
+        if matching_fields:
+            narrowed_transactions = self._narrow_installment_duplicates(transactions, transaction, matching_fields)
+            if narrowed_transactions is None:
+                return None
+            candidates = list(narrowed_transactions[:2])
+            return candidates[0] if len(candidates) == 1 else None
+
+        candidates = list(transactions[:2])
+        if len(candidates) == 1:
+            return candidates[0]
+        return None
+
+    def _get_installment_disambiguator_fields(self):
+        ignored_fields = {'posted_date', 'account', 'card', 'card_number'}
+        return [field for field in self._matching_fields if field not in ignored_fields]
+
+    def _narrow_installment_duplicates(self, transactions, transaction, matching_fields):
+        for field in matching_fields:
+            field_filter = self._build_duplicate_filter(field, transaction)
+            if field_filter is None:
+                return None
+            transactions = transactions.filter(**field_filter)
+        return transactions
 
     def _build_duplicate_filter(self, field, transaction):
         match field:

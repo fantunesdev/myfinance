@@ -54,22 +54,18 @@
                             <h4>CSV configurável</h4>
 
                             <div class="form-group mt-15 csv-import-config-group">
-                                <label for="id_csv_import_config">Configuração: </label><br>
+                                <label for="id_csv_import_config">
+                                    Configuração:
+                                    <a href="{% url 'get_all_csv_import_config' %}" title="Configurações de CSV" aria-label="Configurações de CSV">
+                                        <i class="fa-solid fa-gear action-icon"></i>
+                                    </a>
+                                </label><br>
                                 <select name="csv_import_config" id="id_csv_import_config" class="form-control">
                                     <option value="">Selecione uma configuração</option>
                                     {% for csv_config in csv_import_configs %}
                                         <option value="{{ csv_config.id }}">{{ csv_config.name }}</option>
                                     {% endfor %}
                                 </select>
-                                <div class="csv-import-config-actions">
-                                    <a href="{% url 'create_csv_import_config' %}" class="btn btn-danger">Cadastrar configuração</a>
-                                    <a
-                                        href="#"
-                                        id="edit-csv-import-config-btn"
-                                        class="btn btn-danger hide"
-                                        data-url-template="{% url 'update_csv_import_config' 0 %}"
-                                    >Editar configuração</a>
-                                </div>
                             </div>
 
                             <div class="form-group mt-15 csv-config-managed hide">
@@ -103,6 +99,16 @@
                                     {{ form.value_column.errors }}
                                     <label for="id_value_column">Coluna de valor</label>
                                     {{ form.value_column }}
+                                </div>
+                                <div>
+                                    {{ form.installment_column.errors }}
+                                    <label for="id_installment_column">Coluna de parcela</label>
+                                    {{ form.installment_column }}
+                                </div>
+                                <div>
+                                    {{ form.installment_format.errors }}
+                                    <label for="id_installment_format">Formato da parcela</label>
+                                    {{ form.installment_format }}
                                 </div>
                             </div>
                         </div>
@@ -166,17 +172,17 @@
                     </div>
                     <div class="box-body" id="div-notifications-tasker">
                         <form method="post">
-                            <table class="table">
+                            <table class="table import-preview-table">
                                 <thead>
                                     <tr>
-                                        <th>
+                                        <th class="import-col-check">
                                             <input type="checkbox" id="checkall-tasker">
                                         </th>
-                                        <th>Data</th>
-                                        <th>Categoria</th>
-                                        <th>Subcategoria</th>
-                                        <th>Descrição</th>
-                                        <th>Valor</th>
+                                        <th class="import-col-date">Data</th>
+                                        <th class="import-col-category">Categoria</th>
+                                        <th class="import-col-subcategory">Subcategoria</th>
+                                        <th class="import-col-description">Descrição</th>
+                                        <th class="import-col-value">Valor</th>
                                     </tr>
                                 </thead>
                                 <tbody id="notification-rows-tasker">
@@ -195,18 +201,19 @@
             </div>
             <div class="box-body" id="div-import-transactions">
                 <form method="post">
-                    <table class="table">
+                    <table class="table import-preview-table">
                         <thead>
                             <tr>
-                                <th>
+                                <th class="import-col-check">
                                     <input type="checkbox" id="checkall">
                                 </th>
-                                <th class="import-heading">Data</th>
-                                <th class="import-card-number-heading hide">Número do cartão</th>
-                                <th class="import-heading">Categoria</th>
-                                <th class="import-heading">Subcategoria</th>
-                                <th class="import-heading">Descrição</th>
-                                <th class="import-heading">Valor</th>
+                                <th class="import-heading import-col-date">Data</th>
+                                <th class="import-card-number-heading import-col-card-number hide">Número do cartão</th>
+                                <th class="import-installment-heading import-col-installment hide">Parcela</th>
+                                <th class="import-heading import-col-category">Categoria</th>
+                                <th class="import-heading import-col-subcategory">Subcategoria</th>
+                                <th class="import-heading import-col-description">Descrição</th>
+                                <th class="import-heading import-col-value">Valor</th>
                             </tr>
                         </thead>
                         <tbody id="transaction-rows">
@@ -233,17 +240,18 @@
 
                 {% if has_notifications %}
                 <form method="post">
-                    <table class="table">
+                    <table class="table import-preview-table">
                         <thead>
                             <tr>
-                                <th>
+                                <th class="import-col-check">
                                     <input type="checkbox" id="checkall-notifications">
                                 </th>
-                                <th>Data</th>
-                                <th>Categoria</th>
-                                <th>Subcategoria</th>
-                                <th>Descrição</th>
-                                <th>Valor</th>
+                                <th class="import-col-date">Data</th>
+                                <th class="import-col-installment">Parcela</th>
+                                <th class="import-col-category">Categoria</th>
+                                <th class="import-col-subcategory">Subcategoria</th>
+                                <th class="import-col-description">Descrição</th>
+                                <th class="import-col-value">Valor</th>
                             </tr>
                         </thead>
                         <tbody id="notification-rows-section">

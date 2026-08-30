@@ -16,12 +16,14 @@ const investmentImportTypeSelect = document.querySelector('#id_investment_import
 const dateColumnInput = document.querySelector('#id_date_column');
 const descriptionColumnInput = document.querySelector('#id_description_column');
 const valueColumnInput = document.querySelector('#id_value_column');
+const installmentColumnInput = document.querySelector('#id_installment_column');
+const installmentFormatInput = document.querySelector('#id_installment_format');
 const configurableCSVFields = document.querySelector('#configurable-csv-fields');
 const csvConfigManagedFields = document.querySelectorAll('.csv-config-managed');
 const csvFileLabel = document.querySelector('#csv-file-label');
 const importHeadings = document.querySelectorAll('.import-heading');
 const importCardNumberHeading = document.querySelector('.import-card-number-heading');
-const editCSVImportConfigBtn = document.querySelector('#edit-csv-import-config-btn');
+const importInstallmentHeading = document.querySelector('.import-installment-heading');
 const paymentMethodGroup = document.querySelector('#payment-method-group');
 const paymentTargetFields = document.querySelector('#payment-target-fields');
 
@@ -83,6 +85,8 @@ async function sendFile() {
     formData.append('date_column', dateColumnInput.value.trim());
     formData.append('description_column', descriptionColumnInput.value.trim());
     formData.append('value_column', valueColumnInput.value.trim());
+    formData.append('installment_column', installmentColumnInput ? installmentColumnInput.value.trim() : '');
+    formData.append('installment_format', installmentFormatInput ? installmentFormatInput.value : 'auto');
     formData.append('matching_fields', csvImportConfig ? csvImportConfig.matching_fields.join(',') : '');
 
     if (!fileInput.files[0]) {
@@ -126,6 +130,7 @@ async function renderBox(transactions) {
 
     boxTransactions.classList.remove('toggled');
     transactionRows.innerHTML = '';
+    window.myFinance.hasCSVInstallments = transactions.some((transaction) => transaction.installment_text);
     renderHeadings(isInvestmentImport);
 
     for (const transaction of transactions) {
@@ -153,6 +158,13 @@ function renderHeadings(isInvestmentImport) {
 
     if (importCardNumberHeading) {
         importCardNumberHeading.classList.toggle('hide', !shouldShowCardNumber);
+    }
+
+    if (importInstallmentHeading) {
+        importInstallmentHeading.classList.toggle(
+            'hide',
+            isInvestmentImport || !(window.myFinance && window.myFinance.hasCSVInstallments)
+        );
     }
 
     importHeadings.forEach((heading, index) => {
@@ -218,6 +230,14 @@ function getTransactionFields(transaction, categories, subcategories) {
                 description: cardNumber.name || cardNumber.number,
             })),
             selected: transaction.card_number || cardNumbers[0].id,
+        });
+    }
+
+    if (window.myFinance && window.myFinance.hasCSVInstallments) {
+        fields.splice(2 + (cardNumbers.length > 0 ? 1 : 0), 0, {
+            id: `id_installment_text_${transaction.id}`,
+            type: 'text',
+            value: transaction.installment_text || '',
         });
     }
 
@@ -292,6 +312,7 @@ function renderFields(row, fields) {
 
     fields.forEach((field) => {
         const cell = row.insertCell();
+        applyImportCellClass(cell, field);
 
         if (field.render) {
             field.render(cell, row);
@@ -306,20 +327,33 @@ function renderFields(row, fields) {
             element = createInput(field);
         }
 
-        // Ajusta largura da célula para valor/descrição garantindo layout
-        if (field.id && field.id.startsWith('id_value_')) {
-            cell.style.width = '140px';
-            cell.style.whiteSpace = 'nowrap';
-        } else if (field.id && field.id.startsWith('id_description_')) {
-            cell.style.width = 'auto';
-        }
-
         cell.appendChild(element);
 
         if (field.onChange && field.type === 'select') {
             element.addEventListener('change', () => field.onChange(element, cell));
         }
     });
+}
+
+function applyImportCellClass(cell, field) {
+    const fieldId = String(field.id || '');
+    if (field.type === 'checkbox') {
+        cell.classList.add('import-col-check');
+    } else if (fieldId.startsWith('id_date_')) {
+        cell.classList.add('import-col-date');
+    } else if (fieldId.startsWith('id_card_number_')) {
+        cell.classList.add('import-col-card-number');
+    } else if (fieldId.startsWith('id_installment_text_')) {
+        cell.classList.add('import-col-installment');
+    } else if (fieldId.startsWith('id_category_')) {
+        cell.classList.add('import-col-category');
+    } else if (fieldId.startsWith('id_subcategory_')) {
+        cell.classList.add('import-col-subcategory');
+    } else if (fieldId.startsWith('id_description_')) {
+        cell.classList.add('import-col-description');
+    } else if (fieldId.startsWith('id_value_')) {
+        cell.classList.add('import-col-value');
+    }
 }
 
 /**
@@ -341,19 +375,13 @@ function createInput(field) {
         input.value = field.value || '';
     }
     input.classList.add('form-control');
-    // Ajustes de tamanho e limites para campos de valor e descrição
     if (input.id && input.id.startsWith('id_value_')) {
         input.maxLength = 9;
         input.pattern = '^[0-9]{1,6}(\\.[0-9]{2})?$';
-        input.style.setProperty('width', '120px', 'important');
-        input.style.setProperty('max-width', '120px', 'important');
-        input.style.setProperty('display', 'inline-block', 'important');
         input.style.textAlign = 'right';
     }
     if (input.id && input.id.startsWith('id_description_')) {
         input.maxLength = 255;
-        input.style.setProperty('width', 'auto', 'important');
-        input.style.setProperty('min-width', '200px', 'important');
     }
     if (field.disabled) input.disabled = true;
     return input;
@@ -492,6 +520,8 @@ function getFormData(transactionId, transactionObj = null) {
         description: document.getElementById(`id_description_${transactionId}`).value,
         original_description: transactionObj ? transactionObj.original_description : '',
         value: document.getElementById(`id_value_${transactionId}`).value,
+        installment_text: getInstallmentTextValue(transactionId, transactionObj),
+        installment_value_mode: 'installment',
         matching_fields: transactionObj ? transactionObj.matching_fields || [] : [],
     };
 }
@@ -499,6 +529,12 @@ function getFormData(transactionId, transactionObj = null) {
 function getCardNumberValue(transactionId) {
     const cardNumberSelect = document.getElementById(`id_card_number_${transactionId}`);
     return cardNumberSelect ? cardNumberSelect.value : '';
+}
+
+function getInstallmentTextValue(transactionId, transactionObj = null) {
+    const installmentInput = document.getElementById(`id_installment_text_${transactionId}`);
+    if (installmentInput) return installmentInput.value;
+    return transactionObj ? transactionObj.installment_text || '' : '';
 }
 
 function getInvestmentTransactionFormData(transactionId) {
@@ -636,13 +672,14 @@ function getCardNumbersByCard(cardId) {
 
 function applySelectedCSVImportConfig() {
     const config = getSelectedCSVImportConfig();
-    updateCSVImportConfigActions(config);
     if (!config) return;
 
     if (targetModelSelect) targetModelSelect.value = config.target_model;
     if (dateColumnInput) dateColumnInput.value = config.date_column;
     if (descriptionColumnInput) descriptionColumnInput.value = config.description_column;
     if (valueColumnInput) valueColumnInput.value = config.value_column;
+    if (installmentColumnInput) installmentColumnInput.value = config.installment_column || '';
+    if (installmentFormatInput) installmentFormatInput.value = config.installment_format || 'auto';
     if (selects.paymentMethod) selects.paymentMethod.value = config.payment_method;
     if (selects.account) selects.account.value = config.account || '';
     if (selects.card) selects.card.value = config.card || '';
@@ -691,16 +728,7 @@ function selectCSVMode() {
         importBtn.value = 'Importar CSV configurável';
     }
 
-    updateCSVImportConfigActions(getSelectedCSVImportConfig());
     selectTargetModel();
-}
-
-function updateCSVImportConfigActions(config) {
-    if (!editCSVImportConfigBtn) return;
-    editCSVImportConfigBtn.classList.toggle('hide', !config);
-    if (config) {
-        editCSVImportConfigBtn.href = editCSVImportConfigBtn.dataset.urlTemplate.replace('/0/', `/${config.id}/`);
-    }
 }
 
 selectCSVMode();

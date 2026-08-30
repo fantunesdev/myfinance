@@ -12,13 +12,26 @@ class CSVImportConfigView(BaseView):
     class_has_user = True
     class_title = 'Configuração de CSV'
     class_form = CSVImportConfigForm
-    column_names = ['Nome', 'Destino', 'Data', 'Descrição', 'Valor', 'Meio', 'Conta', 'Cartão']
+    column_names = [
+        'Nome',
+        'Destino',
+        'Data',
+        'Descrição',
+        'Valor',
+        'Parcela',
+        'Formato da Parcela',
+        'Meio',
+        'Conta',
+        'Cartão',
+    ]
     list_fields = [
         'name',
         'target_model',
         'date_column',
         'description_column',
         'value_column',
+        'installment_column',
+        'installment_format',
         'payment_method',
         'account',
         'card',
