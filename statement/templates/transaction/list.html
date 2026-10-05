@@ -24,11 +24,17 @@
             {% include 'transaction/elements/transaction_navigation.html' %}
         {% endif %}
 
-        {% comment %}INÍCIO DASHBOARDS: incluir apenas em páginas que precisam explicitamente (extrato/fatura){% endcomment %}
-        {% if 'extrato' in request.path %}
+        {% comment %}INÍCIO DASHBOARDS: incluir conforme a página (ocultado automaticamente em mobile){% endcomment %}
+        {% if request.path == '/' %}
+            {% include 'transaction/elements/transaction_dashboard.html' %}
+        {% elif 'mes_atual' in request.path %}
+            {% include 'transaction/elements/transaction_dashboard.html' %}
+        {% elif 'extrato' in request.path %}
             {% include 'transaction/elements/extract/extract_dashboard.html' %}
         {% elif 'fatura' in request.path %}
             {% include 'transaction/elements/invoice/invoice_dashboard.html' %}
+        {% elif 'relatorio_financeiro' in request.path and 'extrato' not in request.path and 'pesquisa' not in request.path and '/ano' not in request.path %}
+            {% include 'transaction/elements/transaction_dashboard.html' %}
         {% endif %}
         {% comment %}FIM DASHBOARDS{% endcomment %}
         {# Habilita a classe `simple-mobile` para celulares #}
