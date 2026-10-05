@@ -19,7 +19,7 @@
 
         {% endblock%}
         {# #}
-    <div class="box box-primary box-max-width-2000 v-center-div">
+    <div class="box box-primary box-max-width-2000 v-center-div" data-mobile-row-detail>
         <div class="box-header">
                     <div class="box-header-inner">
                         <h3 class="box-title">{{ class_title }}</h3>
@@ -73,6 +73,7 @@
                     <tbody>
                         {% for instance in instances %}
                             <tr
+                                {% if actions_list.detail %} data-detail-url="{% url urls.detail instance.id %}" {% endif %}
                                 {% if 'user' in fields %}
                                     {% if instance.user %} data-dup-user="{{ instance.user.id }}" {% else %} data-dup-user="" {% endif %}
                                 {% endif %}
@@ -114,6 +115,7 @@
 
     {# Customização de scripts #}
     {% block scripts %}
+        <script src="{% static 'js/pages/mobile-row-detail.js' %}" type="module"></script>
         <script src="{% static 'js/pages/list-filters.js' %}"></script>
         <script src="{% static 'js/pages/find-duplicates.js' %}"></script>
     {% endblock %}

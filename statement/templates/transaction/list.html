@@ -24,21 +24,11 @@
             {% include 'transaction/elements/transaction_navigation.html' %}
         {% endif %}
 
-        {% comment %}INÍCIO DASHBOARDS{% endcomment %}
-        {% if request.path == '/' %}
-            {% include 'transaction/elements/transaction_dashboard.html' %}
-        {% elif 'mes_atual' in request.path %}
-            {% include 'transaction/elements/transaction_dashboard.html' %}
-        {% elif 'extrato' in request.path %}
+        {% comment %}INÍCIO DASHBOARDS: incluir apenas em páginas que precisam explicitamente (extrato/fatura){% endcomment %}
+        {% if 'extrato' in request.path %}
             {% include 'transaction/elements/extract/extract_dashboard.html' %}
         {% elif 'fatura' in request.path %}
             {% include 'transaction/elements/invoice/invoice_dashboard.html' %}
-        {% elif 'relatorio_financeiro/ano' in request.path %}
-            {% comment %} Vazio {% endcomment %}
-        {% elif 'pesquisa' in request.path %}
-            {% comment %} Vazio {% endcomment %}
-        {% else %}
-            {% include 'transaction/elements/transaction_dashboard.html' %}
         {% endif %}
         {% comment %}FIM DASHBOARDS{% endcomment %}
         {# Habilita a classe `simple-mobile` para celulares #}
@@ -94,7 +84,16 @@
                                 </tr>
                                 {% if group.transactions.exists %}
                                     {% for transaction in group.transactions %}
-                                        <tr style="border-left: solid 3px {{ transaction.category.color }}" data-value="{{ transaction.value }}" data-tx-id="{{ transaction.id }}">
+                                        <tr
+                                            style="border-left: solid 3px {{ transaction.category.color }}"
+                                            data-value="{{ transaction.value }}"
+                                            data-tx-id="{{ transaction.id }}"
+                                            {% if transaction.installment %}
+                                                data-detail-url="{% url 'detail_installment' transaction.installment.id %}"
+                                            {% else %}
+                                                data-detail-url="{% url 'detail_transaction' transaction.id %}"
+                                            {% endif %}
+                                        >
                                             <td class="checkbox-cell" style="width:40px; max-width:40px; text-align:center;"><input type="checkbox" name="id_{{ transaction.id }}" id="id_{{ transaction.id }}"></td>
                                         {% if 'pesquisa' in request.path %}
                                             <td>{{ transaction.posted_date | date:"d/m/Y"}}</td>
@@ -154,7 +153,16 @@
                             {% endfor %}
                         {% else %}
                             {% for transaction in instances %}
-                                <tr style="border-left: solid 3px {{ transaction.category.color }}" data-value="{{ transaction.value }}" data-tx-id="{{ transaction.id }}">
+                                <tr
+                                    style="border-left: solid 3px {{ transaction.category.color }}"
+                                    data-value="{{ transaction.value }}"
+                                    data-tx-id="{{ transaction.id }}"
+                                    {% if transaction.installment %}
+                                        data-detail-url="{% url 'detail_installment' transaction.installment.id %}"
+                                    {% else %}
+                                        data-detail-url="{% url 'detail_transaction' transaction.id %}"
+                                    {% endif %}
+                                >
                                     <td class="checkbox-cell" style="width:40px; max-width:40px; text-align:center;"><input type="checkbox" name="id_{{ transaction.id }}" id="id_{{ transaction.id }}"></td>
                                     {% if 'pesquisa' in request.path %}
                                         <td>{{ transaction.posted_date | date:"d/m/Y"}}</td>
@@ -213,6 +221,7 @@
     {% endblock %}
 
     {% block scripts %}
+    <script src="{% static 'js/pages/mobile-row-detail.js' %}" type="module"></script>
     <script src="{% static 'js/pages/get-transactions.js' %}" type="module"></script>
     <script src="{% static 'js/pages/list-filters.js' %}" type="module"></script>
     <script src="{% static 'js/pages/toggle-checkboxes.js' %}" type="module"></script>

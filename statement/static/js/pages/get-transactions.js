@@ -214,6 +214,7 @@ function convertDbDateForDayMonthYearDate(date) {
 function drawMonthlyExpensesLineChart() {
     const canvas = document.getElementById('monthly-expenses-line-chart');
     if (!canvas) return null;
+    const shouldFillMobileChartHeight = window.matchMedia && window.matchMedia('(max-width: 600px)').matches;
 
     if (monthlyExpensesLineChart) {
         monthlyExpensesLineChart.destroy();
@@ -240,6 +241,7 @@ function drawMonthlyExpensesLineChart() {
         },
         options: {
             responsive: true,
+            maintainAspectRatio: !shouldFillMobileChartHeight,
             scales: {
                 y: {
                     beginZero: true,

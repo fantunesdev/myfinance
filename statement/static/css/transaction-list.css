@@ -66,3 +66,12 @@ tbody tr.zebra-even{ background: #141414; }
 .myfinance-toast.visible{ opacity:1; transform:translateY(0); }
 .myfinance-toast.success{ background:linear-gradient(90deg,#1e6e3a,#2fb16a); color:#042108; }
 .myfinance-toast.error{ background:linear-gradient(90deg,#b33a3a,#ff6b6b); color:#2b0000; }
+
+@media (max-width: 600px) {
+    .simple-mobile #statement-table tbody tr[data-detail-url],
+    .dream-mobile table tbody tr[data-detail-url],
+    [data-mobile-row-detail] table tbody tr[data-detail-url],
+    table[data-mobile-row-detail] tbody tr[data-detail-url] {
+        cursor: pointer;
+    }
+}

@@ -30,7 +30,7 @@
                 {% if dream_status == 'realizados' %}
                 {% for group in completed_dream_groups %}
                 <h4>{{ group.title }}</h4>
-                <table class="table dream-completed-table">
+                <table class="table dream-completed-table" data-mobile-row-detail-table>
                     <thead>
                         <tr>
                             <th>Descrição</th>
@@ -44,7 +44,7 @@
                     </thead>
                     <tbody>
                         {% for instance in group.instances %}
-                        <tr>
+                        <tr data-detail-url="{% url urls.detail instance.id %}">
                             <td class="col-description">{{ instance.description }}</td>
                             <td>{{ instance.target_value | to_reais }}</td>
                             <td>{% get_cumulative_total_for_dream instance.id request.user.id %}</td>
@@ -79,7 +79,7 @@
                     </thead>
                     <tbody>
                         {% for instance in instances %}
-                        <tr>
+                        <tr data-detail-url="{% url urls.detail instance.id %}">
                             <td class="col-description">{{ instance.description }}</td>
                             <td>{{ instance.target_value | to_reais }}</td>
                             <td>{% get_cumulative_total_for_dream instance.id request.user.id %}</td>
@@ -112,4 +112,5 @@
     {% endblock %}
 
     {% block scripts %}
+    <script src="{% static 'js/pages/mobile-row-detail.js' %}" type="module"></script>
     {% endblock %}

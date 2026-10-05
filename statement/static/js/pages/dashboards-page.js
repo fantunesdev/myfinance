@@ -146,6 +146,7 @@ async function drawExpensesCategoryChart() {
 
     const canvasElement = document.getElementById('expenses-category-bar-chart');
     const father = canvasElement.getContext('2d');
+    const shouldFillMobileChartHeight = window.matchMedia && window.matchMedia('(max-width: 600px)').matches;
 
     expensesCategoryBarChart = new Chart(father, {
         type: 'bar',
@@ -161,7 +162,7 @@ async function drawExpensesCategoryChart() {
         },
         options: {
             responsive: true,
-            maintainAspectRatio: true,
+            maintainAspectRatio: !shouldFillMobileChartHeight,
             scales: {
                 y: {
                     beginZero: true,

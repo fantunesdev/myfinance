@@ -1,5 +1,9 @@
 let chart;
 
+function shouldFillMobileChartHeight() {
+    return window.matchMedia && window.matchMedia('(max-width: 600px)').matches;
+}
+
 /**
  * Monta o gráfico de linhas.
  * @param {Object} dataset - Objeto com as informações que serão usadas para montar o gráfico.
@@ -26,6 +30,7 @@ export function drawLineChart(dataset, label) {
         },
         options: {
             responsive: true,
+            maintainAspectRatio: !shouldFillMobileChartHeight(),
             scales: {
                 y: {
                     beginZero: true,

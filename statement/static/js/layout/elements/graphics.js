@@ -2,6 +2,10 @@ import { updateBarChart } from '../../pages/get-transactions.js';
 
 let chart;
 
+function shouldFillMobileChartHeight() {
+    return window.matchMedia && window.matchMedia('(max-width: 600px)').matches;
+}
+
 /**
  * Monta o gráfico de barras.
  * @param {Object} dataset - Objeto com as informações que serão usadas para montar o gráfico de barras.
@@ -25,6 +29,7 @@ export function drawBarChart(dataset, label) {
         },
         options: {
             responsive: true,
+            maintainAspectRatio: !shouldFillMobileChartHeight(),
             scales: {
                 y: {
                     beginZero: true,
@@ -111,6 +116,7 @@ export function drawDoughnutChart(dataset, fatherHtmlId, label) {
         },
         options: {
             responsive: true,
+            maintainAspectRatio: !shouldFillMobileChartHeight(),
             plugins: {
                 legend: {
                     display: false,

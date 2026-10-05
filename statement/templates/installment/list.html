@@ -1,7 +1,7 @@
 {% load static %}
 {% load custom_filters %}
 
-                        <table>
+                        <table data-mobile-row-detail-table data-mobile-row-detail>
                             <thead>
                                 <tr>
                                     <th>Parcela</th>
@@ -14,7 +14,7 @@
                             </thead>
                             <tbody>
                                 {% for i in transactions %}
-                                <tr>
+                                <tr data-detail-url="{% url 'detail_transaction' i.id %}">
                                     <td>{{ i.paid }}</td>
                                     <td>{{ i.posted_date }}</td>
                                     <td>{{ i.payment_date }}</td>

@@ -51,6 +51,7 @@ function drawInterestChart() {
     if (!interestDatasets.length || !interestDatasets[0].names.length) return;
 
     const canvas = document.getElementById('line-chart');
+    const shouldFillMobileChartHeight = window.matchMedia && window.matchMedia('(max-width: 600px)').matches;
     const formatter = new Intl.NumberFormat('pt-BR', {
         style: 'currency',
         currency: 'BRL',
@@ -73,6 +74,7 @@ function drawInterestChart() {
         },
         options: {
             responsive: true,
+            maintainAspectRatio: !shouldFillMobileChartHeight,
             scales: {
                 y: {
                     ticks: {
