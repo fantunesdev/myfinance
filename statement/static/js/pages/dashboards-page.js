@@ -520,9 +520,10 @@ function getDateSortValue(value) {
 async function loadDashboardLookups() {
     if (dashboardLookups) return dashboardLookups;
 
+    const lookupOptions = { forceRefresh: true };
     const [categories, subcategories, accounts, cards, banks] = await Promise.all([
-        services.getResource('categories'),
-        services.getResource('subcategories'),
+        services.getResource('categories', null, lookupOptions),
+        services.getResource('subcategories', null, lookupOptions),
         services.getResource('accounts'),
         services.getResource('cards'),
         services.getResource('banks'),

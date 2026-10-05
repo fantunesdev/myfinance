@@ -27,12 +27,13 @@ export function setAnnualReport(transactions) {
 
         const year = Number(transaction.payment_date.split('-')[0]);
         const category = getCategory(transaction.category);
-        if (category && category.ignore) continue;
+        const isInvestment = transaction.type !== 'entrada' && isInvestmentTransaction(transaction);
+        if (category && category.ignore && !isInvestment) continue;
 
         if (transaction.type == 'entrada') {
             revenues[year] += Number(transaction.value);
         } else {
-            if (isInvestmentTransaction(transaction)) {
+            if (isInvestment) {
                 investments[year] += Number(transaction.value);
             } else {
                 expenses[year] += Number(transaction.value);

@@ -73,8 +73,8 @@ export async function getLastTwelveMonthsTransactionsByYearAndMonth(year, month)
  * @param {string} model - O modelo do recurso. Ex: Categorias, Subcategorias, Bancos, etc.
  * @returns - Uma lista de objetos literais contendo todas as instância do modelo com todas as suas informações específicas.
  */
-export async function getResource(model, expands) {
-    if (model != 'transactions') {
+export async function getResource(model, expands, options = {}) {
+    if (model != 'transactions' && !options.forceRefresh) {
         const sessionData = sessionStorage.getItem(model);
         if (sessionData) {
             return JSON.parse(sessionData);

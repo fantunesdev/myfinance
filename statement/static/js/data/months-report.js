@@ -19,12 +19,13 @@ export function setMontlyReport(transactions) {
         const month = date.getMonth();
         const monthInFull = handleMonth(month);
         const category = getCategory(transaction.category);
-        if (category && category.ignore) continue;
+        const isInvestment = transaction.type !== 'entrada' && isInvestmentTransaction(transaction);
+        if (category && category.ignore && !isInvestment) continue;
 
         if (transaction.type == 'entrada') {
             revenuesByMont[monthInFull] += transaction.value;
         } else {
-            if (isInvestmentTransaction(transaction)) {
+            if (isInvestment) {
                 investimentsByMonth[monthInFull] += transaction.value;
             } else {
                 expensesByMonth[monthInFull] += transaction.value;
