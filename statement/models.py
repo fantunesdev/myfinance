@@ -223,6 +223,17 @@ class CardNumber(models.Model):
     )
     visible_to = models.ManyToManyField(User, blank=True, related_name='visible_card_numbers')
 
+    @property
+    def last_four_digits(self):
+        digits = ''.join(char for char in (self.number or '') if char.isdigit())
+        return digits[-4:]
+
+    @property
+    def display_name(self):
+        if self.name and self.last_four_digits:
+            return f'{self.name} ({self.last_four_digits})'
+        return self.name if self.name else self.number
+
     def __str__(self):
         """Retorna o número do cartão de crédito."""
         return self.name if self.name else self.number

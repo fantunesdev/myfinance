@@ -89,8 +89,7 @@ class InvoiceView(TransactionView):
                 continue
             cn_qs = instances.filter(card_number=cn)
             cn_total = cn_qs.aggregate(total=Sum('value'))['total'] or 0
-            label = cn.name if getattr(cn, 'name', None) else cn.number
-            grouped.append({'label': label, 'card_number': cn, 'transactions': cn_qs, 'total': cn_total})
+            grouped.append({'label': cn.display_name, 'card_number': cn, 'transactions': cn_qs, 'total': cn_total})
 
         template = self._set_template_by_global_status('get_all')
         specific_context = self._set_specific_context(instances, year, month)
