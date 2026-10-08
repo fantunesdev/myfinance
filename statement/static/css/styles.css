@@ -930,6 +930,17 @@ td a:hover {
     margin-bottom: 15px;
 }
 
+.dream-status-navigation {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.dream-status-navigation .btn {
+    display: inline-flex;
+    align-items: center;
+}
+
 .mb-20 {
     margin-bottom: 20px;
 }
@@ -1436,6 +1447,12 @@ a {
     .simple-mobile #statement-table tbody tr.group-total-row td,
     .simple-mobile #statement-table tbody tr.group-empty td {
         display: table-cell !important;
+    }
+
+    .dream-detail-table .dream-detail-category-col,
+    .dream-detail-table .dream-detail-actions-col,
+    .loan-detail-table .loan-detail-actions-col {
+        display: none !important;
     }
 
     /* Styles for import notifications notice */

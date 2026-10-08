@@ -46,7 +46,7 @@
                                 <th>Data</th>
                                 <th>Descrição</th>
                                 <th>Valor</th>
-                                <th>Ações</th>
+                                <th class="loan-detail-actions-col">Ações</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -55,7 +55,7 @@
                                 <td data-mobile-date="{{ entry.date | date:'d/m/Y' }}">{{ entry.date | date:"d/m/Y" }}</td>
                                 <td>{{ entry.description }}</td>
                                 <td>{{ entry.value | to_reais }}</td>
-                                <td class="no-wrap actions-cell">
+                                <td class="no-wrap actions-cell loan-detail-actions-col">
                                     <div class="actions-cell-inner">
                                         <a href="{% url 'detail_loan_entry' entry.id %}"><i class="fa-solid fa-file-lines action-icon"></i></a>
                                         <a href="{% url 'update_loan_entry' entry.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>

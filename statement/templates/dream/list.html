@@ -6,7 +6,7 @@
     {% block title %}Sonhos{% endblock %}
 
     {% block content %}
-        <div class="mb-15">
+        <div class="mb-15 dream-status-navigation">
             <a href="{% url 'get_dreams_by_status' 'ativos' %}" class="btn {% if dream_status == 'ativos' %}btn-primary{% else %}btn-info{% endif %}">
                 Ativos
             </a>
