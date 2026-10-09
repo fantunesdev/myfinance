@@ -1,3 +1,5 @@
+import * as chartPolicy from './chart-policy.js';
+
 export function setMontlyReport(transactions) {
     const revenuesByMont = {},
         expensesByMonth = {},
@@ -18,9 +20,9 @@ export function setMontlyReport(transactions) {
         const date = new Date(yearInt, monthInt - 1, dayInt);
         const month = date.getMonth();
         const monthInFull = handleMonth(month);
-        const category = getCategory(transaction.category);
-        const isInvestment = transaction.type !== 'entrada' && isInvestmentTransaction(transaction);
-        if (category && category.ignore && !isInvestment) continue;
+        if (!chartPolicy.showInAnnualStatement(transaction)) continue;
+
+        const isInvestment = transaction.type !== 'entrada' && chartPolicy.isInvestment(transaction);
 
         if (transaction.type == 'entrada') {
             revenuesByMont[monthInFull] += transaction.value;
@@ -121,43 +123,5 @@ function translateMonth(month) {
             return 'Novembro';
         case 'december':
             return 'Dezembro';
-    }
-}
-
-function getCategory(categoryId) {
-    const categories = getSessionArray('categories');
-
-    for (const category of categories) {
-        if (category.id == categoryId) {
-            return category;
-        }
-    }
-}
-
-function isInvestmentTransaction(transaction) {
-    if (transaction.subcategory_is_investment !== undefined) {
-        return Boolean(transaction.subcategory_is_investment);
-    }
-
-    const subcategory = getSubcategory(transaction.subcategory);
-    return Boolean(subcategory && subcategory.is_investment);
-}
-
-function getSubcategory(subcategoryId) {
-    const subcategories = getSessionArray('subcategories');
-
-    for (const subcategory of subcategories) {
-        if (subcategory.id == subcategoryId) {
-            return subcategory;
-        }
-    }
-}
-
-function getSessionArray(key) {
-    try {
-        const data = JSON.parse(sessionStorage.getItem(key) || '[]');
-        return Array.isArray(data) ? data : [];
-    } catch (error) {
-        return [];
     }
 }

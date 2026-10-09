@@ -524,7 +524,7 @@
             "method": "POST",
             "body": {
                 "mimeType": "application/json",
-                "text": "{\n\t\"type\": \"saida\",\n\t\"description\": \"Teste\",\n\t\"color\": \"#960000\",\n\t\"icon\": \"fa-solid fa-utensils\",\n\t\"ignore\": false\n}"
+                "text": "{\n\t\"type\": \"saida\",\n\t\"description\": \"Teste\",\n\t\"color\": \"#960000\",\n\t\"icon\": \"fa-solid fa-utensils\"\n}"
             },
             "parameters": [],
             "headers": [
@@ -706,7 +706,7 @@
             "method": "PUT",
             "body": {
                 "mimeType": "application/json",
-                "text": "{\n\t\"type\": \"saida\",\n\t\"description\": \"Teste1\",\n\t\"color\": \"#960000\",\n\t\"icon\": \"fa-solid fa-utensils\",\n\t\"ignore\": false\n}"
+                "text": "{\n\t\"type\": \"saida\",\n\t\"description\": \"Teste1\",\n\t\"color\": \"#960000\",\n\t\"icon\": \"fa-solid fa-utensils\"\n}"
             },
             "parameters": [],
             "headers": [

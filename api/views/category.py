@@ -3,6 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from api.serializers.base_serializer import BaseSerializer
+from api.serializers.subcategory import SubcategorySerializer
 from api.views.base_view import BaseView
 from statement.models import Category
 from statement.services.core.category import CategoryService
@@ -42,5 +43,5 @@ class CategoryView(BaseView):
         subcategories = subcategories = category.subcategories.all()
         if not subcategories:
             return Response({'detail': 'Subcategorias não encontradas.'}, status=status.HTTP_404_NOT_FOUND)
-        serializer = self.serializer(subcategories, many=True, model=category.subcategories.model)
+        serializer = SubcategorySerializer(subcategories, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)

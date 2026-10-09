@@ -16,6 +16,7 @@ from statement.services.core.csv_import_config import CSVImportConfigService
 from statement.services.core.fixed_expenses import FixedExpensesService
 from statement.services.core.installment import InstallmentService
 from statement.services.core.notification import NotificationService
+from statement.services.core.subcategory import SubcategoryService
 from statement.services.core.transaction import TransactionService
 from statement.utils.datetime import DateTimeUtils
 from statement.views.base_view import BaseView
@@ -367,8 +368,15 @@ class TransactionView(BaseView):
         card = 0
         cash = 0
         fixed = 0
+        subcategory_config_cache = {}
         for instance in instances:
-            if instance.category.ignore:
+            if instance.subcategory_id not in subcategory_config_cache:
+                subcategory_config_cache[instance.subcategory_id] = SubcategoryService.get_chart_config_values(
+                    instance.user,
+                    instance.subcategory_id,
+                )
+
+            if not subcategory_config_cache[instance.subcategory_id]['show_in_monthly_cashflow_donut']:
                 continue
 
             if instance.type == 'saida':   # Saídas
@@ -385,8 +393,6 @@ class TransactionView(BaseView):
 
                 # Contagem total de gastos
                 expenses += instance.value
-                if instance.subcategory.is_investment:
-                    expenses += instance.value
             else:   # Entradas
                 revenue += instance.value
         if instances:

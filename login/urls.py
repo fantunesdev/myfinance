@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import include, path
 
 from statement.views.device import create_device, delete_device, detail_device, get_all_device, update_device
 from statement.views.fuel_tracking import edit_fuel_tracking
@@ -15,6 +15,7 @@ urlpatterns = [
     path('perfil/notificacoes/titles/', get_user_notification_titles, name='user_notification_titles'),
     path('perfil/next_month/editar/', edit_next_month_view, name='update_next_month_view'),
     path('perfil/combustivel/editar/', edit_fuel_tracking, name='update_fuel_tracking'),
+    path('perfil/graficos/subcategorias/', include('statement.urls.core.subcategory_chart_config')),
     path('alterar_senha/', change_password, name='change_password'),
     # Device management under user profile
     path('perfil/dispositivos/', get_all_device, name='get_all_device'),

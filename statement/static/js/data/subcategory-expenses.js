@@ -1,4 +1,5 @@
 import * as services from './services.js';
+import * as chartPolicy from './chart-policy.js';
 
 export async function setSubcategoryDataset(id) {
     const transactions = JSON.parse(sessionStorage.getItem('transactions')),
@@ -19,6 +20,8 @@ export async function setSubcategoryDataset(id) {
     }
 
     for (transaction of transactions) {
+        if (!chartPolicy.showInMonthlyExpenseCategoryBar(transaction)) continue;
+
         for (subcategory of expenses) {
             if (subcategory.id === transaction.subcategory) {
                 subcategory.amount += transaction.value;

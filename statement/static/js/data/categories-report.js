@@ -1,4 +1,5 @@
 import * as services from './services.js';
+import * as chartPolicy from './chart-policy.js';
 
 export async function getMonthYear() {
     let path = window.location.pathname,
@@ -45,23 +46,17 @@ export async function getMonthYear() {
  * @param {Array} categories - Uma lista de instâncias da classe Transactions.
  * @returns {Object} - Um objeto literal contendo a lista classificada de receitas, despesas e o valor da soma total de recitas e despesas.
  */
-export function setCategoriesReport(transactions, categories) {
+export function setCategoriesReport(transactions, categories, options = {}) {
     let revenue = [],
         expenses = [],
         amount = {
             revenue: 0,
             expenses: 0,
         },
-        ignoredCategories = [],
         category;
 
     // Separa as categorias de receitas e de despesas.
     for (category of categories) {
-        if (category.ignore) {
-            ignoredCategories.push(category.id);
-            continue;
-        }
-
         let object = {
             id: category.id,
             name: category.description,
@@ -78,19 +73,22 @@ export function setCategoriesReport(transactions, categories) {
     // Classifica os lançamentos como receitas e despesas e calcula o montante total de ambas.
     if (Array.isArray(transactions)) {
         for (let transaction of transactions) {
-            if (ignoredCategories.includes(transaction.category)) continue;
+            const showInCashflowDonut = chartPolicy.showInMonthlyCashflowDonut(transaction);
+            const showInExpenseCategoryBar = shouldShowInExpenseCategoryBar(transaction, options);
 
             for (category of revenue) {
-                if (transaction.category === category.id) {
+                if (showInCashflowDonut && transaction.category === category.id) {
                     category.amount += transaction.value;
                 }
             }
 
             for (category of expenses) {
-                if (transaction.category === category.id) {
+                if (showInExpenseCategoryBar && transaction.category === category.id) {
                     category.amount += transaction.value;
                 }
             }
+
+            if (!showInCashflowDonut) continue;
 
             if (transaction.type === 'entrada') {
                 amount.revenue += transaction.value;
@@ -104,6 +102,14 @@ export function setCategoriesReport(transactions, categories) {
     expenses.sort((a, b) => (a.amount < b.amount ? 1 : a.amount > b.amount ? -1 : 0));
 
     return { revenue, expenses, amount };
+}
+
+function shouldShowInExpenseCategoryBar(transaction, options) {
+    if (options.expenseCategoryBar === 'annual') {
+        return chartPolicy.showInAnnualExpenseCategoryBar(transaction);
+    }
+
+    return chartPolicy.showInMonthlyExpenseCategoryBar(transaction);
 }
 
 /**

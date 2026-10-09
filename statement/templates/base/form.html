@@ -30,12 +30,22 @@
                         {% if 'checkbox' in field.field.widget.input_type %}
                             <div class="form-check mt-20 mb-20">
                                 {{ field }}
-                                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                <label for="{{ field.id_for_label }}" title="{{ field.help_text|default:'' }}">
+                                    {{ field.label }}
+                                    {% if field.help_text %}
+                                        <i class="fa-solid fa-circle-info action-icon" title="{{ field.help_text }}"></i>
+                                    {% endif %}
+                                </label>
                             </div>
                         {% else %}
                             <div class="form-group mb-15">
                                 {{ field.errors }}
-                                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                <label for="{{ field.id_for_label }}" title="{{ field.help_text|default:'' }}">
+                                    {{ field.label }}
+                                    {% if field.help_text %}
+                                        <i class="fa-solid fa-circle-info action-icon" title="{{ field.help_text }}"></i>
+                                    {% endif %}
+                                </label>
                                 {{ field }}
                             </div>
                         {% endif %}

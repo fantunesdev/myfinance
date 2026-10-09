@@ -4,6 +4,7 @@ import * as doughnut from '../layout/elements/doughnut-chart.js';
 import * as monthsData from '../data/months-report.js';
 import * as annualData from '../data/annual-report.js';
 import * as services from '../data/services.js';
+import * as chartPolicy from '../data/chart-policy.js';
 
 const yearSeletct = document.getElementById('id_year');
 const decreaseButton = document.getElementById('id_decrease');
@@ -133,7 +134,9 @@ async function drawExpensesCategoryChart() {
 
     const normalizedTransactions = normalizeTransactions(visibleTransactions);
 
-    const report = categoryData.setCategoriesReport(normalizedTransactions, categories);
+    const report = categoryData.setCategoriesReport(normalizedTransactions, categories, {
+        expenseCategoryBar: 'annual',
+    });
     const expenses = categoryData.setCategoriesDataset(report.expenses);
 
     // Salvar dados para uso posterior
@@ -283,7 +286,10 @@ async function updateExpensesCategoryChart() {
             for (let subcategory of subcategories) {
                 let amount = 0;
                 for (let transaction of transactions) {
-                    if (transaction.subcategory === subcategory.id) {
+                    if (
+                        transaction.subcategory === subcategory.id &&
+                        chartPolicy.showInAnnualExpenseCategoryBar(transaction)
+                    ) {
                         amount += transaction.value;
                     }
                 }
@@ -307,14 +313,18 @@ async function updateExpensesCategoryChart() {
             sessionStorage.setItem('annual_subcategories', JSON.stringify(subcategories));
         } else {
             // Se não encontrar categoria, voltar para categorias
-            const report = categoryData.setCategoriesReport(transactions, categories);
+            const report = categoryData.setCategoriesReport(transactions, categories, {
+                expenseCategoryBar: 'annual',
+            });
             expenses = categoryData.setCategoriesDataset(report.expenses);
             sessionStorage.removeItem('bar_label_clicked');
             sessionStorage.setItem('bar_chart_level', 'categories');
         }
     } else {
         // Mostrar categorias
-        const report = categoryData.setCategoriesReport(transactions, categories);
+        const report = categoryData.setCategoriesReport(transactions, categories, {
+            expenseCategoryBar: 'annual',
+        });
         expenses = categoryData.setCategoriesDataset(report.expenses);
         sessionStorage.removeItem('bar_label_clicked');
         sessionStorage.setItem('bar_chart_level', 'categories');
@@ -354,10 +364,14 @@ function renderExpensesCategoryTable(itemName, itemId, itemType = 'categories') 
 
     if (itemType === 'categories') {
         // Filtrar por categoria
-        filteredTransactions = transactions.filter(t => t.category === itemId);
+        filteredTransactions = transactions.filter(
+            t => t.category === itemId && chartPolicy.showInAnnualExpenseCategoryBar(t)
+        );
     } else {
         // Filtrar por subcategoria
-        filteredTransactions = transactions.filter(t => t.subcategory === itemId);
+        filteredTransactions = transactions.filter(
+            t => t.subcategory === itemId && chartPolicy.showInAnnualExpenseCategoryBar(t)
+        );
     }
 
     // Ordenar por data decrescente
@@ -566,6 +580,23 @@ function normalizeTransactions(transactions) {
             subcategory: subcategoryId,
             subcategory_name: getResourceDescription(subcategory),
             subcategory_is_investment: Boolean(subcategory && subcategory.is_investment),
+            subcategory_show_in_monthly_cashflow_donut: getSubcategoryFlag(
+                subcategory,
+                'show_in_monthly_cashflow_donut'
+            ),
+            subcategory_show_in_annual_statement: getSubcategoryFlag(subcategory, 'show_in_annual_statement'),
+            subcategory_show_in_monthly_expense_category_bar: getSubcategoryFlag(
+                subcategory,
+                'show_in_monthly_expense_category_bar'
+            ),
+            subcategory_show_in_annual_expense_category_bar: getSubcategoryFlag(
+                subcategory,
+                'show_in_annual_expense_category_bar'
+            ),
+            subcategory_show_in_monthly_expense_line: getSubcategoryFlag(
+                subcategory,
+                'show_in_monthly_expense_line'
+            ),
             card_name: getPaymentDescription({ ...t, account, card, bank }),
             payment_icon: getPaymentIcon({ ...t, account, card, bank }),
             payment_url: getPaymentUrl({ ...t, account, card }),
@@ -580,6 +611,12 @@ function mapById(resources) {
     }, {});
 }
 
+function getSubcategoryFlag(subcategory, flagName) {
+    if (typeof subcategory !== 'object' || subcategory === null) return true;
+    if (subcategory[flagName] === undefined) return true;
+    return Boolean(subcategory[flagName]);
+}
+
 function getLookupResource(mapName, id) {
     if (!dashboardLookups || !id) return null;
     return dashboardLookups[mapName][id] || null;
@@ -587,38 +624,29 @@ function getLookupResource(mapName, id) {
 
 function getStatementTransactionsBySelect(select) {
     const transactions = JSON.parse(sessionStorage.getItem('annual_statement_transactions') || '[]');
-    const categories = JSON.parse(sessionStorage.getItem('categories') || '[]');
 
     if (select === 'revenues') {
         return transactions.filter(transaction => {
             if (transaction.type !== 'entrada') return false;
-
-            const category = categories.find(item => item.id === transaction.category);
-            return !(category && category.ignore);
+            return chartPolicy.showInAnnualStatement(transaction);
         });
     }
 
     if (select === 'investments') {
-        return transactions.filter(transaction => transaction.type !== 'entrada' && isInvestmentTransaction(transaction));
+        return transactions.filter(
+            transaction =>
+                transaction.type !== 'entrada' &&
+                chartPolicy.showInAnnualStatement(transaction) &&
+                chartPolicy.isInvestment(transaction)
+        );
     }
 
     return transactions.filter(transaction => {
         if (transaction.type === 'entrada') return false;
-        if (isInvestmentTransaction(transaction)) return false;
-
-        const category = categories.find(item => item.id === transaction.category);
-        return !(category && category.ignore);
+        if (!chartPolicy.showInAnnualStatement(transaction)) return false;
+        if (chartPolicy.isInvestment(transaction)) return false;
+        return true;
     });
-}
-
-function isInvestmentTransaction(transaction) {
-    if (transaction.subcategory_is_investment !== undefined) {
-        return Boolean(transaction.subcategory_is_investment);
-    }
-
-    const subcategories = JSON.parse(sessionStorage.getItem('subcategories') || '[]');
-    const subcategory = subcategories.find(item => item.id === transaction.subcategory);
-    return Boolean(subcategory && subcategory.is_investment);
 }
 
 function isHomeScreenTransaction(transaction) {

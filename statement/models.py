@@ -18,7 +18,6 @@ class Category(models.Model):
         description (CharField): Descrição da categoria.
         color (CharField): Cor da categoria.
         icon (CharField): Ícone da categoria.
-        ignore (BooleanField): Se a categoria deve ser ignorada.
     """
 
     TYPE_CHOICES = (('entrada', 'Entrada'), ('saida', 'Saída'))
@@ -26,7 +25,6 @@ class Category(models.Model):
     description = models.CharField(max_length=30)
     color = models.CharField(max_length=7, null=True, blank=True)
     icon = models.CharField(max_length=100, null=True, blank=True)
-    ignore = models.BooleanField(blank=True)
 
     def __str__(self):
         """Retorna a descrição da categoria."""
@@ -54,6 +52,31 @@ class Subcategory(models.Model):
         """Ordena as subcategorias pela descrição."""
 
         ordering = ['description']
+
+
+class SubcategoryChartConfig(models.Model):
+    """
+    Configuração por usuário de como uma subcategoria aparece nos gráficos.
+    """
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    subcategory = models.ForeignKey(Subcategory, related_name='chart_configs', on_delete=models.CASCADE)
+    show_in_monthly_cashflow_donut = models.BooleanField(default=True)
+    show_in_annual_statement = models.BooleanField(default=True)
+    show_in_monthly_expense_category_bar = models.BooleanField(default=True)
+    show_in_annual_expense_category_bar = models.BooleanField(default=True)
+    show_in_monthly_expense_line = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f'{self.user} - {self.subcategory}'
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'subcategory'],
+                name='unique_subcategory_chart_config_by_user',
+            )
+        ]
 
 
 class CategorizationFeedback(models.Model):

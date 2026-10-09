@@ -8,6 +8,7 @@ import { originalTable, statementBox } from '../layout/elements/get-transactions
 import * as transactionObjectConversor from '../data/transactions-object-conversor.js';
 import * as objectToCSVConversor from '../data/objectToCsvConversor.js';
 import * as general from '../data/general.js';
+import * as chartPolicy from '../data/chart-policy.js';
 
 const yearNavigation = document.getElementById('id_year'),
     monthNavigation = document.getElementById('id_month'),
@@ -27,7 +28,11 @@ async function draw() {
     const [year, month] = await categoryData.getMonthYear(),
         transactions = await services.getTransactionsByYearAndMonth(year, month),
         categories = await services.getResource('categories'),
-        report = categoryData.setCategoriesReport(transactions, categories),
+        subcategories = await services.getResource('subcategories');
+
+    sessionStorage.setItem('subcategories', JSON.stringify(subcategories));
+
+    const report = categoryData.setCategoriesReport(transactions, categories),
         revenue = categoryData.setCategoriesDataset(report.revenue, true),
         expenses = categoryData.setCategoriesDataset(report.expenses),
         amount = categoryData.setAmountDataset(report.amount);
@@ -336,8 +341,7 @@ function isBeforeMonth(date, year, month) {
 }
 
 function isDashboardExpense(transaction, categories) {
-    const category = categories.find(item => item.id === transaction.category);
-    return !(category && category.ignore);
+    return chartPolicy.showInMonthlyExpenseLine(transaction);
 }
 
 async function setMonthlyExpensesChartMode(mode) {

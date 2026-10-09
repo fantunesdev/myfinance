@@ -1,3 +1,5 @@
+import * as chartPolicy from './chart-policy.js';
+
 export const columnTitles = ['Data', 'Banco/Cartão', 'Categoria', 'Sub-Categoria', 'Descrição', 'Valor', 'Ações'];
 
 export function orderExpensesBySubcategory(transactions, categoryId, expenses) {
@@ -7,6 +9,8 @@ export function orderExpensesBySubcategory(transactions, categoryId, expenses) {
     }
 
     for (let transaction of transactions) {
+        if (!chartPolicy.showInMonthlyExpenseCategoryBar(transaction)) continue;
+
         if (transaction.category == categoryId) {
             for (let expense of expenses) {
                 if (transaction.subcategory == expense.id) {

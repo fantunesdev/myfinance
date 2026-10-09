@@ -15,6 +15,7 @@
                         <tr>
                             <th>Descrição</th>
                             <th>Categoria</th>
+                            <th>Investimento</th>
                             <th>Ações</th>
                         </tr>
                     </thead>
@@ -24,6 +25,7 @@
                                 <tr>
                                     <td>{{ subcategory.description }}</td>
                                     <td>{{ subcategory.category }}</td>
+                                    <td>{% if subcategory.is_investment %}Sim{% else %}Não{% endif %}</td>
                                     <td>
                                         <a href="{% url 'update_subcategory' subcategory.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
                                         <a href="{% url 'delete_subcategory' subcategory.id %}"><i class="fa-solid fa-trash action-icon"></i></a>
@@ -47,6 +49,7 @@
                         <tr>
                             <th>Descrição</th>
                             <th>Categoria</th>
+                            <th>Investimento</th>
                             <th>Ações</th>
                         </tr>
                     </thead>
@@ -56,6 +59,7 @@
                                 <tr>
                                     <td>{{ subcategory.description }}</td>
                                     <td>{{ subcategory.category }}</td>
+                                    <td>{% if subcategory.is_investment %}Sim{% else %}Não{% endif %}</td>
                                     <td>
                                         <a href="{% url 'update_subcategory' subcategory.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
                                         <a href="{% url 'delete_subcategory' subcategory.id %}"><i class="fa-solid fa-trash action-icon"></i></a>
