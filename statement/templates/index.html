@@ -46,12 +46,14 @@
         {% comment %} INÍCIO BARRA SUPERIOR {% endcomment %}
 
         {% comment %} INÍCIO LOGOTIPO {% endcomment %}
-        <logo>
-            <div>
-                <img src="{% static 'img/icone.svg' %}" class="logo">
-                <span>MyFinance</span>
-            </div>
-        </logo>
+        <a href="/" class="decoration-none">
+            <logo>
+                <div>
+                    <img src="{% static 'img/icone.svg' %}" class="logo">
+                    <span>MyFinance</span>
+                </div>
+            </logo>
+        </a>
         {% comment %} FIM LOGOTIPO {% endcomment %}
 
         {% include '_frames/_header.html' %}

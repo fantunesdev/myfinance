@@ -38,7 +38,7 @@
         {% endif %}
         {% comment %}FIM DASHBOARDS{% endcomment %}
         {# Habilita a classe `simple-mobile` para celulares #}
-        <div class="{% if 'mes_atual' in request.path %}simple-mobile{% elif 'relatorio_financeiro' in request.path and 'extrato' not in request.path and 'pesquisa' not in request.path and '/ano' not in request.path %}simple-mobile{% endif %}">
+        <div class="{% if request.path == '/' %}simple-mobile{% elif 'mes_atual' in request.path %}simple-mobile{% elif 'relatorio_financeiro' in request.path and 'extrato' not in request.path and 'pesquisa' not in request.path and '/ano' not in request.path %}simple-mobile{% endif %}">
         
         {% comment %}INÍCIO BOX DESPESAS FIXAS{% endcomment %}
         {% if '/fixed' in request.path %}
