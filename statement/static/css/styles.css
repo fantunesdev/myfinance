@@ -933,12 +933,17 @@ td a:hover {
 .dream-status-navigation {
     display: flex;
     flex-wrap: wrap;
+    justify-content: center;
     gap: 10px;
 }
 
 .dream-status-navigation .btn {
     display: inline-flex;
     align-items: center;
+}
+
+.dream-completed-table + h4 {
+    margin-top: 40px;
 }
 
 .mb-20 {

@@ -72,6 +72,7 @@ class DreamView(BaseView):
             {
                 'title': year,
                 'instances': groups_by_year[year],
+                'total_spent': sum(dream.total_spent for dream in groups_by_year[year]),
             }
             for year in sorted_years
         ]
@@ -81,6 +82,7 @@ class DreamView(BaseView):
                 {
                     'title': 'Sem data de conclusão',
                     'instances': groups_by_year[None],
+                    'total_spent': sum(dream.total_spent for dream in groups_by_year[None]),
                 }
             )
 

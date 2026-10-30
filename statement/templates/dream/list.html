@@ -58,6 +58,9 @@
                             </td>
                         </tr>
                         {% endfor %}
+                        <tr class="dream-total-row">
+                            <td colspan="7" class="text-center"><strong>Total gasto: {{ group.total_spent | to_reais }}</strong></td>
+                        </tr>
                     </tbody>
                 </table>
                 {% empty %}
