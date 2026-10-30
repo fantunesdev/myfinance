@@ -128,6 +128,8 @@ export function setCategoriesDataset(report, revenue) {
         green = 139;
 
     for (category of report) {
+        if (!revenue && category.amount === 0) continue;
+
         names.push(category.name);
         values.push(category.amount);
         if (revenue) {

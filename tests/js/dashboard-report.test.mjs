@@ -148,6 +148,11 @@ test('barra mensal ignora investimento quando flag esta inativa', () => {
 
     assert.equal(report.amount.expenses, 395.12);
     assert.equal(report.expenses[0].amount, 0);
+    assert.deepEqual(categoriesReport.setCategoriesDataset(report.expenses), {
+        names: [],
+        values: [],
+        colors: [],
+    });
 });
 
 test('barra anual ignora investimento quando flag anual esta inativa', () => {
@@ -181,4 +186,24 @@ test('barra anual ignora investimento quando flag anual esta inativa', () => {
 
     assert.equal(report.amount.expenses, 395.12);
     assert.equal(report.expenses[0].amount, 0);
+    assert.deepEqual(categoriesReport.setCategoriesDataset(report.expenses), {
+        names: [],
+        values: [],
+        colors: [],
+    });
+});
+
+test('dataset de despesas omite valores zerados e mantém rótulos, valores e cores alinhados', () => {
+    const dataset = categoriesReport.setCategoriesDataset([
+        { name: 'Alimentação', amount: 200 },
+        { name: 'Aplicação', amount: 0 },
+        { name: 'Estorno', amount: -50 },
+        { name: 'Cartão', amount: 0 },
+    ]);
+
+    assert.deepEqual(dataset, {
+        names: ['Alimentação', 'Estorno'],
+        values: [200, -50],
+        colors: ['rgba(139, 0, 0, 1)', 'rgba(139, 0, 0, 1)'],
+    });
 });
