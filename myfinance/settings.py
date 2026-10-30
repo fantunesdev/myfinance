@@ -40,6 +40,13 @@ ALLOWED_HOSTS = os.getenv('HOSTS').split(',')
 CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS').split(',')
 CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS').split(',')
 
+# Enable only behind a proxy that overwrites X-Forwarded-Proto, with direct
+# application access restricted. Defaults preserve plain HTTP development.
+if os.getenv('TRUST_HTTPS_PROXY', 'false').lower() in ('true', '1', 'yes'):
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SESSION_COOKIE_SECURE = os.getenv('SESSION_COOKIE_SECURE', 'false').lower() in ('true', '1', 'yes')
+CSRF_COOKIE_SECURE = os.getenv('CSRF_COOKIE_SECURE', 'false').lower() in ('true', '1', 'yes')
+
 ALGORITHM = os.getenv('ALGORITHM')
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES'))
 ENVIRONMENT = os.getenv('ENVIRONMENT')
