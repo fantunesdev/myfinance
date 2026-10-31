@@ -1,5 +1,5 @@
-export function drawDoughnutChart(dataset, label, onClickCallback, select) {
-    const father = document.getElementById('donnut-chart').getContext('2d');
+export function drawDoughnutChart(dataset, label, onClickCallback, options = {}) {
+    const father = document.getElementById(options.canvasId ?? 'donnut-chart').getContext('2d');
     const data = {
         type: 'doughnut',
         data: {
@@ -17,6 +17,7 @@ export function drawDoughnutChart(dataset, label, onClickCallback, select) {
         },
         options: {
             responsive: true,
+            maintainAspectRatio: options.maintainAspectRatio ?? true,
             plugins: {
                 legend: {
                     display: false,
@@ -30,8 +31,14 @@ export function drawDoughnutChart(dataset, label, onClickCallback, select) {
                     },
                     color: 'rgba(204,204,204,1)',
                 },
+                tooltip: options.tooltip ?? {},
             },
             onClick: (event, elements) => {
+                if (typeof options.onSliceClick === 'function') {
+                    if (elements.length > 0) options.onSliceClick(elements[0].index);
+                    return;
+                }
+                if (typeof onClickCallback !== 'function') return;
                 if (elements.length > 0) {
                     const clickedIndex = elements[0].index;
                     let select = '';
@@ -45,6 +52,7 @@ export function drawDoughnutChart(dataset, label, onClickCallback, select) {
                     onClickCallback(select); // Chame a função de callback passando o novo valor de select
                 }
             },
+            onHover: options.onHover,
         },
     };
 

@@ -1,4 +1,5 @@
 {% extends "index.html" %}
+{% load static %}
 {% load custom_filters %}
 {% load custom_tags %}
 
@@ -8,6 +9,10 @@
     {% else %}
         Detalhar Investimento
     {% endif %}
+{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{% static 'css/investments.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -44,6 +49,20 @@
                         <a href="{% url 'apply_investment_from_wallet' instance.id %}" class="btn btn-primary">Aplicar do caixa</a>
                         <a href="{% url 'redeem_investment_to_wallet' instance.id %}" class="btn btn-info">Resgatar para caixa</a>
                     </div>
+                {% endif %}
+
+                {% if not delete %}
+                    <section aria-labelledby="position-history-title">
+                        <h4 id="position-history-title">Evolução do valor da posição</h4>
+                        {% if position_history.dates %}
+                            {{ position_history|json_script:"investment-position-history" }}
+                            <div class="investment-position-chart">
+                                <canvas id="investment-position-chart" role="img" aria-label="Gráfico de linha com a evolução do valor desta posição por data. Os lançamentos estão na tabela abaixo."></canvas>
+                            </div>
+                        {% else %}
+                            <p>Nenhuma movimentação registrada para mostrar a evolução.</p>
+                        {% endif %}
+                    </section>
                 {% endif %}
 
                 <table class="table" id="statement-table">
@@ -109,3 +128,10 @@
         </form>
     </div>
 {% endblock content %}
+
+{% block scripts %}
+    {% if not delete and position_history.dates %}
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.0/dist/chart.min.js"></script>
+        <script src="{% static 'js/pages/investment-detail.js' %}" defer></script>
+    {% endif %}
+{% endblock %}

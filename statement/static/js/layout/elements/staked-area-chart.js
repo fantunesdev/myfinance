@@ -1,4 +1,4 @@
-export function drawStackedAreaChart(datasets, label) {
+export function drawStackedAreaChart(datasets, label, options = {}) {
     const father = document.getElementById('line-chart').getContext('2d');
     const shouldFillMobileChartHeight = window.matchMedia && window.matchMedia('(max-width: 600px)').matches;
 
@@ -18,11 +18,12 @@ export function drawStackedAreaChart(datasets, label) {
         },
         options: {
             responsive: true,
-            maintainAspectRatio: !shouldFillMobileChartHeight,
+            maintainAspectRatio: options.maintainAspectRatio ?? !shouldFillMobileChartHeight,
             scales: {
                 y: {
                     stacked: true, // Ativa o empilhamento
                     beginAtZero: true,
+                    min: options.yMin,
                 },
             },
             plugins: {

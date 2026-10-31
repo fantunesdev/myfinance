@@ -3,6 +3,7 @@ from decimal import Decimal
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
+from django.utils import timezone
 from investments.models import Investment, InvestmentTransaction
 from investments.services.base import InvestmentBaseService
 
@@ -88,6 +89,25 @@ class InvestmentService(InvestmentBaseService):
         }
 
     @classmethod
+    def get_position_history(cls, investment):
+        today = timezone.localdate()
+        movements = sorted(
+            (item for item in investment.transactions.all() if item.user_id == investment.user_id and item.date <= today),
+            key=lambda item: (item.date, item.pk),
+        )
+        value = Decimal('0')
+        daily_values = {}
+        for movement in movements:
+            value = cls.apply_value(value, movement)
+            daily_values[movement.date] = value
+        if daily_values:
+            daily_values[today] = value
+        return {
+            'dates': [day.isoformat() for day in daily_values],
+            'values': [float(amount) for amount in daily_values.values()],
+        }
+
+    @classmethod
     def get_dashboard(cls, user):
         positions = cls.get_positions(user)
         total = sum((position['value'] for position in positions), Decimal('0'))
@@ -136,10 +156,10 @@ class InvestmentService(InvestmentBaseService):
         labels = [date.strftime('%d/%m/%Y') for date in snapshots_by_date.keys()]
         asset_type_labels = sorted({investment.asset.get_asset_type_display() for investment in investments.values()})
         colors = {
-            'Renda fixa': 'rgba(46, 125, 90, 1)',
-            'Renda variável': 'rgba(139, 0, 0, 1)',
-            'Cripto': 'rgba(255, 191, 0, 1)',
-            'Moeda': 'rgba(42, 92, 148, 1)',
+            'Renda fixa': 'rgba(139, 0, 0, 1)',
+            'Renda variável': 'rgba(190, 0, 0, 1)',
+            'Cripto': 'rgba(165, 0, 0, 1)',
+            'Moeda': 'rgba(94, 0, 0, 1)',
             'Outro': 'rgba(120, 120, 120, 1)',
         }
 

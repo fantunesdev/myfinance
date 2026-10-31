@@ -32,6 +32,7 @@
         <div class="box-body investments-dashboard">
             {{ progression_datasets|json_script:"investment-progression-datasets" }}
             {{ interest_datasets|json_script:"investment-interest-datasets" }}
+            {{ allocation_chart_data|json_script:"investment-allocation-data" }}
             <div class="investment-actions">
                 <a href="{% url 'create_investment' %}" class="btn btn-info">Novo investimento</a>
                 <a href="{% url 'create_broker' %}" class="btn btn-info">Novo broker</a>
@@ -44,46 +45,48 @@
                 {% endif %}
             </div>
 
-            <div class="investment-chart">
-                <div class="icon-btn investment-chart-toggle" id="investment-chart-toggle" role="button" title="Ganhos" aria-label="Ganhos" tabindex="0">
-                    <i class="fa-solid fa-percent"></i>
-                </div>
-                <canvas id="line-chart" width="40" height="15"></canvas>
-            </div>
-
-            <div class="investment-summary">
-                <a href="{% url 'get_all_investment' %}" class="investment-card investment-card-total">
-                    <span>Patrimônio total</span>
-                    <strong>{{ total|to_reais }}</strong>
-                </a>
-                <div class="investment-card investment-card-income">
-                    <span>Ganhos</span>
-                    <strong>{{ total_income|to_reais }}</strong>
-                </div>
-                <div class="investment-card investment-card-cost">
-                    <span>Custos</span>
-                    <strong>{{ total_costs|to_reais }}</strong>
-                </div>
-                <div class="investment-card investment-card-net-income">
-                    <span>Resultado</span>
-                    <strong>{{ net_income|to_reais }}</strong>
-                </div>
-                {% for label, amount in by_type %}
-                    <div class="investment-card">
-                        <span>{{ label }}</span>
-                        <strong>{{ amount|to_reais }}</strong>
+            <div class="investment-charts">
+                <div class="investment-chart">
+                    <div class="icon-btn investment-chart-toggle" id="investment-chart-toggle"{% if selected_asset_type %} hidden{% endif %} role="button" title="Ganhos" aria-label="Ganhos" tabindex="0">
+                        <i class="fa-solid fa-percent"></i>
                     </div>
-                {% empty %}
-                    <div class="investment-card">
-                        <span>Sem investimentos</span>
-                        <strong>{{ 0|to_reais }}</strong>
+                    <canvas id="line-chart" width="40" height="15"></canvas>
+                </div>
+                <div class="investment-sidebar investment-overview" role="group" aria-label="Resumo do patrimônio">
+                    <section class="investment-allocation" aria-label="Renda fixa e renda variável">
+                        {% if selected_asset_type %}
+                            <a href="{{ allocation_overview_url }}" class="investment-allocation-back">← Visão geral</a>
+                        {% endif %}
+                        <div class="investment-allocation-chart" id="investment-allocation-container">
+                            <canvas id="investment-allocation-chart" role="img" aria-label="Distribuição do valor investido entre renda fixa e renda variável."></canvas>
+                        </div>
+                        <p id="investment-allocation-empty" hidden>Sem saldo em renda fixa ou renda variável.</p>
+                    </section>
+                    <a href="{% url 'get_all_investment' %}" class="investment-card" aria-labelledby="investment-total-title">
+                        <span id="investment-total-title">Patrimônio total</span>
+                        <strong>{{ total|to_reais }}</strong>
+                    </a>
+                    <div class="investment-card investment-card-net-income">
+                        <span>{% if net_income > 0 %}Lucro{% elif net_income < 0 %}Prejuízo{% else %}Resultado{% endif %}</span>
+                        <strong{% if net_income > 0 %} class="green"{% elif net_income < 0 %} class="red"{% endif %}>{{ net_income|to_reais }}</strong>
                     </div>
-                {% endfor %}
+                    <section class="investment-card{% if available_to_invest > 0 %} investment-card-available-positive{% endif %}" aria-labelledby="investment-available-title">
+                        <span id="investment-available-title">Valor disponível para investimento</span>
+                        <strong>{{ available_to_invest|to_reais }}</strong>
+                    </section>
+                </div>
             </div>
 
             <div class="investment-grid">
-                <section>
-                    <h4>Posições</h4>
+                <section id="investment-positions">
+                    <div class="box-header-inner">
+                        <h4>Posições{% if selected_asset_type %} — {{ selected_asset_type_label }}{% endif %}</h4>
+                        {% if show_all_positions %}
+                            <a href="{{ positions_toggle_url }}" class="btn btn-info">Valor &gt; 0</a>
+                        {% else %}
+                            <a href="{{ positions_toggle_url }}" class="btn btn-info">Ver todas</a>
+                        {% endif %}
+                    </div>
                     <table class="table">
                         <thead>
                             <tr>
@@ -109,36 +112,41 @@
                                 </tr>
                             {% empty %}
                                 <tr>
-                                    <td colspan="5">Nenhum investimento cadastrado.</td>
+                                    <td colspan="5">{% if show_all_positions %}Nenhum investimento cadastrado{% else %}Nenhuma posição com valor maior que zero{% endif %}{% if selected_asset_type %} nesta categoria{% endif %}.</td>
                                 </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </section>
 
-                <section>
-                    <h4>Por broker</h4>
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Broker</th>
-                                <th>Valor</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for broker, amount in by_broker %}
+                <div class="investment-sidebar">
+                    <section id="investment-brokers">
+                        <div class="box-header-inner">
+                            <h4>Por broker</h4>
+                            <a href="{{ brokers_toggle_url }}" class="btn btn-info">{% if show_all_brokers %}Valor &gt; 0{% else %}Ver todos{% endif %}</a>
+                        </div>
+                        <table class="table">
+                            <thead>
                                 <tr>
-                                    <td>{{ broker }}</td>
-                                    <td>{{ amount|to_reais }}</td>
+                                    <th>Broker</th>
+                                    <th>Valor</th>
                                 </tr>
-                            {% empty %}
-                                <tr>
-                                    <td colspan="2">Nenhum broker com posição.</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </section>
+                            </thead>
+                            <tbody>
+                                {% for broker, amount in by_broker %}
+                                    <tr>
+                                        <td>{{ broker }}</td>
+                                        <td>{{ amount|to_reais }}</td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="2">{% if show_all_brokers %}Nenhum broker com posição.{% else %}Nenhum broker com valor maior que zero.{% endif %}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </section>
+                </div>
             </div>
         </div>
     </div>
