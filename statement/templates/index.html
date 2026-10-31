@@ -68,6 +68,15 @@
 
         {% comment %} INÍCIO MAIN {% endcomment %}
         <main>
+        {% if messages %}
+            <div class="box box-primary box-max-width-2000 v-center-div">
+                <div class="box-body">
+                    {% for message in messages %}
+                        <p role="alert">{{ message }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
         {% block content %}
 
         {% endblock %}

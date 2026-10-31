@@ -1,5 +1,6 @@
-from django import template
 from decimal import Decimal, InvalidOperation
+
+from django import template
 
 register = template.Library()
 
@@ -91,9 +92,7 @@ def get_fields(instance):
     fields = [(field.name, getattr(instance, field.name)) for field in instance._meta.fields]
     field_names = {field[0] for field in fields}
     properties = [
-        (name, getattr(instance, name))
-        for name, attr in vars(type(instance)).items()
-        if isinstance(attr, property)
+        (name, getattr(instance, name)) for name, attr in vars(type(instance)).items() if isinstance(attr, property)
     ]
     property_names = {field[0] for field in properties}
     annotations = [
@@ -101,7 +100,8 @@ def get_fields(instance):
         for name, value in instance.__dict__.items()
         if name not in field_names and name not in property_names and not name.startswith('_')
     ]
-    return fields + properties + annotations
+    hidden_fields = getattr(instance, 'hidden_detail_fields', ())
+    return [(name, value) for name, value in fields + properties + annotations if name not in hidden_fields]
 
 
 @register.filter

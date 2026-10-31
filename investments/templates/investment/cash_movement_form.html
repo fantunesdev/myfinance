@@ -11,6 +11,7 @@
             <div class="box-body">
                 <p class="font-16">{{ movement_description }}</p>
                 {% csrf_token %}
+                {{ form.non_field_errors }}
                 {% for field in form %}
                     <div class="form-group mb-15">
                         {{ field.errors }}

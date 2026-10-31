@@ -1,13 +1,14 @@
 import json
 from datetime import date
 
+from clients.transaction_classifier.transaction_classifier import TransactionClassifierClient
 from dateutil.relativedelta import relativedelta
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
+from django.db import transaction as db_transaction
 from django.shortcuts import redirect
 from django.utils.decorators import method_decorator
 from django.utils.timezone import now
-
-from clients.transaction_classifier.transaction_classifier import TransactionClassifierClient
 from statement.forms.core.transaction import TransactionExpenseForm, TransactionForm, TransactionRevenueForm
 from statement.forms.general_forms import NavigationForm, UploadFileForm
 from statement.models import CardNumber, Transaction
@@ -58,9 +59,14 @@ class TransactionView(BaseView):
         if request.method == 'POST':
             form = self._set_form(request, instance=None)
             if form.is_valid():
-                instance = self.service.create(form=form, user=user, id=id)
-                self._custom_actions(request=request, form=form, instance=instance)
-                return redirect(self.redirect_url)
+                try:
+                    with db_transaction.atomic():
+                        instance = self.service.create(form=form, user=user, id=id)
+                        self._custom_actions(request=request, form=form, instance=instance)
+                except ValidationError as error:
+                    form.add_error(None, error.messages)
+                else:
+                    return redirect(self.redirect_url)
             else:
                 print('Formulário inválido:')
                 print(form.errors)
@@ -160,14 +166,13 @@ class TransactionView(BaseView):
         # Busca os cartões do usuário para validação
         cards = CardService.get_all(request.user)
         card_ids = {card.id for card in cards}
-        
 
         # Tenta identificar proprietário (cartão e card_number quando possível) para todas as notificações
         CardService.are_notifications_owner(cards, all_notifications)
 
         # Tenta persistir vínculo de cartão para notificações que ainda não têm card salvo
         unlinked = [n for n in all_notifications if getattr(n, 'card', None) is None]
-        
+
         if unlinked:
             for n in unlinked:
                 # Se o serviço identificou um cartão para a notificação e ela ainda não está vinculada no banco, salva
@@ -192,8 +197,10 @@ class TransactionView(BaseView):
 
         # normalize enabled titles for case-insensitive / substring matching
         if enabled_titles is None:
+
             def _title_allowed(n):
                 return True
+
         else:
             enabled_norm = [t.lower() for t in enabled_titles]
 
@@ -205,14 +212,14 @@ class TransactionView(BaseView):
                 return False
 
         user_notifications = [
-            n
-            for n in all_notifications
-            if getattr(n, 'card_id', None) in card_ids and _title_allowed(n)
+            n for n in all_notifications if getattr(n, 'card_id', None) in card_ids and _title_allowed(n)
         ]
 
         # Converte as notificações em transações para exibição
         for notification in user_notifications:
-            transaction_data = NotificationService.build_transaction_from_notification(notification, request.user, notification.card)
+            transaction_data = NotificationService.build_transaction_from_notification(
+                notification, request.user, notification.card
+            )
             # Formata para o padrão do JavaScript
             value = transaction_data.get('value', '')
             if isinstance(value, str):
@@ -244,10 +251,15 @@ class TransactionView(BaseView):
                     'description': predicted['description'],
                     'original_description': notification.message if hasattr(notification, 'message') else '',
                     'card_id': getattr(notification, 'card_id', None),
-                    'card_description': getattr(notification.card, 'description', None) if getattr(notification, 'card', None) else None,
+                    'card_description': getattr(notification.card, 'description', None)
+                    if getattr(notification, 'card', None)
+                    else None,
                     'card_number_id': getattr(notification, 'card_number_id', None),
                     'card_number_display': (
-                        (getattr(notification, 'card_number', None) and (notification.card_number.name or notification.card_number.number))
+                        (
+                            getattr(notification, 'card_number', None)
+                            and (notification.card_number.name or notification.card_number.number)
+                        )
                         if getattr(notification, 'card_number', None)
                         else None
                     ),
@@ -419,13 +431,13 @@ class TransactionView(BaseView):
                     post_data = request.POST.dict()
                     post_data['type'] = self._type
                     return self.class_form(request.user, post_data, request.FILES or None)
-                
+
                 # Preparar dados iniciais a partir do query string
                 initial_data = {}
                 dream_id = request.GET.get('dream')
                 if dream_id:
                     initial_data['dream'] = dream_id
-                
+
                 if self._type == 'entrada':
                     return TransactionRevenueForm(request.user, initial=initial_data)
                 return TransactionExpenseForm(request.user, initial=initial_data)

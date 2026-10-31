@@ -1,4 +1,4 @@
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db.models import QuerySet
 from django.forms import modelform_factory
 from django.http import QueryDict
@@ -40,7 +40,10 @@ class BaseView(ViewSet):
 
         if not form.is_valid():
             return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
-        instance = self.service.create(form, user)
+        try:
+            instance = self.service.create(form, user)
+        except ValidationError as error:
+            return Response({'detail': error.messages}, status=status.HTTP_400_BAD_REQUEST)
         serialized_instance = self._get_serializer(instance)
         return Response(serialized_instance.data, status=status.HTTP_201_CREATED)
 
@@ -69,6 +72,8 @@ class BaseView(ViewSet):
             instance = self.service.get_by_id(pk, user)
             serializer = self._get_serializer(instance)
             return Response(serializer.data, status=status.HTTP_200_OK)
+        except ValidationError as error:
+            return Response({'detail': error.messages}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'detail': str(e)}, status=status.HTTP_404_NOT_FOUND)
 
@@ -101,6 +106,8 @@ class BaseView(ViewSet):
             serialized_instance = self._get_serializer(updated_instance)
 
             return Response(serialized_instance.data, status=status.HTTP_200_OK)
+        except ValidationError as error:
+            return Response({'detail': error.messages}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'detail': str(e)}, status=status.HTTP_404_NOT_FOUND)
 
@@ -117,6 +124,8 @@ class BaseView(ViewSet):
             instance = self.service.get_by_id(pk, user)
             self.service.delete(instance)
             return Response(status=status.HTTP_204_NO_CONTENT)
+        except ValidationError as error:
+            return Response({'detail': error.messages}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'detail': str(e)}, status=status.HTTP_404_NOT_FOUND)
 

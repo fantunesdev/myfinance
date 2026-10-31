@@ -3,7 +3,6 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
-
 from investments.forms.investment import InvestmentApplicationFromWalletForm, InvestmentRedemptionForm
 from investments.forms.transaction import InvestmentTransactionForm
 from investments.models import InvestmentTransaction
@@ -23,7 +22,9 @@ class InvestmentTransactionView(InvestmentCrudView):
     @method_decorator(login_required)
     def apply_from_wallet_transaction(self, request, id):
         wallet_transaction = self.service.get_by_id(id, request.user)
-        wallet = InvestmentTransactionService.get_or_create_default_wallet(request.user)
+        wallet = self._get_wallet(request)
+        if wallet is None:
+            return redirect('investments_dashboard')
 
         if wallet_transaction.investment_id != wallet.id or wallet_transaction.type != 'aporte':
             messages.warning(request, 'Só é possível aplicar a partir de um aporte no caixa de investimentos.')
@@ -38,7 +39,9 @@ class InvestmentTransactionView(InvestmentCrudView):
         if request.method == 'POST':
             form = InvestmentApplicationFromWalletForm(request.POST, user=request.user, wallet=wallet)
             if form.is_valid():
-                source_transaction, _ = InvestmentTransactionService.transfer_between_investments(
+                if self._perform_movement(
+                    form,
+                    InvestmentTransactionService.transfer_between_investments,
                     source=wallet,
                     destination=form.cleaned_data['investment'],
                     amount=form.cleaned_data['amount'],
@@ -47,10 +50,9 @@ class InvestmentTransactionView(InvestmentCrudView):
                     quantity=form.cleaned_data.get('quantity'),
                     unit_price=form.cleaned_data.get('unit_price'),
                     notes=form.cleaned_data['notes'],
-                )
-                wallet_transaction.operation_id = source_transaction.operation_id
-                wallet_transaction.save(update_fields=['operation_id'])
-                return redirect('investments_dashboard')
+                    funding_transaction=wallet_transaction,
+                ):
+                    return redirect('investments_dashboard')
         else:
             form = InvestmentApplicationFromWalletForm(initial=initial, user=request.user, wallet=wallet)
 
@@ -69,7 +71,9 @@ class InvestmentTransactionView(InvestmentCrudView):
     @method_decorator(login_required)
     def redeem_from_investment_transaction(self, request, id):
         investment_transaction = self.service.get_by_id(id, request.user)
-        wallet = InvestmentTransactionService.get_or_create_default_wallet(request.user)
+        wallet = self._get_wallet(request)
+        if wallet is None:
+            return redirect('investments_dashboard')
 
         if investment_transaction.investment_id == wallet.id or investment_transaction.type != 'aporte':
             messages.warning(request, 'Só é possível resgatar a partir de um aporte de investimento.')
@@ -87,7 +91,9 @@ class InvestmentTransactionView(InvestmentCrudView):
         if request.method == 'POST':
             form = InvestmentRedemptionForm(request.POST, investment=investment_transaction.investment)
             if form.is_valid():
-                InvestmentTransactionService.redeem_to_wallet(
+                if self._perform_movement(
+                    form,
+                    InvestmentTransactionService.redeem_to_wallet,
                     source=investment_transaction.investment,
                     gross_amount=form.cleaned_data['amount'],
                     principal_amount=form.cleaned_data['principal_amount'],
@@ -95,8 +101,8 @@ class InvestmentTransactionView(InvestmentCrudView):
                     quantity=form.cleaned_data.get('quantity'),
                     unit_price=form.cleaned_data.get('unit_price'),
                     notes=form.cleaned_data['notes'],
-                )
-                return redirect('investments_dashboard')
+                ):
+                    return redirect('investments_dashboard')
         else:
             form = InvestmentRedemptionForm(initial=initial, investment=investment_transaction.investment)
 

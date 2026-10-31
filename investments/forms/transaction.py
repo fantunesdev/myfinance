@@ -5,6 +5,11 @@ from investments.models import InvestmentTransaction
 class InvestmentTransactionForm(UserFilteredModelForm):
     user_filtered_fields = ('investment',)
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.user:
+            self.instance.user = self.user
+
     class Meta:
         model = InvestmentTransaction
         exclude = ['operation_id', 'statement_transaction', 'user']

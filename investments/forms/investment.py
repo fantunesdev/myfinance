@@ -1,8 +1,8 @@
-from django import forms
+from decimal import Decimal
 
+from django import forms
 from investments.forms.base import DateInput, UserFilteredModelForm
-from investments.models import Investment
-from investments.models import InvestmentTransaction
+from investments.models import Investment, InvestmentTransaction
 
 
 class InvestmentForm(UserFilteredModelForm):
@@ -27,6 +27,8 @@ class InvestmentForm(UserFilteredModelForm):
 
 
 class InvestmentCashMovementForm(UserFilteredModelForm):
+    amount = forms.DecimalField(label='Valor', max_digits=14, decimal_places=2, min_value=Decimal('0.01'))
+
     class Meta:
         model = InvestmentTransaction
         fields = ['date', 'due_date', 'amount', 'quantity', 'unit_price', 'notes']

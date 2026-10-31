@@ -1,8 +1,8 @@
 from datetime import date, datetime
 
 from dateutil.relativedelta import relativedelta
+from django.db import transaction as db_transaction
 from django.db.models import Q
-
 from statement.models import Transaction
 from statement.services.base_service import BaseService
 
@@ -12,6 +12,14 @@ class TransactionService(BaseService):
 
     model = Transaction
     user_field = 'user'
+
+    @classmethod
+    @db_transaction.atomic
+    def delete(cls, instance):
+        from investments.services.transaction import InvestmentTransactionService
+
+        InvestmentTransactionService.remove_statement_contribution(instance)
+        return super().delete(instance)
 
     @classmethod
     def create(cls, form, user=None, id=None):
@@ -105,7 +113,7 @@ class TransactionService(BaseService):
     def recalculate_home_screen_for_card(cls, card_id):
         """
         Recalcula o atributo home_screen para todas as transações de um cartão.
-        
+
         :param card_id: ID do cartão
         """
         transactions = Transaction.objects.filter(card_id=card_id)
@@ -117,7 +125,7 @@ class TransactionService(BaseService):
     def recalculate_home_screen_for_card_number(cls, card_number_id):
         """
         Recalcula o atributo home_screen para todas as transações de um número de cartão.
-        
+
         :param card_number_id: ID do número de cartão
         """
         transactions = Transaction.objects.filter(card_number_id=card_number_id)
@@ -129,7 +137,7 @@ class TransactionService(BaseService):
     def recalculate_home_screen_for_account(cls, account_id):
         """
         Recalcula o atributo home_screen para todas as transações de uma conta.
-        
+
         :param account_id: ID da conta
         """
         transactions = Transaction.objects.filter(account_id=account_id)

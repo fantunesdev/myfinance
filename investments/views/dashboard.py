@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.core.exceptions import ValidationError
 from django.shortcuts import redirect
 from django.utils.decorators import method_decorator
 
@@ -20,6 +21,10 @@ class InvestmentsDashboardView(BaseView):
     @method_decorator(login_required)
     def create_default_wallet(self, request):
         if request.method == 'POST':
-            InvestmentTransactionService.get_or_create_default_wallet(request.user)
-            messages.success(request, 'Carteira padrão criada com sucesso.')
+            try:
+                InvestmentTransactionService.get_or_create_default_wallet(request.user)
+            except ValidationError as error:
+                messages.error(request, ' '.join(error.messages))
+            else:
+                messages.success(request, 'Carteira padrão criada com sucesso.')
         return redirect('investments_dashboard')

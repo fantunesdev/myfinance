@@ -39,6 +39,9 @@
                         {% endfor %}
                     </div>
                     {% if delete %}
+                        {% if instance.operation_id %}
+                            <p>A exclusão desfaz todos os lançamentos desta operação, inclusive a contrapartida no caixa e os rendimentos gerados por ela.</p>
+                        {% endif %}
                         <div class="btn btn-danger">
                             <p>
                             {% csrf_token %}

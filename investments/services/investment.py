@@ -1,6 +1,8 @@
 from collections import defaultdict
 from decimal import Decimal
 
+from django.core.exceptions import ValidationError
+from django.db import transaction
 from investments.models import Investment, InvestmentTransaction
 from investments.services.base import InvestmentBaseService
 
@@ -18,34 +20,57 @@ class InvestmentService(InvestmentBaseService):
         return [cls.get_position(investment) for investment in investments]
 
     @classmethod
-    def get_position(cls, investment):
-        invested = Decimal('0')
-        income = Decimal('0')
-        costs = Decimal('0')
-        withdrawn = Decimal('0')
-        quantity = Decimal('0')
-        current_value = None
+    def delete(cls, instance):
+        with transaction.atomic():
+            from investments.services.transaction import InvestmentTransactionService
 
-        for transaction in investment.transactions.all():
-            amount = transaction.amount or Decimal('0')
-            match transaction.type:
-                case 'aporte':
-                    invested += amount
-                    quantity += transaction.quantity or Decimal('0')
-                case 'resgate':
-                    withdrawn += amount
-                    quantity -= transaction.quantity or Decimal('0')
-                case 'rendimento':
-                    income += amount
-                case 'custo':
-                    costs += amount
-                case 'atualizacao':
-                    if transaction.current_value is not None:
-                        current_value = transaction.current_value
+            InvestmentTransactionService.lock_user(instance.user)
+            if instance.default_wallet_for_id or instance.transactions.exists():
+                raise ValidationError(
+                    'Investimentos com histórico e o caixa padrão não podem ser excluídos. Encerre o investimento para preservar as movimentações.'
+                )
+            return super().delete(instance)
 
-        calculated_value = invested + income - withdrawn - costs
-        value = current_value if current_value is not None else calculated_value
+    @staticmethod
+    def apply_value(value, movement):
+        if movement.type in ('aporte', 'rendimento'):
+            return value + movement.amount
+        if movement.type in ('resgate', 'custo'):
+            return value - movement.amount
+        if movement.type == 'atualizacao' and movement.current_value is not None:
+            return movement.current_value
+        return value
 
+    @classmethod
+    def get_position(cls, investment, as_of=None, exclude_ids=()):
+        movements = sorted(
+            (
+                item
+                for item in investment.transactions.all()
+                if item.user_id == investment.user_id
+                and item.pk not in exclude_ids
+                and (as_of is None or item.date <= as_of)
+            ),
+            key=lambda item: (item.date, item.pk),
+        )
+        invested = income = costs = withdrawn = quantity = value = Decimal('0')
+        withdrawn_principal = Decimal('0')
+        for movement in movements:
+            amount = movement.amount or Decimal('0')
+            value = cls.apply_value(value, movement)
+            if movement.type == 'aporte':
+                invested += amount
+                quantity += movement.quantity or Decimal('0')
+            elif movement.type == 'resgate':
+                withdrawn += amount
+                withdrawn_principal += (
+                    movement.redemption_principal if movement.redemption_principal is not None else amount
+                )
+                quantity -= movement.quantity or Decimal('0')
+            elif movement.type == 'rendimento':
+                income += amount
+            elif movement.type == 'custo':
+                costs += amount
         return {
             'investment': investment,
             'asset': investment.asset,
@@ -58,6 +83,8 @@ class InvestmentService(InvestmentBaseService):
             'withdrawn': withdrawn,
             'quantity': quantity,
             'value': value,
+            'remaining_principal': invested - withdrawn_principal,
+            'unwithdrawn_income': income - costs - (withdrawn - withdrawn_principal),
         }
 
     @classmethod
@@ -89,11 +116,10 @@ class InvestmentService(InvestmentBaseService):
     @classmethod
     def get_progression_datasets(cls, user):
         investments = {
-            investment.id: investment
-            for investment in cls.filter_by_user(user).select_related('asset', 'broker')
+            investment.id: investment for investment in cls.filter_by_user(user).select_related('asset', 'broker')
         }
         transactions = (
-            InvestmentTransaction.objects.filter(investment__user=user)
+            InvestmentTransaction.objects.filter(investment__user=user, user=user)
             .select_related('investment__asset')
             .order_by('date', 'id')
         )
@@ -101,28 +127,14 @@ class InvestmentService(InvestmentBaseService):
         snapshots_by_date = {}
 
         for transaction in transactions:
-            current_value = investment_values[transaction.investment_id]
-            amount = transaction.amount or Decimal('0')
-
-            match transaction.type:
-                case 'aporte' | 'rendimento':
-                    current_value += amount
-                case 'resgate' | 'custo':
-                    current_value -= amount
-                case 'atualizacao':
-                    if transaction.current_value is not None:
-                        current_value = transaction.current_value
-
-            investment_values[transaction.investment_id] = current_value
+            investment_values[transaction.investment_id] = cls.apply_value(
+                investment_values[transaction.investment_id],
+                transaction,
+            )
             snapshots_by_date[transaction.date] = cls._build_progression_snapshot(investments, investment_values)
 
         labels = [date.strftime('%d/%m/%Y') for date in snapshots_by_date.keys()]
-        asset_type_labels = sorted(
-            {
-                investment.asset.get_asset_type_display()
-                for investment in investments.values()
-            }
-        )
+        asset_type_labels = sorted({investment.asset.get_asset_type_display() for investment in investments.values()})
         colors = {
             'Renda fixa': 'rgba(46, 125, 90, 1)',
             'Renda variável': 'rgba(139, 0, 0, 1)',
@@ -136,10 +148,7 @@ class InvestmentService(InvestmentBaseService):
                 'label': label,
                 'color': colors.get(label, 'rgba(120, 120, 120, 1)'),
                 'names': labels,
-                'values': [
-                    float(snapshot.get(label, Decimal('0')))
-                    for snapshot in snapshots_by_date.values()
-                ],
+                'values': [float(snapshot.get(label, Decimal('0'))) for snapshot in snapshots_by_date.values()],
             }
             for label in asset_type_labels
         ]
@@ -156,10 +165,9 @@ class InvestmentService(InvestmentBaseService):
 
     @classmethod
     def get_interest_datasets(cls, user):
-        transactions = (
-            InvestmentTransaction.objects.filter(investment__user=user, type__in=['rendimento', 'custo'])
-            .order_by('date', 'id')
-        )
+        transactions = InvestmentTransaction.objects.filter(
+            investment__user=user, user=user, type__in=['rendimento', 'custo']
+        ).order_by('date', 'id')
         labels = []
         income_values = []
         cost_values = []

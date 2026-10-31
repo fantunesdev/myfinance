@@ -26,6 +26,7 @@
             <form method="post" enctype="multipart/form-data">
                 <div class="box-body">
                     {% csrf_token %}
+                    {{ form.non_field_errors }}
                     {% for field in form %}
                         {% if 'checkbox' in field.field.widget.input_type %}
                             <div class="form-check mt-20 mb-20">

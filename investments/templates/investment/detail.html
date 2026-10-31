@@ -67,7 +67,7 @@
                                 <td>{{ transaction.notes }}</td>
                                 <td class="no-wrap actions-cell">
                                     <div class="actions-cell-inner">
-                                        {% if default_wallet and instance.id == default_wallet.id and transaction.type == 'aporte' and not transaction.operation_id %}
+                                        {% if default_wallet and instance.id == default_wallet.id and transaction.type == 'aporte' and not transaction.funded_transactions.exists %}
                                             <a href="{% url 'apply_from_wallet_transaction' transaction.id %}" title="Aplicar a partir desta movimentação"><i class="fa-solid fa-arrow-right action-icon"></i></a>
                                         {% endif %}
                                         {% if default_wallet and instance.id != default_wallet.id and transaction.type == 'aporte' %}

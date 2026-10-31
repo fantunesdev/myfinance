@@ -3,7 +3,6 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
-
 from investments.forms.investment import InvestmentCashMovementForm, InvestmentForm, InvestmentRedemptionForm
 from investments.models import Investment
 from investments.services.investment import InvestmentService
@@ -37,7 +36,9 @@ class InvestmentView(InvestmentCrudView):
     @method_decorator(login_required)
     def apply_from_wallet(self, request, id):
         investment = self.service.get_by_id(id, request.user)
-        wallet = InvestmentTransactionService.get_or_create_default_wallet(request.user)
+        wallet = self._get_wallet(request)
+        if wallet is None:
+            return redirect('investments_dashboard')
         if investment.id == wallet.id:
             messages.warning(request, 'A carteira default não pode receber aplicação dela mesma.')
             return redirect('detail_investment', id=investment.id)
@@ -45,7 +46,9 @@ class InvestmentView(InvestmentCrudView):
         if request.method == 'POST':
             form = InvestmentCashMovementForm(request.POST, investment=investment)
             if form.is_valid():
-                InvestmentTransactionService.transfer_between_investments(
+                if self._perform_movement(
+                    form,
+                    InvestmentTransactionService.transfer_between_investments,
                     source=wallet,
                     destination=investment,
                     amount=form.cleaned_data['amount'],
@@ -54,8 +57,8 @@ class InvestmentView(InvestmentCrudView):
                     quantity=form.cleaned_data.get('quantity'),
                     unit_price=form.cleaned_data.get('unit_price'),
                     notes=form.cleaned_data['notes'],
-                )
-                return redirect('investments_dashboard')
+                ):
+                    return redirect('investments_dashboard')
         else:
             form = InvestmentCashMovementForm(initial={'due_date': investment.due_date}, investment=investment)
 
@@ -74,7 +77,9 @@ class InvestmentView(InvestmentCrudView):
     @method_decorator(login_required)
     def redeem_to_wallet(self, request, id):
         investment = self.service.get_by_id(id, request.user)
-        wallet = InvestmentTransactionService.get_or_create_default_wallet(request.user)
+        wallet = self._get_wallet(request)
+        if wallet is None:
+            return redirect('investments_dashboard')
         if investment.id == wallet.id:
             messages.warning(request, 'A carteira default não pode ser resgatada para ela mesma.')
             return redirect('detail_investment', id=investment.id)
@@ -82,7 +87,9 @@ class InvestmentView(InvestmentCrudView):
         if request.method == 'POST':
             form = InvestmentRedemptionForm(request.POST, investment=investment)
             if form.is_valid():
-                InvestmentTransactionService.redeem_to_wallet(
+                if self._perform_movement(
+                    form,
+                    InvestmentTransactionService.redeem_to_wallet,
                     source=investment,
                     gross_amount=form.cleaned_data['amount'],
                     principal_amount=form.cleaned_data['principal_amount'],
@@ -90,8 +97,8 @@ class InvestmentView(InvestmentCrudView):
                     quantity=form.cleaned_data.get('quantity'),
                     unit_price=form.cleaned_data.get('unit_price'),
                     notes=form.cleaned_data['notes'],
-                )
-                return redirect('investments_dashboard')
+                ):
+                    return redirect('investments_dashboard')
         else:
             form = InvestmentRedemptionForm(investment=investment)
 

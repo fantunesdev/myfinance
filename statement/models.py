@@ -1,7 +1,7 @@
 import secrets
 
 from django.db import models
-
+from django.db import transaction as db_transaction
 from login.models import User
 
 
@@ -354,6 +354,11 @@ class Transaction(models.Model):
     original_description = models.CharField(max_length=255, blank=True, null=True)
     dream = models.ForeignKey('Dream', null=True, blank=True, related_name='transactions', on_delete=models.SET_NULL)
 
+    def save(self, *args, **kwargs):
+        # The statement write and post_save investment synchronization are atomic.
+        with db_transaction.atomic():
+            return super().save(*args, **kwargs)
+
     def __str__(self):
         """Retorna a descrição da transação."""
         return self.description
@@ -384,9 +389,7 @@ class CSVImportConfig(models.Model):
     )
 
     name = models.CharField(max_length=80)
-    target_model = models.CharField(
-        max_length=40, choices=TARGET_MODEL_CHOICES, default='statement_transaction'
-    )
+    target_model = models.CharField(max_length=40, choices=TARGET_MODEL_CHOICES, default='statement_transaction')
     date_column = models.CharField(max_length=80, default='date')
     description_column = models.CharField(max_length=80, default='title')
     value_column = models.CharField(max_length=80, default='amount')
@@ -403,9 +406,7 @@ class CSVImportConfig(models.Model):
 
     class Meta:
         ordering = ['name']
-        constraints = [
-            models.UniqueConstraint(fields=['user', 'name'], name='unique_csv_import_config_name_by_user')
-        ]
+        constraints = [models.UniqueConstraint(fields=['user', 'name'], name='unique_csv_import_config_name_by_user')]
 
 
 class FixedExpenses(models.Model):

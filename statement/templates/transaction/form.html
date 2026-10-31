@@ -15,6 +15,7 @@
             <form method="post" enctype="multipart/form-data">
                 <div class="box-body">
                         {% csrf_token %}
+                    {{ form.non_field_errors }}
                         <div class="form-input">
                             <label for="id_payment_method">Meio de Pagamento</label>
                             {{ form.payment_method }}

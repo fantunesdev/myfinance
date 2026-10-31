@@ -2,12 +2,14 @@ import re
 from datetime import date
 
 from dateutil.relativedelta import relativedelta
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ValidationError
+from django.db import transaction as db_transaction
+from django.db.models.deletion import ProtectedError
 from django.forms.widgets import CheckboxInput, HiddenInput, MultipleHiddenInput
 from django.shortcuts import redirect, render
 from django.utils.decorators import method_decorator
-
 from statement.forms.general_forms import ExclusionForm
 from statement.services.core.account import AccountService
 from statement.services.core.card import CardService
@@ -66,9 +68,14 @@ class BaseView:
         if request.method == 'POST':
             form = self._set_form(request, instance=None)
             if form.is_valid():
-                instance = self.service.create(form=form, user=user, id=id)
-                self._custom_actions(request=request, form=form, instance=instance)
-                return redirect(self.redirect_url)
+                try:
+                    with db_transaction.atomic():
+                        instance = self.service.create(form=form, user=user, id=id)
+                        self._custom_actions(request=request, form=form, instance=instance)
+                except ValidationError as error:
+                    form.add_error(None, error.messages)
+                else:
+                    return redirect(self.redirect_url)
             else:
                 print('Formulário inválido:')
                 print(form.errors)
@@ -157,9 +164,14 @@ class BaseView:
         original_instance = type(instance).objects.get(pk=instance.pk)
         if form.is_valid():
             self._preserve_unrendered_fields_after_validation(form, original_instance)
-            self._custom_actions(request=request, form=form, instance=form.instance)
-            self.service.update(form, form.instance)
-            return redirect(self.redirect_url)
+            try:
+                with db_transaction.atomic():
+                    self._custom_actions(request=request, form=form, instance=form.instance)
+                    self.service.update(form, form.instance)
+            except ValidationError as error:
+                form.add_error(None, error.messages)
+            else:
+                return redirect(self.redirect_url)
         additional_context = self._add_context_on_templatetags(request, instance)
         specific_content = {
             'old_instance': instance,
@@ -180,9 +192,19 @@ class BaseView:
         self._context = 'delete'
         instance = self.service.get_by_id(id)
         if request.method == 'POST':
-            self._custom_actions(request=request, form=None, instance=instance)
-            self.service.delete(instance)
-            return redirect(self.redirect_url)
+            try:
+                with db_transaction.atomic():
+                    self._custom_actions(request=request, form=None, instance=instance)
+                    self.service.delete(instance)
+            except (ValidationError, ProtectedError) as error:
+                text = (
+                    ' '.join(error.messages)
+                    if isinstance(error, ValidationError)
+                    else 'Este registro possui vínculos e não pode ser excluído.'
+                )
+                messages.error(request, text)
+            else:
+                return redirect(self.redirect_url)
         additional_context = self._add_context_on_templatetags(request, instance)
         specific_content = {
             'delete': True,
