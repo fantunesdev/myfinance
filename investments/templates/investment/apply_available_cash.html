@@ -1,0 +1,55 @@
+{% extends 'index.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}Aplicar valor disponível{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{% static 'css/investments.css' %}">
+{% endblock %}
+
+{% block content %}
+    <div class="box box-primary investment-application">
+        <div class="box-header">
+            <h3 class="box-title">Aplicar valor disponível</h3>
+        </div>
+        <form method="post" id="investment-application-form">
+            <div class="box-body">
+                <div class="investment-application-balance">
+                    <span>Disponível no caixa</span>
+                    <strong>{{ available|to_reais }}</strong>
+                </div>
+                <p class="font-16">Origem: <strong>{{ wallet }}</strong></p>
+                {% csrf_token %}
+                {{ form.non_field_errors }}
+                {% for field in form %}
+                    <div class="form-group mb-15" id="investment-application-field-{{ field.name }}">
+                        {{ field.errors }}
+                        <label id="investment-application-label-{{ field.name }}" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {% if field.name == 'investment' %}
+                            <div id="investment-destination-picker" class="investment-destination-picker">
+                                {{ field }}
+                                <input id="investment-destination-search" class="form-control" type="text" role="combobox"
+                                       aria-autocomplete="list" aria-controls="investment-destination-results" aria-expanded="false"
+                                       aria-labelledby="investment-application-label-investment" autocomplete="off" spellcheck="false" hidden>
+                                <ul id="investment-destination-results" class="investment-destination-results" role="listbox"
+                                    aria-labelledby="investment-application-label-investment" hidden></ul>
+                            </div>
+                        {% else %}
+                            {{ field }}
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="box-footer">
+                <button type="submit" class="btn btn-primary">Aplicar</button>
+                <a href="{% url 'investments_dashboard' %}" class="btn btn-info">Voltar</a>
+            </div>
+        </form>
+        {{ destination_options|json_script:"investment-destination-options" }}
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static 'js/pages/investment-application.js' %}" defer></script>
+{% endblock %}

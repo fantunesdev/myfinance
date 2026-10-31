@@ -324,3 +324,90 @@
 .investment-allocation-back[hidden] {
     display: none;
 }
+
+.investment-application {
+    margin: 0 auto;
+    max-width: 860px;
+}
+
+.investment-application-balance {
+    align-items: center;
+    border-bottom: 1px solid #343434;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    padding-bottom: 16px;
+}
+
+.investment-application-balance strong {
+    font-size: 22px;
+    font-variant-numeric: tabular-nums;
+}
+
+.investment-application [hidden] {
+    display: none;
+}
+
+.investment-overview a.investment-card-available-positive:hover {
+    background: #3b2327;
+}
+
+.investment-destination-picker {
+    position: relative;
+}
+
+.investment-destination-picker[data-searchable]::after {
+    color: #adb5bd;
+    content: '⌄';
+    font-size: 20px;
+    pointer-events: none;
+    position: absolute;
+    right: 12px;
+    top: 6px;
+}
+
+#investment-destination-search {
+    padding-right: 34px;
+}
+
+#investment-destination-search:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
+}
+
+.investment-destination-results {
+    background: #202020;
+    border: 1px solid #444;
+    border-radius: 4px;
+    box-shadow: 0 6px 16px rgb(0 0 0 / 25%);
+    box-sizing: border-box;
+    left: 0;
+    list-style: none;
+    margin: 4px 0 0;
+    max-height: 240px;
+    overflow-y: auto;
+    padding: 4px;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    z-index: 20;
+}
+
+.investment-destination-results [role="option"] {
+    border-radius: 3px;
+    cursor: pointer;
+    padding: 10px 12px;
+}
+
+.investment-destination-results [role="option"]:hover,
+.investment-destination-results [aria-selected="true"] {
+    background: #600000;
+    color: azure;
+}
+
+.investment-destination-no-results {
+    color: #adb5bd;
+    padding: 10px 12px;
+}

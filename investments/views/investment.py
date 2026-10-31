@@ -2,8 +2,13 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.utils.decorators import method_decorator
-from investments.forms.investment import InvestmentCashMovementForm, InvestmentForm, InvestmentRedemptionForm
+
+from investments.forms.investment import (InvestmentApplicationFromWalletForm,
+                                          InvestmentCashMovementForm,
+                                          InvestmentForm,
+                                          InvestmentRedemptionForm)
 from investments.models import Investment
 from investments.services.investment import InvestmentService
 from investments.services.transaction import InvestmentTransactionService
@@ -34,6 +39,38 @@ class InvestmentView(InvestmentCrudView):
             'position_history': InvestmentService.get_position_history(instance),
             'default_wallet': InvestmentTransactionService.get_default_wallet(request.user),
         }
+
+    @method_decorator(login_required)
+    def apply_available_cash(self, request):
+        wallet = InvestmentTransactionService.get_default_wallet(request.user)
+        if wallet is None:
+            messages.warning(request, 'Crie o caixa de investimentos antes de aplicar o valor disponível.')
+            return redirect('investments_dashboard')
+        available = InvestmentService.get_position(wallet)['value']
+        form = InvestmentApplicationFromWalletForm(
+            request.POST if request.method == 'POST' else None,
+            initial={'date': timezone.localdate(), 'amount': max(available, 0)},
+            user=request.user, wallet=wallet, filter_by_type=True,
+        )
+        if request.method == 'POST' and form.is_valid():
+            if self._perform_movement(
+                form, InvestmentTransactionService.transfer_between_investments,
+                source=wallet, destination=form.cleaned_data['investment'],
+                amount=form.cleaned_data['amount'], date=form.cleaned_data['date'],
+                due_date=form.cleaned_data['due_date'], quantity=form.cleaned_data.get('quantity'),
+                unit_price=form.cleaned_data.get('unit_price'), notes=form.cleaned_data['notes'],
+            ):
+                return redirect('investments_dashboard')
+        self._context = 'apply_available_cash'
+        return self._render(request, form, 'investment/apply_available_cash.html', {
+            'wallet': wallet, 'available': available,
+            'destination_options': {
+                str(investment.pk): {
+                    'asset_type': investment.asset.asset_type,
+                    'due_date': investment.due_date.isoformat() if investment.due_date else '',
+                } for investment in form.fields['investment'].queryset
+            },
+        })
 
     @method_decorator(login_required)
     def apply_from_wallet(self, request, id):

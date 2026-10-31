@@ -39,6 +39,28 @@ function setChartToggleMode(mode) {
     chartToggle.setAttribute('aria-label', 'Ganhos');
 }
 
+function yearlyTimeline(labels) {
+    const year = value => String(value).match(/\d{4}/)?.[0] || String(value);
+    return {
+        afterBuildTicks: axis => {
+            const seen = new Set();
+            axis.ticks = axis.ticks.filter(tick => {
+                const label = year(labels[tick.value]);
+                if (seen.has(label)) return false;
+                seen.add(label);
+                return true;
+            });
+        },
+        ticks: {
+            autoSkip: true,
+            maxTicksLimit: 10,
+            minRotation: 0,
+            maxRotation: 0,
+            callback: value => year(labels[value]),
+        },
+    };
+}
+
 function drawProgressionChart() {
     destroyInvestmentChart();
     activeChart = 'progression';
@@ -51,7 +73,7 @@ function drawProgressionChart() {
     window.investmentChart = stackedAreaChart.drawStackedAreaChart(
         investedDatasets,
         'Evolução Patrimonial',
-        { maintainAspectRatio: false, yMin: 0 }
+        { maintainAspectRatio: false, yMin: 0, xScale: yearlyTimeline(investedDatasets[0].names) }
     );
 }
 
@@ -88,6 +110,7 @@ function drawInterestChart() {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
+                x: yearlyTimeline(interestDatasets[0].names),
                 y: {
                     ticks: {
                         callback: (value) => formatter.format(value),

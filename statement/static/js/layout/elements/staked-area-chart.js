@@ -20,6 +20,7 @@ export function drawStackedAreaChart(datasets, label, options = {}) {
             responsive: true,
             maintainAspectRatio: options.maintainAspectRatio ?? !shouldFillMobileChartHeight,
             scales: {
+                ...(options.xScale ? { x: options.xScale } : {}),
                 y: {
                     stacked: true, // Ativa o empilhamento
                     beginAtZero: true,
