@@ -1,5 +1,6 @@
-export const DEFAULT_STATE = Object.freeze({ assetType: '', chartMode: 'progression', showAllPositions: false, showAllBrokers: false });
+export const DEFAULT_STATE = Object.freeze({ assetType: '', chartMode: 'progression', showAllPositions: false, showAllBrokers: false, openPositionTypes: Object.freeze([]) });
 const TYPES = ['fixed_income', 'variable_income', 'crypto'];
+const POSITION_TYPES = [...TYPES, 'currency', 'other'];
 export const MAX_AGE = 5 * 60 * 1000;
 
 export function normalizeState(state = {}) {
@@ -8,16 +9,23 @@ export function normalizeState(state = {}) {
         chartMode: state.chartMode === 'interest' ? 'interest' : 'progression',
         showAllPositions: state.showAllPositions === true,
         showAllBrokers: state.showAllBrokers === true,
+        openPositionTypes: Array.isArray(state.openPositionTypes)
+            ? [...new Set(state.openPositionTypes.filter(type => POSITION_TYPES.includes(type)))] : [],
     };
 }
 
 export function stateFromUrl(url, saved = DEFAULT_STATE) {
     const params = new URL(url).searchParams;
     if (!['asset_type', 'positions', 'brokers', 'chart'].some(key => params.has(key))) return normalizeState(saved);
-    return normalizeState({
+    const next = normalizeState({
         assetType: params.get('asset_type'), chartMode: params.get('chart'),
         showAllPositions: params.get('positions') === 'all', showAllBrokers: params.get('brokers') === 'all',
+        openPositionTypes: saved.openPositionTypes,
     });
+    if (next.assetType && next.assetType !== saved.assetType) {
+        next.openPositionTypes = [next.assetType];
+    }
+    return next;
 }
 
 export function stateUrl(url, state) {
@@ -122,7 +130,7 @@ export function createInvestmentStore({ userId, apiUrl, storage, fetcher = (...a
     return {
         load, clear, invalidate, isFresh,
         peek: () => cached?.data || null,
-        getState: () => ({ ...state }),
-        setState: next => { state = normalizeState(next); write('state', state); return { ...state }; },
+        getState: () => normalizeState(state),
+        setState: next => { state = normalizeState(next); write('state', state); return normalizeState(state); },
     };
 }

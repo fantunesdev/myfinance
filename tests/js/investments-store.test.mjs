@@ -147,3 +147,20 @@ test('a cached snapshot without average prices is fetched again without its old 
     await store.load();
     assert.equal(calls, 1);
 });
+
+test('accordion state persists safely while URL filters change', async () => {
+    const disk = storage();
+    const options = { userId: 1, storage: disk, fetcher: async () => response(payload()) };
+    const store = createInvestmentStore(options);
+    store.setState({ openPositionTypes: ['fixed_income', 'crypto', 'crypto', 'invalid'] });
+    const copy = store.getState(); copy.openPositionTypes.push('currency');
+    assert.deepEqual(store.getState().openPositionTypes, ['fixed_income', 'crypto']);
+    assert.deepEqual(createInvestmentStore(options).getState().openPositionTypes, ['fixed_income', 'crypto']);
+    const fromLink = stateFromUrl('https://test/investimentos/?asset_type=variable_income', store.getState());
+    assert.deepEqual(fromLink.openPositionTypes, ['variable_income']);
+    const deliberatelyClosed = stateFromUrl('https://test/investimentos/?asset_type=crypto', { assetType: 'crypto', openPositionTypes: [] });
+    assert.deepEqual(deliberatelyClosed.openPositionTypes, []);
+    const allPositions = stateFromUrl('https://test/investimentos/?positions=all', store.getState());
+    assert.deepEqual(allPositions.openPositionTypes, ['fixed_income', 'crypto']);
+    assert.equal(allPositions.assetType, '');
+});

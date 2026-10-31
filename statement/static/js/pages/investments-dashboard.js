@@ -15,7 +15,7 @@ const chartToggle = document.getElementById('investment-chart-toggle');
 const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
 const quantity = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 8 });
 const smallUnitPrice = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 8, maximumFractionDigits: 8 });
-const typeLabels = { fixed_income: 'Renda fixa', variable_income: 'Renda variável', crypto: 'Cripto' };
+const typeLabels = { fixed_income: 'Renda fixa', variable_income: 'Renda variável', crypto: 'Cripto', currency: 'Disponível para investimento', other: 'Outros' };
 
 function destroyInvestmentChart() {
     if (window.investmentChart) {
@@ -273,33 +273,90 @@ function cell(row, text) {
     return td;
 }
 
-function renderTables() {
-    const positions = dashboard.positions.filter(position =>
-        (!state.assetType || position.asset_type === state.assetType)
-        && (state.showAllPositions || Number(position.value) > 0)
-    );
-    const body = document.getElementById('investment-positions-body');
-    body.replaceChildren();
+function renderPositionGroups(positions) {
+    const container = document.getElementById('investment-positions-body');
+    container.replaceChildren();
+    const grouped = new Map();
     for (const position of positions) {
-        const row = document.createElement('tr');
-        const link = document.createElement('a');
-        link.href = position.url;
-        link.textContent = position.label;
-        cell(row, '').appendChild(link);
-        cell(row, position.asset_type_label);
-        cell(row, position.broker);
-        const showQuantity = ['variable_income', 'crypto'].includes(position.asset_type);
-        cell(row, showQuantity ? quantity.format(Number(position.quantity)) : '—');
-        const price = Number(position.average_purchase_price);
-        cell(row, position.average_purchase_price === null ? '—' : (price < 0.01 ? smallUnitPrice : money).format(price));
-        cell(row, money.format(Number(position.value)));
-        body.appendChild(row);
+        if (!grouped.has(position.asset_type)) grouped.set(position.asset_type, []);
+        grouped.get(position.asset_type).push(position);
+    }
+    const order = Object.keys(typeLabels);
+    const groups = [...grouped].sort(([left], [right]) => order.indexOf(left) - order.indexOf(right));
+    for (const [type, entries] of groups) {
+        const details = document.createElement('details');
+        details.className = 'investment-position-group';
+        details.dataset.assetType = type;
+        details.open = state.openPositionTypes.includes(type);
+        const summary = document.createElement('summary');
+        const label = document.createElement('span');
+        label.className = 'investment-position-group-label';
+        label.textContent = typeLabels[type] || entries[0].asset_type_label;
+        summary.appendChild(label);
+        const total = document.createElement('strong');
+        total.textContent = money.format(entries.reduce((sum, position) => sum + Number(position.value), 0));
+        summary.appendChild(total);
+        details.appendChild(summary);
+
+        const unitMetrics = ['variable_income', 'crypto'].includes(type);
+        const columns = ['Investimento', 'Broker', ...(unitMetrics ? ['Quantidade', 'Preço médio'] : []), 'Valor'];
+        const scroll = document.createElement('div');
+        scroll.className = 'investment-table-scroll';
+        const table = document.createElement('table');
+        table.className = 'table';
+        const head = document.createElement('thead');
+        const heading = document.createElement('tr');
+        for (const column of columns) {
+            const th = document.createElement('th');
+            th.scope = 'col';
+            th.textContent = column;
+            heading.appendChild(th);
+        }
+        head.appendChild(heading);
+        table.appendChild(head);
+        const body = document.createElement('tbody');
+        for (const position of entries) {
+            const row = document.createElement('tr');
+            const link = document.createElement('a');
+            link.href = position.url;
+            link.textContent = position.label;
+            cell(row, '').appendChild(link);
+            cell(row, position.broker);
+            if (unitMetrics) {
+                cell(row, quantity.format(Number(position.quantity)));
+                const price = Number(position.average_purchase_price);
+                cell(row, position.average_purchase_price === null ? '—' : (price < 0.01 ? smallUnitPrice : money).format(price));
+            }
+            cell(row, money.format(Number(position.value)));
+            body.appendChild(row);
+        }
+        table.appendChild(body);
+        scroll.appendChild(table);
+        details.appendChild(scroll);
+        details.addEventListener('toggle', () => {
+            // Ignore queued events from elements replaced by a refresh/filter.
+            if (!container.contains(details)) return;
+            const open = new Set(state.openPositionTypes);
+            if (open.has(type) === details.open) return;
+            if (details.open) open.add(type);
+            else open.delete(type);
+            state = store.setState({ ...state, openPositionTypes: [...open] });
+            syncUrl(true);
+        });
+        container.appendChild(details);
     }
     if (!positions.length) {
-        const row = document.createElement('tr');
-        cell(row, state.showAllPositions ? 'Nenhum investimento nesta seleção.' : 'Nenhuma posição com valor maior que zero nesta seleção.').colSpan = 6;
-        body.appendChild(row);
+        const empty = document.createElement('p');
+        empty.textContent = state.showAllPositions ? 'Nenhum investimento nesta seleção.' : 'Nenhuma posição com valor maior que zero nesta seleção.';
+        container.appendChild(empty);
     }
+}
+
+function renderTables() {
+    const positions = dashboard.positions.filter(position =>
+        state.showAllPositions || Number(position.value) > 0
+    );
+    renderPositionGroups(positions);
     const brokers = document.getElementById('investment-brokers-body');
     brokers.replaceChildren();
     for (const broker of dashboard.brokers.filter(item => state.showAllBrokers || Number(item.value) > 0)) {
@@ -313,7 +370,7 @@ function renderTables() {
         cell(row, state.showAllBrokers ? 'Nenhum broker cadastrado.' : 'Nenhum broker com valor maior que zero.').colSpan = 2;
         brokers.appendChild(row);
     }
-    document.getElementById('investment-positions-title').textContent = state.assetType ? `Posições — ${typeLabels[state.assetType]}` : 'Posições';
+    document.getElementById('investment-positions-title').textContent = 'Posições';
     document.getElementById('investment-positions-toggle').textContent = state.showAllPositions ? 'Valor > 0' : 'Ver todas';
     document.getElementById('investment-brokers-toggle').textContent = state.showAllBrokers ? 'Valor > 0' : 'Ver todos';
     document.getElementById('investment-overview').hidden = !state.assetType;
@@ -352,7 +409,11 @@ function syncUrl(replace = false) {
 
 function changeState(change, push = true) {
     const previous = state;
-    state = store.setState({ ...state, ...change });
+    const next = { ...state, ...change };
+    if (push && change.assetType) {
+        next.openPositionTypes = [change.assetType];
+    }
+    state = store.setState(next);
     if (push) syncUrl();
     else syncUrl(true);
     if (!dashboard) return;
@@ -400,7 +461,7 @@ async function refresh(force = false) {
 
 function overview(event) {
     event?.preventDefault();
-    changeState({ assetType: '' });
+    changeState({ assetType: '', openPositionTypes: [] });
 }
 
 document.getElementById('investment-overview').addEventListener('click', overview);
@@ -423,7 +484,7 @@ for (const [container, getChart] of [
     [document.getElementById('investment-allocation-container'), () => window.investmentAllocationChart],
 ]) {
     container.addEventListener('click', event => {
-        if (!state.assetType || event.target.closest?.('a, button, [role="button"]')) return;
+        if ((!state.assetType && !state.openPositionTypes.length) || event.target.closest?.('a, button, [role="button"]')) return;
         const chart = getChart();
         if (chart && event.target === chart.canvas && chart.getElementsAtEventForMode(event, 'nearest', { intersect: true }, true).length) return;
         overview();
