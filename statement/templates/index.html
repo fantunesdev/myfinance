@@ -5,6 +5,7 @@
     <head>
         {% comment %} CONFIGURAÇÕES INICIAIS {% endcomment %}
         <meta charset="UTF-8">
+        <meta name="myfinance-user-id" content="{{ request.user.pk|default:'' }}">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         {% comment %} ÍCONES EXTERNOS {% endcomment %}

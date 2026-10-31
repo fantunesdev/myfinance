@@ -14,7 +14,7 @@
     const shortDate = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' });
     const fullDate = new Intl.DateTimeFormat('pt-BR');
 
-    new Chart(canvas.getContext('2d'), {
+    const chart = new Chart(canvas.getContext('2d'), {
         type: 'line',
         data: {
             datasets: [{
@@ -57,5 +57,11 @@
             },
             animation: { duration: 200 },
         },
+    });
+
+    canvas.parentElement.addEventListener('click', event => {
+        if (event.target === canvas
+            && chart.getElementsAtEventForMode(event, 'nearest', { intersect: true }, true).length) return;
+        window.location.assign(canvas.dataset.dashboardUrl);
     });
 })();

@@ -3,9 +3,9 @@ from decimal import Decimal, InvalidOperation
 from itertools import groupby
 
 from django.core.exceptions import ValidationError
-from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
+from investments.events import investment_atomic
 from investments.models import Asset, Broker, Investment, InvestmentTransaction
 from investments.services.base import InvestmentBaseService
 from investments.services.investment import InvestmentService
@@ -26,7 +26,7 @@ class InvestmentTransactionService(InvestmentBaseService):
         User.objects.select_for_update().get(pk=user.pk)
 
     @classmethod
-    @transaction.atomic
+    @investment_atomic()
     def create(cls, form, user=None, id=None):
         cls.lock_user(user)
         instance = form.save(commit=False)
@@ -47,7 +47,7 @@ class InvestmentTransactionService(InvestmentBaseService):
         return instance
 
     @classmethod
-    @transaction.atomic
+    @investment_atomic()
     def update(cls, form, instance):
         original = cls.model.objects.get(pk=instance.pk)
         cls.lock_user(original.user)
@@ -95,7 +95,7 @@ class InvestmentTransactionService(InvestmentBaseService):
         return instance
 
     @classmethod
-    @transaction.atomic
+    @investment_atomic()
     def delete(cls, instance):
         cls.lock_user(instance.user)
         instance = cls.model.objects.get(pk=instance.pk)
@@ -132,7 +132,7 @@ class InvestmentTransactionService(InvestmentBaseService):
         return Investment.objects.select_related('asset', 'broker').filter(default_wallet_for=user, user=user).first()
 
     @classmethod
-    @transaction.atomic
+    @investment_atomic()
     def get_or_create_default_wallet(cls, user):
         cls.lock_user(user)
         wallet = cls.get_default_wallet(user)
@@ -174,12 +174,12 @@ class InvestmentTransactionService(InvestmentBaseService):
         )
 
     @classmethod
-    @transaction.atomic
+    @investment_atomic()
     def create_wallet_contribution_from_statement_transaction(cls, statement_transaction, wallet=None, notes=''):
         return cls.sync_wallet_contribution_from_statement_transaction(statement_transaction)
 
     @classmethod
-    @transaction.atomic
+    @investment_atomic()
     def sync_wallet_contribution_from_statement_transaction(cls, statement_transaction):
         cls.lock_user(statement_transaction.user)
         existing = cls.model.objects.filter(statement_transaction_id=statement_transaction.pk).first()
@@ -212,7 +212,7 @@ class InvestmentTransactionService(InvestmentBaseService):
         return instance
 
     @classmethod
-    @transaction.atomic
+    @investment_atomic()
     def remove_statement_contribution(cls, statement_transaction):
         cls.lock_user(statement_transaction.user)
         existing = cls.model.objects.filter(statement_transaction_id=statement_transaction.pk).first()
@@ -227,7 +227,7 @@ class InvestmentTransactionService(InvestmentBaseService):
         cls.validate_balances(statement_transaction.user, [wallet_id])
 
     @classmethod
-    @transaction.atomic
+    @investment_atomic()
     def transfer_between_investments(
         cls,
         source,
@@ -292,7 +292,7 @@ class InvestmentTransactionService(InvestmentBaseService):
         return debit, credit
 
     @classmethod
-    @transaction.atomic
+    @investment_atomic()
     def redeem_to_wallet(
         cls,
         source,

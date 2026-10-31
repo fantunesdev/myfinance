@@ -2,6 +2,11 @@ from api.serializers.base_serializer import BaseSerializer
 from api.views.base_view import BaseView
 from django.core.exceptions import ValidationError
 from django.forms import model_to_dict
+from django.utils import timezone
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
+from investments.events import dashboard_revision
+from investments.services.dashboard import dashboard_payload
 from investments.forms.investment import InvestmentForm
 from investments.forms.transaction import InvestmentTransactionForm
 from investments.models import Investment, InvestmentTransaction
@@ -12,6 +17,7 @@ from rest_framework.response import Response
 
 
 class InvestmentApiView(BaseView):
+    permission_classes = [IsAuthenticated]
     serializer = BaseSerializer
     class_has_user = True
 
@@ -71,6 +77,38 @@ class InvestmentView(InvestmentApiView):
     model = Investment
     service = InvestmentService
     form_class = InvestmentForm
+
+
+    @action(
+        detail=False, methods=['get'], permission_classes=[IsAuthenticated]
+    )
+    def dashboard(self, request):
+        # Compare a cheap revision before doing any portfolio aggregation.
+        for attempt in range(2):
+            revision = dashboard_revision(request.user.pk)
+            tag = (
+                f'"investments-v1-{request.user.pk}-{revision}-{timezone.localdate()}"'
+                if revision
+                else None
+            )
+            headers = {
+                'Cache-Control': 'private, no-cache',
+                'Vary': 'Cookie, Authorization',
+            }
+            if tag:
+                headers['ETag'] = tag
+            if tag and request.headers.get('If-None-Match') == tag:
+                return Response(status=304, headers=headers)
+            payload = dashboard_payload(request.user, revision)
+            if dashboard_revision(request.user.pk) == revision:
+                return Response(payload, headers=headers)
+        return Response(
+            {
+                'detail': 'Os investimentos mudaram durante a consulta. Tente novamente.'
+            },
+            status=503,
+            headers={'Retry-After': '1', 'Cache-Control': 'no-store'},
+        )
 
 
 class InvestmentTransactionView(InvestmentApiView):

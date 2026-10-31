@@ -28,6 +28,9 @@
                 </h3>
             </div>
             <div class="box-body">
+                <div class="investment-actions">
+                    <a href="{% url 'investments_dashboard' %}" class="btn btn-primary">Voltar</a>
+                </div>
                 <p class="font-16">Ativo: <strong>{{ instance.asset }}</strong></p>
                 <p class="font-16">Broker: <strong>{{ instance.broker }}</strong></p>
                 <p class="font-16">Status: <strong>{{ instance.get_status_display }}</strong></p>
@@ -57,7 +60,7 @@
                         {% if position_history.dates %}
                             {{ position_history|json_script:"investment-position-history" }}
                             <div class="investment-position-chart">
-                                <canvas id="investment-position-chart" role="img" aria-label="Gráfico de linha com a evolução do valor desta posição por data. Os lançamentos estão na tabela abaixo."></canvas>
+                                <canvas id="investment-position-chart" data-dashboard-url="{% url 'investments_dashboard' %}" role="img" aria-label="Gráfico de linha com a evolução do valor desta posição por data. Os lançamentos estão na tabela abaixo."></canvas>
                             </div>
                         {% else %}
                             <p>Nenhuma movimentação registrada para mostrar a evolução.</p>

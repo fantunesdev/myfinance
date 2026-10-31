@@ -30,49 +30,46 @@
             </div>
         </div>
         <div class="box-body investments-dashboard">
-            {{ progression_datasets|json_script:"investment-progression-datasets" }}
-            {{ interest_datasets|json_script:"investment-interest-datasets" }}
-            {{ allocation_chart_data|json_script:"investment-allocation-data" }}
+            {{ dashboard_config|json_script:"investment-dashboard-config" }}
+            <div id="investment-load-status" role="status" aria-live="polite">Carregando investimentos…</div>
+            <button type="button" id="investment-refresh" class="btn btn-info">Atualizar</button>
+            <noscript>Ative o JavaScript para consultar os gráficos e as posições.</noscript>
             <div class="investment-actions">
                 <a href="{% url 'create_investment' %}" class="btn btn-info">Novo investimento</a>
                 <a href="{% url 'create_broker' %}" class="btn btn-info">Novo broker</a>
                 <a href="{% url 'create_asset' %}" class="btn btn-info">Novo ativo</a>
-                {% if not default_wallet %}
-                    <form method="post" action="{% url 'create_default_investment_wallet' %}">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-info">Criar carteira default</button>
-                    </form>
-                {% endif %}
+                <form id="investment-create-wallet" method="post" action="{% url 'create_default_investment_wallet' %}" hidden>
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-info">Criar carteira default</button>
+                </form>
             </div>
 
             <div class="investment-charts">
                 <div class="investment-chart">
-                    <div class="icon-btn investment-chart-toggle" id="investment-chart-toggle"{% if selected_asset_type %} hidden{% endif %} role="button" title="Ganhos" aria-label="Ganhos" tabindex="0">
+                    <div class="icon-btn investment-chart-toggle" id="investment-chart-toggle" role="button" title="Ganhos" aria-label="Ganhos" tabindex="0">
                         <i class="fa-solid fa-percent"></i>
                     </div>
                     <canvas id="line-chart" width="40" height="15"></canvas>
                 </div>
                 <div class="investment-sidebar investment-overview" role="group" aria-label="Resumo do patrimônio">
-                    <section class="investment-allocation" aria-label="Renda fixa e renda variável">
-                        {% if selected_asset_type %}
-                            <a href="{{ allocation_overview_url }}" class="investment-allocation-back">← Visão geral</a>
-                        {% endif %}
+                    <section class="investment-allocation" aria-label="Renda fixa, renda variável e cripto">
+                        <a href="?" id="investment-overview" class="investment-allocation-back" hidden>← Visão geral</a>
                         <div class="investment-allocation-chart" id="investment-allocation-container">
-                            <canvas id="investment-allocation-chart" role="img" aria-label="Distribuição do valor investido entre renda fixa e renda variável."></canvas>
+                            <canvas id="investment-allocation-chart" role="img" aria-label="Distribuição do valor investido entre renda fixa, renda variável e cripto."></canvas>
                         </div>
-                        <p id="investment-allocation-empty" hidden>Sem saldo em renda fixa ou renda variável.</p>
+                        <p id="investment-allocation-empty" hidden>Sem saldo em renda fixa, renda variável ou cripto.</p>
                     </section>
                     <a href="{% url 'get_all_investment' %}" class="investment-card" aria-labelledby="investment-total-title">
                         <span id="investment-total-title">Patrimônio total</span>
-                        <strong>{{ total|to_reais }}</strong>
+                        <strong id="investment-total">—</strong>
                     </a>
                     <div class="investment-card investment-card-net-income">
-                        <span>{% if net_income > 0 %}Lucro{% elif net_income < 0 %}Prejuízo{% else %}Resultado{% endif %}</span>
-                        <strong{% if net_income > 0 %} class="green"{% elif net_income < 0 %} class="red"{% endif %}>{{ net_income|to_reais }}</strong>
+                        <span id="investment-result-label">Resultado</span>
+                        <strong id="investment-result">—</strong>
                     </div>
-                    <section class="investment-card{% if available_to_invest > 0 %} investment-card-available-positive{% endif %}" aria-labelledby="investment-available-title">
+                    <section id="investment-available-card" class="investment-card" aria-labelledby="investment-available-title">
                         <span id="investment-available-title">Valor disponível para investimento</span>
-                        <strong>{{ available_to_invest|to_reais }}</strong>
+                        <strong id="investment-available">—</strong>
                     </section>
                 </div>
             </div>
@@ -80,12 +77,8 @@
             <div class="investment-grid">
                 <section id="investment-positions">
                     <div class="box-header-inner">
-                        <h4>Posições{% if selected_asset_type %} — {{ selected_asset_type_label }}{% endif %}</h4>
-                        {% if show_all_positions %}
-                            <a href="{{ positions_toggle_url }}" class="btn btn-info">Valor &gt; 0</a>
-                        {% else %}
-                            <a href="{{ positions_toggle_url }}" class="btn btn-info">Ver todas</a>
-                        {% endif %}
+                        <h4 id="investment-positions-title">Posições</h4>
+                        <a href="?positions=all" id="investment-positions-toggle" class="btn btn-info">Ver todas</a>
                     </div>
                     <table class="table">
                         <thead>
@@ -97,24 +90,8 @@
                                 <th>Valor</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            {% for position in positions %}
-                                <tr>
-                                    <td>
-                                        <a href="{% url 'detail_investment' position.investment.id %}">
-                                            {{ position.investment }}
-                                        </a>
-                                    </td>
-                                    <td>{{ position.asset_type_label }}</td>
-                                    <td>{{ position.broker }}</td>
-                                    <td>{{ position.quantity|format_quantity }}</td>
-                                    <td>{{ position.value|to_reais }}</td>
-                                </tr>
-                            {% empty %}
-                                <tr>
-                                    <td colspan="5">{% if show_all_positions %}Nenhum investimento cadastrado{% else %}Nenhuma posição com valor maior que zero{% endif %}{% if selected_asset_type %} nesta categoria{% endif %}.</td>
-                                </tr>
-                            {% endfor %}
+                        <tbody id="investment-positions-body">
+                            <tr><td colspan="5">Carregando posições…</td></tr>
                         </tbody>
                     </table>
                 </section>
@@ -123,7 +100,7 @@
                     <section id="investment-brokers">
                         <div class="box-header-inner">
                             <h4>Por broker</h4>
-                            <a href="{{ brokers_toggle_url }}" class="btn btn-info">{% if show_all_brokers %}Valor &gt; 0{% else %}Ver todos{% endif %}</a>
+                            <a href="?brokers=all" id="investment-brokers-toggle" class="btn btn-info">Ver todos</a>
                         </div>
                         <table class="table">
                             <thead>
@@ -132,17 +109,8 @@
                                     <th>Valor</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                {% for broker, amount in by_broker %}
-                                    <tr>
-                                        <td>{{ broker }}</td>
-                                        <td>{{ amount|to_reais }}</td>
-                                    </tr>
-                                {% empty %}
-                                    <tr>
-                                        <td colspan="2">{% if show_all_brokers %}Nenhum broker com posição.{% else %}Nenhum broker com valor maior que zero.{% endif %}</td>
-                                    </tr>
-                                {% endfor %}
+                            <tbody id="investment-brokers-body">
+                                <tr><td colspan="2">Carregando brokers…</td></tr>
                             </tbody>
                         </table>
                     </section>

@@ -255,3 +255,15 @@
         grid-template-columns: 1fr;
     }
 }
+
+#investment-load-status {
+    margin-bottom: 12px;
+}
+
+#investment-refresh {
+    margin-bottom: 16px;
+}
+
+.investment-allocation-back[hidden] {
+    display: none;
+}

@@ -1,30 +1,38 @@
-import json
-
+from asgiref.sync import sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
+
+from investments.events import dashboard_revision
 
 
 class UpdateConsumer(AsyncJsonWebsocketConsumer):
-    """
-    Consumer responsável por gerenciar a comunicação WebSocket para enviar atualizações aos
-    clientes conectados.
-    """
-
     async def connect(self):
-        """
-        Aceita a conexão WebSocket e adiciona o cliente ao grupo "updates".
-        """
+        user = self.scope.get('user')
+        if not user or not user.is_authenticated:
+            await self.close(code=4401)
+            return
+        self.user_group = f'user_updates_{user.pk}'
         await self.channel_layer.group_add('updates', self.channel_name)
+        await self.channel_layer.group_add(self.user_group, self.channel_name)
         await self.accept()
+        revision = await sync_to_async(dashboard_revision)(user.pk)
+        await self.send_json(
+            {'type': 'investments.ready', 'revision': revision}
+        )
 
     async def disconnect(self, code):
-        """
-        Remove o cliente do grupo ao desconectar.
-        """
-        await self.channel_layer.group_discard('updates', self.channel_name)
+        if hasattr(self, 'user_group'):
+            await self.channel_layer.group_discard(
+                'updates', self.channel_name
+            )
+            await self.channel_layer.group_discard(
+                self.user_group, self.channel_name
+            )
 
-    async def send_websocket_update(self, event):  # Alterado o nome
-        """
-        Envia a atualização para os clientes conectados.
-        """
-        text_data = json.dumps(event)
-        await self.send(text_data=text_data)
+    async def send_websocket_update(self, event):
+        # Existing shared category updates retain their original format.
+        await self.send_json(event)
+
+    async def investments_changed(self, event):
+        await self.send_json(
+            {'type': 'investments.changed', 'revision': event['revision']}
+        )

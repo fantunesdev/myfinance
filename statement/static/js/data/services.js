@@ -233,6 +233,9 @@ export async function createResource(model, resource) {
         if (!response.ok) {
             throw new Error(await response.text());
         }
+        if (['investments', 'investment-transactions', 'transactions'].includes(model)) {
+            window.dispatchEvent(new CustomEvent('investments:mutation'));
+        }
         return await response.json();
     } catch (error) {
         return error;
@@ -278,6 +281,10 @@ export async function sendRequisition(endpoint, method, body = false) {
 
     try {
         const response = await fetch(url, requestOptions);
+        if (response.ok && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method.toUpperCase())
+            && /^(investments|investment-transactions|transactions)(\/|$)/.test(endpoint)) {
+            window.dispatchEvent(new CustomEvent('investments:mutation'));
+        }
         return await response.json();
     } catch (error) {
         return error;
