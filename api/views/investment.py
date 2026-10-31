@@ -87,7 +87,7 @@ class InvestmentView(InvestmentApiView):
         for attempt in range(2):
             revision = dashboard_revision(request.user.pk)
             tag = (
-                f'"investments-v1-{request.user.pk}-{revision}-{timezone.localdate()}"'
+                f'"investments-v1-prices-{request.user.pk}-{revision}-{timezone.localdate()}"'
                 if revision
                 else None
             )

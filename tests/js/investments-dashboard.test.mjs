@@ -22,7 +22,7 @@ const snapshot = revision => ({ schema_version: 1, user_id: 1, revision, has_def
     positions: [
         ['CDB', 'fixed_income', '1000'], ['Ação', 'variable_income', '400'],
         ['Encerrado', 'fixed_income', '0'], ['Caixa', 'currency', '100'],
-    ].map(([label, asset_type, value], i) => ({ id: i + 1, label, asset_type, value, quantity: '1', broker: 'Broker', asset_type_label: asset_type, url: `/investimentos/${i + 1}/` })),
+    ].map(([label, asset_type, value], i) => ({ id: i + 1, label, asset_type, value, quantity: '1', average_purchase_price: asset_type === 'variable_income' ? '21.82' : null, broker: 'Broker', asset_type_label: asset_type, url: `/investimentos/${i + 1}/` })),
     brokers: [{ label: 'Ativo', value: '1500' }, { label: 'Inativo', value: '0' }],
     progression_datasets: [{ label: 'Patrimônio', color: 'rgba(139, 0, 0, 1)', names: ['2026-01-01'], values: [1500] }],
     interest_datasets: [{ label: 'Resultado', color: 'rgba(139, 0, 0, 1)', names: ['2026-01-01'], values: [-10] }],
@@ -61,6 +61,10 @@ test('chart selection, tables, blank areas and browser history use the same snap
     assert.equal(page.calls(), 1);
     assert.equal(page.get('investment-positions-body').children.length, 3);
     assert.equal(page.get('investment-brokers-body').children.length, 1);
+    const rows = page.get('investment-positions-body').children;
+    assert.equal(rows[0].children.length, 6);
+    assert.equal(rows[0].children[4].textContent, '—');
+    assert.equal(rows[1].children[4].textContent.replace(/\s/g, ' '), 'R$ 21,82');
     assert.equal(page.get('investment-result-label').textContent, 'Prejuízo');
     assert.ok(page.get('investment-result').classes.has('red'));
     page.window.investmentAllocationChart.select(0);

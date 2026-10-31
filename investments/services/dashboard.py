@@ -13,7 +13,7 @@ def dashboard_payload(user, revision):
     dashboard = InvestmentService.get_dashboard(user)
     positions = dashboard['positions']
     broker_values = dict(dashboard['by_broker'])
-    return {
+    payload = {
         'schema_version': 1,
         'user_id': user.pk,
         'revision': revision,
@@ -64,3 +64,7 @@ def dashboard_payload(user, revision):
         )
         is not None,
     }
+    for position, record in zip(positions, payload['positions']):
+        price = InvestmentService.get_average_purchase_price(position['investment'])
+        record['average_purchase_price'] = str(price) if price is not None else None
+    return payload

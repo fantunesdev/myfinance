@@ -124,3 +124,26 @@ test('URL explicitly selects state; clearing category preserves other selections
     assert.equal(url.searchParams.get('brokers'), 'all');
     assert.equal(stateFromUrl('https://test/investimentos/', state).assetType, 'fixed_income');
 });
+
+test('a cached snapshot without average prices is fetched again without its old ETag', async () => {
+    const disk = storage();
+    const position = { id: 21, label: 'Ação', asset_type: 'variable_income', asset_type_label: 'Renda variável',
+        broker: 'Broker', url: '/investimentos/investimentos/21/', quantity: '370', value: '10000' };
+    disk.setItem('myfinance:investments:v1:1:data', JSON.stringify({
+        data: { ...payload(), positions: [position] }, etag: 'old-etag',
+        fetchedAt: Date.now(), expiresAt: Date.now() + MAX_AGE,
+    }));
+    disk.setItem('myfinance:investments:v1:1:state', JSON.stringify({ assetType: 'crypto', showAllPositions: true }));
+    let calls = 0;
+    const store = createInvestmentStore({ userId: 1, storage: disk, fetcher: async (url, options) => {
+        calls++;
+        assert.equal(options.headers['If-None-Match'], undefined);
+        return response({ ...payload(), positions: [{ ...position, average_purchase_price: '21.82' }] });
+    } });
+    assert.equal(store.isFresh(), false);
+    assert.equal((await store.load()).positions[0].average_purchase_price, '21.82');
+    assert.equal(store.getState().assetType, 'crypto');
+    assert.equal(store.getState().showAllPositions, true);
+    await store.load();
+    assert.equal(calls, 1);
+});

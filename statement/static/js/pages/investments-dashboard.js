@@ -14,6 +14,7 @@ let activeChart = 'progression';
 const chartToggle = document.getElementById('investment-chart-toggle');
 const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
 const quantity = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 8 });
+const smallUnitPrice = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 8, maximumFractionDigits: 8 });
 const typeLabels = { fixed_income: 'Renda fixa', variable_income: 'Renda variável', crypto: 'Cripto' };
 
 function destroyInvestmentChart() {
@@ -287,13 +288,16 @@ function renderTables() {
         cell(row, '').appendChild(link);
         cell(row, position.asset_type_label);
         cell(row, position.broker);
-        cell(row, quantity.format(Number(position.quantity)));
+        const showQuantity = ['variable_income', 'crypto'].includes(position.asset_type);
+        cell(row, showQuantity ? quantity.format(Number(position.quantity)) : '—');
+        const price = Number(position.average_purchase_price);
+        cell(row, position.average_purchase_price === null ? '—' : (price < 0.01 ? smallUnitPrice : money).format(price));
         cell(row, money.format(Number(position.value)));
         body.appendChild(row);
     }
     if (!positions.length) {
         const row = document.createElement('tr');
-        cell(row, state.showAllPositions ? 'Nenhum investimento nesta seleção.' : 'Nenhuma posição com valor maior que zero nesta seleção.').colSpan = 5;
+        cell(row, state.showAllPositions ? 'Nenhum investimento nesta seleção.' : 'Nenhuma posição com valor maior que zero nesta seleção.').colSpan = 6;
         body.appendChild(row);
     }
     const brokers = document.getElementById('investment-brokers-body');

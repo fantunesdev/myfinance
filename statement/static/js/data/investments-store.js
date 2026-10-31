@@ -44,7 +44,8 @@ export function validPayload(data, userId) {
             && typeof item.label === 'string' && typeof item.asset_type === 'string'
             && typeof item.asset_type_label === 'string' && typeof item.broker === 'string'
             && typeof item.url === 'string' && item.url.startsWith('/') && !item.url.startsWith('//')
-            && numeric(item.value) && numeric(item.quantity))
+            && numeric(item.value) && numeric(item.quantity)
+            && (item.average_purchase_price === null || numeric(item.average_purchase_price)))
         && Array.isArray(data.brokers) && data.brokers.every(item => item && typeof item.label === 'string' && numeric(item.value))
         && series(data.progression_datasets) && series(data.interest_datasets);
 }

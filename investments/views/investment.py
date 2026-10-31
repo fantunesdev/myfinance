@@ -30,6 +30,7 @@ class InvestmentView(InvestmentCrudView):
         return {
             'transactions': instance.transactions.filter(user=request.user).order_by('-date', '-id'),
             'position': InvestmentService.get_position(instance),
+            'average_purchase_price': InvestmentService.get_average_purchase_price(instance),
             'position_history': InvestmentService.get_position_history(instance),
             'default_wallet': InvestmentTransactionService.get_default_wallet(request.user),
         }

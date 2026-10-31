@@ -39,6 +39,20 @@
                     <p class="font-16">Vencimento: <strong>{{ instance.due_date|date:"d/m/Y" }}</strong></p>
                 {% endif %}
                 <p class="font-16">Valor atual: <strong>{{ position.value|to_reais }}</strong></p>
+                {% if instance.asset.asset_type == 'variable_income' or instance.asset.asset_type == 'crypto' %}
+                    <p class="font-16">Quantidade: <strong>{{ position.quantity|format_quantity }}</strong></p>
+                    <p class="font-16">Preço médio de compra:
+                        <strong>
+                            {% if average_purchase_price is None %}
+                                —
+                            {% elif average_purchase_price < 0.01 %}
+                                R$ {{ average_purchase_price|floatformat:"8g" }}
+                            {% else %}
+                                {{ average_purchase_price|to_reais }}
+                            {% endif %}
+                        </strong>
+                    </p>
+                {% endif %}
 
                 {% if instance.notes %}
                     <p class="font-16">Anotações:</p>

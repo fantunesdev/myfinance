@@ -88,6 +88,42 @@ class InvestmentService(InvestmentBaseService):
             'unwithdrawn_income': income - costs - (withdrawn - withdrawn_principal),
         }
 
+    @staticmethod
+    def get_average_purchase_price(investment):
+        """Moving weighted average of purchase amounts, independent of valuation.
+
+        Purchase amounts include any charges recorded in that amount. Generic
+        fee/tax movements cannot be attributed to purchases and are excluded.
+        Missing trade quantities make the result unavailable.
+        """
+        if investment.asset.asset_type not in ('variable_income', 'crypto'):
+            return None
+
+        quantity = average_price = Decimal('0')
+        movements = sorted(
+            (
+                movement for movement in investment.transactions.all()
+                if movement.user_id == investment.user_id and movement.type in ('aporte', 'resgate')
+            ),
+            key=lambda movement: (movement.date, movement.pk),
+        )
+        for movement in movements:
+            units = movement.quantity
+            if units is None or units <= 0:
+                return None
+            if movement.type == 'aporte':
+                if movement.amount <= 0:
+                    return None
+                average_price = (average_price * quantity + movement.amount) / (quantity + units)
+                quantity += units
+            else:
+                if units > quantity:
+                    return None
+                quantity -= units
+                if quantity == 0:
+                    average_price = Decimal('0')
+        return average_price if quantity > 0 else None
+
     @classmethod
     def get_position_history(cls, investment):
         today = timezone.localdate()
