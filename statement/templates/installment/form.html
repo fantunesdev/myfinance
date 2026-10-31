@@ -46,6 +46,26 @@
                     {% if 'editar' in request.path %}
 
                     {% csrf_token %}
+                    <label for="id_payment_method">Meio de Pagamento</label>
+                    {{ form.payment_method }}
+                    {{ form.payment_method.errors }}
+
+                    <div id="div-account">
+                        <label for="id_account">Conta</label>
+                        {{ form.account }}
+                        {{ form.account.errors }}
+                    </div>
+                    <div id="div-card">
+                        <label for="id_card">Cartão</label>
+                        {{ form.card }}
+                        {{ form.card.errors }}
+                    </div>
+                    <div id="div-card-number" style="display:none;">
+                        <label for="id_card_number">Número do cartão</label>
+                        {{ form.card_number }}
+                        {{ form.card_number.errors }}
+                    </div>
+
                     <label for="id_posted_date">Data do Lançamento</label>
                     {{ form.posted_date }}
                     {{ form.posted_date.errors }}
@@ -80,19 +100,6 @@
 
                     <div id="div-other-options" class="toggled">
                         <br>
-                         <label for="id_payment_method">Meio de Pagamento</label>
-                    {{ form.payment_method }}
-
-                    <div id="conta-cartao">
-                        <label for="id_accoun">Conta</label>
-                        {{ form.account }}
-                        {{ form.account.errors }}
-
-                        <label for="id_card">Card</label>
-                        {{ form.card }}
-                        {{ form.card.errors }}
-                    </div>
-
                     <label for="id_type">Tipo</label>
                     {{ form.type }}
                     {{ form.type.errors }}
@@ -153,9 +160,14 @@
             </form>
         </div>
 
+        {% if card_numbers_json %}
+        <script>
+            window.card_numbers_json = {{ card_numbers_json|safe }};
+        </script>
+        {% endif %}
     {% endblock content %}
 
     {% block scripts %}
     <script src="{% static 'js/pages/mobile-row-detail.js' %}" type="module"></script>
-    <script src="{% static 'js/pages/transaction-form.js' %}" type="module"></script>
+    <script src="{% static 'js/pages/transaction-form.js' %}?v=20261031-1" type="module"></script>
     {% endblock %}

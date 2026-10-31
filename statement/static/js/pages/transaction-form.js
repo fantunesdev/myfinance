@@ -145,6 +145,7 @@ function selectPaymentMethod() {
  * Altera a dada de efetivação de acordo com o meio de pagamento e a data do lançamento.
  */
 async function changePaymentDateInput() {
+    if (!selects.paymentDate) return;
     let card = null;
     if (selects.card.value) {
         let cardId = selects.card.value;
@@ -195,7 +196,7 @@ else if (selects.releaseDate) selects.releaseDate.addEventListener('change', () 
 
 selects.category.addEventListener('change', () => changeSubcategoriesInput(selects.category.value));
 selects.subcategory.addEventListener('change', () => {
-    if (selects.subcategory.value == 5) {
+    if (selects.subcategory.value == 5 && selects.price) {
         general.toggle('div-fuel');
         selects.price.required = true;
 
@@ -205,7 +206,7 @@ selects.subcategory.addEventListener('change', () => {
         selects.value.addEventListener('keyup', () => {
             selects.observation.value = returnFuelObservation();
         });
-        selects.liters.addEventListener('keyup', () => {
+        selects.liters?.addEventListener('keyup', () => {
             selects.observation.value = returnFuelObservation();
         });
         selects.km.addEventListener('keyup', () => {
@@ -218,8 +219,8 @@ selects.value.addEventListener('keyup', function(e) {
     twoDigitFloatHandler.call(this, e);
     calculateFuelPrice();
 });
-selects.price.addEventListener('keyup', twoDigitFloatHandler);
-selects.liters.addEventListener('keyup', function(e) {
+selects.price?.addEventListener('keyup', twoDigitFloatHandler);
+selects.liters?.addEventListener('keyup', function(e) {
     twoDigitFloatHandler.call(this, e);
     calculateFuelPrice();
 });
@@ -228,6 +229,7 @@ selects.liters.addEventListener('keyup', function(e) {
  * Calcula o preço por litro automaticamente baseado em Valor / Litros
  */
 function calculateFuelPrice() {
+    if (!selects.liters || !selects.price) return;
     const value = parseFloat(selects.value.value) || 0;
     const liters = parseFloat(selects.liters.value) || 0;
     
@@ -239,12 +241,12 @@ function calculateFuelPrice() {
 
 // Adiciona listeners para recalcular o preço quando Valor ou Litros mudam (enquanto digita e ao sair do campo)
 selects.value.addEventListener('input', calculateFuelPrice);
-selects.liters.addEventListener('input', calculateFuelPrice);
+selects.liters?.addEventListener('input', calculateFuelPrice);
 selects.value.addEventListener('change', calculateFuelPrice);
-selects.liters.addEventListener('change', calculateFuelPrice);
+selects.liters?.addEventListener('change', calculateFuelPrice);
 
 const divFuelToggler = document.querySelector('#div-fuel-toggler');
-divFuelToggler.addEventListener('click', () => {
+divFuelToggler?.addEventListener('click', () => {
     general.toggle('div-fuel');
     selects.subcategory.value = 0;
     selects.price.required = false;
@@ -315,6 +317,8 @@ selectPaymentMethod();
 async function populateCardNumbersForCard(cardId) {
     const select = document.getElementById('id_card_number');
     const wrapper = document.getElementById('div-card-number');
+    if (!select || !wrapper) return;
+    const initialValue = select.getAttribute('data-initial') || select.value;
     const cardNumbers = getCardNumbersFromTemplate();
 
     // Filtra por cardId
@@ -343,8 +347,7 @@ async function populateCardNumbersForCard(cardId) {
     });
 
     // Se houver um valor pré-selecionado no formulário, mantê-lo
-    const pre = select.getAttribute('data-initial');
-    if (pre) select.value = pre;
+    if (initialValue) select.value = initialValue;
 
     wrapper.style.display = 'block';
     wrapper.classList.add('active');

@@ -214,6 +214,8 @@ class InstallmentService(BaseService):
         base_posted_date = form.cleaned_data.get('posted_date')
 
         for index, transaction in enumerate(transactions):
+            if 'card' in form.data:
+                transaction.card = form.cleaned_data.get('card')
             if reorder_posted_dates:
                 transaction.posted_date = DateTimeUtils.add_months(base_posted_date, index)
             else:

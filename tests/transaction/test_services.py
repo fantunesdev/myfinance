@@ -73,6 +73,7 @@ def test_add_installments_does_not_mutate_first_transaction(mocker):
 
 def test_update_transactions_reorders_posted_dates_when_requested(mocker):
     form = SimpleNamespace(
+        data={},
         cleaned_data={
             'posted_date': date(2026, 6, 8),
             'reorder_posted_dates': 'True',
@@ -99,6 +100,7 @@ def test_update_transactions_reorders_posted_dates_when_requested(mocker):
 def test_update_transactions_reorders_card_payment_dates_to_expiration_day(mocker):
     card = SimpleNamespace(expiration_day=10, prepaid=False)
     form = SimpleNamespace(
+        data={},
         cleaned_data={
             'posted_date': date(2026, 6, 8),
             'reorder_posted_dates': 'True',
@@ -129,6 +131,7 @@ def test_update_transactions_reorders_card_payment_dates_to_expiration_day(mocke
 
 def test_update_transactions_keeps_posted_dates_when_reorder_is_disabled(mocker):
     form = SimpleNamespace(
+        data={},
         cleaned_data={
             'posted_date': date(2026, 6, 8),
             'reorder_posted_dates': 'False',
@@ -150,3 +153,30 @@ def test_update_transactions_keeps_posted_dates_when_reorder_is_disabled(mocker)
         date(2026, 6, 8),
     ]
     assert [transaction.paid for transaction in transactions] == [1, 2, 3]
+
+
+def test_update_transactions_uses_selected_card_for_all_payment_dates(mocker):
+    old_card = SimpleNamespace(closing_day=3, expiration_day=10, prepaid=False)
+    new_card = SimpleNamespace(closing_day=20, expiration_day=28, prepaid=False)
+    form = SimpleNamespace(
+        data={'card': '2'},
+        cleaned_data={
+            'card': new_card,
+            'posted_date': date(2026, 6, 8),
+            'reorder_posted_dates': 'False',
+        },
+    )
+    transactions = [
+        SimpleNamespace(card=old_card, paid=1, posted_date=None, payment_date=None),
+        SimpleNamespace(card=old_card, paid=2, posted_date=None, payment_date=None),
+    ]
+    mocker.patch.object(InstallmentService, '_set_transaction_form', return_value=form)
+    update = mocker.patch(
+        'statement.services.core.installment.TransactionService.update', side_effect=lambda form, tx: tx
+    )
+
+    InstallmentService._update_transactions(request=object(), form=form, transactions=transactions)
+
+    assert all(transaction.card is new_card for transaction in transactions)
+    assert [transaction.payment_date for transaction in transactions] == [date(2026, 6, 28), date(2026, 7, 28)]
+    assert update.call_count == 2

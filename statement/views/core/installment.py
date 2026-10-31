@@ -1,9 +1,11 @@
+import json
+
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 from django.utils.decorators import method_decorator
 
 from statement.forms.core.installment import AdvanceInstallmentForm, InstallmentForm
-from statement.models import Installment
+from statement.models import CardNumber, Installment
 from statement.services.core.installment import InstallmentService
 from statement.services.core.transaction import TransactionService
 from statement.views.base_view import BaseView
@@ -101,7 +103,11 @@ class InstallmentView(BaseView):
         return transactions
 
     def _add_context_on_templatetags(self, request, instance):
-        return {'transactions': TransactionService.get_by_filter(installment=instance)}
+        card_numbers = list(CardNumber.objects.values('id', 'number', 'name', 'card_id', 'home_screen'))
+        return {
+            'transactions': TransactionService.get_by_filter(installment=instance),
+            'card_numbers_json': json.dumps(card_numbers),
+        }
 
     def _set_form(self, request, instance):
         """
