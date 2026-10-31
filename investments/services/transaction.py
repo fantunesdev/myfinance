@@ -41,9 +41,10 @@ class InvestmentTransactionService(InvestmentBaseService):
             instance.redemption_principal = (
                 position['remaining_principal'] * instance.amount / position['value']
             ).quantize(Decimal('0.01'))
+        before = cls.snapshot_balances(instance.user, [instance.investment_id])
         instance.save()
         cls.sync_manual_wallet_counterpart(instance)
-        cls.validate_balances(instance.user, [instance.investment_id])
+        cls.validate_balances(instance.user, [instance.investment_id], before)
         return instance
 
     @classmethod
@@ -72,6 +73,7 @@ class InvestmentTransactionService(InvestmentBaseService):
                 )
             counterpart = next(item for item in members if item.pk != original.pk)
             instance.full_clean()
+            before = cls.snapshot_balances(original.user, [item.investment_id for item in members])
             instance.save()
             counterpart.amount = instance.amount
             counterpart.date = instance.date
@@ -80,9 +82,10 @@ class InvestmentTransactionService(InvestmentBaseService):
             counterpart.save()
             for item in (instance, counterpart):
                 cls.validate_funding(item)
-            cls.validate_balances(original.user, [item.investment_id for item in members])
+            cls.validate_balances(original.user, [item.investment_id for item in members], before)
             return instance
         instance.full_clean()
+        before = cls.snapshot_balances(original.user, [original.investment_id, instance.investment_id])
         instance.save()
         if (original.type, original.investment_id, original.amount) != (
             instance.type,
@@ -91,7 +94,7 @@ class InvestmentTransactionService(InvestmentBaseService):
         ):
             cls.sync_manual_wallet_counterpart(instance)
         cls.validate_funding(instance)
-        cls.validate_balances(original.user, [original.investment_id, instance.investment_id])
+        cls.validate_balances(original.user, [original.investment_id, instance.investment_id], before)
         return instance
 
     @classmethod
@@ -108,8 +111,9 @@ class InvestmentTransactionService(InvestmentBaseService):
                 'Esta movimentação financia outra aplicação. Desfaça a aplicação dependente primeiro.'
             )
         investments = [item.investment_id for item in members]
+        before = cls.snapshot_balances(instance.user, investments)
         cls.model.objects.filter(pk__in=ids, user=instance.user).delete()
-        cls.validate_balances(instance.user, investments)
+        cls.validate_balances(instance.user, investments, before)
 
     @classmethod
     def operation_members(cls, instance):
@@ -180,10 +184,23 @@ class InvestmentTransactionService(InvestmentBaseService):
 
     @classmethod
     @investment_atomic()
-    def sync_wallet_contribution_from_statement_transaction(cls, statement_transaction):
+    def sync_wallet_contribution_from_statement_transaction(cls, statement_transaction, previous=None, created=False):
         cls.lock_user(statement_transaction.user)
         existing = cls.model.objects.filter(statement_transaction_id=statement_transaction.pk).first()
-        if not cls._should_sync_statement_transaction(statement_transaction):
+        should_sync = cls._should_sync_statement_transaction(statement_transaction)
+        was_investment = previous is not None and cls._should_sync_statement_transaction(previous)
+        if not existing and not created and (was_investment or should_sync):
+            if previous is not None and was_investment:
+                if should_sync and cls.statement_signature(previous) == cls.statement_signature(statement_transaction):
+                    # Historical cash may already represent this entry, even without
+                    # a link. Editing metadata must never create another deposit.
+                    return None
+                raise cls.unlinked_statement_error(statement_transaction)
+            if previous is None:
+                # Direct replay without a known creation/recategorization must
+                # not guess whether the deposit exists in imported history.
+                raise cls.unlinked_statement_error(statement_transaction)
+        if not should_sync:
             if existing:
                 cls.remove_statement_contribution(statement_transaction)
             return None
@@ -191,6 +208,7 @@ class InvestmentTransactionService(InvestmentBaseService):
         amount = cls.statement_amount(statement_transaction.value)
         if existing:
             financial_change = existing.amount != amount or existing.date != statement_transaction.payment_date
+            before = cls.snapshot_balances(statement_transaction.user, [wallet.pk]) if financial_change else None
             existing.amount = amount
             existing.date = statement_transaction.payment_date
             existing.notes = statement_transaction.description
@@ -198,7 +216,7 @@ class InvestmentTransactionService(InvestmentBaseService):
             cls.validate_funding(existing)
             existing.save(update_fields=['amount', 'date', 'notes'])
             if financial_change:
-                cls.validate_balances(statement_transaction.user, [wallet.pk])
+                cls.validate_balances(statement_transaction.user, [wallet.pk], before)
             return existing
         instance = cls.model.objects.create(
             investment=wallet,
@@ -217,14 +235,18 @@ class InvestmentTransactionService(InvestmentBaseService):
         cls.lock_user(statement_transaction.user)
         existing = cls.model.objects.filter(statement_transaction_id=statement_transaction.pk).first()
         if not existing:
+            if cls._should_sync_statement_transaction(statement_transaction):
+                raise cls.unlinked_statement_error(statement_transaction)
             return
         if existing.funded_transactions.exists() or existing.operation_id:
             raise ValidationError(
                 'Este lançamento já financia uma aplicação. Desfaça a aplicação antes de excluir ou recategorizar a origem.'
             )
         wallet_id = existing.investment_id
+        before = cls.snapshot_balances(statement_transaction.user, [wallet_id])
         existing.delete()
-        cls.validate_balances(statement_transaction.user, [wallet_id])
+        cls.validate_balances(statement_transaction.user, [wallet_id], before)
+        statement_transaction._removed_investment_contribution_for = statement_transaction.pk
 
     @classmethod
     @investment_atomic()
@@ -286,9 +308,10 @@ class InvestmentTransactionService(InvestmentBaseService):
         )
         debit.full_clean()
         credit.full_clean()
+        before = cls.snapshot_balances(source.user, [source.pk, destination.pk])
         debit.save()
         credit.save()
-        cls.validate_balances(source.user, [source.pk, destination.pk])
+        cls.validate_balances(source.user, [source.pk, destination.pk], before)
         return debit, credit
 
     @classmethod
@@ -325,6 +348,7 @@ class InvestmentTransactionService(InvestmentBaseService):
         common = dict(
             investment=source, date=transaction_date, operation_id=operation_id, notes=notes, user=source.user
         )
+        before = cls.snapshot_balances(source.user, [source.pk, wallet.pk])
         records = []
         if new_result:
             records.append(
@@ -366,7 +390,7 @@ class InvestmentTransactionService(InvestmentBaseService):
             user=source.user,
         )
         records.extend([debit, credit])
-        cls.validate_balances(source.user, [source.pk, wallet.pk])
+        cls.validate_balances(source.user, [source.pk, wallet.pk], before)
         return records
 
     @classmethod
@@ -409,25 +433,69 @@ class InvestmentTransactionService(InvestmentBaseService):
             )
 
     @classmethod
-    def validate_balances(cls, user, investment_ids):
-        wallet = cls.get_default_wallet(user)
+    def snapshot_balances(cls, user, investment_ids):
         ids = set(investment_ids)
+        wallet = cls.get_default_wallet(user)
         if wallet:
             ids.add(wallet.pk)
-        for investment in Investment.objects.filter(pk__in=ids, user=user):
-            value = quantity = Decimal('0')
-            movements = investment.transactions.filter(user=user).order_by('date', 'id')
-            for day, daily in groupby(movements, key=lambda item: item.date):
-                for movement in daily:
-                    value = InvestmentService.apply_value(value, movement)
-                    if movement.type == 'aporte':
-                        quantity += movement.quantity or Decimal('0')
-                    elif movement.type == 'resgate':
-                        quantity -= movement.quantity or Decimal('0')
-                if value < 0 or quantity < 0:
+        snapshot = {investment_id: [] for investment_id in ids}
+        movements = cls.model.objects.filter(user=user, investment_id__in=ids).order_by('date', 'id')
+        for movement in movements:
+            snapshot[movement.investment_id].append(movement)
+        return snapshot
+
+    @staticmethod
+    def daily_balances(movements):
+        value = quantity = Decimal('0')
+        daily = {}
+        for day, records in groupby(movements, key=lambda item: item.date):
+            for movement in records:
+                value = InvestmentService.apply_value(value, movement)
+                if movement.type == 'aporte':
+                    quantity += movement.quantity or Decimal('0')
+                elif movement.type == 'resgate':
+                    quantity -= movement.quantity or Decimal('0')
+            daily[day] = (value, quantity)
+        return daily
+
+    @classmethod
+    def validate_balances(cls, user, investment_ids, previous=None):
+        current = cls.snapshot_balances(user, investment_ids)
+        previous = previous or {}
+        for investment in Investment.objects.filter(pk__in=current, user=user):
+            old_days = cls.daily_balances(previous.get(investment.pk, []))
+            new_days = cls.daily_balances(current[investment.pk])
+            old_state = new_state = (Decimal('0'), Decimal('0'))
+            # Include removed dates and carry both balances forward across days
+            # without movements. Existing deficits are tolerated only if unchanged
+            # or improved; a new operation must never create or worsen a deficit.
+            for day in sorted(old_days.keys() | new_days.keys()):
+                old_state = old_days.get(day, old_state)
+                new_state = new_days.get(day, new_state)
+                if any(new < min(old, Decimal('0')) for old, new in zip(old_state, new_state)):
                     raise ValidationError(
-                        f'A operação deixaria saldo ou quantidade negativos em {investment} em {day:%d/%m/%Y}.'
+                        f'A operação criaria ou agravaria saldo ou quantidade negativos em {investment} em {day:%d/%m/%Y}.'
                     )
+
+    @classmethod
+    def statement_signature(cls, statement):
+        # Only fields that affect funding; effected deliberately keeps its
+        # existing behavior and is not part of this comparison.
+        return (
+            statement.user_id,
+            statement.type,
+            statement.payment_date,
+            Decimal(str(statement.value)).copy_abs(),
+            statement.currency_id,
+            cls._should_sync_statement_transaction(statement),
+        )
+
+    @staticmethod
+    def unlinked_statement_error(statement):
+        return ValidationError(
+            f'O lançamento financeiro #{statement.pk} não tem vínculo confirmado com o aporte do caixa. '
+            'Essa correspondência precisa ser revisada antes de alterar seus dados financeiros ou excluí-lo.'
+        )
 
     @staticmethod
     def positive_amount(value):

@@ -84,6 +84,104 @@ class InvestmentFlowTests(TestCase):
             **kwargs,
         )
 
+    def legacy_wallet_deficit(self, funding='1100'):
+        old = self.record(self.wallet, type='resgate', amount=100, date=date(2018, 1, 28))
+        self.record(self.wallet, amount=Decimal(funding))
+        return old
+
+    def test_old_deficit_does_not_block_funded_application_in_2026(self):
+        old = self.legacy_wallet_deficit('6715.46')
+        before = (old.amount, old.date, old.type, old.operation_id)
+        Service.transfer_between_investments(
+            self.wallet, self.investment, Decimal('6615.46'), date=date(2026, 10, 4),
+        )
+        self.assertEqual((self.value(self.wallet), self.value()), (Decimal('0'), Decimal('6615.46')))
+        old.refresh_from_db()
+        self.assertEqual((old.amount, old.date, old.type, old.operation_id), before)
+
+    def test_edit_cannot_worsen_an_existing_historical_deficit(self):
+        old = self.legacy_wallet_deficit()
+        with self.assertRaisesRegex(ValidationError, '28/01/2018'):
+            self.edit(old, amount='101')
+        old.refresh_from_db()
+        self.assertEqual(old.amount, Decimal('100'))
+        self.assertEqual(self.value(self.wallet), Decimal('1000'))
+
+    def test_legacy_deficit_does_not_allow_insufficient_application(self):
+        self.legacy_wallet_deficit()
+        with self.assertRaises(ValidationError):
+            self.apply(1001)
+        self.assertEqual((self.value(self.wallet), self.value()), (Decimal('1000'), Decimal('0')))
+
+    def test_future_deficit_cannot_be_worsened_even_with_balance_today(self):
+        self.legacy_wallet_deficit()
+        self.record(self.wallet, type='resgate', amount=1100, date=date(2027, 1, 1))
+        with self.assertRaisesRegex(ValidationError, '01/01/2027'):
+            self.apply(500)
+        self.assertEqual((self.value(self.wallet), self.value()), (Decimal('-100'), Decimal('0')))
+
+    def test_transfer_can_be_edited_and_deleted_with_unchanged_old_deficit(self):
+        self.legacy_wallet_deficit()
+        source, destination = self.apply(600)
+        self.edit(source, amount='500')
+        self.assertEqual((self.value(self.wallet), self.value()), (Decimal('500'), Decimal('500')))
+        Service.delete(destination)
+        self.assertEqual((self.value(self.wallet), self.value()), (Decimal('1000'), Decimal('0')))
+
+    def test_quantity_deficit_in_old_history_does_not_block_current_application(self):
+        self.record(self.wallet, amount=100, date=date(2018, 1, 1))
+        self.record(self.wallet, type='resgate', amount=50, quantity=3, date=date(2018, 1, 28))
+        self.record(self.wallet, amount=950, quantity=3)
+        self.apply(500)
+        self.assertEqual((self.value(self.wallet), self.value()), (Decimal('500'), Decimal('500')))
+
+    def test_new_quantity_deficit_is_rejected_despite_old_wallet_deficit(self):
+        self.legacy_wallet_deficit()
+        _, destination = self.apply(600, quantity=3)
+        self.record(type='resgate', amount=100, quantity=2, date=date(2027, 1, 1))
+        with self.assertRaisesRegex(ValidationError, '01/01/2027'):
+            self.edit(destination, quantity='1')
+        destination.refresh_from_db()
+        self.assertEqual(destination.quantity, Decimal('3'))
+
+    def test_other_unchanged_deficit_does_not_block_income_entry(self):
+        self.record(self.wallet, type='resgate', amount=100, date=date(2018, 1, 28))
+        form = InvestmentTransactionForm({
+            'investment': self.investment.pk, 'date': '2026-01-01', 'type': 'rendimento', 'amount': '10',
+        }, user=self.user)
+        self.assertTrue(form.is_valid(), form.errors.as_json())
+        Service.create(form, self.user)
+        self.assertEqual((self.value(self.wallet), self.value()), (Decimal('-100'), Decimal('10')))
+
+    def test_statement_sync_compares_against_existing_history(self):
+        self.record(self.wallet, type='resgate', amount=100, date=date(2018, 1, 28))
+        statement = self.statement(value=1100)
+        self.apply(600)
+        statement.value = 1200
+        statement.save()
+        self.assertEqual(self.value(self.wallet), Decimal('500'))
+        statement.value = 500
+        with self.assertRaises(ValidationError):
+            statement.save()
+        statement.refresh_from_db()
+        self.assertEqual(statement.value, 1200)
+        self.assertEqual(self.value(self.wallet), Decimal('500'))
+
+    def test_moving_funding_later_cannot_extend_existing_deficit(self):
+        self.record(self.wallet, type='resgate', amount=100, date=date(2018, 1, 28))
+        funding = self.record(self.wallet, amount=1100)
+        self.apply(600)
+        with self.assertRaisesRegex(ValidationError, '01/01/2026'):
+            self.edit(funding, date='2027-01-01')
+        funding.refresh_from_db()
+        self.assertEqual(funding.date, date(2026, 1, 1))
+
+    def test_redemption_not_blocked_by_unchanged_old_wallet_deficit(self):
+        self.legacy_wallet_deficit()
+        self.apply()
+        Service.redeem_to_wallet(self.investment, 1100, 1000, date=date(2026, 2, 1))
+        self.assertEqual((self.value(self.wallet), self.value()), (Decimal('1100'), Decimal('0')))
+
     def test_transfer_conserves_total(self):
         self.record(self.wallet)
         self.apply(600)
