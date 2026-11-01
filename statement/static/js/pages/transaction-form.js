@@ -4,6 +4,7 @@ import * as data from '../data/transaction-form-data.js';
 import * as general from '../layout/general.js';
 import * as services from '../data/services.js';
 import * as selectInput from '../layout/elements/selects.js';
+import { enhanceSearchableSelect } from '../layout/elements/searchable-select.js';
 
 /**
  * Cache para dados de home_screen na sessão
@@ -180,27 +181,36 @@ async function changePaymentDateInput() {
 
 let categoryRequestId = 0;
 let subcategoryRequestId = 0;
+const classificationPickers = new Map([
+    [selects.category, enhanceSearchableSelect(selects.category)],
+    [selects.subcategory, enhanceSearchableSelect(selects.subcategory)],
+]);
+
+function renderClassificationOptions(select, options) {
+    selectInput.renderOptions(select, options);
+    classificationPickers.get(select)?.refresh();
+}
 
 async function changeCategoriesInput(type) {
     const requestId = ++categoryRequestId;
     ++subcategoryRequestId;
-    selectInput.renderOptions(selects.category, []);
-    selectInput.renderOptions(selects.subcategory, []);
+    renderClassificationOptions(selects.category, []);
+    renderClassificationOptions(selects.subcategory, []);
     if (!type) return;
 
     const categories = await services.getCategoriesByType(type);
     if (requestId !== categoryRequestId || selects.type.value !== type) return;
-    selectInput.renderOptions(selects.category, categories);
+    renderClassificationOptions(selects.category, categories);
 }
 
 async function changeSubcategoriesInput(categoryId) {
     const requestId = ++subcategoryRequestId;
-    selectInput.renderOptions(selects.subcategory, []);
+    renderClassificationOptions(selects.subcategory, []);
     if (!categoryId || categoryId === '0') return;
 
     const subcategories = await services.getChildrenResource('categories', 'subcategories', categoryId);
     if (requestId !== subcategoryRequestId || selects.category.value !== categoryId) return;
-    selectInput.renderOptions(selects.subcategory, subcategories);
+    renderClassificationOptions(selects.subcategory, subcategories);
 }
 
 if (buttons.installment) {

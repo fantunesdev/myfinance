@@ -1,0 +1,9 @@
+<div class="searchable-select">
+    {{ field }}
+    <input id="{{ field.id_for_label }}_search" class="form-control" type="text" role="combobox"
+           aria-autocomplete="list" aria-expanded="false" aria-haspopup="listbox"
+           aria-controls="{{ field.id_for_label }}_results" autocomplete="off"
+           placeholder="{{ placeholder }}" hidden>
+    <ul id="{{ field.id_for_label }}_results" class="searchable-select-results" role="listbox"
+        aria-label="{{ field.label }}" data-empty-message="{{ empty_message }}" hidden></ul>
+</div>

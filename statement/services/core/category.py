@@ -10,6 +10,10 @@ class CategoryService(BaseService):
     user_field = None
 
     @classmethod
+    def get_all(cls, user=None):
+        return super().get_all(user).order_by('description')
+
+    @classmethod
     def create(cls, form, user=None, id=None):
         category = super().create(form)
         cls.send_category_update()
@@ -17,8 +21,8 @@ class CategoryService(BaseService):
 
     @classmethod
     def get_by_type(cls, type):
-        """Obtem categorias pilo tipo (entrada/saída)"""
-        return cls.model.objects.filter(type=type)
+        """Obtém categorias por tipo (entrada/saída), em ordem alfabética."""
+        return cls.model.objects.filter(type=type).order_by('description')
 
     @classmethod
     def update(cls, form, instance):

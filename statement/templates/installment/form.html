@@ -2,6 +2,10 @@
 {% load static %}
 {% load custom_filters %}
 
+    {% block styles %}
+    <link rel="stylesheet" href="{% static 'css/searchable-select.css' %}?v=20261101-1">
+    {% endblock %}
+
     {% spaceless %}
         {% block title %}
             Editar Parcelamento
@@ -80,11 +84,11 @@
                     {{ form.installments_number.errors }}
 
                     <label for="id_category">Categoria</label>
-                    {{ form.category }}
+                    {% include 'components/searchable_select.html' with field=form.category placeholder='Buscar categoria' empty_message='Nenhuma categoria encontrada.' %}
                     {{ form.category.errors }}
 
                     <label for="id_subcategory">Sub-Categoria</label>
-                    {{ form.subcategory }}
+                    {% include 'components/searchable_select.html' with field=form.subcategory placeholder='Buscar subcategoria' empty_message='Nenhuma subcategoria encontrada.' %}
                     {{ form.subcategory.errors }}
 
                     <label for="id_description">Descrição</label>
@@ -169,5 +173,5 @@
 
     {% block scripts %}
     <script src="{% static 'js/pages/mobile-row-detail.js' %}" type="module"></script>
-    <script src="{% static 'js/pages/transaction-form.js' %}?v=20261101-1" type="module"></script>
+    <script src="{% static 'js/pages/transaction-form.js' %}?v=20261101-2" type="module"></script>
     {% endblock %}
