@@ -1,7 +1,7 @@
 from django import forms
 
 from statement.forms.base_form import BaseForm
-from statement.models import CardNumber, Transaction, Dream
+from statement.models import CardNumber, Dream, Transaction
 from statement.services.core.category import CategoryService
 from statement.services.core.subcategory import SubcategoryService
 from statement.services.dream.dream import DreamService
@@ -54,7 +54,17 @@ class TransactionForm(BaseForm):
         super().__init__(*args, **kwargs)
         # Filtrar sonhos ativos do usuário
         self.fields['dream'].queryset = DreamService.get_active_dreams(user)
-        
+
+        transaction_type = getattr(self, 'transaction_type', None) or self['type'].value()
+        self.fields['category'].queryset = CategoryService.get_by_type(transaction_type)
+        try:
+            category_id = int(self['category'].value())
+        except (TypeError, ValueError):
+            category_id = None
+        self.fields['subcategory'].queryset = SubcategoryService.get_by_category(category_id).filter(
+            category__type=transaction_type
+        )
+
         # On initial GET render, expose all card numbers so JS can populate the
         # select dynamically. On POST, restrict queryset to card chosen in data
         # so validation respects the selected card.
@@ -82,10 +92,6 @@ class TransactionTypeForm(TransactionForm):
         super().__init__(user, *args, **kwargs)
 
         self.fields.pop('type', None)
-
-        if self.transaction_type:
-            self.fields['category'].queryset = CategoryService.get_by_type(self.transaction_type)
-        self.fields['subcategory'].queryset = SubcategoryService.get_all()
 
 
 class TransactionExpenseForm(TransactionTypeForm):

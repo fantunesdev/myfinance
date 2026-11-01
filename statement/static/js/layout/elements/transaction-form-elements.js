@@ -18,6 +18,7 @@ export const selects = {
     card: getElement('id_card'),
     postedDate: getElement('id_posted_date'),
     paymentDate: getElement('id_payment_date'),
+    type: getElement('id_type'),
     category: getElement('id_category'),
     subcategory: getElement('id_subcategory'),
     value: getElement('id_value'),

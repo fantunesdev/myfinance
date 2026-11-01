@@ -178,9 +178,28 @@ async function changePaymentDateInput() {
     }
 })();
 
-async function changeSubcategoriesInput(categoryId) {
-    const subcategories = await services.getChildrenResource('categories', 'subcategories', categoryId);
+let categoryRequestId = 0;
+let subcategoryRequestId = 0;
 
+async function changeCategoriesInput(type) {
+    const requestId = ++categoryRequestId;
+    ++subcategoryRequestId;
+    selectInput.renderOptions(selects.category, []);
+    selectInput.renderOptions(selects.subcategory, []);
+    if (!type) return;
+
+    const categories = await services.getCategoriesByType(type);
+    if (requestId !== categoryRequestId || selects.type.value !== type) return;
+    selectInput.renderOptions(selects.category, categories);
+}
+
+async function changeSubcategoriesInput(categoryId) {
+    const requestId = ++subcategoryRequestId;
+    selectInput.renderOptions(selects.subcategory, []);
+    if (!categoryId || categoryId === '0') return;
+
+    const subcategories = await services.getChildrenResource('categories', 'subcategories', categoryId);
+    if (requestId !== subcategoryRequestId || selects.category.value !== categoryId) return;
     selectInput.renderOptions(selects.subcategory, subcategories);
 }
 
@@ -194,6 +213,7 @@ selects.paymentMethod.addEventListener('change', () => selectPaymentMethod());
 if (selects.postedDate) selects.postedDate.addEventListener('change', () => changePaymentDateInput());
 else if (selects.releaseDate) selects.releaseDate.addEventListener('change', () => changePaymentDateInput());
 
+selects.type?.addEventListener('change', () => changeCategoriesInput(selects.type.value));
 selects.category.addEventListener('change', () => changeSubcategoriesInput(selects.category.value));
 selects.subcategory.addEventListener('change', () => {
     if (selects.subcategory.value == 5 && selects.price) {
