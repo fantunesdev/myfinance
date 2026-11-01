@@ -1,170 +1,125 @@
+import secrets
+
+from django.shortcuts import get_object_or_404
 from requests.exceptions import RequestException
-from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
 from clients.transaction_classifier.transaction_classifier import TransactionClassifierClient
-from statement.services.core.categorization_feedback import CategorizationFeedbackService
+from statement.models import Category, ClassifierJob, Subcategory, Transaction
+from statement.services.core import classifier_jobs as jobs
 
 
 class TransactionClassifierView(ViewSet):
-    """
-    Classe que gerencia as views de conexão com o TransactionClassifierClient
-    """
-
     permission_classes = [IsAuthenticated]
 
     @action(detail=False, methods=['get'], url_path='status')
     def status(self, request):
-        """
-        Obtém o status de treinamento do modelo do usuário.
-
-        :request (django.http.HttpRequest): - Informações sobre o cabeçalho, método e outros dados da requisição.
-        """
         try:
-            microservice_client = TransactionClassifierClient(request.user)
-            response = microservice_client.status()
-            return Response({'message': response['message']}, status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            result = TransactionClassifierClient(request.user).status()
+            return Response({'message': result['message']})
+        except RequestException:
+            return Response({'error': 'Classificador indisponível.'}, status=503)
+
+    def _start(self, request, predictor, operation):
+        try:
+            job = jobs.create_job(request.user, predictor, operation, request.headers.get('Idempotency-Key'))
+            job = jobs.reconcile(job)
+            return Response({'job': jobs.public_job(job)}, status=202)
+        except ValueError as exc:
+            return Response({'error': str(exc)}, status=400)
 
     @action(detail=False, methods=['post'], url_path='subcategory/train')
     def subcategory_train(self, request):
-        """
-        Treina o modelo do usuário no Transaction Classifier.
-
-        :request (django.http.HttpRequest): - Informações sobre o cabeçalho, método e outros dados da requisição.
-        """
-        try:
-            CategorizationFeedbackService.reset_subcategory_feedback(request.user)
-            microservice_client = TransactionClassifierClient(request.user)
-            response = microservice_client.subcategory.train()
-            return Response({'message': response['message']}, status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return self._start(request, 'subcategory', 'train')
 
     @action(detail=False, methods=['post'], url_path='subcategory/feedback')
     def subcategory_feedback(self, request):
-        """
-        Retreina o modelo do usuário no Transaction Classifier a partir dos feedbacks dados pelo usuários.
-
-        :request (django.http.HttpRequest): - Informações sobre o cabeçalho, método e outros dados da requisição.
-        """
-        try:
-            # Obtém os feedbacks não treinados
-            feedbacks = CategorizationFeedbackService.get_subcategory_untrained(request.user)
-
-            if not feedbacks.exists():
-                return Response(
-                    {'error': 'Nenhum feedback disponível para treinamento.'}, status=status.HTTP_404_NOT_FOUND
-                )
-
-            # Envia os feedbacks para o micro serviço
-            microservice_client = TransactionClassifierClient(request.user)
-            microservice_response = microservice_client.subcategory.retrain_from_feedback(feedbacks)
-
-            # Marca os feedbacks como treinados
-            for feedback in feedbacks:
-                CategorizationFeedbackService.set_subcategory_training_status(feedback)
-
-            return Response(
-                {
-                    'message': 'Feedbacks enviados e marcados como treinados com sucesso.',
-                    'microservice_response': microservice_response,
-                },
-                status=status.HTTP_200_OK,
-            )
-        except RequestException as e:
-            # Trata erros de comunicação com o micro serviço
-            return Response(
-                {'error': f'Erro ao comunicar com o micro serviço: {str(e)}'}, status=status.HTTP_502_BAD_GATEWAY
-            )
-        except Exception as e:
-            # Trata erros gerais
-            return Response(
-                {'error': f'Ocorreu um erro inesperado: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
-    @action(detail=False, methods=['post'], url_path='subcategory/delete')
-    def delete_subcategory_feedbacks(self, request):
-        """
-        Apaga os feedbacks usados para treinamento
-
-        :request (django.http.HttpRequest): - Informações sobre o cabeçalho, método e outros dados da requisição.
-        """
-
-        feedbacks = CategorizationFeedbackService.get_subcategory_untrained(request.user)
-
-        if not feedbacks:
-            return
-
-        for feedback in feedbacks:
-            feedback.delete()
+        return self._start(request, 'subcategory', 'feedback')
 
     @action(detail=False, methods=['post'], url_path='description/train')
     def description_train(self, request):
-        """
-        Treina o modelo do usuário no Transaction Classifier.
-
-        :request (django.http.HttpRequest): - Informações sobre o cabeçalho, método e outros dados da requisição.
-        """
-        try:
-            CategorizationFeedbackService.reset_description_feedback(request.user)
-            microservice_client = TransactionClassifierClient(request.user)
-            response = microservice_client.description.train()
-            return Response({'message': response['message']}, status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return self._start(request, 'description', 'train')
 
     @action(detail=False, methods=['post'], url_path='description/feedback')
     def description_feedback(self, request):
-        """
-        Retreina o modelo do usuário no Transaction Classifier a partir dos feedbacks dados pelo usuários.
+        return self._start(request, 'description', 'feedback')
 
-        :request (django.http.HttpRequest): - Informações sobre o cabeçalho, método e outros dados da requisição.
-        """
+    @action(detail=False, methods=['get'], url_path='jobs')
+    def jobs(self, request):
+        result = []
+        for predictor in ('subcategory', 'description'):
+            job = ClassifierJob.objects.filter(user=request.user, predictor=predictor).order_by('-created_at').first()
+            if job:
+                result.append(jobs.public_job(jobs.reconcile(job)))
+        return Response({'jobs': result})
+
+    @action(detail=False, methods=['get'], url_path=r'jobs/(?P<job_id>[0-9a-f-]{36})')
+    def job(self, request, job_id):
+        job = get_object_or_404(ClassifierJob, pk=job_id, user=request.user)
+        return Response({'job': jobs.public_job(jobs.reconcile(job))})
+
+    @action(
+        detail=False,
+        methods=['post'],
+        url_path=r'jobs/(?P<job_id>[0-9a-f-]{36})/events',
+        permission_classes=[AllowAny],
+        authentication_classes=[],
+    )
+    def job_event(self, request, job_id):
+        job = get_object_or_404(ClassifierJob, pk=job_id)
+        if not secrets.compare_digest(request.headers.get('X-Classifier-Secret', ''), job.secret):
+            return Response({'error': 'Credencial inválida.'}, status=403)
         try:
-            # Obtém os feedbacks não treinados
-            feedbacks = CategorizationFeedbackService.get_description_untrained(request.user)
+            updated = jobs.apply_update(job.pk, request.data)
+        except (ValueError, TypeError, KeyError) as exc:
+            return Response({'error': str(exc)}, status=400)
+        return Response({'revision': updated.revision})
 
-            if not feedbacks.exists():
-                return Response(
-                    {'error': 'Nenhum feedback disponível para treinamento.'}, status=status.HTTP_404_NOT_FOUND
+    @action(
+        detail=False,
+        methods=['get'],
+        url_path=r'jobs/(?P<job_id>[0-9a-f-]{36})/inputs/(?P<resource>categories|subcategories|transactions)',
+        permission_classes=[AllowAny],
+        authentication_classes=[],
+    )
+    def job_inputs(self, request, job_id, resource):
+        job = get_object_or_404(ClassifierJob, pk=job_id)
+        if not secrets.compare_digest(request.headers.get('X-Classifier-Secret', ''), job.secret):
+            return Response({'error': 'Credencial inválida.'}, status=403)
+        if job.status in jobs.TERMINAL:
+            return Response({'error': 'Tarefa encerrada.'}, status=410)
+        if job.predictor != 'subcategory' or (job.operation == 'feedback' and resource != 'categories'):
+            return Response({'error': 'Dados fora do escopo da tarefa.'}, status=403)
+        if resource == 'categories':
+            data = Category.objects.order_by('pk').values('id', 'description')
+        elif resource == 'subcategories':
+            data = Subcategory.objects.order_by('pk').values('id', 'category', 'description')
+        else:
+            data = (
+                Transaction.objects.filter(user_id=job.user_id)
+                .order_by('pk')
+                .values(
+                    'description',
+                    'category',
+                    'subcategory',
                 )
-
-            # Envia os feedbacks para o micro serviço
-            microservice_client = TransactionClassifierClient(request.user)
-            microservice_response = microservice_client.description.retrain_from_feedback(feedbacks)
-
-            # Marca os feedbacks como treinados
-            for feedback in feedbacks:
-                CategorizationFeedbackService.set_description_training_status(feedback)
-
-            return Response(
-                {
-                    'message': 'Feedbacks enviados e marcados como treinados com sucesso.',
-                    'microservice_response': microservice_response,
-                },
-                status=status.HTTP_200_OK,
             )
-        except RequestException as e:
-            # Trata erros de comunicação com o micro serviço
-            return Response(
-                {'error': f'Erro ao comunicar com o micro serviço: {str(e)}'}, status=status.HTTP_502_BAD_GATEWAY
-            )
-        except Exception as e:
-            # Trata erros gerais
-            return Response(
-                {'error': f'Ocorreu um erro inesperado: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+        return Response(list(data))
+
+    @action(detail=False, methods=['post'], url_path='subcategory/delete')
+    def delete_subcategory_feedbacks(self, request):
+        return self._delete(request, 'subcategory')
 
     @action(detail=False, methods=['post'], url_path='delete')
     def delete_feedbacks(self, request):
-        """
-        Apaga os feedbacks usados para treinamento
+        return self._delete(request)
 
-        :request (django.http.HttpRequest): - Informações sobre o cabeçalho, método e outros dados da requisição.
-        """
-        CategorizationFeedbackService.delete_feedbacks(request.user)
+    def _delete(self, request, predictor=None):
+        try:
+            jobs.delete_feedbacks(request.user, predictor)
+        except ValueError as exc:
+            return Response({'error': str(exc)}, status=409)
+        return Response({'message': 'Feedbacks apagados com sucesso.'})

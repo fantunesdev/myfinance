@@ -21,7 +21,7 @@ class BaseMicroserviceClient:
         self._base_url = f'{self.BASE_URL}:{self.PORT}'
         self._headers = {'Authorization': f'Bearer {self._token}'}
 
-    def _send_requisition(self, endpoint: str, method: str, body: Union[str, dict] = ''):
+    def _send_requisition(self, endpoint: str, method: str, body: Union[str, dict] = '', timeout=20):
         """
         Método que envia requisições para o micro serviço.
 
@@ -29,6 +29,6 @@ class BaseMicroserviceClient:
         :param body: Um json com o corpo da requisição serializado.
         """
         url = f'{self._base_url}/{endpoint}'
-        response = self.request_method[method](url, headers=self._headers, json=body, timeout=20)
+        response = self.request_method[method](url, headers=self._headers, json=body, timeout=timeout)
         response.raise_for_status()
         return response.json()

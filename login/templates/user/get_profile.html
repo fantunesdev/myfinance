@@ -193,7 +193,13 @@
                                 <tr>
                                     <td>{{ predictor.ai }}</td>
                                     <td>{{ predictor.description }}</td>
-                                    <td>{{ predictor.status }}</td>
+                                    <td>
+                                        <span data-classifier-status="{{ predictor.name }}">{{ predictor.status }}</span>
+                                        <div data-classifier-progress="{{ predictor.name }}" hidden aria-live="polite">
+                                            <progress max="100" style="width: 100%; max-width: 240px;"></progress>
+                                            <small data-classifier-message style="display: block;"></small>
+                                        </div>
+                                    </td>
                                     <td>{{ predictor.date|default_if_none:'' }}</td>
                                     <td>
                                         <button id="{{ predictor.name }}-train-btn" class="btn-tiny btn-primary">Treinar</button>
@@ -405,7 +411,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{% static 'js/pages/user/get-profile.js' %}" type="module"></script>
+<script src="{% static 'js/pages/user/get-profile.js' %}?v=classifier-jobs-2" type="module"></script>
 <script>
 function copyToken(e){
     e.preventDefault();

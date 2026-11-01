@@ -424,3 +424,27 @@ O `make format` executa `isort`, `blue` e `prettier` nos arquivos JavaScript de 
 - As configuracoes administrativas sao restritas a usuarios `is_staff`.
 - Arquivos enviados e imagens ficam em `MEDIA_ROOT`.
 - Logs da aplicacao sao gravados em `logs/myfinance.log` com rotacao diaria.
+
+### Acompanhamento de treinamento da IA
+
+Treino completo e feedback agora retornam `202` com uma tarefa persistida, em vez
+de manter a requisição aberta durante o aprendizado. A tela do perfil mostra
+etapa, contadores e progresso; recebe eventos no WebSocket privado do usuário e
+consulta o estado a cada cinco segundos para recuperar notificações perdidas.
+Recarregar a página restaura o acompanhamento. Ausência de sinais por 30 segundos
+é mostrada como falta de atualização, sem declarar falha no treinamento.
+
+Cada envio usa um identificador idempotente. Timeouts no aceite mantêm a mesma
+tarefa para consulta/reenvio, e uma operação ativa bloqueia novos treinos ou
+feedbacks para o mesmo usuário e preditor. Os feedbacks são congelados no início
+da tarefa e só são marcados como aprendidos após confirmação do modelo salvo;
+feedbacks novos ou ignorados não são marcados por engano. O reset de feedbacks do
+treino completo também só acontece após sucesso.
+
+Para ativar esta alteração, atualize **ambos os repositórios**, execute
+`poetry run python manage.py migrate` e reinicie o Transaction Classifier com o
+lifespan do Uvicorn habilitado. Persista o diretório inteiro `training/model` do
+classificador, que agora também contém a fila e os checkpoints. O worker é iniciado
+automaticamente pela API. Veja o README do classificador para recuperação após
+reinícios e limites da fila local. Nenhum comando de migração deve usar as
+configurações de teste ao atualizar a instalação real.

@@ -36,3 +36,6 @@ class UpdateConsumer(AsyncJsonWebsocketConsumer):
         await self.send_json(
             {'type': 'investments.changed', 'revision': event['revision']}
         )
+
+    async def classifier_changed(self, event):
+        await self.send_json({'type': 'classifier.changed', 'job': event['job']})

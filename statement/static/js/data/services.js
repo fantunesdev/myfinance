@@ -273,6 +273,7 @@ export async function sendRequisition(endpoint, method, body = false) {
     const requestOptions = {
         method: method,
         headers: {
+            'Accept': 'application/json',
             'Content-Type': 'application/json',
             'X-CSRFToken': getCsrfToken(),
         },
@@ -281,13 +282,26 @@ export async function sendRequisition(endpoint, method, body = false) {
 
     try {
         const response = await fetch(url, requestOptions);
+        const contentType = response.headers.get('content-type') || '';
+        if (!contentType.includes('application/json') && !contentType.includes('+json')) {
+            return { error: `O servidor retornou uma resposta inesperada (HTTP ${response.status}). Recarregue a página e tente novamente.` };
+        }
+        let data;
+        try {
+            data = await response.json();
+        } catch {
+            return { error: `Não foi possível interpretar a resposta do servidor (HTTP ${response.status}). Recarregue a página e tente novamente.` };
+        }
+        if (!response.ok || data?.success === false) {
+            return { error: data?.error || data?.detail || data?.message || `O servidor recusou a solicitação (HTTP ${response.status}).` };
+        }
         if (response.ok && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method.toUpperCase())
             && /^(investments|investment-transactions|transactions)(\/|$)/.test(endpoint)) {
             window.dispatchEvent(new CustomEvent('investments:mutation'));
         }
-        return await response.json();
-    } catch (error) {
-        return error;
+        return data;
+    } catch {
+        return { error: 'Não foi possível confirmar a resposta do servidor. Verifique a conexão e tente novamente.' };
     }
 }
 

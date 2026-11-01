@@ -142,7 +142,14 @@ def get_profile(request):
             status = microservice_client.status()
             transaction_classifier = status['data']
     except Exception:
-        transaction_classifier = None
+        transaction_classifier = [
+            {
+                'ai': 'Transaction Classifier', 'name': name,
+                'description': f'{name.capitalize()} Predictor',
+                'status': 'Aguardando conexão com o classificador', 'date': None,
+            }
+            for name in ('subcategory', 'description')
+        ] if transaction_classifier_enabled else None
 
     profile = ProfileService(request.user)
     fixed_expenses = FixedExpensesService.get_all(request.user)

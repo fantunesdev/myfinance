@@ -227,6 +227,15 @@ class InvestmentDashboardTests(TestCase):
                 )
                 self.assertTrue(await clients[1].receive_nothing(timeout=0.05))
                 await get_channel_layer().group_send(
+                    f'user_updates_{self.user.pk}',
+                    {'type': 'classifier_changed', 'job': {'id': 'private-job', 'status': 'running'}},
+                )
+                self.assertEqual(
+                    await clients[0].receive_json_from(timeout=5),
+                    {'type': 'classifier.changed', 'job': {'id': 'private-job', 'status': 'running'}},
+                )
+                self.assertTrue(await clients[1].receive_nothing(timeout=0.05))
+                await get_channel_layer().group_send(
                     'updates',
                     {
                         'type': 'send_websocket_update',

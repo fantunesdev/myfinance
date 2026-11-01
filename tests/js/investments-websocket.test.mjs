@@ -61,3 +61,12 @@ test('reconnects with backoff, avoids duplicate sockets and clears investment ca
     page.timers[1].fn(); assert.equal(page.sockets.length, 2);
     assert.equal(setup('').sockets.length, 0);
 });
+
+test('classifier updates are dispatched to the active screen without caching private task data', () => {
+    const page = setup();
+    const job = { id: 'job', predictor: 'description', status: 'running' };
+    page.sockets[0].message({ type: 'classifier.changed', job });
+    assert.equal(page.received[0].type, 'classifier:changed');
+    assert.equal(page.received[0].detail.id, 'job');
+    assert.deepEqual(page.storage, {});
+});

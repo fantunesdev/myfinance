@@ -1,4 +1,5 @@
-import * as services from '../../data/services.js';
+import * as services from '../../data/services.js?v=classifier-jobs-2';
+import { startClassifierJob } from './classifier-jobs.js?v=classifier-jobs-2';
 
 const infos = [
     {
@@ -14,7 +15,7 @@ const infos = [
     {
         id: 'subcategory-feedback-btn',
         label: 'Dar Feedback',
-        title: 'Preditor de descrição',
+        title: 'Enviar feedback',
         message: 'Você está enviando o feedback manualmente para o modelo. ' +
                  'Se os dados já forem enviados antes, nada novo será feito.<br><br>' +
                  'Tem certeza que deseja continuar?',
@@ -34,7 +35,7 @@ const infos = [
     {
         id: 'description-feedback-btn',
         label: 'Dar Feedback',
-        title: 'Preditor de descrição',
+        title: 'Enviar feedback',
         message: 'Você está enviando o feedback manualmente para o modelo. ' +
                  'Se os dados já forem enviados antes, nada novo será feito.<br><br>' +
                  'Tem certeza que deseja continuar?',
@@ -75,16 +76,25 @@ function modalHandler(info) {
         window.showModal(info.title, info.message, async function () {
             window.hideModal();
             
+            if (/^transaction-classifier\/(subcategory|description)\/(train|feedback)$/.test(info.route)) {
+                await startClassifierJob(info.route);
+                return;
+            }
+
             button.innerHTML =
                 'Treinando <i class="fa-solid fa-rotate-left rotate-icon"></i>';
             
             try {
                 const response = await services.sendRequisition(info.route, info.method);
 
-                if (response && response.message) {
-                    window.showModal('Sucesso!', response.message);
+                if (response instanceof Error) {
+                    throw response;
                 } else if (response && response.error) {
                     window.showModal('Erro', response.error);
+                } else if (response && response.success === false) {
+                    window.showModal('Erro', response.message || 'A operação não foi concluída.');
+                } else if (response && response.message) {
+                    window.showModal('Sucesso!', response.message);
                 } else {
                     window.showModal('Erro!', 'Resposta desconhecida do servidor.');
                 }

@@ -486,7 +486,10 @@ async function importTransactions(transactions) {
 
     if (!isInvestmentImport) {
         // Envia para o backend uma requisição para treinar o Transaction Classifier a partir dos feedbacks
-        await services.sendRequisition('transaction-classifier/train', 'POST');
+        await Promise.all([
+            services.sendRequisition('transaction-classifier/subcategory/feedback', 'POST'),
+            services.sendRequisition('transaction-classifier/description/feedback', 'POST'),
+        ]);
     }
 
     window.location.href = isInvestmentImport ? '/investimentos/' : '/relatorio_financeiro/mes_atual/';

@@ -33,7 +33,9 @@
         socket.onmessage = event => {
             try {
                 const message = JSON.parse(event.data);
-                if (['investments.changed', 'investments.ready'].includes(message.type)) {
+                if (message.type === 'classifier.changed') {
+                    window.dispatchEvent(new CustomEvent('classifier:changed', { detail: message.job }));
+                } else if (['investments.changed', 'investments.ready'].includes(message.type)) {
                     invalidate(message.revision);
                 } else if (message.data) {
                     for (const [key, value] of Object.entries(message.data)) {

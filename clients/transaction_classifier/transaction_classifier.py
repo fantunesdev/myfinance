@@ -1,16 +1,7 @@
-import json
-import os
-from typing import Union
-
-import requests
-
-from api.serializers.base_serializer import BaseSerializer
 from clients.transaction_classifier.base_microservice import BaseMicroserviceClient
 from clients.transaction_classifier.description_predictor import DescriptionPredictorClient
 from clients.transaction_classifier.subcategory_predictor import SubcategoryPredictorClient
-from statement.models import CategorizationFeedback
 from statement.utils.datetime import DateTimeUtils
-from statement.utils.jwt import JWTUtils
 from statement.utils.utils import DictToObject
 
 
@@ -40,6 +31,23 @@ class TransactionClassifierClient(BaseMicroserviceClient):
         predicted |= self.subcategory.predict(description, category)
         predicted |= self.description.predict(description)
         return predicted
+
+    def start_job(self, job):
+        return self._send_requisition(
+            'jobs',
+            'post',
+            {
+                'id': str(job.pk),
+                'predictor': job.predictor,
+                'operation': job.operation,
+                'feedbacks': job.feedbacks,
+                'callback_secret': job.secret,
+            },
+            timeout=(3, 8),
+        )
+
+    def job_status(self, job_id):
+        return self._send_requisition(f'jobs/{job_id}', 'get', timeout=(2, 3))
 
     def _handle_status_data(self, response):
         """

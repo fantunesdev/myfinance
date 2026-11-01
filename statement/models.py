@@ -79,6 +79,26 @@ class SubcategoryChartConfig(models.Model):
         ]
 
 
+class ClassifierJob(models.Model):
+    """Durable mirror of a classifier operation; notifications are only hints."""
+
+    id = models.UUIDField(primary_key=True, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    predictor = models.CharField(max_length=20)
+    operation = models.CharField(max_length=10)
+    status = models.CharField(max_length=20, default='submitting')
+    secret = models.CharField(max_length=64)
+    feedbacks = models.JSONField(default=list)
+    feedback_ids = models.JSONField(default=list)
+    progress = models.JSONField(default=dict)
+    revision = models.PositiveBigIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        indexes = [models.Index(fields=['user', 'predictor', 'status'], name='classifier_job_owner_status')]
+
+
 class CategorizationFeedback(models.Model):
     """
     Classe que salva o feedback categorizações feitas pelo Transaction Classifier.
