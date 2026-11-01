@@ -381,6 +381,7 @@ class TransactionView(BaseView):
         cash = 0
         fixed = 0
         subcategory_config_cache = {}
+        dashboard_excluded_transaction_ids = set()
         for instance in instances:
             if instance.subcategory_id not in subcategory_config_cache:
                 subcategory_config_cache[instance.subcategory_id] = SubcategoryService.get_chart_config_values(
@@ -389,6 +390,7 @@ class TransactionView(BaseView):
                 )
 
             if not subcategory_config_cache[instance.subcategory_id]['show_in_monthly_cashflow_donut']:
+                dashboard_excluded_transaction_ids.add(instance.id)
                 continue
 
             if instance.type == 'saida':   # Saídas
@@ -411,6 +413,7 @@ class TransactionView(BaseView):
             fixed_expenses = FixedExpensesService.get_active_by_date(year, month, instances[0].user)
             fixed += sum(map(lambda x: x.value, fixed_expenses))
         return {
+            'dashboard_excluded_transaction_ids': dashboard_excluded_transaction_ids,
             'dashboard': {
                 'card': card,
                 'cash': cash,

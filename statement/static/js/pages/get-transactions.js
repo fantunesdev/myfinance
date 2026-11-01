@@ -18,6 +18,16 @@ const yearNavigation = document.getElementById('id_year'),
 let monthlyExpensesLineChart = null;
 let activeExpensesChart = 'bar';
 let dashboardTransactions = [];
+let barChart = null;
+let barChartUpdateVersion = 0;
+
+function getVisibleTransactions(transactions) {
+    const hiddenIds = new Set(Array.from(
+        originalTable.querySelectorAll('tbody tr.row-hidden[data-tx-id]'),
+        row => row.getAttribute('data-tx-id')
+    ));
+    return transactions.filter(transaction => !hiddenIds.has(String(transaction.id)));
+}
 
 /**
  * Busca todas as informações para desenhar os gráficos de barras e de donuts.
@@ -34,7 +44,9 @@ async function draw() {
 
     const report = categoryData.setCategoriesReport(transactions, categories),
         revenue = categoryData.setCategoriesDataset(report.revenue, true),
-        expenses = categoryData.setCategoriesDataset(report.expenses),
+        expenses = categoryData.setCategoriesDataset(
+            categoryData.setCategoriesReport(getVisibleTransactions(transactions), categories).expenses
+        ),
         amount = categoryData.setAmountDataset(report.amount);
 
     dashboardTransactions = transactions;
@@ -51,34 +63,28 @@ async function draw() {
  * @param {Object} barChart - A instância original do gráfico de barras
  */
 export async function updateBarChart(barChart) {
-    const transactions = JSON.parse(sessionStorage.getItem('transactions')),
+    const version = ++barChartUpdateVersion;
+    const transactions = getVisibleTransactions(JSON.parse(sessionStorage.getItem('transactions'))),
         categories = JSON.parse(sessionStorage.getItem('categories'));
+    const barLabelClicked = sessionStorage.getItem('bar_label_clicked');
+    const category = categories.find(category => category.description === barLabelClicked);
+    let expenses;
 
-    let barLabelClicked = sessionStorage.getItem('bar_label_clicked');
-
-    if (barLabelClicked) {
-        for (let category of categories) {
-            if (category.description == barLabelClicked) {
-                var expenses = await subcategoryData.setSubcategoryDataset(category.id);
-            }
-        }
-
-        if (!expenses) {
+    if (category) {
+        expenses = await subcategoryData.setSubcategoryDataset(category.id, transactions);
+    } else {
+        if (barLabelClicked) {
             sessionStorage.removeItem('bar_label_clicked');
             sessionStorage.setItem('bar_chart_level', 'categories');
-            const report = categoryData.setCategoriesReport(transactions, categories);
-            expenses = report.expenses;
         }
-    } else {
-        const categories = JSON.parse(sessionStorage.getItem('categories')),
-            report = categoryData.setCategoriesReport(transactions, categories);
-        var expenses = report.expenses;
+        expenses = categoryData.setCategoriesReport(transactions, categories).expenses;
     }
 
+    if (version !== barChartUpdateVersion) return;
     const dataset = categoryData.setCategoriesDataset(expenses);
     graphics.updateChart(barChart, dataset);
 
-    updateTable(transactions, expenses);
+    await updateTable(transactions, expenses, version);
 }
 
 /**
@@ -86,7 +92,7 @@ export async function updateBarChart(barChart) {
  * @param {Array} transactions - Uma lista de lançamentos.
  * @param {Array} expenses - Uma lista de subcategorias do tipo despesas.
  */
-async function updateTable(transactions, expenses) {
+async function updateTable(transactions, expenses, version) {
     let subcategoryTable = document.getElementById('subcategory-table'),
         barLabelClicked = sessionStorage.getItem('bar_label_clicked');
 
@@ -113,6 +119,7 @@ async function updateTable(transactions, expenses) {
                 (banks = await services.getResource('banks'));
         }
 
+        if (version !== barChartUpdateVersion) return;
         for (let category of categories) {
             if (category.id == selectedCategory.id) {
                 const transactionAttrs = {
@@ -132,7 +139,6 @@ async function updateTable(transactions, expenses) {
 
                 tables.renderTable(statementBox, filteredTransactions, transactionAttrs);
             }
-            sessionStorage.removeItem('bar_label_clicked');
         }
     } else {
         originalTable.classList.remove('hide');
@@ -227,7 +233,7 @@ function drawMonthlyExpensesLineChart() {
     }
 
     const categories = JSON.parse(sessionStorage.getItem('categories') || '[]');
-    const dataset = setMonthlyExpensesLineDataset(dashboardTransactions, categories);
+    const dataset = setMonthlyExpensesLineDataset(getVisibleTransactions(dashboardTransactions), categories);
 
     monthlyExpensesLineChart = new Chart(canvas.getContext('2d'), {
         type: 'line',
@@ -381,7 +387,13 @@ resetDashboardButton.addEventListener('click', async () => {
     updateBarChart(barChart);
 });
 
-let barChart = await draw();
+window.addEventListener('myfinance:transaction-visibility-changed', async event => {
+    if (event.detail.table !== originalTable || !barChart) return;
+    await updateBarChart(barChart);
+    if (activeExpensesChart === 'line') drawMonthlyExpensesLineChart();
+});
+
+barChart = await draw();
 sessionStorage.setItem('bar_chart_level', 'categories');
 
 // Redireciona para a página do ano selecionado.

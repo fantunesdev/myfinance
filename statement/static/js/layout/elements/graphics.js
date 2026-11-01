@@ -137,31 +137,11 @@ export function drawDoughnutChart(dataset, fatherHtmlId, label) {
     new Chart(father, data);
 }
 
-function addData(chart, label, data) {
-    chart.data.labels.push(label);
-    chart.data.datasets.forEach((dataset) => {
-        dataset.data.push(data);
-    });
-    chart.update();
-}
-
-function removeData(chart) {
-    chart.data.labels.pop();
-    chart.data.datasets.forEach((dataset) => {
-        dataset.data.pop();
-    });
-    chart.update();
-}
-
 export function updateChart(chart, dataset) {
-    let max = chart.data.labels.length,
-        i;
-
-    for (i = 0; i < max; i++) {
-        removeData(chart);
-    }
-
-    for (i = 0; i < dataset.names.length; i++) {
-        addData(chart, dataset.names[i], dataset.values[i]);
-    }
+    chart.data.labels = dataset.names;
+    chart.data.datasets.forEach(current => {
+        current.data = dataset.values;
+        current.backgroundColor = dataset.colors;
+    });
+    chart.update();
 }

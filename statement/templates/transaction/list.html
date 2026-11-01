@@ -1,6 +1,7 @@
 {% extends 'index.html' %}
 {% load static %}
 {% load custom_filters %}
+{% load l10n %}
 {% block styles %}
 <link rel="stylesheet" href="{% static 'css/transaction-list.css' %}">
 {% endblock %}
@@ -92,7 +93,9 @@
                                     {% for transaction in group.transactions %}
                                         <tr
                                             style="border-left: solid 3px {{ transaction.category.color }}"
-                                            data-value="{{ transaction.value }}"
+                                            data-value="{{ transaction.value|unlocalize }}"
+                                            data-type="{{ transaction.type }}"
+                                            data-show-in-cashflow="{% if transaction.id in dashboard_excluded_transaction_ids %}false{% else %}true{% endif %}"
                                             data-tx-id="{{ transaction.id }}"
                                             {% if transaction.installment %}
                                                 data-detail-url="{% url 'detail_installment' transaction.installment.id %}"
@@ -161,7 +164,9 @@
                             {% for transaction in instances %}
                                 <tr
                                     style="border-left: solid 3px {{ transaction.category.color }}"
-                                    data-value="{{ transaction.value }}"
+                                    data-value="{{ transaction.value|unlocalize }}"
+                                    data-type="{{ transaction.type }}"
+                                    data-show-in-cashflow="{% if transaction.id in dashboard_excluded_transaction_ids %}false{% else %}true{% endif %}"
                                     data-tx-id="{{ transaction.id }}"
                                     {% if transaction.installment %}
                                         data-detail-url="{% url 'detail_installment' transaction.installment.id %}"

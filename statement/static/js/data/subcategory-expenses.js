@@ -1,9 +1,8 @@
 import * as services from './services.js';
 import * as chartPolicy from './chart-policy.js';
 
-export async function setSubcategoryDataset(id) {
-    const transactions = JSON.parse(sessionStorage.getItem('transactions')),
-        subcategories = await services.getChildrenResource('categories', 'subcategories', id);
+export async function setSubcategoryDataset(id, transactions = JSON.parse(sessionStorage.getItem('transactions'))) {
+    const subcategories = await services.getChildrenResource('categories', 'subcategories', id);
 
     let expenses = [],
         subcategory,

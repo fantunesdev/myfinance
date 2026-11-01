@@ -459,28 +459,33 @@ function recalcDashboardTotals(table) {
         if (!tbody) return;
         const rows = Array.from(tbody.rows).filter(r => !r.classList.contains('row-hidden'));
         let sum = 0;
+        let expenses = 0;
         for (const r of rows) {
             const v = r.getAttribute('data-value');
             if (!v) continue;
-            const n = parseFloat(String(v).replace(',', '.'));
-            if (!isNaN(n)) sum += n;
+            const n = Number(String(v).replace(',', '.'));
+            if (!Number.isFinite(n)) continue;
+            sum += n;
+            if (r.getAttribute('data-type') === 'saida' && r.getAttribute('data-show-in-cashflow') !== 'false') {
+                expenses += n;
+            }
         }
 
         // Formatar como BRL
         const fmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
-        const text = fmt.format(sum);
 
         // Atualizar total do dashboard, se presente
         const dashTotal = document.querySelector('.dashboard .expenses b.font-16');
         if (dashTotal) {
-            dashTotal.textContent = 'Total de gastos: ' + text;
+            dashTotal.textContent = 'Total de gastos: ' + fmt.format(expenses);
         }
 
         // Atualizar elemento de total móvel
         const mobileTotal = document.querySelector('.mobile-total');
         if (mobileTotal) {
-            mobileTotal.textContent = 'Total: ' + text;
+            mobileTotal.textContent = 'Total: ' + fmt.format(sum);
         }
+        window.dispatchEvent(new CustomEvent('myfinance:transaction-visibility-changed', { detail: { table } }));
     } catch (e) { console.error('recalcDashboardTotals error', e); }
 }
 
@@ -585,6 +590,10 @@ function loadGroups(table) {
                     }
                 }
             } catch (e) { console.error('loadGroups apply hiddenGroups', e); }
+            if (matchedAny) {
+                refreshZebra(table);
+                recalcDashboardTotals(table);
+            }
             // Se não conseguiu aplicar nenhum grupo, pode ser que as linhas ainda não estejam no DOM (por exemplo, carregamento assíncrono). Tentar novamente algumas vezes antes de desistir.
             if (!matchedAny && attempt < 5) {
                 try { console.debug && console.debug('loadGroups no matches yet, retrying', attempt); } catch (e) { }
