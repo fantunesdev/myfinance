@@ -214,6 +214,7 @@
                                 <th class="import-heading import-col-subcategory">Subcategoria</th>
                                 <th class="import-heading import-col-description">Descrição</th>
                                 <th class="import-heading import-col-value">Valor</th>
+                                <th class="import-col-event-type">Tipo de evento</th>
                             </tr>
                         </thead>
                         <tbody id="transaction-rows">
@@ -252,6 +253,7 @@
                                 <th class="import-col-subcategory">Subcategoria</th>
                                 <th class="import-col-description">Descrição</th>
                                 <th class="import-col-value">Valor</th>
+                                <th class="import-col-event-type">Tipo de evento</th>
                             </tr>
                         </thead>
                         <tbody id="notification-rows-section">
@@ -313,7 +315,7 @@
             toggleCSVPanels();
         });
     </script>
-    <script src="{% static 'js/pages/import-transactions.js' %}" type="module"></script>
-    <script src="{% static 'js/pages/import-notifications.js' %}" type="module"></script>
+    <script src="{% static 'js/pages/import-transactions.js' %}?v=event-column-1" type="module"></script>
+    <script src="{% static 'js/pages/import-notifications.js' %}?v=event-column-1" type="module"></script>
     <script src="{% static 'js/pages/import-tasker.js' %}" type="module"></script>
 {% endblock %}

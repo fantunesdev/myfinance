@@ -6,6 +6,7 @@ from decimal import Decimal, InvalidOperation
 
 EVENT_CHOICES = (
     ("purchase", "Compra"),
+    ("fixed_expense", "Despesa fixa"),
     ("card_payment", "Pagamento da fatura"),
     ("refund", "Estorno"),
     ("unknown", "Revisar evento"),
@@ -108,7 +109,7 @@ def parse_notification(notification):
         "value": float(amount) if amount is not None else None,
         "needs_review": event_type != "purchase" or not merchant or amount is None,
         "review_reason": (
-            "Pagamento da fatura: escolha cadastrar ou ignorar."
+            "Pagamento da fatura: confira os dados antes de importar."
             if event_type == "card_payment"
             else (
                 "Estorno: confira o valor e a classificação da compra original."

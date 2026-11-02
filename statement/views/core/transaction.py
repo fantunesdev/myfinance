@@ -223,7 +223,7 @@ class TransactionView(BaseView):
 
             try:
                 microservice_client = TransactionClassifierClient(request.user)
-                if transaction_data['event_type'] in ('card_payment', 'unknown') or not transaction_data['merchant_description'] or not AppConfig.get_solo().enable_transaction_classifier:
+                if transaction_data.get('ignored_fixed_expense') or transaction_data['event_type'] in ('card_payment', 'unknown') or not transaction_data['merchant_description'] or not AppConfig.get_solo().enable_transaction_classifier:
                     predicted = {'category_id': None, 'subcategory_id': None, 'description': transaction_data['description']}
                 else:
                     predicted = microservice_client.predict(
@@ -263,6 +263,8 @@ class TransactionView(BaseView):
                         else None
                     ),
                     'notification_id': notification.id,
+                    'ignored_fixed_expense': transaction_data.get('ignored_fixed_expense', False),
+                    'fixed_transaction_id': transaction_data.get('fixed_transaction_id'),
                     **{key: transaction_data[key] for key in ('merchant_description', 'source_type', 'source_app', 'source_notification', 'event_type', 'needs_review', 'review_reason')},
                 }
             )

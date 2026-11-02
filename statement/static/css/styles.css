@@ -1415,6 +1415,10 @@ a {
     width: 12ch !important;
 }
 
+.import-preview-table .import-col-event-type {
+    width: 24ch !important;
+}
+
 .import-preview-table .import-col-description {
     width: auto !important;
 }

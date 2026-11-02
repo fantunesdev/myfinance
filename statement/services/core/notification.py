@@ -37,4 +37,6 @@ class NotificationService(BaseService):
             'posted_date': notification_date,
             'payment_date': notification_date,
         })
+        from statement.services.core.fixed_imports import FixedExpenseMatcher
+        FixedExpenseMatcher(user, card=card).annotate(transaction)
         return transaction

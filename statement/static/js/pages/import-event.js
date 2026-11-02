@@ -1,13 +1,14 @@
 const eventLabels = {
     purchase: 'Compra',
+    fixed_expense: 'Despesa fixa',
     card_payment: 'Pagamento da fatura',
     refund: 'Estorno',
-    unknown: 'Revisar evento',
+    unknown: 'Não identificado',
 };
 
-export function renderEventReview(cell, transaction) {
+export function renderEventType(cell, transaction) {
     const container = document.createElement('div');
-    container.className = 'import-event-review';
+    container.className = 'import-event-type';
     const event = document.createElement('select');
     event.id = `id_event_type_${transaction.id}`;
     event.className = 'form-control input-sm';
@@ -21,35 +22,12 @@ export function renderEventReview(cell, transaction) {
     event.value = transaction.event_type || 'unknown';
     container.appendChild(event);
 
-    const action = document.createElement('select');
-    action.id = `id_event_action_${transaction.id}`;
-    action.className = 'form-control input-sm';
-    action.setAttribute('aria-label', 'Tratamento do evento');
-    for (const [value, label] of [['review', 'Revisar'], ['import', 'Cadastrar'], ['ignore', 'Ignorar']]) {
-        const option = document.createElement('option');
-        option.value = value;
-        option.textContent = label;
-        action.appendChild(option);
-    }
-    action.value = transaction.needs_review ? 'review' : 'import';
-    action.addEventListener('change', () => {
-        const checkbox = document.getElementById(String(transaction.id));
-        if (checkbox && !checkbox.disabled) {
-            checkbox.checked = action.value === 'import';
-            checkbox.dispatchEvent(new Event('change'));
-        }
-    });
-    container.appendChild(action);
     if (transaction.review_reason) {
         const notice = document.createElement('small');
         notice.textContent = transaction.review_reason;
         container.appendChild(notice);
     }
     cell.appendChild(container);
-}
-
-export function importAction(id) {
-    return document.getElementById(`id_event_action_${id}`)?.value || 'import';
 }
 
 export function eventMetadata(id, original = {}) {
@@ -62,5 +40,6 @@ export function eventMetadata(id, original = {}) {
         source_category: original.source_category || '',
         source_notification: original.source_notification || original.notification_id || null,
         event_type: Object.hasOwn(eventLabels, chosen) ? chosen : original.event_type || 'unknown',
+        fixed: (Object.hasOwn(eventLabels, chosen) ? chosen : original.event_type) === 'fixed_expense',
     };
 }

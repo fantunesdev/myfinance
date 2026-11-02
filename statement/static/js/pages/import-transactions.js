@@ -1,4 +1,4 @@
-import { renderEventReview, importAction, eventMetadata } from './import-event.js';
+import { renderEventType, eventMetadata } from './import-event.js?v=event-column-1';
 import { divs, selects } from '../layout/elements/transaction-form-elements.js';
 import * as services from '../data/services.js';
 
@@ -25,6 +25,7 @@ const csvFileLabel = document.querySelector('#csv-file-label');
 const importHeadings = document.querySelectorAll('.import-heading');
 const importCardNumberHeading = document.querySelector('.import-card-number-heading');
 const importInstallmentHeading = document.querySelector('.import-installment-heading');
+const importEventHeading = document.querySelector('#div-import-transactions .import-col-event-type');
 const paymentMethodGroup = document.querySelector('#payment-method-group');
 const paymentTargetFields = document.querySelector('#payment-target-fields');
 
@@ -157,6 +158,10 @@ function renderHeadings(isInvestmentImport) {
         : ['Data', 'Categoria', 'Subcategoria', 'Descrição', 'Valor'];
     const shouldShowCardNumber = !isInvestmentImport && getCardNumbersByCard(selects.card.value).length > 0;
 
+    if (importEventHeading) {
+        importEventHeading.classList.toggle('hide', isInvestmentImport);
+    }
+
     if (importCardNumberHeading) {
         importCardNumberHeading.classList.toggle('hide', !shouldShowCardNumber);
     }
@@ -219,7 +224,6 @@ function getTransactionFields(transaction, categories, subcategories) {
                 input.classList.add('form-control');
                 input.title = `Original: ${transaction.original_description || ''}`;
                 cell.appendChild(input);
-                renderEventReview(cell, transaction);
             },
         },
         {
@@ -227,6 +231,10 @@ function getTransactionFields(transaction, categories, subcategories) {
             type: 'text',
             value: transaction.value,
             disabled: true,
+        },
+        {
+            id: `id_event_type_${transaction.id}`,
+            render: (cell) => renderEventType(cell, transaction),
         },
     ];
 
@@ -295,8 +303,8 @@ function getCheckboxField(transaction) {
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
             checkbox.id = transaction.id;
-            checkbox.checked = !transaction.is_duplicate && !transaction.needs_review;
-            checkbox.disabled = Boolean(transaction.is_duplicate);
+            checkbox.checked = !transaction.is_duplicate && !transaction.needs_review && !transaction.ignored_fixed_expense;
+            checkbox.disabled = Boolean(transaction.is_duplicate || transaction.ignored_fixed_expense);
 
             checkbox.addEventListener('change', () => {
                 row.classList.toggle('row-disabled', !checkbox.checked);
@@ -363,6 +371,8 @@ function applyImportCellClass(cell, field) {
         cell.classList.add('import-col-description');
     } else if (fieldId.startsWith('id_value_')) {
         cell.classList.add('import-col-value');
+    } else if (fieldId.startsWith('id_event_type_')) {
+        cell.classList.add('import-col-event-type');
     }
 }
 
@@ -487,7 +497,7 @@ async function importTransactions(transactions) {
     const isInvestmentImport = isConfigurableCSV() && getTargetModel() === targetModels.investment;
 
     for (let transaction of transactions) {
-        if (importAction(transaction.id) === 'ignore' || !selectedIds.includes(transaction.id)) continue;
+        if (!selectedIds.includes(transaction.id)) continue;
 
         const newTransaction = isInvestmentImport
             ? getInvestmentTransactionFormData(transaction.id)
@@ -500,6 +510,7 @@ async function importTransactions(transactions) {
 
         const created = await createNewResource(isInvestmentImport ? 'investment-transactions' : 'transactions', newTransaction);
         if (!created) return;
+        if (created.ignored) continue;
 
         const feedback = isInvestmentImport ? null : buildFeedback(transaction, newTransaction);
         if (feedback) {

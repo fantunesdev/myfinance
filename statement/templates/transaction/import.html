@@ -64,6 +64,7 @@
                             <th>Subcategoria</th>
                             <th>Descrição</th>
                             <th>Valor</th>
+                            <th class="import-col-event-type">Tipo de evento</th>
                         </tr>
                     </thead>
                     <tbody id="transaction-rows">
@@ -82,5 +83,5 @@
         window.myFinance = window.myFinance || {};
         window.myFinance.importedTransactions = {{ notifications_json|safe }};
     </script>
-    <script src="{% static 'js/pages/import-transactions.js' %}" type="module"></script>
+    <script src="{% static 'js/pages/import-transactions.js' %}?v=event-column-1" type="module"></script>
 {% endblock %}

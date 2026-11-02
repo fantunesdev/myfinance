@@ -20,10 +20,12 @@
                                 <input type="checkbox" id="checkall-notifications">
                             </th>
                             <th>Data</th>
+                            <th>Parcela</th>
                             <th>Categoria</th>
                             <th>Subcategoria</th>
                             <th>Descrição</th>
                             <th>Valor</th>
+                            <th class="import-col-event-type">Tipo de evento</th>
                         </tr>
                     </thead>
                     <tbody id="notification-rows-card">
@@ -42,5 +44,5 @@
         window.myFinance = window.myFinance || {};
         window.myFinance.importedTransactions = {{ notifications_json|safe }};
     </script>
-    <script src="{% static 'js/pages/import-notifications.js' %}" type="module"></script>
+    <script src="{% static 'js/pages/import-notifications.js' %}?v=event-column-1" type="module"></script>
 {% endblock %}

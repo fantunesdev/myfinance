@@ -53,21 +53,41 @@ test('a failed merchant extraction remains empty in metadata instead of learning
     assert.equal(metadata.original_description, 'Compra aprovada no cartão');
 });
 
-test('special events require review and ignoring only changes the explicit user selection', () => {
+test('event type stays editable without an action selector or changes to checkbox selection', () => {
     const { context, elements, Element } = setup();
     const checkbox = new Element(); checkbox.checked = false; elements.set('1', checkbox);
     const cell = new Element();
-    context.renderEventReview(cell, { id: 1, event_type: 'card_payment', needs_review: true, review_reason: 'Pagamento da fatura' });
-    const action = elements.get('id_event_action_1');
-    assert.equal(action.value, 'review');
+    context.renderEventType(cell, { id: 1, event_type: 'card_payment', needs_review: true, review_reason: 'Confira os dados.' });
+    const event = elements.get('id_event_type_1');
+    assert.equal(event.value, 'card_payment');
+    assert.equal(elements.has('id_event_action_1'), false);
+    assert.equal(cell.children[0].children.filter(child => child.id?.startsWith('id_event_')).length, 1);
     assert.equal(checkbox.checked, false);
-    action.value = 'import'; action.dispatchEvent({ type: 'change' });
+    checkbox.checked = true;
+    event.value = 'refund';
+    event.dispatchEvent({ type: 'change' });
     assert.equal(checkbox.checked, true);
-    action.value = 'ignore'; action.dispatchEvent({ type: 'change' });
-    assert.equal(checkbox.checked, false);
-    assert.equal(context.importAction(1), 'ignore');
-    const metadata = context.eventMetadata(1, {});
-    assert.equal(metadata.event_type, 'card_payment');
+    assert.equal(context.eventMetadata(1, {}).event_type, 'refund');
+});
+
+test('CSV and notification previews place the event selector after value, outside description', () => {
+    for (const source of [notificationSource, csvSource]) {
+        const { context, Element, elements } = setup(source);
+        context.selects = { card: { value: '' } };
+        context.window = { myFinance: { hasCSVInstallments: false } };
+        context.getCardNumbersByCard = () => [];
+        vm.runInContext(source.slice(source.indexOf('function getTransactionFields('), source.indexOf('function renderFields(')), context);
+        const fields = context.getTransactionFields({ id: 1, description: 'Compra', event_type: 'purchase' }, [], []);
+        const valueIndex = fields.findIndex(field => field.id === 'id_value_1');
+        assert.equal(fields[valueIndex + 1].id, 'id_event_type_1');
+        const descriptionCell = new Element();
+        fields.find(field => field.id === 'id_description_1').render(descriptionCell);
+        assert.equal(descriptionCell.children.length, 1);
+        assert.equal(elements.has('id_event_type_1'), false);
+        const eventCell = new Element();
+        fields[valueIndex + 1].render(eventCell);
+        assert.equal(elements.get('id_event_type_1').value, 'purchase');
+    }
 });
 
 test('abstentions keep a blank selection and string IDs still select the actual prediction', () => {

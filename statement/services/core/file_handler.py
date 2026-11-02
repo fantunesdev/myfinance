@@ -12,6 +12,7 @@ from statement.services.core.account import AccountService
 from statement.services.core.card import CardService
 from statement.services.core.category import CategoryService
 from statement.services.core.notification import NotificationService
+from statement.services.core.fixed_imports import FixedExpenseMatcher
 from statement.utils.text import sanitize_utf8mb3
 from statement.utils.transaction_input import extract_amount, identify_event, parse_amount, statement_merchant
 
@@ -118,6 +119,7 @@ class FileHandlerService:
         :return: Lista de dicionários com os dados do arquivo CSV.
         """
         transactions = []
+        fixed_matcher = FixedExpenseMatcher(self._user, self._account, self._card)
         file_content = self._file.read().decode('utf-8-sig')
         reader = self._get_csv_reader(file_content)
         for i, row in enumerate(reader, start=1):
@@ -155,6 +157,8 @@ class FileHandlerService:
             source_account = self._card.account if self._card else self._account
             source_app = getattr(getattr(source_account, 'bank', None), 'app_id', '') or ''
             prediction_context = {'source_type': 'csv', 'source_app': source_app, 'event_type': event_type, 'merchant_description': statement_merchant(description, event_type)}
+            fixed_source = {**prediction_context, 'original_description': description, 'value': value}
+            ignored_fixed = fixed_matcher.annotate(fixed_source)
             predicted = {
                 'category_id': None,
                 'subcategory_id': None,
@@ -163,7 +167,7 @@ class FileHandlerService:
 
             # Only call classifier if global toggle enabled
             try:
-                if event_type not in ('card_payment', 'unknown') and AppConfig.get_solo().enable_transaction_classifier:
+                if not ignored_fixed and event_type not in ('card_payment', 'unknown') and AppConfig.get_solo().enable_transaction_classifier:
                     microservice_client = TransactionClassifierClient(self._user)
                     predicted = microservice_client.predict(description, source_category=source_category, **prediction_context)
             except Exception:
@@ -199,10 +203,14 @@ class FileHandlerService:
                 'source_category': source_category,
                 **prediction_context,
                 'needs_review': event_type != 'purchase',
-                'review_reason': 'Pagamento da fatura: escolha cadastrar ou ignorar.' if event_type == 'card_payment' else 'Confira o tipo de evento, valor e classificação antes de cadastrar.' if event_type != 'purchase' else '',
+                'review_reason': 'Pagamento da fatura: confira os dados antes de importar.' if event_type == 'card_payment' else 'Confira o tipo de evento, valor e classificação antes de cadastrar.' if event_type != 'purchase' else '',
                 'matching_fields': self._matching_fields,
             }
             duplicate = self._find_duplicate_transaction(transaction)
+            if ignored_fixed:
+                transaction.update({key: fixed_source[key] for key in (
+                    'ignored_fixed_expense', 'fixed_transaction_id', 'event_type', 'fixed', 'review_reason',
+                )})
             transaction.update(
                 {
                     'is_duplicate': duplicate is not None,

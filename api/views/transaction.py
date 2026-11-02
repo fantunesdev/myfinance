@@ -36,6 +36,16 @@ class TransactionView(BaseView):
     installment_info = None
 
     def create(self, request):
+        from statement.services.core.fixed_imports import FixedExpenseMatcher
+        fixed_match = FixedExpenseMatcher(
+            request.user, account=request.data.get('account'), card=request.data.get('card'),
+        ).find(request.data)
+        if fixed_match:
+            return Response({
+                'detail': 'Cobrança de despesa fixa ignorada.', 'ignored': True,
+                'fixed_transaction_id': fixed_match,
+            }, status=status.HTTP_200_OK)
+
         description = request.data.get('description')
         self._get_installments_number(description, request.data.get('installment_text'))
 
@@ -44,6 +54,7 @@ class TransactionView(BaseView):
             return Response({'detail': 'Parcela já cadastrada'}, status=status.HTTP_200_OK)
 
         self._process_transaction_request(request)
+
 
         duplicate = self._find_duplicate_transaction(request)
         if duplicate:

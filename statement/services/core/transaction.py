@@ -30,6 +30,11 @@ class TransactionService(BaseService):
         from statement.utils.transaction_provenance import validate_notification_source
 
         validate_notification_source(instance, user)
+        if instance.event_type == 'fixed_expense':
+            if instance.type != 'saida':
+                from django.core.exceptions import ValidationError
+                raise ValidationError('A opção Despesa fixa só pode ser usada em despesas.')
+            instance.fixed = True
         instance.home_screen = cls._set_home_screen(instance)
         return super().create(form, user=user)
 
@@ -48,6 +53,8 @@ class TransactionService(BaseService):
             if form_field not in form.data:
                 setattr(instance, field, previous[field])
         validate_notification_source(instance, instance.user)
+        if 'event_type' in form.data and instance.event_type == 'fixed_expense':
+            instance.fixed = True
         instance.home_screen = cls._set_home_screen(instance)
         return super().update(form, instance)
 

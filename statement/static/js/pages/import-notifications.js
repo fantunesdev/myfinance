@@ -1,4 +1,4 @@
-import { renderEventReview, importAction, eventMetadata } from './import-event.js';
+import { renderEventType, eventMetadata } from './import-event.js?v=event-column-1';
 import * as services from '../data/services.js';
 
 const checkboxCheckAllNotifications = document.querySelector('#checkall-notifications');
@@ -47,7 +47,7 @@ function getNotificationSelectionRows() {
 
     return Array.from(table.querySelectorAll('tbody tr')).filter((row) => (
         !row.classList.contains('group-header')
-        && row.querySelector('input[type="checkbox"]')
+        && row.querySelector('input[type="checkbox"]:not(:disabled)')
     ));
 }
 
@@ -59,7 +59,7 @@ function getNotificationSelectionRows() {
  */
 function setNotificationRowChecked(row, checked) {
     const checkbox = row.querySelector('input[type="checkbox"]');
-    if (!checkbox) return;
+    if (!checkbox || checkbox.disabled) return;
 
     checkbox.checked = checked;
     row.classList.toggle('row-disabled', !checked);
@@ -117,7 +117,6 @@ async function renderNotificationsBox(notifications) {
 
     // build group map so we can render a tbody per group (card_id:card_number_id)
     const groups = new Map();
-    const COLSPAN = 7;
     for (const notification of notifications) {
         try {
             const row = document.createElement('tr');
@@ -135,7 +134,7 @@ async function renderNotificationsBox(notifications) {
                 const header = document.createElement('tr');
                 header.classList.add('group-header');
                 const headerCell = document.createElement('td');
-                headerCell.colSpan = COLSPAN;
+                headerCell.colSpan = fields.length;
                 const cardLabel = notification.card_description || `Cartão ${notification.card_id || ''}`;
                 const numberLabel = notification.card_number_display ? ` - ${notification.card_number_display}` : '';
                 headerCell.textContent = `${cardLabel}${numberLabel}`;
@@ -195,6 +194,7 @@ function getTransactionFields(transaction, categories, subcategories) {
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
                 checkbox.id = transaction.id;
+                checkbox.disabled = Boolean(transaction.ignored_fixed_expense);
                 checkbox.addEventListener('change', () => {
                     row.classList.toggle('row-disabled', !checkbox.checked);
                     updateCheckAllNotificationsState();
@@ -262,7 +262,6 @@ function getTransactionFields(transaction, categories, subcategories) {
                 input.title = `Original: ${transaction.original_description}`;
                 input.classList.add('form-control');
                 cell.appendChild(input);
-                renderEventReview(cell, transaction);
             },
         },
         {
@@ -281,6 +280,10 @@ function getTransactionFields(transaction, categories, subcategories) {
                 input.classList.add('form-control');
                 cell.appendChild(input);
             },
+        },
+        {
+            id: `id_event_type_${transaction.id}`,
+            render: (cell) => renderEventType(cell, transaction),
         },
     ];
 }
@@ -339,6 +342,8 @@ function applyImportCellClass(cell, field) {
         cell.classList.add('import-col-description');
     } else if (fieldId.startsWith('id_value_')) {
         cell.classList.add('import-col-value');
+    } else if (fieldId.startsWith('id_event_type_')) {
+        cell.classList.add('import-col-event-type');
     }
 }
 
@@ -522,10 +527,6 @@ async function importNotifications(notifications) {
     const notificationsToMarkAsUsed = [];
 
     for (let notification of notifications) {
-        if (importAction(notification.id) === 'ignore') {
-            if (notification.notification_id) notificationsToMarkAsUsed.push(notification.notification_id);
-            continue;
-        }
         if (!selectedIds.includes(notification.id)) continue;
 
         const newTransaction = getFormData(notification.id, notification);
@@ -537,6 +538,7 @@ async function importNotifications(notifications) {
 
         const created = await createNewResource('transactions', newTransaction, true);
         if (!created) return;
+        if (created.ignored) continue;
 
         if (feedback) {
             await services.createResource('categorization-feedback', JSON.stringify(feedback));
