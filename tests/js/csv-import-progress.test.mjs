@@ -113,3 +113,30 @@ test('missing file does not start a request or activity indicator', async () => 
     assert.equal(page.button.disabled, false);
     assert.equal(page.timers.size, 0);
 });
+
+test('CSV preview skips subcategory requests for unclassified rows and still completes progress', async () => {
+    const requested = [];
+    const rendered = [];
+    const progress = [];
+    const transactionRows = { children: [], appendChild(row) { this.children.push(row); } };
+    const context = vm.createContext({
+        isConfigurableCSV: () => true, getTargetModel: () => 'statement', targetModels: { investment: 'investment' },
+        services: {
+            getCategoriesByType: async () => [],
+            getChildrenResource: async (_model, _child, id) => { requested.push(id); return [{ id: 7 }]; },
+        },
+        window: { myFinance: {} }, document: { createElement: () => ({}) },
+        boxTransactions: { classList: { remove() {} } }, transactionRows,
+        renderHeadings() {}, getTransactionFields: (transaction, _categories, subcategories) => ({ transaction, subcategories }),
+        renderFields: (_row, fields) => rendered.push(fields),
+    });
+    vm.runInContext(source.slice(source.indexOf('async function renderBox('), source.indexOf('function renderHeadings(')), context);
+    await context.renderBox([
+        { id: 1, category: null }, { id: 2 }, { id: 3, category: '' }, { id: 4, category: 2 },
+    ], (completed, total) => progress.push([completed, total]));
+    assert.deepEqual(requested, [2]);
+    assert.equal(rendered.length, 4);
+    for (const fields of rendered.slice(0, 3)) assert.equal(fields.subcategories.length, 0);
+    assert.equal(rendered[3].subcategories[0].id, 7);
+    assert.deepEqual(progress.at(-1), [4, 4]);
+});

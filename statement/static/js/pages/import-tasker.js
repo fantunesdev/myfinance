@@ -346,11 +346,8 @@ function sanitizeText(text) {
 }
 
 // Event listeners
-if (fileTypeCSV && fileTypeTasker) {
-    fileTypeCSV.addEventListener('change', toggleFileType);
-    if (fileTypeConfigurableCSV) {
-        fileTypeConfigurableCSV.addEventListener('change', toggleFileType);
-    }
+if (fileTypeConfigurableCSV && fileTypeTasker) {
+    fileTypeConfigurableCSV.addEventListener('change', toggleFileType);
     fileTypeTasker.addEventListener('change', toggleFileType);
 }
 
@@ -440,7 +437,8 @@ async function saveNotifications(notifications) {
             notificationRowsTasker.innerHTML = '';
             document.querySelector('#box-notifications').classList.add('toggled');
             document.querySelector('#id_file_tasker').value = '';
-            fileTypeCSV.checked = true;
+            fileTypeConfigurableCSV.checked = true;
+            fileTypeTasker.checked = false;
             toggleFileType();
         }, 2000);
     } catch (error) {

@@ -207,7 +207,7 @@ async function renderBox(transactions, onProgress = () => {}) {
             row.classList.add('row-duplicate');
             row.title = `Duplicado do lançamento #${transaction.duplicate_id}`;
         }
-        const subcategories = isInvestmentImport
+        const subcategories = isInvestmentImport || !transaction.category
             ? []
             : await services.getChildrenResource('categories', 'subcategories', transaction.category);
         const fields = isInvestmentImport
@@ -271,7 +271,9 @@ function getTransactionFields(transaction, categories, subcategories) {
             selected: transaction.category,
             onChange: async (select, cell) => {
                 const subcategorySelect = cell.nextSibling.querySelector('select');
-                const subcategories = await services.getChildrenResource('categories', 'subcategories', select.value);
+                const subcategories = select.value
+                    ? await services.getChildrenResource('categories', 'subcategories', select.value)
+                    : [];
                 updateSelectOptions(subcategorySelect, subcategories);
             },
         },
