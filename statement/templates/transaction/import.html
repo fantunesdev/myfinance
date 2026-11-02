@@ -43,6 +43,7 @@
                 <div class="form-group">
                     <input type="button" value="Importar" class="btn btn-primary" id="import-btn">
                 </div>
+                {% include 'transaction/csv_import_progress.html' %}
             </form>
         </div>
     </div>
@@ -83,5 +84,5 @@
         window.myFinance = window.myFinance || {};
         window.myFinance.importedTransactions = {{ notifications_json|safe }};
     </script>
-    <script src="{% static 'js/pages/import-transactions.js' %}?v=event-column-1" type="module"></script>
+    <script src="{% static 'js/pages/import-transactions.js' %}?v=csv-progress-1" type="module"></script>
 {% endblock %}

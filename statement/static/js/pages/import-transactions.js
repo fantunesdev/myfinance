@@ -28,6 +28,59 @@ const importInstallmentHeading = document.querySelector('.import-installment-hea
 const importEventHeading = document.querySelector('#div-import-transactions .import-col-event-type');
 const paymentMethodGroup = document.querySelector('#payment-method-group');
 const paymentTargetFields = document.querySelector('#payment-target-fields');
+const importProgress = document.querySelector('#csv-import-progress');
+let importingCSV = false;
+
+function startCSVProgress() {
+    importingCSV = true;
+    const controls = new Map();
+    document.querySelectorAll('#form-csv input, #form-csv select, #import-btn, #send-transactions-btn, #checkall, input[name="file-type"], input[name="import-type"]').forEach((control) => {
+        controls.set(control, control.disabled);
+        control.disabled = true;
+    });
+    const buttonLabel = importBtn.value;
+    importBtn.value = 'Processando CSV…';
+    importBtn.setAttribute('aria-busy', 'true');
+    const startedAt = Date.now();
+    let message = 'Enviando CSV e aguardando processamento no servidor…';
+    const showActivity = () => {
+        if (importProgress) {
+            importProgress.querySelector('[data-import-message]').textContent = `${message} · ${Math.floor((Date.now() - startedAt) / 1000)}s decorridos`;
+        }
+    };
+    if (importProgress) {
+        importProgress.hidden = false;
+        importProgress.querySelector('[data-import-activity]').hidden = false;
+        importProgress.querySelector('progress').hidden = false;
+        importProgress.querySelector('progress').removeAttribute('value');
+    }
+    showActivity();
+    const heartbeat = setInterval(showActivity, 1000);
+    return {
+        update(completed, total) {
+            message = `Preparando lançamentos: ${completed} de ${total}`;
+            if (importProgress) {
+                importProgress.querySelector('progress').value = total ? Math.floor(100 * completed / total) : 100;
+            }
+            showActivity();
+        },
+        finish(success, total = 0) {
+            clearInterval(heartbeat);
+            importingCSV = false;
+            for (const [control, disabled] of controls) control.disabled = disabled;
+            importBtn.value = buttonLabel;
+            importBtn.removeAttribute('aria-busy');
+            if (importProgress) {
+                importProgress.querySelector('[data-import-activity]').hidden = true;
+                importProgress.querySelector('progress').hidden = !success;
+                importProgress.querySelector('progress').value = 100;
+                importProgress.querySelector('[data-import-message]').textContent = success
+                    ? `${total} lançamento(s) pronto(s) para revisão.`
+                    : 'Não foi possível carregar o CSV. Confira o erro e tente novamente.';
+            }
+        },
+    };
+}
 
 const targetModels = {
     statement: 'statement_transaction',
@@ -75,6 +128,7 @@ export function selectPaymentMethod() {
  * Se tudo estiver correto, envia o arquivo para o backend.
  */
 async function sendFile() {
+    if (importingCSV) return;
     const formData = new FormData();
     const csvImportConfig = getSelectedCSVImportConfig();
 
@@ -104,16 +158,27 @@ async function sendFile() {
     } else if (getTargetModel() === targetModels.statement && selects.paymentMethod.value == 2 && !selects.account.value) {
         alert('Selecione uma conta para continuar.');
     } else {
-        const transactions = await services.importTransactions(formData);
-        window.myFinance = window.myFinance || {};
-        window.myFinance.importedTransactions = transactions;
+        const activity = startCSVProgress();
         const importError = document.querySelector('#import-error');
-        if (transactions.errors) {
+        let transactions;
+        let success = false;
+        importError.classList.add('toggled');
+        boxTransactions.classList.add('toggled');
+        try {
+            transactions = await services.importTransactions(formData);
+            if (!Array.isArray(transactions)) {
+                throw new Error(transactions?.errors || transactions?.detail || transactions?.message || 'Resposta inválida ao carregar o CSV.');
+            }
+            window.myFinance = window.myFinance || {};
+            await renderBox(transactions, activity.update);
+            window.myFinance.importedTransactions = transactions;
+            success = true;
+        } catch (error) {
+            boxTransactions.classList.add('toggled');
             importError.classList.remove('toggled');
-            importError.textContent = transactions.errors;
-        } else {
-            importError.classList.add('toggled');
-            renderBox(transactions);
+            importError.textContent = error.message;
+        } finally {
+            activity.finish(success, transactions?.length);
         }
     }
 }
@@ -125,7 +190,8 @@ async function sendFile() {
  *
  * @param {array} transactions - Um array de transações importadas do arquivo da instituição financeira.
  */
-async function renderBox(transactions) {
+async function renderBox(transactions, onProgress = () => {}) {
+    onProgress(0, transactions.length);
     const isInvestmentImport = isConfigurableCSV() && getTargetModel() === targetModels.investment;
     const categories = isInvestmentImport ? [] : await services.getCategoriesByType('saida');
     const investments = isInvestmentImport ? await services.getResource('investments') : [];
@@ -149,6 +215,9 @@ async function renderBox(transactions) {
             : getTransactionFields(transaction, categories, subcategories);
         renderFields(row, fields);
         transactionRows.appendChild(row);
+        onProgress(transactionRows.children.length, transactions.length);
+        // Allow the browser to paint progress even when rows require no network requests.
+        if (transactionRows.children.length % 25 === 0) await new Promise(resolve => setTimeout(resolve, 0));
     }
 }
 

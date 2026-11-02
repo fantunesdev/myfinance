@@ -142,6 +142,7 @@
                             <input type="button" value="Importar CSV configurável" class="btn btn-primary" id="import-btn">
                             <input type="hidden" id="import-type-field" value="csv">
                         </div>
+                        {% include 'transaction/csv_import_progress.html' %}
                     </form>
                 </div>
 
@@ -315,7 +316,7 @@
             toggleCSVPanels();
         });
     </script>
-    <script src="{% static 'js/pages/import-transactions.js' %}?v=event-column-1" type="module"></script>
+    <script src="{% static 'js/pages/import-transactions.js' %}?v=csv-progress-1" type="module"></script>
     <script src="{% static 'js/pages/import-notifications.js' %}?v=event-column-1" type="module"></script>
     <script src="{% static 'js/pages/import-tasker.js' %}" type="module"></script>
 {% endblock %}
