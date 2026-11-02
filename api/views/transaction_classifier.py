@@ -100,9 +100,13 @@ class TransactionClassifierView(ViewSet):
         else:
             data = (
                 Transaction.objects.filter(user_id=job.user_id)
-                .order_by('pk')
+                .order_by('posted_date', 'pk')
                 .values(
+                    'id', 'posted_date', 'value', 'installment',
+                    'merchant_description', 'source_type', 'source_app', 'event_type', 'source_notification',
                     'description',
+                    'original_description',
+                    'source_category',
                     'category',
                     'subcategory',
                 )

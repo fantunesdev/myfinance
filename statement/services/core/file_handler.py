@@ -1,6 +1,7 @@
 import csv
 import json
 import re
+import unicodedata
 from decimal import Decimal, InvalidOperation
 
 from django.db.models import Q
@@ -12,6 +13,7 @@ from statement.services.core.card import CardService
 from statement.services.core.category import CategoryService
 from statement.services.core.notification import NotificationService
 from statement.utils.text import sanitize_utf8mb3
+from statement.utils.transaction_input import extract_amount, identify_event, parse_amount, statement_merchant
 
 
 class FileHandlerService:
@@ -123,6 +125,7 @@ class FileHandlerService:
             self._validate_csv_columns(row, i)
             date = row[self._date_column]
             description = row[self._description_column]
+            source_category = self._extract_source_category(row)
             installment_text = self._extract_installment_text(row)
             installment_paid, installments_number = self._parse_installment_numbers(installment_text)
             value = (
@@ -147,6 +150,11 @@ class FileHandlerService:
                 )
                 continue
 
+            amount = parse_amount(value)
+            event_type = identify_event(description, amount=amount, default='purchase')
+            source_account = self._card.account if self._card else self._account
+            source_app = getattr(getattr(source_account, 'bank', None), 'app_id', '') or ''
+            prediction_context = {'source_type': 'csv', 'source_app': source_app, 'event_type': event_type, 'merchant_description': statement_merchant(description, event_type)}
             predicted = {
                 'category_id': None,
                 'subcategory_id': None,
@@ -155,9 +163,9 @@ class FileHandlerService:
 
             # Only call classifier if global toggle enabled
             try:
-                if AppConfig.get_solo().enable_transaction_classifier:
+                if event_type not in ('card_payment', 'unknown') and AppConfig.get_solo().enable_transaction_classifier:
                     microservice_client = TransactionClassifierClient(self._user)
-                    predicted = microservice_client.predict(description, row.get('category', ''))
+                    predicted = microservice_client.predict(description, source_category=source_category, **prediction_context)
             except Exception:
                 # On any failure, fallback to original values
                 predicted = {
@@ -188,6 +196,10 @@ class FileHandlerService:
                 'paid': installment_paid,
                 'installments_number': installments_number,
                 'value': value,
+                'source_category': source_category,
+                **prediction_context,
+                'needs_review': event_type != 'purchase',
+                'review_reason': 'Pagamento da fatura: escolha cadastrar ou ignorar.' if event_type == 'card_payment' else 'Confira o tipo de evento, valor e classificação antes de cadastrar.' if event_type != 'purchase' else '',
                 'matching_fields': self._matching_fields,
             }
             duplicate = self._find_duplicate_transaction(transaction)
@@ -201,6 +213,14 @@ class FileHandlerService:
         if not transactions:
             raise ValueError('O arquivo está vazio.')
         return transactions
+
+    @staticmethod
+    def _extract_source_category(row):
+        for header, value in row.items():
+            normalized = unicodedata.normalize('NFKD', header).encode('ascii', 'ignore').decode().casefold()
+            if normalized in ('category', 'categoria'):
+                return (value or '').strip()
+        return ''
 
     def _get_csv_reader(self, file_content):
         lines = file_content.splitlines()
@@ -464,24 +484,5 @@ class FileHandlerService:
         return notifications_to_create
 
     def _extract_value_from_message(self, message):
-        """
-        Extrai o valor monetário da mensagem de notificação.
-
-        Exemplo: "Você acaba de comprar R$ 69,71 em JACOMAR"
-        Retorna: "69.71"
-
-        :param message: Texto da mensagem.
-        :return: Valor extraído ou None.
-        """
-        import re
-
-        # Procura por padrão "R$ XX,XX"
-        match = re.search(r'R\$\s*([\d.,]+)', message)
-        if match:
-            value_str = match.group(1).replace('.', '').replace(',', '.')
-            try:
-                return float(value_str)
-            except ValueError:
-                return None
-
-        return None
+        amount = extract_amount(message)
+        return float(amount) if amount is not None else None

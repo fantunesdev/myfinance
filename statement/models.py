@@ -3,6 +3,7 @@ import secrets
 from django.db import models
 from django.db import transaction as db_transaction
 from login.models import User
+from statement.utils.transaction_input import EVENT_CHOICES
 
 
 def generate_device_token():
@@ -116,11 +117,18 @@ class CategorizationFeedback(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     description = models.CharField(max_length=255)
-    predicted_category_id = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name='+')
-    predicted_subcategory_id = models.ForeignKey(Subcategory, on_delete=models.SET_NULL, null=True, related_name='+')
+    predicted_category_id = models.ForeignKey(Category, blank=True, on_delete=models.SET_NULL, null=True, related_name='+')
+    predicted_subcategory_id = models.ForeignKey(Subcategory, blank=True, on_delete=models.SET_NULL, null=True, related_name='+')
     corrected_description = models.CharField(max_length=255)
-    corrected_category_id = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name='+')
-    corrected_subcategory_id = models.ForeignKey(Subcategory, on_delete=models.SET_NULL, null=True, related_name='+')
+    original_description = models.TextField(blank=True, default='')
+    source_category = models.CharField(max_length=255, blank=True, default='')
+    merchant_description = models.CharField(max_length=255, blank=True, default='')
+    source_type = models.CharField(max_length=20, blank=True, default='')
+    source_app = models.CharField(max_length=255, blank=True, default='')
+    event_type = models.CharField(max_length=20, blank=True, choices=EVENT_CHOICES, default='unknown')
+    source_notification = models.ForeignKey('Notification', on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+    corrected_category_id = models.ForeignKey(Category, blank=True, on_delete=models.SET_NULL, null=True, related_name='+')
+    corrected_subcategory_id = models.ForeignKey(Subcategory, blank=True, on_delete=models.SET_NULL, null=True, related_name='+')
     subcategory_training = models.BooleanField(default=False)
     description_training = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -371,7 +379,13 @@ class Transaction(models.Model):
     home_screen = models.BooleanField(default=True)
     user = models.ForeignKey(User, on_delete=models.PROTECT)
     installment = models.ForeignKey(Installment, null=True, blank=True, on_delete=models.CASCADE)
-    original_description = models.CharField(max_length=255, blank=True, null=True)
+    original_description = models.TextField(blank=True, null=True)
+    source_category = models.CharField(max_length=255, blank=True, default='')
+    merchant_description = models.CharField(max_length=255, blank=True, default='')
+    source_type = models.CharField(max_length=20, blank=True, default='')
+    source_app = models.CharField(max_length=255, blank=True, default='')
+    event_type = models.CharField(max_length=20, blank=True, choices=EVENT_CHOICES, default='unknown')
+    source_notification = models.ForeignKey('Notification', on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
     dream = models.ForeignKey('Dream', null=True, blank=True, related_name='transactions', on_delete=models.SET_NULL)
 
     def save(self, *args, **kwargs):

@@ -11,7 +11,7 @@ from django.utils.decorators import method_decorator
 from django.utils.timezone import now
 from statement.forms.core.transaction import TransactionExpenseForm, TransactionForm, TransactionRevenueForm
 from statement.forms.general_forms import NavigationForm, UploadFileForm
-from statement.models import CardNumber, Transaction
+from statement.models import AppConfig, CardNumber, Transaction
 from statement.services.core.card import CardService
 from statement.services.core.csv_import_config import CSVImportConfigService
 from statement.services.core.fixed_expenses import FixedExpensesService
@@ -168,21 +168,13 @@ class TransactionView(BaseView):
         card_ids = {card.id for card in cards}
 
         # Tenta identificar proprietário (cartão e card_number quando possível) para todas as notificações
+        previous_cards = {n.id: n.card_id for n in all_notifications}
         CardService.are_notifications_owner(cards, all_notifications)
 
-        # Tenta persistir vínculo de cartão para notificações que ainda não têm card salvo
-        unlinked = [n for n in all_notifications if getattr(n, 'card', None) is None]
-
-        if unlinked:
-            for n in unlinked:
-                # Se o serviço identificou um cartão para a notificação e ela ainda não está vinculada no banco, salva
-                # essa associação.
-                if getattr(n, 'card', None):
-                    current = NotificationService.get_by_filter(first=True, id=n.id)
-                    if current and current.card is None:
-                        n.card = n.card
-                        n.card_id = n.card.id
-                        n.save()
+        # Persist newly identified cards so the confirmed transaction can retain its origin.
+        for notification in all_notifications:
+            if notification.card_id and not previous_cards[notification.id]:
+                notification.save(update_fields=['card'])
 
         # Filtra apenas as notificações que pertencem aos cartões do usuário
         # Se houver títulos habilitados configurados, filtra pelas notificações cujo
@@ -231,7 +223,14 @@ class TransactionView(BaseView):
 
             try:
                 microservice_client = TransactionClassifierClient(request.user)
-                predicted = microservice_client.predict(transaction_data.get('description', ''), '')
+                if transaction_data['event_type'] in ('card_payment', 'unknown') or not transaction_data['merchant_description'] or not AppConfig.get_solo().enable_transaction_classifier:
+                    predicted = {'category_id': None, 'subcategory_id': None, 'description': transaction_data['description']}
+                else:
+                    predicted = microservice_client.predict(
+                        transaction_data['merchant_description'], '',
+                        source_type='notification', source_app=transaction_data['source_app'],
+                        event_type=transaction_data['event_type'], merchant_description=transaction_data['merchant_description'],
+                    )
             except Exception as e:
                 predicted = {
                     'category_id': None,
@@ -264,6 +263,7 @@ class TransactionView(BaseView):
                         else None
                     ),
                     'notification_id': notification.id,
+                    **{key: transaction_data[key] for key in ('merchant_description', 'source_type', 'source_app', 'source_notification', 'event_type', 'needs_review', 'review_reason')},
                 }
             )
 

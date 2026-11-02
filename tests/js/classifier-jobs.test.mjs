@@ -121,3 +121,38 @@ test('HTML access rejection explains the session problem without exposing a JSON
     assert.match(page.modals[0][1], /sessão expirou ou o acesso foi recusado/);
     assert.equal(JSON.parse(page.storage[key]).length, 0);
 });
+
+
+test('candidate changes explain progress resets and a reopened page restores the phase', async () => {
+    const page = setup(async () => response({ jobs: [job({
+        phase: 2, phases_total: 4, phase_label: 'Comparando modelos',
+        candidate_index: 3, candidates_total: 8, candidate_label: 'Naive Bayes complementar — palavras',
+    })] }));
+    await flush();
+    assert.match(page.panels.description.text.textContent, /Etapa 2\/4 — Comparando modelos/);
+    assert.match(page.panels.description.text.textContent, /Candidato 3\/8 — Naive Bayes complementar/);
+    assert.match(page.panels.description.text.textContent, /pode sair da página; o treinamento continua/);
+    assert.equal(page.requests.filter(request => request.options?.method === 'POST').length, 0);
+    page.events['classifier:changed']({ detail: job({
+        revision: 3, phase: 2, phases_total: 4, phase_label: 'Comparando modelos',
+        candidate_index: 4, candidates_total: 8, candidate_label: 'Naive Bayes complementar — palavras e caracteres',
+        completed: 1,
+    }) });
+    assert.match(page.panels.description.text.textContent, /Candidato 4\/8/);
+    assert.match(page.panels.description.text.textContent, /1 de 10/);
+    page.events['classifier:changed']({ detail: job({
+        revision: 4, phase: 3, phases_total: 4, phase_label: 'Treinamento final',
+        candidate_index: null, candidates_total: null, candidate_label: null,
+    }) });
+    assert.match(page.panels.description.text.textContent, /Etapa 3\/4 — Treinamento final/);
+    assert.doesNotMatch(page.panels.description.text.textContent, /Candidato/);
+});
+
+test('terminal results show the final message without a stale phase or background notice', async () => {
+    const page = setup(async () => response({ jobs: [job({
+        status: 'succeeded', stage: 'completed', message: 'Modelo salvo.',
+        phase: 4, phases_total: 4, phase_label: 'Salvando modelo',
+    })] }));
+    await flush();
+    assert.equal(page.panels.description.text.textContent, 'Modelo salvo.');
+});

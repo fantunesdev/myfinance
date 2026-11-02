@@ -154,3 +154,18 @@ def test_category_and_subcategory_lists_are_alphabetical(classification):
     form = TransactionForm(data.user, instance=data.transaction)
     assert list(form.fields['category'].queryset) == list(CategoryService.get_by_type('saida'))
     assert list(form.fields['subcategory'].queryset) == list(SubcategoryService.get_by_category(data.expense.pk))
+
+
+def test_edit_without_source_category_preserves_bank_metadata(classification):
+    from statement.services.core.transaction import TransactionService
+
+    transaction = classification.transaction
+    transaction.source_category = 'SUPERMERCADO'
+    transaction.save()
+    posted = model_to_dict(transaction)
+    posted.pop('source_category')
+    form = TransactionForm(classification.user, posted, instance=transaction)
+    assert form.is_valid(), form.errors
+    TransactionService.update(form, transaction)
+    transaction.refresh_from_db()
+    assert transaction.source_category == 'SUPERMERCADO'

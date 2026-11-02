@@ -1,10 +1,5 @@
-import re
-from datetime import datetime
-
-from clients.transaction_classifier.transaction_classifier import TransactionClassifierClient
-from statement.models import AppConfig, Notification
+from statement.models import Notification
 from statement.services.base_service import BaseService
-from statement.services.core.category import CategoryService
 
 
 class NotificationService(BaseService):
@@ -27,55 +22,19 @@ class NotificationService(BaseService):
 
     @staticmethod
     def build_transaction_from_notification(notification, user, card=None):
-        """
-        Monta a estrutura básica de um lançamento a partir de uma notificação.
+        from django.utils import timezone
+        from statement.utils.transaction_input import parse_notification
 
-        Extrai informações da notificação:
-        - date: Data da notificação
-        - value: Valor em reais (padrão: R$ XX,XX)
-        - description: Estabelecimento (entre "em" e caracteres de pontuação)
-        - card: Cartão associado (opcional)
-
-        :param notification: A notificação a ser processada
-        :param card: O cartão associado à transação (opcional)
-        :return: Dicionário com os dados da transação
-        """
-        transaction = {
+        transaction = parse_notification(notification)
+        created_at = getattr(notification, 'created_at', None)
+        if created_at is None:
+            notification_date = timezone.localdate()
+        else:
+            notification_date = timezone.localtime(created_at).date() if timezone.is_aware(created_at) else created_at.date()
+        transaction.update({
             'card': card,
-            'type': 'saida',  # Notificações geralmente são despesas
-            'original_description': notification.message if hasattr(notification, 'message') else '',
-        }
-
-        # Extrai a data da notificação
-        try:
-            notification_date = datetime.strptime(notification.created_at.strftime('%Y-%m-%d'), '%Y-%m-%d').date()
-            transaction['posted_date'] = notification_date
-            transaction['payment_date'] = notification_date
-        except (ValueError, AttributeError):
-            # Se falhar, tenta usar o campo "date" se existir na mensagem
-            transaction['posted_date'] = datetime.now().date()
-            transaction['payment_date'] = datetime.now().date()
-
-        # Extrai o valor (padrão: R$ XX,XX ou R$ XX.XXX,XX)
-        value_match = re.search(r'R\$\s*([\d.,]+)', notification.message)
-        if value_match:
-            value_str = value_match.group(1)
-            # Converte formato brasileiro (XX,XX) para float
-            value_str = value_str.replace('.', '').replace(',', '.')
-            try:
-                transaction['value'] = float(value_str)
-            except ValueError:
-                transaction['value'] = 0.0
-        else:
-            transaction['value'] = 0.0
-
-        # Extrai a descrição do estabelecimento (entre "em" e ponto/vírgula)
-        # Padrão: "...em ESTABELECIMENTO. A compra..."
-        desc_match = re.search(r'em\s+([A-Za-záéíóúàâêôãõç\s]+?)[\.,]', notification.message, re.IGNORECASE)
-        if desc_match:
-            transaction['description'] = desc_match.group(1).strip().upper()
-        else:
-            # Se não encontrar, usa parte do title
-            transaction['description'] = notification.title
-
+            'type': 'saida',
+            'posted_date': notification_date,
+            'payment_date': notification_date,
+        })
         return transaction

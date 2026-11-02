@@ -14,7 +14,7 @@ class DescriptionPredictorClient(BaseMicroserviceClient):
         """
         return self._send_requisition('description_predictor/train', 'post')
 
-    def predict(self, description: str):
+    def predict(self, description: str, **context):
         """
         Envia uma solicitação de previsão para o micro serviço
 
@@ -22,7 +22,7 @@ class DescriptionPredictorClient(BaseMicroserviceClient):
         :returns
         """
         body = {
-            'description': description,
+            'description': description, **context,
         }
         return self._send_requisition('description_predictor/predict', 'post', body)
 

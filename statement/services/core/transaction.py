@@ -27,6 +27,9 @@ class TransactionService(BaseService):
         Sobrescreve o método 'create' da classe mãe redefinindo o atributo home_screen
         """
         instance = form.save(commit=False)
+        from statement.utils.transaction_provenance import validate_notification_source
+
+        validate_notification_source(instance, user)
         instance.home_screen = cls._set_home_screen(instance)
         return super().create(form, user=user)
 
@@ -36,6 +39,15 @@ class TransactionService(BaseService):
         Sobrescreve o método 'update' da classe mãe redefinindo o atributo home_screen
         """
         instance = form.save(commit=False)
+        from statement.utils.transaction_provenance import validate_notification_source
+
+        fields = ('source_category', 'original_description', 'merchant_description', 'source_type', 'source_app', 'event_type', 'source_notification_id')
+        previous = cls.model.objects.values(*fields).get(pk=instance.pk)
+        for field in fields:
+            form_field = 'source_notification' if field == 'source_notification_id' else field
+            if form_field not in form.data:
+                setattr(instance, field, previous[field])
+        validate_notification_source(instance, instance.user)
         instance.home_screen = cls._set_home_screen(instance)
         return super().update(form, instance)
 

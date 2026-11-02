@@ -241,4 +241,25 @@ def test_training_inputs_expose_only_owners_transaction_fields(context):
         f'/api/transaction-classifier/jobs/{job.pk}/inputs/transactions/', HTTP_X_CLASSIFIER_SECRET=job.secret
     )
     assert response.status_code == 200
-    assert response.data == [{'description': 'own', 'category': category.pk, 'subcategory': subcategory.pk}]
+    assert len(response.data) == 1
+    row = response.data[0]
+    assert row['description'] == 'own'
+    assert row['category'] == category.pk
+    assert row['subcategory'] == subcategory.pk
+    assert set(row) == {'category', 'subcategory', 'id', 'posted_date', 'value', 'installment', 'description', 'original_description', 'source_category', 'merchant_description', 'source_type', 'source_app', 'event_type', 'source_notification'}
+    assert row['source_notification'] is None
+
+
+def test_phase_and_candidate_context_survives_callbacks_and_page_reload(context):
+    user, client, _ = context
+    job = jobs.create_job(user, 'subcategory', 'train')
+    details = dict(phase=2, phases_total=4, phase_label='Comparando modelos',
+                   candidate_index=3, candidates_total=8, candidate_label='Naive Bayes complementar — palavras')
+    jobs.apply_update(job.pk, event(job, revision=3, **details))
+    job.refresh_from_db()
+    assert all(job.progress[key] == value for key, value in details.items())
+    with patch.object(jobs, 'reconcile', side_effect=lambda value: value):
+        response = client.get('/api/transaction-classifier/jobs/')
+    assert response.status_code == 200
+    saved = next(item for item in response.data['jobs'] if item['id'] == str(job.pk))
+    assert all(saved[key] == value for key, value in details.items())

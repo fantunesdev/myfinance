@@ -87,3 +87,18 @@ class CategorizationFeedbackService(BaseService):
 
         for feedback in feedbacks:
             feedback.delete()
+
+    @classmethod
+    def create(cls, form, user=None, id=None):
+        from statement.utils.transaction_provenance import validate_notification_source
+
+        instance = form.save(commit=False)
+        validate_notification_source(instance, user)
+        if instance.corrected_subcategory_id_id:
+            from django.core.exceptions import ValidationError
+
+            parent = instance.corrected_subcategory_id.category_id
+            if instance.corrected_category_id_id and instance.corrected_category_id_id != parent:
+                raise ValidationError('A subcategoria corrigida não pertence à categoria informada.')
+            instance.corrected_category_id_id = parent
+        return super().create(form, user=user, id=id)

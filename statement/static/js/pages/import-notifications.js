@@ -1,3 +1,4 @@
+import { renderEventReview, importAction, eventMetadata } from './import-event.js';
 import * as services from '../data/services.js';
 
 const checkboxCheckAllNotifications = document.querySelector('#checkall-notifications');
@@ -151,14 +152,6 @@ async function renderNotificationsBox(notifications) {
             const subcategorySelect = document.getElementById(`id_subcategory_${notification.id}`);
             if (categorySelect && subcategorySelect) {
                 let selectedCategory = categorySelect.value;
-                // If no category is explicitly selected, pick the first meaningful option
-                if (!selectedCategory || parseInt(selectedCategory, 10) <= 0) {
-                    const firstOpt = Array.from(categorySelect.options).find(o => {
-                        const v = parseInt(o.value, 10);
-                        return !isNaN(v) && v > 0;
-                    });
-                    if (firstOpt) selectedCategory = firstOpt.value;
-                }
 
                 if (selectedCategory && parseInt(selectedCategory, 10) > 0) {
                     const subcats = await services.getChildrenResource('categories', 'subcategories', selectedCategory);
@@ -269,6 +262,7 @@ function getTransactionFields(transaction, categories, subcategories) {
                 input.title = `Original: ${transaction.original_description}`;
                 input.classList.add('form-control');
                 cell.appendChild(input);
+                renderEventReview(cell, transaction);
             },
         },
         {
@@ -280,7 +274,7 @@ function getTransactionFields(transaction, categories, subcategories) {
                 const input = document.createElement('input');
                 input.type = 'number';
                 input.step = '0.01';
-                input.min = '0';
+                input.removeAttribute('min');
                 input.inputMode = 'decimal';
                 input.id = `id_value_${transaction.id}`;
                 input.value = transaction.value;
@@ -371,10 +365,10 @@ function createInput(field) {
     if (input.id && input.id.startsWith('id_value_')) {
         input.type = 'number';
         input.step = '0.01';
-        input.min = '0';
+        input.removeAttribute('min');
         input.inputMode = 'decimal';
         input.maxLength = 9;
-        input.pattern = '^[0-9]{1,6}(\\.[0-9]{2})?$';
+        input.pattern = '^-?[0-9]{1,6}(\\.[0-9]{2})?$';
         input.style.textAlign = 'right';
         input.classList.add('value-input');
     }
@@ -439,11 +433,15 @@ function createSelect(field) {
     }
 
     if (Array.isArray(field.options)) {
-        field.options.forEach((opt) => {
+        const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = 'Selecione';
+    select.appendChild(placeholder);
+    field.options.forEach((opt) => {
             const option = document.createElement('option');
             option.value = opt.id;
             option.textContent = opt.description;
-            if (opt.id === field.selected) option.selected = true;
+            if (String(opt.id) === String(field.selected)) option.selected = true;
             select.appendChild(option);
         });
     }
@@ -524,9 +522,17 @@ async function importNotifications(notifications) {
     const notificationsToMarkAsUsed = [];
 
     for (let notification of notifications) {
+        if (importAction(notification.id) === 'ignore') {
+            if (notification.notification_id) notificationsToMarkAsUsed.push(notification.notification_id);
+            continue;
+        }
         if (!selectedIds.includes(notification.id)) continue;
 
         const newTransaction = getFormData(notification.id, notification);
+        if (!newTransaction.category || !newTransaction.subcategory) {
+            alert('Escolha a categoria e a subcategoria dos lançamentos selecionados.');
+            return;
+        }
         const feedback = buildFeedback(notification, newTransaction);
 
         const created = await createNewResource('transactions', newTransaction, true);
@@ -582,6 +588,7 @@ function getFormData(notificationId, notificationObj) {
         category: document.getElementById(`id_category_${notificationId}`).value,
         subcategory: document.getElementById(`id_subcategory_${notificationId}`).value,
         description: document.getElementById(`id_description_${notificationId}`).value,
+        ...eventMetadata(notificationId, notificationObj),
         value: document.getElementById(`id_value_${notificationId}`).value,
         installment_text: getInstallmentTextValue(notificationId),
         installment_value_mode: 'total',
@@ -601,14 +608,17 @@ function getInstallmentTextValue(notificationId) {
  * @returns O feedback de categorização, se houver alteração.
  */
 function buildFeedback(original, updated) {
-    const categoryChanged = original.category !== updated.category;
-    const subcategoryChanged = original.subcategory !== updated.subcategory;
+    if ((updated.event_type || original.event_type) === 'card_payment') return null;
+    const categoryChanged = String(original.category || '') !== String(updated.category || '');
+    const subcategoryChanged = String(original.subcategory || '') !== String(updated.subcategory || '');
     const descriptionChanged = original.description !== updated.description;
 
     if (!(categoryChanged || subcategoryChanged || descriptionChanged)) return null;
 
     return {
-        description: original.description,
+        ...eventMetadata(original.id, original),
+        event_type: updated.event_type || original.event_type || 'unknown',
+        description: original.merchant_description || original.description,
         predicted_category_id: original.category,
         predicted_subcategory_id: original.subcategory,
         corrected_description: updated.description,

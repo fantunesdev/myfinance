@@ -3,6 +3,7 @@ const labels = {
     submitting: 'Confirmando solicitação…', queued: 'Aguardando execução…',
     loading: 'Carregando dados…', preparing: 'Preparando feedbacks…',
     training: 'Treinando', validating: 'Validando', saving: 'Salvando modelo…',
+    calibrating: 'Ajustando a confiança', testing: 'Avaliando resultado final', diagnosing: 'Verificando novos estabelecimentos',
     completed: 'Concluído', failed: 'Falha no treinamento', interrupted: 'Treinamento interrompido',
 };
 const jobs = new Map();
@@ -43,6 +44,17 @@ function render() {
             message = job.message || message;
         } else if (measured) {
             message += `: ${job.completed} de ${job.total} — ${progress.value}%`;
+        }
+        if (active) {
+            const context = [];
+            if (Number.isInteger(job.phase) && job.phase > 0 && job.phases_total >= job.phase) {
+                context.push(`Etapa ${job.phase}/${job.phases_total}${job.phase_label ? ` — ${job.phase_label}` : ''}`);
+            }
+            if (Number.isInteger(job.candidate_index) && job.candidate_index > 0 && job.candidates_total >= job.candidate_index) {
+                context.push(`Candidato ${job.candidate_index}/${job.candidates_total}${job.candidate_label ? ` — ${job.candidate_label}` : ''}`);
+            }
+            message = [...context, message].join(' · ');
+            message += ' · Você pode sair da página; o treinamento continua no servidor.';
         }
         const lastSeen = Date.parse(job.heartbeat_at || job.created_at);
         if (active && Date.now() - lastSeen > 30000) {

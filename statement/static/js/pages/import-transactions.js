@@ -1,3 +1,4 @@
+import { renderEventReview, importAction, eventMetadata } from './import-event.js';
 import { divs, selects } from '../layout/elements/transaction-form-elements.js';
 import * as services from '../data/services.js';
 
@@ -211,6 +212,15 @@ function getTransactionFields(transaction, categories, subcategories) {
             type: 'text',
             value: transaction.description,
             title: `Original: ${transaction.original_description}`,
+            render: (cell) => {
+                const input = document.createElement('input');
+                input.id = `id_description_${transaction.id}`;
+                input.value = transaction.description || '';
+                input.classList.add('form-control');
+                input.title = `Original: ${transaction.original_description || ''}`;
+                cell.appendChild(input);
+                renderEventReview(cell, transaction);
+            },
         },
         {
             id: `id_value_${transaction.id}`,
@@ -285,7 +295,7 @@ function getCheckboxField(transaction) {
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
             checkbox.id = transaction.id;
-            checkbox.checked = !transaction.is_duplicate;
+            checkbox.checked = !transaction.is_duplicate && !transaction.needs_review;
             checkbox.disabled = Boolean(transaction.is_duplicate);
 
             checkbox.addEventListener('change', () => {
@@ -377,7 +387,7 @@ function createInput(field) {
     input.classList.add('form-control');
     if (input.id && input.id.startsWith('id_value_')) {
         input.maxLength = 9;
-        input.pattern = '^[0-9]{1,6}(\\.[0-9]{2})?$';
+        input.pattern = '^-?[0-9]{1,6}(\\.[0-9]{2})?$';
         input.style.textAlign = 'right';
     }
     if (input.id && input.id.startsWith('id_description_')) {
@@ -429,11 +439,15 @@ function createSelect(field) {
         return select;
     }
 
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = 'Selecione';
+    select.appendChild(placeholder);
     field.options.forEach((opt) => {
         const option = document.createElement('option');
         option.value = opt.id;
         option.textContent = opt.description;
-        if (opt.id === field.selected) option.selected = true;
+        if (String(opt.id) === String(field.selected)) option.selected = true;
         select.appendChild(option);
     });
 
@@ -448,6 +462,10 @@ function createSelect(field) {
  */
 function updateSelectOptions(select, options) {
     select.innerHTML = '';
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = 'Selecione';
+    select.appendChild(placeholder);
     options.forEach((opt) => {
         const option = document.createElement('option');
         option.value = opt.id;
@@ -469,11 +487,16 @@ async function importTransactions(transactions) {
     const isInvestmentImport = isConfigurableCSV() && getTargetModel() === targetModels.investment;
 
     for (let transaction of transactions) {
-        if (!selectedIds.includes(transaction.id)) continue;
+        if (importAction(transaction.id) === 'ignore' || !selectedIds.includes(transaction.id)) continue;
 
         const newTransaction = isInvestmentImport
             ? getInvestmentTransactionFormData(transaction.id)
             : getFormData(transaction.id, transaction);
+
+        if (!isInvestmentImport && (!newTransaction.category || !newTransaction.subcategory)) {
+            alert('Escolha a categoria e a subcategoria dos lançamentos selecionados.');
+            return;
+        }
 
         const created = await createNewResource(isInvestmentImport ? 'investment-transactions' : 'transactions', newTransaction);
         if (!created) return;
@@ -521,7 +544,7 @@ function getFormData(transactionId, transactionObj = null) {
         category: document.getElementById(`id_category_${transactionId}`).value,
         subcategory: document.getElementById(`id_subcategory_${transactionId}`).value,
         description: document.getElementById(`id_description_${transactionId}`).value,
-        original_description: transactionObj ? transactionObj.original_description : '',
+        ...eventMetadata(transactionId, transactionObj || {}),
         value: document.getElementById(`id_value_${transactionId}`).value,
         installment_text: getInstallmentTextValue(transactionId, transactionObj),
         installment_value_mode: 'installment',
@@ -558,14 +581,17 @@ function getInvestmentTransactionFormData(transactionId) {
  * @returns O feedback de categorização, se houver alteração.
  */
 function buildFeedback(original, updated) {
-    const categoryChanged = original.category !== updated.category;
-    const subcategoryChanged = original.subcategory !== updated.subcategory;
+    if ((updated.event_type || original.event_type) === 'card_payment') return null;
+    const categoryChanged = String(original.category || '') !== String(updated.category || '');
+    const subcategoryChanged = String(original.subcategory || '') !== String(updated.subcategory || '');
     const descriptionChanged = original.description !== updated.description;
 
     if (!(categoryChanged || subcategoryChanged || descriptionChanged)) return null;
 
     return {
-        description: original.description,
+        ...eventMetadata(original.id, original),
+        event_type: updated.event_type || original.event_type || 'unknown',
+        description: original.merchant_description || original.original_description || original.description,
         predicted_category_id: original.category,
         predicted_subcategory_id: original.subcategory,
         corrected_description: updated.description,

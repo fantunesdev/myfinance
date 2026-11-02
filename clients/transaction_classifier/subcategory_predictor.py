@@ -14,7 +14,7 @@ class SubcategoryPredictorClient(BaseMicroserviceClient):
         """
         return self._send_requisition('subcategories_predictor/train', 'post')
 
-    def predict(self, description: str, category: str = ''):
+    def predict(self, description: str, category: str = '', source_category: str = '', **context):
         """
         Envia uma solicitação de previsão para o micro serviço
 
@@ -25,6 +25,8 @@ class SubcategoryPredictorClient(BaseMicroserviceClient):
         body = {
             'description': description,
             'category': category,
+            'source_category': source_category,
+            **context,
         }
         return self._send_requisition('subcategories_predictor/predict', 'post', body)
 

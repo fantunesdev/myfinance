@@ -52,6 +52,8 @@ def create_job(user, predictor, operation, request_id=None):
                 'id',
                 'description',
                 'corrected_description',
+                'source_category', 'original_description', 'merchant_description',
+                'source_type', 'source_app', 'event_type', 'source_notification',
                 'predicted_subcategory_id',
                 'corrected_category_id',
                 'corrected_subcategory_id',
@@ -109,7 +111,8 @@ def apply_update(job_id, data):
         job.revision = revision
         job.progress = {
             key: data[key]
-            for key in ('stage', 'completed', 'total', 'heartbeat_at', 'last_progress_at', 'message', 'result')
+            for key in ('stage', 'completed', 'total', 'heartbeat_at', 'last_progress_at', 'message', 'result',
+                        'phase', 'phases_total', 'phase_label', 'candidate_index', 'candidates_total', 'candidate_label')
             if key in data
         }
         if job.status in TERMINAL:

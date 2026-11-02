@@ -23,13 +23,13 @@ class TransactionClassifierClient(BaseMicroserviceClient):
         self._handle_status_data(response)
         return response
 
-    def predict(self, description: str, category: str = ''):
+    def predict(self, description: str, category: str = '', source_category: str = '', **context):
         """
         Faz uma previsão
         """
         predicted = {}
-        predicted |= self.subcategory.predict(description, category)
-        predicted |= self.description.predict(description)
+        predicted |= self.subcategory.predict(description, category, source_category, **context)
+        predicted |= self.description.predict(description, **context)
         return predicted
 
     def start_job(self, job):
