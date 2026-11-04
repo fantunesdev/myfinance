@@ -8,6 +8,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'login',
     'statement',
+    'bank_sync',
     'investments',
     'rest_framework',
 ]

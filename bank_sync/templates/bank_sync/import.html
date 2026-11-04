@@ -1,0 +1,34 @@
+<section id="section-pluggy-import" class="import-section toggled">
+    <div class="box box-primary" id="pluggy-import" data-state-url="{% url 'pluggy_state' %}">
+        <div class="box-header"><h3 class="box-title">Importar cartão pela Pluggy</h3></div>
+        <div class="box-body">
+            {% csrf_token %}
+            <p>Compras com data e valor correspondentes mostram uma candidata e o botão <b>Conciliar</b>. As demais compras aptas à importação já vêm selecionadas: revise as sugestões do TC antes de cadastrar.</p>
+            <p><a href="{% url 'pluggy_bills' %}">Ver todas as faturas originais, agrupadas por cartão</a></p>
+            <p id="pluggy-message" role="status" aria-live="polite"></p>
+            <div id="pluggy-connections"></div>
+            <details><summary>Vincular contas e números de cartão</summary><div id="pluggy-mappings"></div></details>
+            <div style="margin:16px 0;display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+                <label>Fatura <select id="pluggy-bill" class="form-control" aria-label="Fatura para importar"></select></label>
+                <button type="button" id="pluggy-refresh" class="btn btn-default">Recarregar revisão</button>
+                <button type="button" id="pluggy-prev" class="btn btn-default">Anterior</button>
+                <span id="pluggy-page"></span>
+                <button type="button" id="pluggy-next" class="btn btn-default">Próxima</button>
+            </div>
+            <div class="pluggy-table-scroll">
+                <table class="table import-preview-table" id="pluggy-table">
+                    <thead><tr>
+                        <th class="import-col-check"><input type="checkbox" id="pluggy-checkall" aria-label="Selecionar compras sem candidatas" title="Selecionar compras sem candidatas à conciliação"></th>
+                        <th class="import-col-date">Data</th><th class="import-col-installment">Parcela</th>
+                        <th class="import-col-category">Categoria</th><th class="import-col-subcategory">Subcategoria</th>
+                        <th class="import-col-description">Descrição</th><th class="import-col-value">Valor</th>
+                        <th class="import-col-event-type">Tipo de evento</th>
+                        <th class="pluggy-col-options"><span class="sr-only">Outras opções</span></th>
+                    </tr></thead>
+                    <tbody id="pluggy-rows"></tbody>
+                </table>
+            </div>
+            <button type="button" class="btn btn-primary" id="pluggy-save">Cadastrar selecionados</button>
+        </div>
+    </div>
+</section>

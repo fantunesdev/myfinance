@@ -318,3 +318,7 @@ pyrightconfig.json
 node_modules
 
 logs/*
+
+# Credenciais e exportações locais do piloto Pluggy
+.env.pluggy
+/pluggy-output/

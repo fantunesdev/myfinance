@@ -1,0 +1,19 @@
+{% extends 'index.html' %}
+{% load static %}
+{% block title %}Faturas originais — Pluggy{% endblock %}
+{% block styles %}<link rel="stylesheet" href="{% static 'bank_sync/style.css' %}">{% endblock %}
+{% block content %}
+<div class="box box-primary" id="pluggy-ledger" data-url="{% url 'pluggy_ledger' %}" data-review-url="{% url 'pluggy_review' %}" data-import-url="{% url 'import_transactions' %}">
+    <div class="box-header"><h3 class="box-title">Faturas originais — Pluggy</h3></div>
+    <div class="box-body">
+        {% csrf_token %}
+        <p>Dados bancários preservados, incluindo lançamentos já importados. As alterações de descrição e classificação no MyFinance não modificam esta visão.</p>
+        <label>Fatura <select id="ledger-bill" class="form-control"></select></label>
+        <a id="ledger-import" class="btn btn-primary" href="{% url 'import_transactions' %}?fonte=pluggy">Importar pendências desta fatura</a>
+        <p id="ledger-message" role="status" aria-live="polite"></p>
+        <div id="ledger-totals"></div>
+        <div id="ledger-groups"></div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{% static 'bank_sync/ledger.js' %}" type="module"></script>{% endblock %}

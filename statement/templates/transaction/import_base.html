@@ -1,6 +1,7 @@
 {% extends 'index.html' %}
 {% load static %}
 {% load i18n %}
+{% block styles %}<link rel="stylesheet" href="{% static 'bank_sync/style.css' %}?v=event-align-4">{% endblock %}
 
 {% block title %}
     Importar Lançamentos
@@ -15,16 +16,22 @@
         <div class="box-body">
             <div class="form-group">
                 <label>
-                    <input type="radio" name="import-type" value="notifications" id="import-type-notifications" checked>
+                    <input type="radio" name="import-type" value="pluggy" id="import-type-pluggy" {% if prefer_pluggy %}checked{% endif %}>
+                    <span>Importar pela Pluggy</span>
+                </label>
+                <label>
+                    <input type="radio" name="import-type" value="notifications" id="import-type-notifications" {% if import_source == 'notifications' %}checked{% endif %}>
                     <span>Importar por Notificações</span>
                 </label>
                 <label style="margin-right: 30px;">
-                    <input type="radio" name="import-type" value="file" id="import-type-file">
+                    <input type="radio" name="import-type" value="file" id="import-type-file" {% if import_source == 'file' %}checked{% endif %}>
                     <span>Importar por Arquivo</span>
                 </label>
             </div>
         </div>
     </div>
+
+    {% include 'bank_sync/import.html' %}
 
     <!-- SEÇÃO: IMPORTAR POR ARQUIVO -->
     <div id="section-file-import" class="import-section">
@@ -153,8 +160,7 @@
 
                         <div class="form-group">
                             <label>Arquivo JSON Tasker: </label><br>
-                            <input type="file" name="file" id="id_file_tasker" accept=".json,.txt" class="form-control">
-                            <small style="color: #999;">Arquivo .json ou .txt com uma notificação (JSON) por linha</small>
+                            <input type="file" name="file" id="id_file_tasker" accept=".json,.txt" class="form-control" title="Arquivo .json ou .txt com uma notificação (JSON) por linha">
                         </div>
 
                         <!-- O seletor de cartão para Tasker foi removido: o vínculo é definido pela própria notificação -->
@@ -283,6 +289,7 @@
         window.card_numbers_json = {{ card_numbers_json|safe }};
     </script>
     <script src="{% static 'js/pages/import-selector.js' %}"></script>
+    <script src="{% static 'bank_sync/import.js' %}?v=installment-reconcile-6" type="module"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const configurableRadio = document.querySelector('#file-type-configurable-csv');

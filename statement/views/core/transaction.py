@@ -298,6 +298,10 @@ class TransactionView(BaseView):
             'card_numbers_json': json.dumps(card_numbers),
         }
 
+        source = request.GET.get('fonte', 'pluggy')
+        specific_context['import_source'] = source if source in {'pluggy', 'notifications', 'file'} else 'pluggy'
+        specific_context['prefer_pluggy'] = specific_context['import_source'] == 'pluggy'
+
         return self._render(request, form, 'transaction/import_base.html', specific_context)
 
     def _get_current_month(self, request):
@@ -463,6 +467,9 @@ class TransactionView(BaseView):
         :form (ModelForm): O formulário do modelo da instância.
         :instance: A instância criada, atualizada ou removida no banco de dados.
         """
+        # Bank occurrences and forecasts must not regenerate legacy installments.
+        if getattr(instance, 'source_type', '') in ('pluggy', 'pluggy_projection'):
+            return
         match self._context:
             case 'create':
                 if instance.installments_number > 0:

@@ -133,7 +133,7 @@
                                         {% endif %}
                                         <td style="text-align: left; max-width: 150px; min-width:115px"><i class="{{ transaction.category.icon }}" style="padding:10px;"></i> {{ transaction.category }}</td>
                                         <td style="text-align: left;">{{ transaction.subcategory }}</td>
-                                        <td style="text-align: left;">{{ transaction | paid_installments }}</td>
+                                        <td style="text-align: left;">{{ transaction | paid_installments }}{% if transaction.source_type == 'pluggy_projection' %} <span title="Parcela calculada pelo MyFinance, ainda sem confirmação bancária">(previsão)</span>{% endif %}</td>
                                         <td style="text-align: right; max-width: 50px; min-width:30px;">{{ transaction.value | to_currency:transaction.currency.symbol }}</td>
                                         <td>
                                             {% if transaction.installment %}
@@ -204,7 +204,7 @@
                                     {% endif %}
                                     <td style="text-align: left; max-width: 150px; min-width:115px"><i class="{{ transaction.category.icon }}" style="padding:10px;"></i> {{ transaction.category }}</td>
                                     <td style="text-align: left;">{{ transaction.subcategory }}</td>
-                                    <td style="text-align: left;">{{ transaction | paid_installments }}</td>
+                                    <td style="text-align: left;">{{ transaction | paid_installments }}{% if transaction.source_type == 'pluggy_projection' %} <span title="Parcela calculada pelo MyFinance, ainda sem confirmação bancária">(previsão)</span>{% endif %}</td>
                                     <td style="text-align: right; max-width: 50px; min-width:30px;">{{ transaction.value | to_currency:transaction.currency.symbol }}</td>
                                     <td>
                                         {% if transaction.installment %}

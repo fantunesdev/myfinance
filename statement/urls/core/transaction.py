@@ -18,6 +18,7 @@ urlpatterns = [
     path('<int:id>/', transaction_view.detail, name='detail_transaction'),
     path('mes_atual/', transaction_view.get_current_month, name='get_current_month_transactions'),
     path('importar/', transaction_view.import_data, name='import_transactions'),
+    path('importar/pluggy/', include('bank_sync.urls')),
     path('editar/<int:id>/', transaction_view.update, name='update_transaction'),
     path('remover/<int:id>', transaction_view.delete, name='delete_transaction'),
     path(

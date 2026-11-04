@@ -41,6 +41,7 @@
                     <p style="font-size: 18px;">Categoria: <b>{{ instance.category }}</b></p>
                     <p style="font-size: 18px;">Sub Categoria: <b>{{ instance.subcategory }}</b></p>
                     <p style="font-size: 18px;">Descrição: <b>{{ instance.description }}</b></p>
+                    {% if instance.source_type == 'pluggy_projection' %}<p role="status">Previsão calculada pelo MyFinance. Valor e vencimento aguardam confirmação bancária.</p>{% endif %}
                     <p style="font-size: 18px;">Valor: <b>{{ instance.value | to_reais }}</b></p>
                     {% if instance.dream %}
                     <p style="font-size: 18px;">Sonho/Objetivo: <b>{{ instance.dream.description }} ({{ instance.dream.get_status_display }})</b></p>

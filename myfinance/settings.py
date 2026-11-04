@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_extensions',
     'statement',
+    'bank_sync',
     'investments',
     'login',
     'rest_framework',
