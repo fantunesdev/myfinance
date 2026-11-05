@@ -284,6 +284,10 @@ def candidates(row, limit=20):
 
 
 def choose_category(category_id, subcategory_id, direction):
+    if not str(category_id or "").isdigit():
+        raise ValidationError("Selecione a categoria da compra antes de cadastrar.")
+    if not str(subcategory_id or "").isdigit():
+        raise ValidationError("Selecione a subcategoria da compra antes de cadastrar.")
     category = Category.objects.get(pk=category_id, type=direction)
     subcategory = Subcategory.objects.get(pk=subcategory_id, category=category)
     return category, subcategory
@@ -388,13 +392,19 @@ def confirm(user, row_id, revision, action, data, *, reconcile_group=True):
     if facts["currency"] != "BRL" or facts["status"] not in ("POSTED", "PENDING"):
         raise ValidationError("Moeda ou estado ainda não suportado para confirmação.")
     if action == "link":
+        if not str(data.get("transaction_id") or "").isdigit():
+            raise ValidationError("Informe o ID do lançamento existente antes de vincular.")
         target = Transaction.objects.select_for_update().get(
             pk=data["transaction_id"], user=user, card_id=row.account.card_id
         )
         if target.card_number_id not in (None, number.pk):
             raise ValidationError("O lançamento pertence a outro número de cartão.")
-        if target.bank_sync_links.exclude(pk=row.pk).exists():
-            raise ValidationError("Lançamento já conciliado com outra ocorrência; revise a possível duplicidade.")
+        previous = target.bank_sync_links.exclude(pk=row.pk).first()
+        if previous:
+            raise ValidationError(
+                f"O lançamento #{target.pk} já está conciliado com a ocorrência Pluggy #{previous.pk}. "
+                "Confira o vínculo em Faturas originais; para substituí-lo, desfaça primeiro o vínculo anterior."
+            )
         projection = ProjectedInstallment.objects.filter(transaction=target).first()
         if projection:
             if projection.fingerprint != row.fingerprint or projection.number != facts["number"]:

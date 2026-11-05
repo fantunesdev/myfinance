@@ -369,6 +369,23 @@ class PluggyIntegrationTests(TestCase):
             confirm(self.user, row.pk, 1, "create", self.create_data(category_id=other.pk))
         self.assertFalse(Transaction.objects.exists())
 
+    def test_missing_category_is_reported_as_actionable_validation(self):
+        row = self.mapped()
+        for key, message in (("category_id", "Selecione a categoria"), ("subcategory_id", "Selecione a subcategoria")):
+            with self.assertRaisesMessage(ValidationError, message):
+                confirm(self.user, row.pk, 1, "create", self.create_data(**{key: ""}))
+        self.assertFalse(Transaction.objects.exists())
+
+    def test_link_to_already_reconciled_entry_identifies_previous_source(self):
+        row = self.mapped()
+        local = self.local()
+        other = ExternalTransaction.objects.create(account=row.account, external_id=uuid4(), facts=row.facts,
+                                                  state="linked", transaction=local)
+        with self.assertRaisesMessage(ValidationError, f"ocorrência Pluggy #{other.pk}"):
+            confirm(self.user, row.pk, 1, "link", {"transaction_id": local.pk})
+        row.refresh_from_db()
+        self.assertIsNone(row.transaction_id)
+
     def test_state_does_not_expose_another_users_source(self):
         self.mapped()
         request = self.factory.get("/state/")

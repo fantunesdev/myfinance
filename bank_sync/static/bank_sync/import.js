@@ -102,6 +102,7 @@ async function work(handler) {
         if (message.textContent.startsWith('Processando')) message.textContent = 'Concluído.';
     } catch (error) {
         message.textContent = error.message || 'Falha de conexão. Recarregue a revisão antes de repetir.';
+        message.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
     } finally {
         busy = false;
         root.setAttribute('aria-busy', 'false');
@@ -316,6 +317,10 @@ function renderRow(parent, row) {
         if (!result.candidates.length) node('p', 'Nenhum candidato. Você pode informar um ID manualmente.', candidates);
     });
     async function link() {
+        if (!/^\d+$/.test(String(target.value))) {
+            target.focus?.();
+            throw new Error('Informe o ID do lançamento existente antes de vincular.');
+        }
         const result = await api('review/', { id: row.id, revision: row.revision, action: 'link', transaction_id: target.value,
             payment_date: paymentDate ? isoDate(paymentDate.value) : undefined, confirm_estimate: estimate?.checked || false });
         await load();
@@ -333,6 +338,20 @@ function renderRow(parent, row) {
         await load();
     });
     function data() {
+        function required(field, text) {
+            if (!field.value) {
+                field.focus?.();
+                throw new Error(`${facts.description}: ${text}`);
+            }
+        }
+        required(category, 'selecione a categoria.');
+        required(subcategory, 'selecione a subcategoria.');
+        if (paymentDate && (!paymentDate.value || !estimate.checked)) {
+            extra.hidden = false;
+            optionsButton.setAttribute('aria-expanded', 'true');
+            paymentDate.focus?.();
+            throw new Error(`${facts.description}: informe e confirme o vencimento estimado em Outras opções.`);
+        }
         return { id: row.id, revision: row.revision, action: 'create', category_id: category.value,
             subcategory_id: subcategory.value, description: description.value, posted_date: isoDate(posted.value),
             value: value.value, payment_date: paymentDate ? isoDate(paymentDate.value) : undefined, confirm_estimate: estimate?.checked || false,
@@ -350,10 +369,11 @@ function updateCheckAll() {
 async function saveSelected() {
     const selected = [...editors.values()].filter((editor) => editor.chosen.checked && !editor.chosen.disabled);
     if (!selected.length) throw new Error('Selecione as compras que deseja cadastrar.');
+    const requests = selected.map(editor => ({ editor, data: editor.data() }));
     let saved = 0;
-    for (const editor of selected) {
+    for (const { editor, data } of requests) {
         try {
-            await api('review/', editor.data());
+            await api('review/', data);
             editor.chosen.checked = false;
             editor.chosen.disabled = true;
             editor.tr.classList.add('row-disabled');

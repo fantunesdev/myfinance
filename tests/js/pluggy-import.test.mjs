@@ -51,6 +51,7 @@ function setup(row = null, active = true) {
 }
 function row(extra = {}) {
     return { id: 1, revision: 2, state: 'new', due_date: '2026-11-10', event: 'purchase',
+        suggestion: {category_id: 1, subcategory_id: 2},
         card_number: {id:1, name:'Test card'},
         facts: { description: '<img src=x onerror=alert(1)>', date: '2026-10-20', amount: '10.00', currency: 'BRL',
             payment_type: 'INSTALLMENT', number: 2, total: 3, status: 'POSTED', last_four: '1234' },
@@ -150,6 +151,27 @@ test('another import source does not trigger matching or classifier requests', a
     await flush();
     assert.equal(page.calls.length, 1);
     assert.ok(page.calls[0].url.endsWith('prepare/'));
+});
+
+test('missing category prevents requests and identifies the purchase without losing edits', async () => {
+    const page = setup(row({suggestion:{}}));
+    await flush();
+    page.get('pluggy-save').listeners.click();
+    await flush();
+    assert.ok(page.get('pluggy-message').textContent.includes('selecione a categoria'));
+    assert.ok(page.get('pluggy-message').textContent.includes('<img src=x onerror=alert(1)>'));
+    assert.ok(page.calls.every(c => !c.url.endsWith('review/')));
+    const selected = page.get('pluggy-rows').all().find(n => n['aria-label']?.startsWith('Selecionar'));
+    assert.equal(selected.checked, true);
+});
+
+test('manual linking requires a target ID before sending a request', async () => {
+    const page = setup(row());
+    await flush();
+    page.get('pluggy-rows').all().find(n => n.textContent === 'Vincular ao lançamento existente').listeners.click();
+    await flush();
+    assert.ok(page.get('pluggy-message').textContent.includes('Informe o ID'));
+    assert.ok(page.calls.every(c => !c.url.endsWith('review/')));
 });
 
 test('visible candidate reconciles with one click without requiring classification', async () => {
