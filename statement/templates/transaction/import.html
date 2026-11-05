@@ -80,9 +80,10 @@
 {% endblock %}
 
 {% block scripts %}
+    {{ notifications_json|json_script:"data-notifications_json" }}
     <script>
         window.myFinance = window.myFinance || {};
-        window.myFinance.importedTransactions = {{ notifications_json|safe }};
+        window.myFinance.importedTransactions = JSON.parse(document.getElementById('data-notifications_json').textContent);
     </script>
     <script src="{% static 'js/pages/import-transactions.js' %}?v=csv-progress-2" type="module"></script>
 {% endblock %}

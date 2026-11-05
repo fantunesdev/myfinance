@@ -200,7 +200,7 @@ function mergeGroupsCreateNew(selectedIds) {
         return s ? s.textContent.trim() : null;
     }).filter(Boolean);
     const headerTr = document.createElement('tr'); headerTr.className = 'group-header grouped-created'; headerTr.setAttribute('data-created-id', createdId);
-    const th = document.createElement('td'); th.colSpan = colCount || 1; th.innerHTML = '<strong>Agrupados' + (selectedNames.length ? ' (' + selectedNames.join(' + ') + ')' : '') + '</strong>'; headerTr.appendChild(th);
+    const th = document.createElement('td'); th.colSpan = colCount || 1; const label = document.createElement('strong'); label.textContent = 'Agrupados' + (selectedNames.length ? ' (' + selectedNames.join(' + ') + ')' : ''); th.appendChild(label); headerTr.appendChild(th);
 
     if (insertionPoint && insertionPoint.parentElement === tbody) {
         tbody.insertBefore(headerTr, insertionPoint);

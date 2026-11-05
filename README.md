@@ -144,7 +144,7 @@ No modulo de carteira do app `statement`:
 ## Stack
 
 - Python 3.13
-- Django 4.2
+- Django 5.2 LTS (mínimo 5.2.19)
 - Django REST Framework
 - Django Channels, Daphne e Redis
 - MySQL como banco principal

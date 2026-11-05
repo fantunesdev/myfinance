@@ -189,9 +189,10 @@
             </form>
         </div>
         {% if card_numbers_json %}
-        <script>
+        {{ card_numbers_json|json_script:"data-card_numbers_json" }}
+    <script>
             // Injeta JSON dos números de cartão para o JS do formulário de transação
-            window.card_numbers_json = {{ card_numbers_json|safe }};
+            window.card_numbers_json = JSON.parse(document.getElementById('data-card_numbers_json').textContent);
         </script>
         {% endif %}
     {% endblock %}

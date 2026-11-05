@@ -18,6 +18,7 @@ from pathlib import Path
 import dotenv
 
 from statement.repositories import vault_repository
+from myfinance.environment import env_bool
 
 dotenv.load_dotenv()
 # vault_repository.export_mysql_credentials()
@@ -34,7 +35,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG')
+DEBUG = env_bool('DEBUG')
 
 ALLOWED_HOSTS = os.getenv('HOSTS').split(',')
 CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS').split(',')

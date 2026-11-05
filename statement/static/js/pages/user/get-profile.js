@@ -7,7 +7,7 @@ const infos = [
         label: 'Treinar',
         title: 'Risco de perda de dados!',
         message: 'Ao treinar o modelo, todos os dados de treinamento anteriormente aprendidos serão esquecidos.' +
-                 'O modelo será treinado novamente com base em seus dados atuais.<br><br>' +
+                 'O modelo será treinado novamente com base em seus dados atuais.\n\n' +
                  'Tem certeza que deseja continuar?',
         route: 'transaction-classifier/subcategory/train',
         method: 'POST'
@@ -17,7 +17,7 @@ const infos = [
         label: 'Dar Feedback',
         title: 'Enviar feedback',
         message: 'Você está enviando o feedback manualmente para o modelo. ' +
-                 'Se os dados já forem enviados antes, nada novo será feito.<br><br>' +
+                 'Se os dados já forem enviados antes, nada novo será feito.\n\n' +
                  'Tem certeza que deseja continuar?',
         route: 'transaction-classifier/subcategory/feedback',
         method: 'POST'
@@ -27,7 +27,7 @@ const infos = [
         label: 'Treinar',
         title: 'Risco de perda de dados!',
         message: 'Ao treinar o modelo, todos os dados de treinamento anteriormente aprendidos serão esquecidos.' +
-                 'O modelo será treinado novamente com base em seus dados atuais.<br><br>' +
+                 'O modelo será treinado novamente com base em seus dados atuais.\n\n' +
                  'Tem certeza que deseja continuar?',
         route: 'transaction-classifier/description/train',
         method: 'POST'
@@ -37,7 +37,7 @@ const infos = [
         label: 'Dar Feedback',
         title: 'Enviar feedback',
         message: 'Você está enviando o feedback manualmente para o modelo. ' +
-                 'Se os dados já forem enviados antes, nada novo será feito.<br><br>' +
+                 'Se os dados já forem enviados antes, nada novo será feito.\n\n' +
                  'Tem certeza que deseja continuar?',
         route: 'transaction-classifier/description/feedback',
         method: 'POST'
@@ -47,8 +47,8 @@ const infos = [
         label: 'Apagar Feedbacks',
         title: 'Risco de perda de dados!',
         message: 'Atenção! Você está prestes a apagar todos os feedbacks gravados! ' +
-                 '<b>VOCÊ NÃO PODERÁ MAIS USÁ-LOS PARA TREINAMENTO!</b> ' +
-                 'Esta ação não reverterá nenhum treinamento realizado. <br><br>' +
+                 'VOCÊ NÃO PODERÁ MAIS USÁ-LOS PARA TREINAMENTO! ' +
+                 'Esta ação não reverterá nenhum treinamento realizado. \n\n' +
                  'Tem certeza que deseja continuar?',
         route: 'transaction-classifier/delete',
         method: 'POST'

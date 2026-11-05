@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from api.serializers.base_serializer import BaseSerializer
 from api.serializers.subcategory import SubcategorySerializer
 from api.views.base_view import BaseView
+from api.permissions import AuthenticatedReadStaffWrite
 from statement.models import Category
 from statement.services.core.category import CategoryService
 from statement.views.core.category import CategoryView as StatementView
@@ -15,12 +16,14 @@ class CategoryView(BaseView):
     Classe que gerencia a view das categorias na API.
     """
 
+    permission_classes = [AuthenticatedReadStaffWrite]
+
     model = Category
     service = CategoryService
     serializer = BaseSerializer
     statement_view = StatementView
 
-    @action(detail=False, methods=['get'], url_path='type/(?P<type>\w+)')
+    @action(detail=False, methods=['get'], url_path=r'type/(?P<type>\w+)')
     def get_by_type(self, request, type=None):
         """
         Obtém as Categorias de um tipo específico.

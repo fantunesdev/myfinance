@@ -279,14 +279,18 @@
 {% endblock %}
 
 {% block scripts %}
+    {{ file_notifications_json|json_script:"data-file_notifications_json" }}
+    {{ notifications_json|json_script:"data-notifications_json" }}
+    {{ csv_import_configs_json|json_script:"data-csv_import_configs_json" }}
+    {{ card_numbers_json|json_script:"data-card_numbers_json" }}
     <script>
         window.myFinance = window.myFinance || {};
-        window.myFinance.fileTransactions = {{ file_notifications_json|safe }};
-        window.myFinance.notifications = {{ notifications_json|safe }};
-        window.myFinance.importedTransactions = {{ file_notifications_json|safe }};
-        window.myFinance.csvImportConfigs = {{ csv_import_configs_json|safe }};
-        window.myFinance.cardNumbers = {{ card_numbers_json|safe }};
-        window.card_numbers_json = {{ card_numbers_json|safe }};
+        window.myFinance.fileTransactions = JSON.parse(document.getElementById('data-file_notifications_json').textContent);
+        window.myFinance.notifications = JSON.parse(document.getElementById('data-notifications_json').textContent);
+        window.myFinance.importedTransactions = JSON.parse(document.getElementById('data-file_notifications_json').textContent);
+        window.myFinance.csvImportConfigs = JSON.parse(document.getElementById('data-csv_import_configs_json').textContent);
+        window.myFinance.cardNumbers = JSON.parse(document.getElementById('data-card_numbers_json').textContent);
+        window.card_numbers_json = JSON.parse(document.getElementById('data-card_numbers_json').textContent);
     </script>
     <script src="{% static 'js/pages/import-selector.js' %}"></script>
     <script src="{% static 'bank_sync/import.js' %}?v=review-validation-7" type="module"></script>

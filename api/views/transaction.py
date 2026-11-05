@@ -3,6 +3,7 @@ import re
 from datetime import datetime
 
 import requests
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db.models import Q
 from rest_framework import status
 from rest_framework.decorators import action
@@ -12,6 +13,8 @@ from api.serializers.base_serializer import BaseSerializer
 from api.serializers.transaction import TransactionSerializer
 from api.views.base_view import BaseView
 from statement.models import Transaction
+from statement.forms.core.transaction import TransactionForm
+from statement.access import visible_cards
 from statement.services.core.account import AccountService
 from statement.services.core.card import CardService
 from statement.services.core.category import CategoryService
@@ -34,8 +37,12 @@ class TransactionView(BaseView):
     serializer = TransactionSerializer
     statement_view = StatementView
     installment_info = None
+    form_class = TransactionForm
 
     def create(self, request):
+        error = self._owner_error(request)
+        if error is not None:
+            return error
         from statement.services.core.fixed_imports import FixedExpenseMatcher
         fixed_match = FixedExpenseMatcher(
             request.user, account=request.data.get('account'), card=request.data.get('card'),
@@ -53,7 +60,10 @@ class TransactionView(BaseView):
         if self._is_installment_but_not_first():
             return Response({'detail': 'Parcela já cadastrada'}, status=status.HTTP_200_OK)
 
-        self._process_transaction_request(request)
+        try:
+            self._process_transaction_request(request)
+        except (ObjectDoesNotExist, ValueError, TypeError, ValidationError):
+            return Response({'detail': 'Dados ou vínculos inválidos para este usuário.'}, status=400)
 
 
         duplicate = self._find_duplicate_transaction(request)
@@ -174,12 +184,12 @@ class TransactionView(BaseView):
 
         # Se o lançamento for em uma conta, seta os campos necessários para o processamento
         if request.data.get('account'):
-            request.data['account'] = AccountService.get_by_id(request.data.get('account'))
+            request.data['account'] = AccountService.get_by_id(request.data.get('account'), request.user).pk
             request.data['payment_date'] = request.data.get('posted_date')
 
         # Se o lançamento for em um cartão, seta os campos necessários para o processamento
         if request.data.get('card'):
-            card = CardService.get_by_id(request.data.get('card'))
+            card = CardService.get_by_id(request.data.get('card'), request.user)
             date = DateTimeUtils.string_to_date(request.data.get('posted_date'))
             payment_date = CardService.set_processing_date(card, date)
 
@@ -432,7 +442,11 @@ class TransactionView(BaseView):
         Necessário para que o serializer acesse query parameters como 'expand'.
         """
         from django.db.models import QuerySet
-        
+        if isinstance(instances, QuerySet):
+            instances = instances.select_related(
+                'account__bank', 'card', 'card_number', 'dream',
+                'installment', 'source_notification__card',
+            )
         context = {'request': request} if request else {}
         has_many = isinstance(instances, QuerySet) or isinstance(instances, (list, tuple))
         serializer = self._get_serializer(instances, many=has_many, context=context)
@@ -447,9 +461,11 @@ class TransactionView(BaseView):
         if month:
             kwargs['payment_date__month'] = month
         if account:
-            kwargs['account'] = AccountService.get_by_id(account)
+            from django.shortcuts import get_object_or_404
+            kwargs['account'] = get_object_or_404(AccountService.model, pk=account, user=request.user)
         if card:
-            kwargs['card'] = CardService.get_by_id(card)
+            from django.shortcuts import get_object_or_404
+            kwargs['card'] = get_object_or_404(visible_cards(request.user), pk=card)
 
         home_screen = request.query_params.get('home_screen', '').lower() in ('true', '1', 'yes')
 

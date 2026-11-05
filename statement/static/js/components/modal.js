@@ -14,7 +14,7 @@ function openModal(title, body, onConfirm = null) {
     const modalFooter = document.getElementById('modal-footer');
 
     modalTitle.textContent = title;
-    modalBody.innerHTML = body;
+    modalBody.textContent = body;
 
     // Se for só mensagem, esconde os botões
     if (onConfirm === null) {

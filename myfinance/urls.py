@@ -19,7 +19,7 @@ from django.contrib import admin
 from django.urls import include, path
 
 from login.views import *
-from myfinance import settings
+from django.conf import settings
 from statement.views.core.transaction import TransactionView
 
 transaction_view = TransactionView()

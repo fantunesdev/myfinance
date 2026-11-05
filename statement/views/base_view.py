@@ -9,11 +9,13 @@ from django.db import transaction as db_transaction
 from django.db.models.deletion import ProtectedError
 from django.forms.widgets import CheckboxInput, HiddenInput, MultipleHiddenInput
 from django.shortcuts import redirect, render
+from django.http import Http404
 from django.utils.decorators import method_decorator
 from statement.forms.general_forms import ExclusionForm
 from statement.services.core.account import AccountService
 from statement.services.core.card import CardService
 from statement.services.next_month_view import NextMonthViewService
+from statement.access import restrict_write_relations
 
 
 class BaseView:
@@ -139,8 +141,7 @@ class BaseView:
         if getattr(self, 'redirect_url', None) == 'setup_settings' and not request.user.is_staff:
             raise PermissionDenied()
         self._context = 'detail'
-        user = self._get_user(request)
-        instance = self.service.get_by_id(id, user)
+        instance = self._get_instance(request, id)
         additional_context = self._add_context_on_templatetags(request, instance)
         specific_content = {
             'instance': instance,
@@ -159,7 +160,7 @@ class BaseView:
         if getattr(self, 'redirect_url', None) == 'setup_settings' and not request.user.is_staff:
             raise PermissionDenied()
         self._context = 'update'
-        instance = self.service.get_by_id(id)
+        instance = self._get_instance(request, id)
         form = self._set_form(request, instance)
         original_instance = type(instance).objects.get(pk=instance.pk)
         if form.is_valid():
@@ -190,7 +191,7 @@ class BaseView:
         if getattr(self, 'redirect_url', None) == 'setup_settings' and not request.user.is_staff:
             raise PermissionDenied()
         self._context = 'delete'
-        instance = self.service.get_by_id(id)
+        instance = self._get_instance(request, id)
         if request.method == 'POST':
             try:
                 with db_transaction.atomic():
@@ -222,6 +223,12 @@ class BaseView:
         if self.class_has_user:
             return request.user
         return None
+
+    def _get_instance(self, request, id):
+        try:
+            return self.service.get_by_id(id, self._get_user(request))
+        except self.model.DoesNotExist as error:
+            raise Http404 from error
 
     def _render(self, request, form, template, specific_content=False):
         """
@@ -326,12 +333,14 @@ class BaseView:
         match self._context:
             case 'create':
                 if request.method == 'POST':
-                    return self.class_form(request.POST, request.FILES or None)
-                return self.class_form()
+                    form = self.class_form(request.POST, request.FILES or None)
+                else:
+                    form = self.class_form()
             case 'update':
-                return self.class_form(request.POST or None, request.FILES or None, instance=instance)
+                form = self.class_form(request.POST or None, request.FILES or None, instance=instance)
             case _:
                 raise ValueError('Sem contexto definido.')
+        return restrict_write_relations(form, request.user)
 
     def _preserve_unrendered_fields_after_validation(self, form, original_instance):
         """

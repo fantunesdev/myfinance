@@ -1,5 +1,6 @@
 from api.serializers.base_serializer import BaseSerializer
 from api.views.base_view import BaseView
+from api.permissions import AuthenticatedReadStaffWrite
 from statement.models import Bank
 from statement.services.core.bank import BankService
 from statement.views.core.bank import BankView as StatementView
@@ -9,6 +10,8 @@ class BankView(BaseView):
     """
     Classe que gerencia a view das contas na API.
     """
+
+    permission_classes = [AuthenticatedReadStaffWrite]
 
     model = Bank
     service = BankService

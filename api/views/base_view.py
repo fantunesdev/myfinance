@@ -1,10 +1,11 @@
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db.models import QuerySet
-from django.forms import modelform_factory
-from django.http import QueryDict
+from django.forms import modelform_factory, model_to_dict
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
+
+from statement.access import restrict_write_relations
 
 
 class BaseView(ViewSet):
@@ -16,6 +17,21 @@ class BaseView(ViewSet):
     service = None
     serializer = None
     statement_view = None
+    form_class = None
+
+    def _build_form(self, request, data, instance=None):
+        if self.form_class:
+            form = self.form_class(request.user, data, instance=instance)
+        else:
+            form_class = modelform_factory(self.model, exclude=['user'])
+            form = form_class(data, instance=instance)
+        return restrict_write_relations(form, request.user)
+
+    def _owner_error(self, request):
+        for field in ('user', 'user_id'):
+            if field in request.data and str(request.data[field]) != str(request.user.pk):
+                return Response({'detail': 'O proprietário não pode ser alterado.'}, status=400)
+        return None
 
     def __init__(self, *args, **kwargs):
         """
@@ -34,9 +50,12 @@ class BaseView(ViewSet):
         """
         user = self._set_user(request)
 
+        error = self._owner_error(request)
+        if error is not None:
+            return error
+
         # Converte o dicionário de dados em um formulário do modelo para reaproveitar a BaseService de Statement
-        form_class = modelform_factory(self.model, exclude=['user'])
-        form = form_class(request.data)
+        form = self._build_form(request, request.data)
 
         if not form.is_valid():
             return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -84,7 +103,16 @@ class BaseView(ViewSet):
         :param request: Requisição HTTP com os dados para atualizar a instância.
         :param pk: ID da instância a ser atualizada.
         """
+        return self._update(request, pk)
+
+    def partial_update(self, request, pk=None):
+        return self._update(request, pk, partial=True)
+
+    def _update(self, request, pk, partial=False):
         user = self._set_user(request)
+        error = self._owner_error(request)
+        if error is not None:
+            return error
 
         try:
             try:
@@ -92,12 +120,10 @@ class BaseView(ViewSet):
             except ObjectDoesNotExist:
                 return Response({'detail': 'Instância não encontrada.'}, status=status.HTTP_404_NOT_FOUND)
 
-            # Converte request.data em QueryDict para usar com ModelForm
-            data = QueryDict('', mutable=True)
+            # PATCH preserva campos ausentes; propriedade nunca é editável pelo formulário.
+            data = model_to_dict(instance) if partial else {}
             data.update(request.data)
-
-            form_class = modelform_factory(self.model, fields='__all__')
-            form = form_class(data, instance=instance)
+            form = self._build_form(request, data, instance=instance)
 
             if not form.is_valid():
                 return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -138,6 +164,7 @@ class BaseView(ViewSet):
         :return: Serializer instanciado.
         """
         kwargs['model'] = self.model
+        kwargs.setdefault('context', {'request': getattr(self, 'request', None)})
         return self.serializer(*args, **kwargs)
 
     def _serialize_and_return(self, instances):

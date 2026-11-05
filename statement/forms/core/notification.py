@@ -10,3 +10,4 @@ class NotificationForm(BaseForm):
 
         model = Notification
         fields = '__all__'
+        exclude = ['user']

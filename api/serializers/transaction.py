@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from api.serializers.base_serializer import BaseSerializer
 from statement.models import Account, Bank, Transaction, Card, CardNumber, Category, Dream, Subcategory
+from statement.access import visible_card_numbers, visible_cards
 
 
 class BankSerializer(serializers.ModelSerializer):
@@ -15,19 +16,19 @@ class AccountSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Account
-        fields = '__all__'
+        fields = ['id', 'bank', 'branch', 'number', 'balance', 'limits', 'type', 'home_screen']
 
 
 class CardNumberSerializer(serializers.ModelSerializer):
     class Meta:
         model = CardNumber
-        fields = '__all__'
+        fields = ['id', 'card', 'number', 'name', 'home_screen']
 
 
 class CardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Card
-        fields = '__all__'
+        fields = ['id', 'description', 'icon', 'expiration_day', 'closing_day', 'prepaid', 'home_screen']
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -56,16 +57,45 @@ class TransactionSerializer(BaseSerializer):
     category = serializers.SerializerMethodField()
     subcategory = serializers.SerializerMethodField()
     dream = serializers.SerializerMethodField()
+    installment = serializers.SerializerMethodField()
+    source_notification = serializers.SerializerMethodField()
 
     class Meta:
         model = Transaction
         fields = '__all__'
+
+    def _user(self):
+        request = self.context.get('request')
+        return getattr(request, 'user', None)
+
+    def _visible_ids(self, relation):
+        # A many=True serializer shares its context: resolve visibility once per response.
+        key = f'_transaction_visible_{relation}'
+        if key not in self.context:
+            queryset = visible_cards(self._user()) if relation == 'cards' else visible_card_numbers(self._user())
+            self.context[key] = set(queryset.values_list('pk', flat=True))
+        return self.context[key]
+
+    def get_installment(self, obj):
+        user = self._user()
+        return obj.installment_id if obj.installment_id and user and obj.installment.user_id == user.pk else None
+
+    def get_source_notification(self, obj):
+        user = self._user()
+        if not obj.source_notification_id or not user:
+            return None
+        source = obj.source_notification
+        owner_id = source.user_id or (source.card.user_id if source.card_id else None)
+        return source.pk if owner_id == user.pk else None
 
     def get_account(self, obj):
         """
         Retorna a account expandida apenas se 'expand' foi passado na query string,
         caso contrário retorna apenas o ID.
         """
+        user = self._user()
+        if not obj.account_id or not user or obj.account.user_id != user.pk:
+            return None
         request = self.context.get('request')
         if request and 'account' in request.query_params.get('expand', '').split(','):
             return AccountSerializer(obj.account).data if obj.account else None
@@ -76,6 +106,8 @@ class TransactionSerializer(BaseSerializer):
         Retorna o card expandido apenas se 'expand' foi passado na query string,
         caso contrário retorna apenas o ID.
         """
+        if not obj.card_id or obj.card_id not in self._visible_ids('cards'):
+            return None
         request = self.context.get('request')
         if request and 'card' in request.query_params.get('expand', '').split(','):
             return CardSerializer(obj.card).data if obj.card else None
@@ -86,6 +118,8 @@ class TransactionSerializer(BaseSerializer):
         Retorna o card_number expandido apenas se 'expand' foi passado na query string,
         caso contrário retorna apenas o ID.
         """
+        if not obj.card_number_id or obj.card_number_id not in self._visible_ids('numbers'):
+            return None
         request = self.context.get('request')
         if request and 'card_number' in request.query_params.get('expand', '').split(','):
             return CardNumberSerializer(obj.card_number).data if obj.card_number else None
@@ -116,6 +150,9 @@ class TransactionSerializer(BaseSerializer):
         Retorna o dream expandido apenas se 'expand' foi passado na query string,
         caso contrário retorna apenas o ID.
         """
+        user = self._user()
+        if not obj.dream_id or not user or obj.dream.user_id != user.pk:
+            return None
         request = self.context.get('request')
         if request and 'dream' in request.query_params.get('expand', '').split(','):
             return DreamMinimalSerializer(obj.dream).data if obj.dream else None

@@ -1,5 +1,3 @@
-from django.core.exceptions import ObjectDoesNotExist
-from django.forms import modelform_factory
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from rest_framework import status
@@ -24,38 +22,21 @@ class NotificationView(BaseView):
     serializer = BaseSerializer
     statement_view = StatementView
 
-    def partial_update(self, request, pk=None):
-        """
-        Atualiza parcialmente uma notificação via PATCH.
-
-        :param request: Requisição HTTP com os dados para atualizar.
-        :param pk: ID da notificação a ser atualizada.
-        :return: Response com os dados atualizados.
-        """
-        try:
-            instance = self.service.get_by_id(pk)
-            # Usa o método patch da BaseService para atualizar apenas os campos fornecidos
-            updated_instance = self.service.patch(instance, dict(request.data))
-            serializer = self._get_serializer(updated_instance)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except ObjectDoesNotExist:
-            return Response({'detail': 'Notificação não encontrada.'}, status=status.HTTP_404_NOT_FOUND)
-        except Exception as e:
-            return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
     def create(self, request):
         """
         Cria uma notificação, permitindo que o cliente envie `created_at` ou `date`.
         Se fornecido, tenta parsear a data e atribuí-la antes de salvar a instância.
         """
+        error = self._owner_error(request)
+        if error is not None:
+            return error
         # Reaproveita a lógica de form do BaseView, mas define created_at manualmente
         data = request.data.copy()
         for field in ('app', 'title', 'message'):
             if field in data:
                 data[field] = sanitize_utf8mb3(data[field])
 
-        form_class = modelform_factory(self.model, exclude=['user'])
-        form = form_class(data)
+        form = self._build_form(request, data)
 
         if not form.is_valid():
             return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -50,4 +50,6 @@ class DeviceTokenAuthentication(BaseAuthentication):
             # Não consideramos falha imediata aqui para não bloquear JWT.
             return None
 
+        if not device.user.is_active:
+            raise AuthenticationFailed('Usuário desativado.')
         return (device.user, None)

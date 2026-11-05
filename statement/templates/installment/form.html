@@ -165,8 +165,9 @@
         </div>
 
         {% if card_numbers_json %}
-        <script>
-            window.card_numbers_json = {{ card_numbers_json|safe }};
+        {{ card_numbers_json|json_script:"data-card_numbers_json" }}
+    <script>
+            window.card_numbers_json = JSON.parse(document.getElementById('data-card_numbers_json').textContent);
         </script>
         {% endif %}
     {% endblock content %}

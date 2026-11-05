@@ -1,4 +1,3 @@
-import json
 from datetime import date
 
 from clients.transaction_classifier.transaction_classifier import TransactionClassifierClient
@@ -21,6 +20,7 @@ from statement.services.core.subcategory import SubcategoryService
 from statement.services.core.transaction import TransactionService
 from statement.utils.datetime import DateTimeUtils
 from statement.views.base_view import BaseView
+from statement.access import visible_card_numbers
 
 
 class TransactionView(BaseView):
@@ -51,6 +51,7 @@ class TransactionView(BaseView):
         )
         self._type = None
 
+    @method_decorator(login_required)
     def create(self, request, type, id=None):
         self._type = type
         # Custom create to include card_numbers_json in the template context
@@ -74,12 +75,12 @@ class TransactionView(BaseView):
             form = self._set_form(request, instance=None)
 
         # Fornece os números de cartão em JSON para uso pelo JavaScript do formulário
-        card_numbers_qs = CardNumber.objects.select_related('card').all()
+        card_numbers_qs = visible_card_numbers(request.user)
         card_numbers = list(card_numbers_qs.values('id', 'number', 'name', 'card_id', 'home_screen'))
 
         specific_content = {
             'create': True,
-            'card_numbers_json': json.dumps(card_numbers),
+            'card_numbers_json': card_numbers,
         }
         template = self._set_template_by_global_status('create')
         return self._render(request, form, template, specific_content)
@@ -144,7 +145,7 @@ class TransactionView(BaseView):
         form = UploadFileForm(request.user)
 
         specific_context = {
-            'notifications_json': json.dumps([]),
+            'notifications_json': [],
         }
 
         return self._render(request, form, 'transaction/import.html', specific_context)
@@ -272,12 +273,11 @@ class TransactionView(BaseView):
         # Ordena notificações por cartão e por número do cartão para facilitar agrupamento no frontend
         notifications.sort(key=lambda n: (n.get('card_id') or 0, n.get('card_number_id') or 0))
         specific_context = {
-            'file_notifications_json': json.dumps([]),
-            'notifications_json': json.dumps(notifications),
+            'file_notifications_json': [],
+            'notifications_json': notifications,
             'has_notifications': len(notifications) > 0,
             'csv_import_configs': csv_import_configs,
-            'csv_import_configs_json': json.dumps(
-                [
+            'csv_import_configs_json': [
                     {
                         'id': config.id,
                         'name': config.name,
@@ -293,9 +293,8 @@ class TransactionView(BaseView):
                         'matching_fields': config.matching_fields or [],
                     }
                     for config in csv_import_configs
-                ]
-            ),
-            'card_numbers_json': json.dumps(card_numbers),
+                ],
+            'card_numbers_json': card_numbers,
         }
 
         source = request.GET.get('fonte', 'pluggy')
@@ -350,15 +349,11 @@ class TransactionView(BaseView):
         return {}
 
     def _add_context_on_templatetags(self, request, instance):
-        card_numbers_qs = CardNumber.objects.select_related('card').all()
+        card_numbers_qs = visible_card_numbers(request.user)
         card_numbers = list(card_numbers_qs.values('id', 'number', 'name', 'card_id', 'home_screen'))
-        return {'card_numbers_json': json.dumps(card_numbers)}
+        return {'card_numbers_json': card_numbers}
 
     def _set_specific_context(self, instances, year, month, **kwargs):
-        # Fornece os números de cartão para os templates (em JSON) para que
-        # a lógica cliente-populada possa preencher dinamicamente o select de card_number.
-        card_numbers_qs = CardNumber.objects.select_related('card').all()
-        card_numbers = list(card_numbers_qs.values('id', 'number', 'name', 'card_id', 'home_screen'))
         # Calcula o valor total para o conjunto renderizado (de forma eficiente quando possível)
         from django.db.models import Sum
 
@@ -373,7 +368,6 @@ class TransactionView(BaseView):
             **self._set_dashboard_templatetags(instances, year, month),
             **self.set_navigation_templatetags(year, month),
             'year_month': DateTimeUtils.date(year, month, 1),
-            'card_numbers_json': json.dumps(card_numbers),
             **kwargs,
         }
 

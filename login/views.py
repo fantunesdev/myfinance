@@ -11,7 +11,6 @@ from login.forms.password_form import PasswordChangeCustomForm
 from login.models import Profile
 from login.services import user_services
 from login.services.profile import ProfileService
-from myfinance.settings import ENVIRONMENT
 from statement.models import AppConfig
 from statement.services.core.device import DeviceService
 from statement.services.core.fixed_expenses import FixedExpensesService

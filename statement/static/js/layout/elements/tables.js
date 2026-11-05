@@ -29,7 +29,7 @@ export function renderTable(father, transactions, transactionAttrs) {
 function createTitleRow(row, data) {
     for (let i of data) {
         let column = document.createElement('th');
-        column.innerHTML = i;
+        column.textContent = i;
         row.appendChild(column);
     }
     return row;
@@ -41,7 +41,7 @@ function createRow(row, type, data, anchors) {
         if (i === 1) {
             createImage(column, data[i]);
         } else {
-            column.innerHTML = data[i];
+            column.textContent = data[i];
         }
         row.appendChild(column);
     }
