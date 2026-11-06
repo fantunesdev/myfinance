@@ -138,7 +138,7 @@ function render() {
     renderMappings();
     const bills = document.getElementById('pluggy-bill');
     bills.replaceChildren();
-    [...payload.bills.map((bill) => [bill.id, billLabel(bill)]), ['unbilled', 'Sem fatura definida'], ['all', 'Todas as faturas']].forEach(([value, title]) => {
+    [['unbilled', 'Sem fatura definida'], ...payload.bills.map((bill) => [bill.id, billLabel(bill)]), ['all', 'Todas as faturas']].forEach(([value, title]) => {
         const option = node('option', title, bills);
         option.value = value;
     });
@@ -235,7 +235,7 @@ function renderRow(parent, row) {
     value.min = '0.01';
     const event = cell('import-col-event-type');
     event.textContent = ({purchase:'Compra',card_payment:'Pagamento da fatura',refund:'Estorno/crédito',unknown:'Revisar evento'})[row.event] || 'Revisar evento';
-    event.title = `${facts.status} · vencimento ${formatDate(row.due_date) || 'a confirmar'}`;
+    event.title = `${facts.status} · ${row.due_date ? 'vencimento' : 'vencimento estimado'} ${formatDate(row.payment_date || row.due_date) || 'a calcular'}`;
     if (!allowed) event.title += ` · ${!row.card_number ? 'Identifique o cartão para cadastrar.' : 'Vincule ao cadastro financeiro revisado ou ignore.'}`;
     function subcategories(selected = '') {
         subcategory.replaceChildren();
@@ -289,7 +289,7 @@ function renderRow(parent, row) {
             comparison.title = `Compra: ${formatDate(match.posted_date) || 'não informada'} · vencimento: ${formatDate(match.payment_date)}${installment}`;
             const reconcile = button(item, 'Conciliar', async () => {
                 const result = await api('review/', { id: row.id, revision: row.revision, action: 'link', transaction_id: match.id,
-                    payment_date: row.due_date || match.payment_date, confirm_estimate: !row.due_date });
+                    payment_date: row.payment_date || row.due_date || match.payment_date });
                 await load();
                 message.textContent = reconciliationMessage(result);
             });
@@ -305,8 +305,7 @@ function renderRow(parent, row) {
     }
     const details = node('div', null, extraCell);
     details.className = 'pluggy-options';
-    const paymentDate = row.due_date ? null : dateInput(details, 'Vencimento estimado');
-    const estimate = row.due_date ? null : input(details, 'Confirmo a data estimada', false, 'checkbox');
+    const paymentDate = row.due_date ? null : dateInput(details, 'Vencimento estimado', row.payment_date);
     const project = facts.payment_type === 'INSTALLMENT' ? input(details, 'Projetar parcelas restantes ausentes (estimativa revisável)', false, 'checkbox') : null;
     const target = input(details, 'ID do lançamento existente', '', 'number');
     const candidates = node('div', null, details);
@@ -322,7 +321,7 @@ function renderRow(parent, row) {
             throw new Error('Informe o ID do lançamento existente antes de vincular.');
         }
         const result = await api('review/', { id: row.id, revision: row.revision, action: 'link', transaction_id: target.value,
-            payment_date: paymentDate ? isoDate(paymentDate.value) : undefined, confirm_estimate: estimate?.checked || false });
+            payment_date: paymentDate ? isoDate(paymentDate.value) : undefined });
         await load();
         message.textContent = reconciliationMessage(result);
     }
@@ -346,15 +345,9 @@ function renderRow(parent, row) {
         }
         required(category, 'selecione a categoria.');
         required(subcategory, 'selecione a subcategoria.');
-        if (paymentDate && (!paymentDate.value || !estimate.checked)) {
-            extra.hidden = false;
-            optionsButton.setAttribute('aria-expanded', 'true');
-            paymentDate.focus?.();
-            throw new Error(`${facts.description}: informe e confirme o vencimento estimado em Outras opções.`);
-        }
         return { id: row.id, revision: row.revision, action: 'create', category_id: category.value,
             subcategory_id: subcategory.value, description: description.value, posted_date: isoDate(posted.value),
-            value: value.value, payment_date: paymentDate ? isoDate(paymentDate.value) : undefined, confirm_estimate: estimate?.checked || false,
+            value: value.value, payment_date: paymentDate ? isoDate(paymentDate.value) : undefined,
             distinct_purchase: Boolean(row.matches?.length && chosen.checked), project_remaining: project?.checked || false };
     }
     editors.set(row.id, { chosen, tr, extra, data, hasMatches: Boolean(row.matches?.length) });

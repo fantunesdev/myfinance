@@ -174,6 +174,20 @@ test('manual linking requires a target ID before sending a request', async () =>
     assert.ok(page.calls.every(c => !c.url.endsWith('review/')));
 });
 
+test('unbilled purchases use backend estimated due date without a confirmation checkbox', async () => {
+    const page = setup(row({due_date:null, payment_date:'2026-11-10'}));
+    await flush();
+    const controls = page.get('pluggy-rows').all();
+    const due = controls.find(n => n['aria-label'] === 'Vencimento estimado');
+    assert.equal(due.value, '10/11/2026');
+    assert.ok(controls.every(n => !n.textContent?.includes('Confirmo a data estimada')));
+    page.get('pluggy-save').listeners.click();
+    await flush();
+    const data = JSON.parse(page.calls.find(c => c.url.endsWith('review/')).options.body);
+    assert.equal(data.payment_date, '2026-11-10');
+    assert.equal(data.confirm_estimate, undefined);
+});
+
 test('visible candidate reconciles with one click without requiring classification', async () => {
     const page = setup(row({ matches:[{id:99,description:'Already renamed locally',posted_date:'2026-10-20',
         payment_date:'2026-11-10',value:'10.00',date_matches:true}] }));

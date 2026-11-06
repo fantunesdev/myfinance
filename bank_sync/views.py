@@ -21,6 +21,7 @@ from .services import (
     due_date,
     map_account,
     mapping,
+    payment_due_date,
     sync_connection,
 )
 
@@ -67,7 +68,7 @@ def state_data(user, params):
                 ),
             }
         )
-    selected_bill = select_bill(user, params.get("bill"))
+    selected_bill = select_bill(user, params.get("bill") or "unbilled")
     rows = source_rows(user, selected_bill)
     requested = params.get("state", "new")
     if requested == "new":
@@ -114,6 +115,7 @@ def state_data(user, params):
                 else [],
                 "card_number": mapped,
                 "due_date": due_date(row),
+                "payment_date": payment_due_date(row),
                 "transaction_id": row.transaction_id,
             }
         )
@@ -160,7 +162,7 @@ def state(request):
 @api_errors
 def prepare(request):
     params = body(request)
-    selected = select_bill(request.user, params.get("bill"))
+    selected = select_bill(request.user, params.get("bill") or "unbilled")
     pending = source_rows(request.user, selected).filter(state="new", transaction__isnull=True)
     page = min(max(1, int(params.get("page", 1))), max(1, ceil(pending.count() / 25)))
     rows = list(pending.order_by("-facts__date", "-id")[(page - 1) * 25 : page * 25])

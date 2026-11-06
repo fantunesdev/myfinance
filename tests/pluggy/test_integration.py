@@ -344,16 +344,48 @@ class PluggyIntegrationTests(TestCase):
         self.assertTrue(predicted.confirmed)
         self.assertEqual(Transaction.objects.count(), 2)
 
-    def test_pending_open_bill_is_reviewable_with_explicit_due_date_estimate(self):
+    def test_pending_open_bill_automatically_uses_card_due_date(self):
         self.raw["status"] = "PENDING"
         self.raw["creditCardMetadata"]["billId"] = None
         row = self.mapped()
-        with self.assertRaises(ValidationError):
-            confirm(self.user, row.pk, 1, "create", self.create_data())
-        confirmed = confirm(
-            self.user, row.pk, 1, "create", self.create_data(payment_date="2026-12-10", confirm_estimate=True)
-        )
+        confirmed = confirm(self.user, row.pk, 1, "create", self.create_data())
+        self.assertEqual(confirmed.transaction.payment_date, date(2026, 11, 10))
         self.assertFalse(confirmed.transaction.effected)
+
+    def test_estimated_due_date_is_prefilled_and_unbilled_is_default(self):
+        self.raw["creditCardMetadata"]["billId"] = None
+        self.mapped()
+        with patch("bank_sync.views.reverse", return_value="/card/edit/"):
+            data = views.state_data(self.user, {})
+        self.assertEqual(data["selected_bill"], "unbilled")
+        self.assertEqual(data["rows"][0]["payment_date"], date(2026, 11, 10))
+        self.assertIsNone(data["rows"][0]["due_date"])
+
+    def test_unbilled_estimate_can_be_edited_without_confirmation_checkbox(self):
+        self.raw["creditCardMetadata"]["billId"] = None
+        row = self.mapped()
+        confirmed = confirm(self.user, row.pk, 1, "create", self.create_data(payment_date="2026-12-10"))
+        self.assertEqual(confirmed.transaction.payment_date, date(2026, 12, 10))
+
+    def test_unbilled_estimate_respects_closing_day_and_year_rollover(self):
+        from bank_sync.services import payment_due_date
+
+        self.raw["creditCardMetadata"]["billId"] = None
+        row = self.mapped()
+        for posted, expected in (
+            ("2026-11-02", date(2026, 11, 10)),
+            ("2026-11-03", date(2026, 11, 10)),
+            ("2026-11-04", date(2026, 12, 10)),
+            ("2026-12-31", date(2027, 1, 10)),
+        ):
+            with self.subTest(posted=posted):
+                row.facts["date"] = posted
+                self.assertEqual(payment_due_date(row), expected)
+
+    def test_bank_due_date_takes_precedence_over_estimate(self):
+        row = self.mapped()
+        confirmed = confirm(self.user, row.pk, 1, "create", self.create_data(payment_date="2026-12-10"))
+        self.assertEqual(confirmed.transaction.payment_date, date(2026, 11, 10))
 
     def test_credit_payment_is_not_imported_as_new_expense(self):
         self.raw["type"], self.raw["amount"] = "CREDIT", -100
@@ -484,7 +516,7 @@ class PluggyIntegrationTests(TestCase):
     def test_prepare_suggests_exact_matches_without_linking_them(self):
         row = self.mapped()
         local = self.local(original_description=self.raw["description"], paid=2, installments_number=3)
-        request = self.factory.post("/prepare/", json.dumps({"page": 1}), content_type="application/json")
+        request = self.factory.post("/prepare/", json.dumps({"page": 1, "bill": "all"}), content_type="application/json")
         request.user = self.user
         with patch("bank_sync.views.classify", return_value=""), patch(
             "bank_sync.views.reverse", return_value="/card/edit/"
@@ -582,9 +614,9 @@ class PluggyIntegrationTests(TestCase):
         old_bill = {**self.bill, "id": other_raw["creditCardMetadata"]["billId"], "dueDate": "2026-10-10"}
         self.ingest(rows=[self.raw, other_raw], bills=[self.bill, old_bill])
         with patch("bank_sync.views.reverse", return_value="/card/edit/"):
-            data = views.state_data(self.user, {})
+            data = views.state_data(self.user, {"bill": str(bill.pk)})
             self.assertEqual(data["selected_bill"], str(bill.pk))
             self.assertEqual(data["count"], 1)
             confirm(self.user, row.pk, 1, "create", self.create_data())
-            self.assertEqual(views.state_data(self.user, {})["count"], 0)
+            self.assertEqual(views.state_data(self.user, {"bill": str(bill.pk)})["count"], 0)
             self.assertEqual(views.state_data(self.user, {"bill": "all"})["count"], 1)

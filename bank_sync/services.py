@@ -25,6 +25,7 @@ from statement.models import (
     Subcategory,
     Transaction,
 )
+from statement.services.core.card import CardService
 
 from .models import (
     BankConnection,
@@ -252,6 +253,25 @@ def due_date(row):
     return bill.due_date if bill else None
 
 
+def payment_due_date(row, estimate=None):
+    """Prefer the bank's bill; otherwise reuse the transaction form's card rule."""
+    official = due_date(row)
+    if official:
+        return official
+    if estimate:
+        return source_date(estimate)
+    card = row.account.card
+    # facts.date describes this installment, whereas purchase_date is the
+    # original purchase and would move later installments back to the first bill.
+    posted = source_date(row.facts.get("date") or row.facts.get("purchase_date"))
+    if not card or not posted:
+        return None
+    try:
+        return CardService.set_processing_date(card, posted)
+    except ValueError:
+        raise ValidationError("Confira os dias de fechamento e vencimento do cartão cadastrado.") from None
+
+
 def candidates(row, limit=20):
     """Suggestions only; fuzzy matching never discards a financial occurrence."""
     ext, facts = row.account, row.facts
@@ -409,9 +429,7 @@ def confirm(user, row_id, revision, action, data, *, reconcile_group=True):
         if projection:
             if projection.fingerprint != row.fingerprint or projection.number != facts["number"]:
                 raise ValidationError("Previsão incompatível com esta parcela.")
-            source_due = due_date(row)
-            if not source_due and data.get("confirm_estimate"):
-                source_due = source_date(data.get("payment_date"))
+            source_due = payment_due_date(row, data.get("payment_date"))
             if money(target.value) != abs(money(facts["amount"])) or target.payment_date != source_due:
                 raise ValidationError("Valor ou vencimento mudou. Ajuste a previsão antes de vincular.")
             projection.confirmed = True
@@ -433,11 +451,9 @@ def confirm(user, row_id, revision, action, data, *, reconcile_group=True):
             raise ValidationError("Pagamento, estorno ou evento especial: vincule a um lançamento revisado ou ignore.")
         if facts["payment_type"] not in ("SINGLE", "INSTALLMENT"):
             raise ValidationError("Tipo de compra não identificado; revise manualmente antes de vincular.")
-        due = due_date(row)
+        due = payment_due_date(row, data.get("payment_date"))
         if not due:
-            due = source_date(data.get("payment_date"))
-            if not due or not data.get("confirm_estimate"):
-                raise ValidationError("Fatura sem vencimento: informe e confirme a data estimada.")
+            raise ValidationError("Associe um cartão com fechamento e vencimento para calcular a data de pagamento.")
         category, subcategory = choose_category(data["category_id"], data["subcategory_id"], "saida")
         if candidates(row) and not data.get("distinct_purchase"):
             raise ValidationError("Há lançamentos parecidos. Vincule um deles ou confirme que esta compra é distinta.")
