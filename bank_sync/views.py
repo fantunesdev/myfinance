@@ -186,6 +186,22 @@ def ledger(request):
 
 
 @login_required
+@require_GET
+@api_errors
+def export_ledger(request, format):
+    from .exports import csv_response, pdf_response, selected_cards
+
+    if format not in ("csv", "pdf"):
+        raise ValidationError("Formato de exportação inválido.")
+    data = ledger_data(request.user, request.GET.get("bill"))
+    if format == "pdf" and "card" in request.GET:
+        data = selected_cards(data, request.GET.getlist("card"))
+    response = csv_response(data) if format == "csv" else pdf_response(data)
+    response["Cache-Control"] = "private, no-store"
+    return response
+
+
+@login_required
 @require_POST
 @api_errors
 def sync(request):

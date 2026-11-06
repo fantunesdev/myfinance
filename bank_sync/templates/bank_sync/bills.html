@@ -10,10 +10,12 @@
         <p>Dados bancários preservados, incluindo lançamentos já importados. As alterações de descrição e classificação no MyFinance não modificam esta visão.</p>
         <label>Fatura <select id="ledger-bill" class="form-control"></select></label>
         <a id="ledger-import" class="btn btn-primary" href="{% url 'import_transactions' %}?fonte=pluggy">Importar pendências desta fatura</a>
+        <a id="ledger-csv" class="btn btn-default hide" data-export-url="{% url 'pluggy_export' 'csv' %}"><i class="fa-solid fa-file-csv" aria-hidden="true"></i> Exportar CSV</a>
+        <button type="button" id="ledger-pdf" class="btn btn-default hide" data-export-url="{% url 'pluggy_export' 'pdf' %}" disabled><i class="fa-solid fa-file-pdf" aria-hidden="true"></i> Exportar PDF dos cartões selecionados</button>
         <p id="ledger-message" role="status" aria-live="polite"></p>
         <div id="ledger-totals"></div>
         <div id="ledger-groups"></div>
     </div>
 </div>
 {% endblock %}
-{% block scripts %}<script src="{% static 'bank_sync/ledger.js' %}" type="module"></script>{% endblock %}
+{% block scripts %}<script src="{% static 'bank_sync/ledger.js' %}?v=card-names-3" type="module"></script>{% endblock %}

@@ -27,9 +27,11 @@ Em **Conciliação e opções de importação**, é possível vincular um lança
 
 ## Faturas originais
 
-O menu **Faturas originais**, em `/relatorio_financeiro/importar/pluggy/faturas/`, mostra todas as ocorrências recebidas, incluindo importadas, conciliadas e ignoradas. A seleção é por vencimento, com grupos por final de cartão e valores originais. Gastos, estornos/outros créditos e pagamentos de fatura são discriminados; pagamentos não reduzem a soma de gastos do ciclo. Totais são separados por moeda. Projeções locais não entram nessa visão.
+O menu **Faturas originais**, em `/relatorio_financeiro/importar/pluggy/faturas/`, mostra todas as ocorrências recebidas, incluindo importadas, conciliadas e ignoradas. A seleção é por vencimento, com grupos pelo nome cadastrado no número do cartão e seu final, preservando os valores originais. Números ainda sem vínculo exibem apenas o final. O nome também aparece nas exportações CSV e PDF. Gastos, estornos/outros créditos e pagamentos de fatura são discriminados; pagamentos não reduzem a soma de gastos do ciclo. Totais são separados por moeda. Projeções locais não entram nessa visão.
 
 **Importar pendências desta fatura** abre a revisão do mesmo período. **Desfazer vínculo** preserva o lançamento local e retorna a ocorrência à revisão. Alterações da fonte são sinalizadas sem sobrescrever escolhas do usuário.
+
+**Exportar CSV** e **Exportar PDF** baixam os dados originais da seleção atual, incluindo as opções **Todas as faturas** e **Sem fatura definida**. O CSV contém datas, cartão/final, descrição original, parcela, valor, moeda, evento e situação da importação; usa UTF-8 com BOM, ponto e vírgula e vírgula decimal. Para o PDF, cada grupo de número de cartão tem um checkbox; todos começam selecionados, e o botão fica desabilitado quando nenhum está marcado. O PDF inclui somente os cartões escolhidos e apresenta data da compra, descrição e valor, agrupados por cartão e fatura, com totais recalculados e pagamentos de fatura separados dos gastos. A seleção por cartão não altera o CSV. A geração do PDF usa ReportLab, instalado como dependência de execução. Os downloads exigem login e respeitam o proprietário da conexão.
 
 Consultar a API não força atualização no banco. Paginação completa significa todos os registros disponíveis na Pluggy naquela consulta; não garante que o banco disponibilizou todo o histórico.
 

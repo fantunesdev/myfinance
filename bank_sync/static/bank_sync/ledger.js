@@ -2,6 +2,11 @@ const root = document.getElementById('pluggy-ledger');
 const select = document.getElementById('ledger-bill');
 const message = document.getElementById('ledger-message');
 let busy = false;
+const pdfButton = document.getElementById('ledger-pdf');
+const cardChoices = new Map();
+pdfButton.addEventListener('click', () => {
+    if (!busy && !pdfButton.disabled) window.location.assign(pdfButton.dataset.downloadUrl);
+});
 const labels = {new:'Pendente de conciliação', imported:'Importado', linked:'Conciliado', ignored:'Ignorado', conflict:'Alteração para revisar'};
 function node(tag, text, parent) {
     const element = document.createElement(tag);
@@ -25,6 +30,7 @@ async function review(row, action) {
 async function load() {
     if (busy) return;
     busy = true;
+    for (const id of ['ledger-csv', 'ledger-pdf']) document.getElementById(id).classList.add('hide');
     message.textContent = 'Carregando fatura…';
     const chosen = select.value || new URLSearchParams(window.location.search).get('fatura') || '';
     try {
@@ -40,6 +46,10 @@ async function load() {
         for (const [value, label] of [['unbilled','Sem fatura definida'],['all','Todas as faturas']]) node('option', label, select).value = value;
         select.value = data.selected_bill;
         document.getElementById('ledger-import').href = `${root.dataset.importUrl}?fonte=pluggy&fatura=${encodeURIComponent(data.selected_bill)}`;
+        const csvLink = document.getElementById('ledger-csv');
+        csvLink.href = `${csvLink.dataset.exportUrl}?bill=${encodeURIComponent(data.selected_bill)}`;
+        csvLink.classList.remove('hide');
+        pdfButton.classList.remove('hide');
         const totals = document.getElementById('ledger-totals');
         totals.replaceChildren();
         const bill = data.bills.find((entry) => entry.id === data.selected_bill);
@@ -51,9 +61,29 @@ async function load() {
         node('p', 'Esta visão contém somente dados recebidos do banco, sem projeções locais. Novas faturas aparecem quando disponibilizadas pela fonte.', totals);
         const groups = document.getElementById('ledger-groups');
         groups.replaceChildren();
+        const pdfChoices = [];
+        function updatePDF() {
+            const selected = pdfChoices.filter(choice => choice.checked);
+            pdfButton.disabled = !selected.length;
+            pdfButton.dataset.downloadUrl = `${pdfButton.dataset.exportUrl}?bill=${encodeURIComponent(data.selected_bill)}`
+                + selected.map(choice => `&card=${encodeURIComponent(choice.value)}`).join('');
+        }
         for (const group of data.groups) {
+            const cardLabel = `${group.card_name ? `${group.card_name} · ` : ''}Final ${group.last_four || 'não informado'}`;
             const section = node('section', null, groups);
-            node('h4', `${group.account} · Final ${group.last_four || 'não informado'} · Gastos: ${amount(group.net,group.currency)}`, section);
+            const heading = node('h4', null, section);
+            const label = node('label', null, heading);
+            const choice = node('input', null, label);
+            choice.type = 'checkbox';
+            choice.value = `${group.account_id}:${group.last_four}`;
+            choice.checked = cardChoices.get(choice.value) ?? true;
+            choice.setAttribute('aria-label', `Exportar PDF: ${group.account} · ${cardLabel}`);
+            choice.addEventListener('change', () => {
+                cardChoices.set(choice.value, choice.checked);
+                updatePDF();
+            });
+            pdfChoices.push(choice);
+            node('span', ` ${group.account} · ${cardLabel} · Gastos: ${amount(group.net,group.currency)}`, label);
             node('p', `Compras/taxas ${amount(group.charges,group.currency)} · Créditos ${amount(group.refunds,group.currency)} · Pagamentos de fatura ${amount(group.payments,group.currency)}`, section);
             const scroll = node('div', null, section);
             scroll.className = 'pluggy-table-scroll';
@@ -90,6 +120,7 @@ async function load() {
                 }
             }
         }
+        updatePDF();
         message.textContent = `${data.count} lançamento(s) da fonte. Importados e pendentes estão incluídos.`;
     } catch(error) {
         message.textContent=error.message;

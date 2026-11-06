@@ -5,6 +5,7 @@ from . import views
 urlpatterns = [
     path("prepare/", views.prepare, name="pluggy_prepare"),
     path("faturas/", views.bills_page, name="pluggy_bills"),
+    path("faturas/exportar/<str:format>/", views.export_ledger, name="pluggy_export"),
     path("ledger/", views.ledger, name="pluggy_ledger"),
     path("state/", views.state, name="pluggy_state"),
     path("sync/", views.sync, name="pluggy_sync"),

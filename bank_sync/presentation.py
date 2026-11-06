@@ -1,7 +1,8 @@
 from collections import defaultdict
 from decimal import Decimal
+from django.db.models import F
 
-from .models import ExternalBill, ExternalTransaction
+from .models import ExternalBill, ExternalCardIdentifier, ExternalTransaction
 from .reconciliation import event_kind
 from .services import money
 
@@ -46,6 +47,14 @@ def bill_options(user):
 
 def ledger_data(user, value=None):
     selected = select_bill(user, value)
+    card_names = {
+        (account_id, last_four): name
+        for account_id, last_four, name in ExternalCardIdentifier.objects.filter(
+            account__connection__user=user,
+            card_number__card_id=F("account__card_id"),
+            card_number__card__user=user,
+        ).values_list("account_id", "last_four", "card_number__name")
+    }
     due_dates = {
         (bill.account_id, str(bill.external_id)): bill.due_date
         for bill in ExternalBill.objects.filter(account__connection__user=user)
@@ -56,8 +65,10 @@ def ledger_data(user, value=None):
         key = (row.account_id, facts["last_four"], facts["currency"])
         if key not in groups:
             groups[key] = {
+                "account_id": row.account_id,
                 "account": row.account.name,
                 "last_four": facts["last_four"],
+                "card_name": card_names.get((row.account_id, facts["last_four"]), ""),
                 "currency": facts["currency"],
                 "charges": Decimal(0),
                 "refunds": Decimal(0),

@@ -1,8 +1,14 @@
 import json
+import csv
+import io
+import shutil
+import subprocess
+import tempfile
 from copy import deepcopy
 from datetime import date, timedelta
 from decimal import Decimal
 from unittest.mock import Mock, patch
+from unittest import skipUnless
 from types import SimpleNamespace
 from uuid import uuid4
 
@@ -116,7 +122,7 @@ class PluggyIntegrationTests(TestCase):
             payment_date=date(2026, 11, 10),
             description="Manual test",
             currency_id="BRL",
-            **kwargs
+            **kwargs,
         )
 
     def test_sync_is_idempotent_and_does_not_create_financial_rows(self):
@@ -411,8 +417,9 @@ class PluggyIntegrationTests(TestCase):
     def test_link_to_already_reconciled_entry_identifies_previous_source(self):
         row = self.mapped()
         local = self.local()
-        other = ExternalTransaction.objects.create(account=row.account, external_id=uuid4(), facts=row.facts,
-                                                  state="linked", transaction=local)
+        other = ExternalTransaction.objects.create(
+            account=row.account, external_id=uuid4(), facts=row.facts, state="linked", transaction=local
+        )
         with self.assertRaisesMessage(ValidationError, f"ocorrência Pluggy #{other.pk}"):
             confirm(self.user, row.pk, 1, "link", {"transaction_id": local.pk})
         row.refresh_from_db()
@@ -516,7 +523,9 @@ class PluggyIntegrationTests(TestCase):
     def test_prepare_suggests_exact_matches_without_linking_them(self):
         row = self.mapped()
         local = self.local(original_description=self.raw["description"], paid=2, installments_number=3)
-        request = self.factory.post("/prepare/", json.dumps({"page": 1, "bill": "all"}), content_type="application/json")
+        request = self.factory.post(
+            "/prepare/", json.dumps({"page": 1, "bill": "all"}), content_type="application/json"
+        )
         request.user = self.user
         with patch("bank_sync.views.classify", return_value=""), patch(
             "bank_sync.views.reverse", return_value="/card/edit/"
@@ -620,3 +629,108 @@ class PluggyIntegrationTests(TestCase):
             confirm(self.user, row.pk, 1, "create", self.create_data())
             self.assertEqual(views.state_data(self.user, {"bill": str(bill.pk)})["count"], 0)
             self.assertEqual(views.state_data(self.user, {"bill": "all"})["count"], 1)
+
+    def export_response(self, format, bill="all", user=None, cards=None):
+        params = {"bill": bill}
+        if cards is not None:
+            params["card"] = cards
+        request = self.factory.get("/faturas/exportar/", params)
+        request.user = user or self.user
+        return views.export_ledger(request, format)
+
+    def test_exports_require_login(self):
+        from django.contrib.auth.models import AnonymousUser
+        from django.test import override_settings
+
+        with override_settings(LOGIN_URL="/login/", ALLOWED_HOSTS=["testserver"]):
+            for format in ("csv", "pdf"):
+                response = self.export_response(format, user=AnonymousUser())
+                self.assertEqual(response.status_code, 302)
+                self.assertIn("/login/", response["Location"])
+
+    def test_pdf_rejects_cards_outside_selected_bill_or_owner(self):
+        row = self.mapped()
+        for card in ("", "999999:1234", f"{row.account_id}:5678"):
+            self.assertEqual(self.export_response("pdf", cards=[card]).status_code, 400)
+        self.assertEqual(self.export_response("pdf", cards=[f"{row.account_id}:1234"]).status_code, 200)
+
+    def test_csv_exports_original_data_and_protects_spreadsheet_cells(self):
+        self.raw["description"] = "=2+2; Farmácia <original>"
+        row = self.mapped()
+        confirm(self.user, row.pk, 1, "create", self.create_data(description="User edited name"))
+        response = self.export_response("csv")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("attachment", response["Content-Disposition"])
+        self.assertEqual(response["Cache-Control"], "private, no-store")
+        self.assertTrue(response.content.startswith(b"\xef\xbb\xbf"))
+        rows = list(csv.reader(io.StringIO(response.content.decode("utf-8-sig")), delimiter=";"))
+        self.assertEqual(len(rows), 2)
+        self.assertEqual(rows[1][0], "20/09/2026")
+        self.assertEqual(rows[1][2], "10/11/2026")
+        self.assertEqual(rows[1][5], "'=2+2; Farmácia <original>")
+        self.assertEqual(rows[1][7], "100,00")
+        self.assertEqual(rows[1][-1], self.number.name)
+        self.assertNotIn("User edited name", response.content.decode())
+
+    def test_exports_respect_selected_bill_and_owner(self):
+        row = self.mapped()
+        own_bill = ExternalBill.objects.get(external_id=self.bill_id)
+        foreign_connection = BankConnection.objects.create(user=self.other, item_id=uuid4())
+        foreign_account = ExternalAccount.objects.create(
+            connection=foreign_connection, external_id=uuid4(), name="Foreign account", currency="BRL"
+        )
+        foreign_bill = ExternalBill.objects.create(
+            account=foreign_account, external_id=uuid4(), due_date=date(2026, 12, 10), total=100, currency="BRL"
+        )
+        ExternalTransaction.objects.create(
+            account=foreign_account,
+            external_id=uuid4(),
+            facts={**row.facts, "description": "PRIVATE OTHER OWNER", "bill_id": str(foreign_bill.external_id)},
+        )
+        for format in ("csv", "pdf"):
+            with self.subTest(format=format):
+                self.assertEqual(self.export_response(format, str(foreign_bill.pk)).status_code, 404)
+                self.assertEqual(self.export_response(format, str(own_bill.pk)).status_code, 200)
+        rows = list(csv.reader(io.StringIO(self.export_response("csv").content.decode("utf-8-sig")), delimiter=";"))
+        self.assertEqual(len(rows), 2)
+        self.assertEqual(
+            len(
+                list(
+                    csv.reader(
+                        io.StringIO(self.export_response("csv", "unbilled").content.decode("utf-8-sig")), delimiter=";"
+                    )
+                )
+            ),
+            1,
+        )
+        self.assertTrue(self.export_response("pdf").content.startswith(b"%PDF-"))
+        self.assertEqual(self.export_response("exe").status_code, 400)
+
+    @skipUnless(shutil.which("pdftotext"), "PDF text extraction requires pdftotext")
+    def test_pdf_has_original_columns_totals_and_multiple_pages(self):
+        row = self.mapped()
+        row.facts["description"] = "Farmácia <original> & loja"
+        row.save(update_fields=["facts"])
+        for _ in range(100):
+            ExternalTransaction.objects.create(account=row.account, external_id=uuid4(), facts=row.facts)
+        ExternalTransaction.objects.create(
+            account=row.account,
+            external_id=uuid4(),
+            facts={**row.facts, "last_four": "5678", "description": "UNSELECTED CARD", "amount": "900.00"},
+        )
+        response = self.export_response("pdf", cards=[f"{row.account_id}:1234"])
+        with tempfile.NamedTemporaryFile(suffix=".pdf") as document:
+            document.write(response.content)
+            document.flush()
+            result = subprocess.run(
+                [shutil.which("pdftotext"), "-layout", document.name, "-"], capture_output=True, text=True, check=True
+            )
+        text = result.stdout
+        self.assertIn("20/09/2026", text)
+        self.assertIn("Farmácia <original> & loja", text)
+        self.assertIn("100,00", text)
+        self.assertIn("10.100,00", text)
+        self.assertIn("Página 2", text)
+        self.assertIn(self.number.name, text)
+        self.assertNotIn("UNSELECTED CARD", text)
+        self.assertNotIn("900,00", text)

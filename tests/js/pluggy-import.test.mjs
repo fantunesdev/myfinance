@@ -236,14 +236,17 @@ test('original bill view renders source text and totals without requesting class
         return elements.get(id);
     };
     get('pluggy-ledger').dataset = {url:'/ledger/',reviewUrl:'/review/',importUrl:'/importar/'};
+    get('ledger-csv').dataset.exportUrl = '/exportar/csv/';
+    get('ledger-pdf').dataset.exportUrl = '/exportar/pdf/';
     const original = '<script>source bank text</script>';
     const payload = {selected_bill:'1',bills:[{id:'1',due_date:'2026-11-10',closing_date:'2026-11-03',total:'100.00',currency:'BRL',account:'Card'}],
         count:1, totals:{BRL:{charges:'100.00',refunds:'0.00',payments:'30.00',net:'100.00'}},
-        groups:[{account:'Card',last_four:'1234',currency:'BRL',charges:'100.00',refunds:'0.00',payments:'30.00',net:'100.00',
+        groups:[{account_id:1,account:'Card',card_name:'Ruth Faustini',last_four:'1234',currency:'BRL',charges:'100.00',refunds:'0.00',payments:'30.00',net:'100.00',
             rows:[{id:1,revision:1,state:'imported',transaction_id:10,event:'purchase',
                 facts:{description:original,payment_type:'SINGLE',date:'2026-11-01',amount:'100.00',currency:'BRL'}}]}]};
     const calls = [];
-    const context = vm.createContext({URLSearchParams,window:{location:{search:''}},
+    const downloads = [];
+    const context = vm.createContext({URLSearchParams,window:{location:{search:'',assign:url=>downloads.push(url)}},
         document:{getElementById:get,createElement:tag=>new Element(tag)},
         fetch:async(url)=>{calls.push(url);return {ok:true,json:async()=>payload};}});
     vm.runInContext(ledgerSource,context);
@@ -253,4 +256,20 @@ test('original bill view renders source text and totals without requesting class
     assert.ok(get('ledger-groups').all().some(n=>n.tag==='td' && n.textContent===original));
     assert.ok(get('ledger-totals').all().some(n=>n.textContent?.includes('Total informado pelo banco')));
     assert.equal(get('ledger-import').href,'/importar/?fonte=pluggy&fatura=1');
+    assert.equal(get('ledger-csv').href,'/exportar/csv/?bill=1');
+    const pdf = get('ledger-pdf');
+    assert.equal(pdf.dataset.downloadUrl,'/exportar/pdf/?bill=1&card=1%3A1234');
+    const card = get('ledger-groups').all().find(n => n.type === 'checkbox');
+    assert.ok(card['aria-label'].includes('Ruth Faustini · Final 1234'));
+    assert.ok(get('ledger-groups').all().some(n => n.tag === 'span' && n.textContent.includes('Ruth Faustini · Final 1234')));
+    assert.equal(card.checked, true);
+    card.checked = false;
+    card.listeners.change();
+    assert.equal(pdf.disabled, true);
+    pdf.listeners.click();
+    assert.equal(downloads.length, 0);
+    card.checked = true;
+    card.listeners.change();
+    pdf.listeners.click();
+    assert.deepEqual(downloads, ['/exportar/pdf/?bill=1&card=1%3A1234']);
 });
