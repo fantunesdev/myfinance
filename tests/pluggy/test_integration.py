@@ -654,6 +654,24 @@ class PluggyIntegrationTests(TestCase):
             self.assertEqual(self.export_response("pdf", cards=[card]).status_code, 400)
         self.assertEqual(self.export_response("pdf", cards=[f"{row.account_id}:1234"]).status_code, 200)
 
+    def test_pdf_uses_card_logo_and_survives_missing_logo(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from django.test import override_settings
+        from PIL import Image
+
+        self.mapped()
+        image = io.BytesIO()
+        Image.new("RGB", (160, 80), "orange").save(image, format="PNG")
+        with tempfile.TemporaryDirectory() as media, override_settings(MEDIA_ROOT=media):
+            self.card.icon.save("card-logo.png", SimpleUploadedFile("card-logo.png", image.getvalue()))
+            response = self.export_response("pdf")
+            self.assertEqual(response.status_code, 200)
+            self.assertIn(b"/Subtype /Image", response.content)
+            self.assertNotIn(b"Faturas originais", response.content)
+            self.card.icon.name = "img/missing-logo.png"
+            self.card.save(update_fields=["icon"])
+            self.assertEqual(self.export_response("pdf").status_code, 200)
+
     def test_csv_exports_original_data_and_protects_spreadsheet_cells(self):
         self.raw["description"] = "=2+2; Farmácia <original>"
         row = self.mapped()
@@ -690,7 +708,9 @@ class PluggyIntegrationTests(TestCase):
         for format in ("csv", "pdf"):
             with self.subTest(format=format):
                 self.assertEqual(self.export_response(format, str(foreign_bill.pk)).status_code, 404)
-                self.assertEqual(self.export_response(format, str(own_bill.pk)).status_code, 200)
+                response = self.export_response(format, str(own_bill.pk))
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response["Content-Disposition"], f'attachment; filename="Fatura-Test-Card-2026-11.{format}"')
         rows = list(csv.reader(io.StringIO(self.export_response("csv").content.decode("utf-8-sig")), delimiter=";"))
         self.assertEqual(len(rows), 2)
         self.assertEqual(
@@ -718,7 +738,8 @@ class PluggyIntegrationTests(TestCase):
             external_id=uuid4(),
             facts={**row.facts, "last_four": "5678", "description": "UNSELECTED CARD", "amount": "900.00"},
         )
-        response = self.export_response("pdf", cards=[f"{row.account_id}:1234"])
+        bill = ExternalBill.objects.get(external_id=self.bill_id)
+        response = self.export_response("pdf", bill=str(bill.pk), cards=[f"{row.account_id}:1234"])
         with tempfile.NamedTemporaryFile(suffix=".pdf") as document:
             document.write(response.content)
             document.flush()
@@ -730,7 +751,11 @@ class PluggyIntegrationTests(TestCase):
         self.assertIn("Farmácia <original> & loja", text)
         self.assertIn("100,00", text)
         self.assertIn("10.100,00", text)
+        self.assertRegex(text, r"Vencimento: 10/11/2026\s+Total: 100,00 BRL")
+        self.assertNotIn("Total informado pelo banco", text)
         self.assertIn("Página 2", text)
         self.assertIn(self.number.name, text)
+        self.assertNotIn("Faturas originais", text)
+        self.assertIn(self.card.description, text)
         self.assertNotIn("UNSELECTED CARD", text)
         self.assertNotIn("900,00", text)

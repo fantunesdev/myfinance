@@ -33,6 +33,7 @@ def bill_options(user):
     return [
         {
             "id": str(b.pk),
+            "account_id": b.account_id,
             "account": b.account.name,
             "due_date": b.due_date,
             "closing_date": b.closing_date,

@@ -6,6 +6,7 @@ from xml.sax.saxutils import escape
 
 from django.http import HttpResponse
 from django.core.exceptions import ValidationError
+from django.utils.text import slugify
 
 from .services import money
 
@@ -50,9 +51,20 @@ def spreadsheet_text(value):
     return "'" + text if text.lstrip().startswith(("=", "+", "-", "@")) or text.startswith(("\t", "\r", "\n")) else text
 
 
+def export_filename(data, extension):
+    bill = next((bill for bill in data["bills"] if bill["id"] == data["selected_bill"]), None)
+    banks = list(dict.fromkeys(data.get("bank_names", [])))
+    bank = "-".join(slugify(name).title() for name in banks if name) or "Banco"
+    if bill and bill["due_date"]:
+        name = f'Fatura-{bank}-{str(bill["due_date"])[:7]}'
+    else:
+        name = f"Faturas-{bank}-todas" if data["selected_bill"] == "all" else f"Fatura-{bank}-sem-fatura-definida"
+    return f'attachment; filename="{name}.{extension}"'
+
+
 def csv_response(data):
     response = HttpResponse(content_type="text/csv; charset=utf-8")
-    response["Content-Disposition"] = 'attachment; filename="faturas-originais.csv"'
+    response["Content-Disposition"] = export_filename(data, "csv")
     response.write("\ufeff")
     writer = csv.writer(response, delimiter=";")
     writer.writerow(
@@ -94,12 +106,34 @@ def csv_response(data):
     return response
 
 
-def pdf_response(data):
+def pdf_brands(user, data):
+    from .models import ExternalAccount
+
+    account_ids = {group["account_id"] for group in data["groups"]}
+    if not account_ids:
+        account_ids.update(bill["account_id"] for bill in data["bills"] if bill["id"] == data["selected_bill"])
+    brands = []
+    for account in ExternalAccount.objects.filter(pk__in=account_ids, connection__user=user).select_related(
+        "card__account__bank"
+    ):
+        card = account.card if account.card_id and account.card.user_id == user.pk else None
+        bank = card.account.bank if card and card.account_id else None
+        brands.append(
+            {
+                "name": card.description if card else account.name,
+                "bank_name": bank.description if bank else card.description if card else account.name,
+                "images": [image for image in (card.icon if card else None, bank.icon if bank else None) if image],
+            }
+        )
+    return brands
+
+
+def pdf_response(data, brands=()):
     from reportlab.lib import colors
     from reportlab.lib.pagesizes import A4
     from reportlab.lib.styles import getSampleStyleSheet
     from reportlab.lib.units import mm
-    from reportlab.platypus import LongTable, Paragraph, SimpleDocTemplate, Spacer, TableStyle
+    from reportlab.platypus import Image, LongTable, Paragraph, SimpleDocTemplate, Spacer, TableStyle
 
     stream = BytesIO()
     styles = getSampleStyleSheet()
@@ -110,14 +144,32 @@ def pdf_response(data):
         leftMargin=16 * mm,
         topMargin=16 * mm,
         bottomMargin=18 * mm,
-        title="Faturas originais — Pluggy",
+        title=" · ".join(brand["name"] for brand in brands) or "Faturas",
     )
-    story = [Paragraph("Faturas originais — Pluggy", styles["Title"])]
+    story = []
+    for brand in brands:
+        logo = None
+        for image in brand["images"]:
+            try:
+                with image.open("rb") as source:
+                    candidate = Image(BytesIO(source.read()))
+                ratio = min(48 * mm / candidate.imageWidth, 20 * mm / candidate.imageHeight)
+                candidate.drawWidth = candidate.imageWidth * ratio
+                candidate.drawHeight = candidate.imageHeight * ratio
+                candidate.hAlign = "LEFT"
+                logo = candidate
+                break
+            except (OSError, ValueError):
+                continue
+        story.append(logo or Paragraph(escape(brand["name"]), styles["Title"]))
+        story.append(Spacer(1, 5 * mm))
     bill = next((bill for bill in data["bills"] if bill["id"] == data["selected_bill"]), None)
     if bill:
-        summary = f'Vencimento: {date_label(bill["due_date"])}'
-        if not data.get("partial_selection"):
-            summary += f' · Total informado pelo banco: {amount_label(bill["total"])} {escape(bill["currency"])}'
+        total = bill["total"]
+        summary = (
+            f'Vencimento: {date_label(bill["due_date"])}<br/>'
+            f'Total: {amount_label(total)} {escape(bill["currency"])}'
+        )
         story.append(
             Paragraph(
                 summary,
@@ -198,5 +250,5 @@ def pdf_response(data):
 
     document.build(story, onFirstPage=footer, onLaterPages=footer)
     response = HttpResponse(stream.getvalue(), content_type="application/pdf")
-    response["Content-Disposition"] = 'attachment; filename="faturas-originais.pdf"'
+    response["Content-Disposition"] = export_filename(data, "pdf")
     return response

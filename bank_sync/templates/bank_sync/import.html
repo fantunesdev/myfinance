@@ -4,7 +4,7 @@
         <div class="box-body">
             {% csrf_token %}
             <p>Compras com data e valor correspondentes mostram uma candidata e o botão <b>Conciliar</b>. As demais compras aptas à importação já vêm selecionadas: revise as sugestões do TC antes de cadastrar.</p>
-            <p><a href="{% url 'pluggy_bills' %}">Ver todas as faturas originais, agrupadas por cartão</a></p>
+            <p><a class="btn btn-default" href="{% url 'pluggy_bills' %}" title="Ver todas as faturas originais, agrupadas por cartão"><i class="fa-solid fa-file-invoice" aria-hidden="true"></i> Faturas originais</a></p>
             <p id="pluggy-message" role="status" aria-live="polite"></p>
             <div id="pluggy-connections"></div>
             <details><summary>Vincular contas e números de cartão</summary><div id="pluggy-mappings"></div></details>
