@@ -175,7 +175,9 @@ def prepare(request):
 @login_required
 @require_GET
 def bills_page(request):
-    return render(request, "bank_sync/bills.html")
+    return render(request, "bank_sync/bills.html", {
+        "pluggy_connections": BankConnection.objects.filter(user=request.user).only("consent_expires_at"),
+    })
 
 
 @login_required

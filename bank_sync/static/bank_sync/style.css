@@ -1,4 +1,7 @@
 .pluggy-table-scroll { overflow-x: auto; }
+#pluggy-message:empty { display: none; }
+.pluggy-connection { padding: 12px 0 16px; }
+.pluggy-last-sync { padding-top: 12px; margin-bottom: 0; }
 #pluggy-table { min-width: 1050px; }
 #pluggy-table > tbody > tr[data-stripe="odd"] { background: #191919; }
 #pluggy-table > tbody > tr[data-stripe="even"] { background: #141414; }

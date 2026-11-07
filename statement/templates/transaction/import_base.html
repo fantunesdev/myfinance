@@ -1,7 +1,7 @@
 {% extends 'index.html' %}
 {% load static %}
 {% load i18n %}
-{% block styles %}<link rel="stylesheet" href="{% static 'bank_sync/style.css' %}?v=event-align-4">{% endblock %}
+{% block styles %}<link rel="stylesheet" href="{% static 'bank_sync/style.css' %}?v=compact-import-5">{% endblock %}
 
 {% block title %}
     Importar Lançamentos
@@ -293,7 +293,7 @@
         window.card_numbers_json = JSON.parse(document.getElementById('data-card_numbers_json').textContent);
     </script>
     <script src="{% static 'js/pages/import-selector.js' %}"></script>
-    <script src="{% static 'bank_sync/import.js' %}?v=automatic-due-date-8" type="module"></script>
+    <script src="{% static 'bank_sync/import.js' %}?v=compact-import-9" type="module"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const configurableRadio = document.querySelector('#file-type-configurable-csv');

@@ -113,7 +113,7 @@ async function load() {
     page = payload.page;
     selectedBill = payload.selected_bill;
     render();
-    message.textContent = payload.classifier_notice || 'Confira as candidatas e clique em Conciliar. Selecione apenas compras que deseja cadastrar como novas.';
+    message.textContent = payload.classifier_notice || '';
 }
 function billLabel(bill) {
     const month = bill.due_date ? new Date(`${bill.due_date}T12:00:00`).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }) : 'Sem vencimento';
@@ -127,13 +127,14 @@ function render() {
     }
     payload.connections.forEach((connection) => {
         const block = node('div', null, connections);
-        node('p', `Última consulta: ${formatDate(connection.last_sync_at) || 'ainda não executada'}. Estado: ${connection.status || 'não consultado'}.`, block);
-        if (connection.last_run?.state === 'failed') node('p', `Última consulta falhou: ${connection.last_run.message}`, block);
-        if (connection.consent_expires_at) node('p', `Autorização válida até ${formatDate(connection.consent_expires_at)}.`, block);
+        block.className = 'pluggy-connection';
         button(block, 'Consultar dados na Pluggy', async () => {
             await api('sync/', { connection_id: connection.id });
             await load();
         });
+        const info = node('p', `Última consulta: ${formatDate(connection.last_sync_at) || 'ainda não executada'}. Estado: ${connection.status || 'não consultado'}.`, block);
+        info.className = 'pluggy-last-sync';
+        if (connection.last_run?.state === 'failed') node('p', `Última consulta falhou: ${connection.last_run.message}`, block);
     });
     renderMappings();
     const bills = document.getElementById('pluggy-bill');
@@ -295,6 +296,7 @@ function renderRow(parent, row) {
             });
             reconcile.disabled = !row.card_number;
             reconcile.title = !row.card_number ? 'Identifique o cartão primeiro.' : `Conciliar com o lançamento #${match.id}${facts.payment_type === 'INSTALLMENT' ? ' e as demais parcelas correspondentes desta compra, em todas as faturas' : ''}`;
+            reconcile.title += '\nCompras com data e valor correspondentes mostram uma candidata. Confira a candidata e clique em Conciliar. As demais compras aptas à importação já vêm selecionadas: revise as sugestões do TC e mantenha selecionadas apenas as compras que deseja cadastrar como novas.';
         }
         button(matchPanel, 'É uma nova compra', async () => {
             chosen.checked = true;

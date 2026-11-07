@@ -7,6 +7,9 @@
     <div class="box-header"><h3 class="box-title">Faturas originais — Pluggy</h3></div>
     <div class="box-body">
         {% csrf_token %}
+        {% for connection in pluggy_connections %}
+            {% if connection.consent_expires_at %}<p>Autorização válida até {{ connection.consent_expires_at|date:"d/m/Y" }}.</p>{% endif %}
+        {% endfor %}
         <p>Dados bancários preservados, incluindo lançamentos já importados. As alterações de descrição e classificação no MyFinance não modificam esta visão.</p>
         <label>Fatura <select id="ledger-bill" class="form-control"></select></label>
         <a id="ledger-import" class="btn btn-primary" href="{% url 'import_transactions' %}?fonte=pluggy">Importar pendências desta fatura</a>
