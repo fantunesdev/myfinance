@@ -51,9 +51,11 @@ class InvoiceView(TransactionView):
         # Se for dependente, restringe às transações do seu card_number ou de
         # card_numbers para os quais ele recebeu acesso específico.
         if is_dependent:
+            # O JOIN com visible_to pode repetir lançamentos do dependente
+            # para cada pessoa com acesso ao mesmo número de cartão.
             instances = instances.filter(
                 Q(card_number__dependente=request.user) | Q(card_number__visible_to=request.user)
-            )
+            ).distinct()
 
         # Monta a estrutura agrupada por CardNumber. Primeiro agrupa transações que
         # referenciam o Card diretamente (card set, card_number null), depois um
