@@ -25,6 +25,7 @@ function loadForm(services = {}, type = element('saida')) {
     selects.subcategory.options = [{ id: 11, description: 'Mercado' }];
     const context = {
         selects, services,
+        initializeFuelForm() {},
         enhanceSearchableSelect() { return null; },
         buttons: { otherOptions: element() },
         divs: { account: element(), card: element() },

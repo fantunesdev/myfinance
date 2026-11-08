@@ -114,6 +114,37 @@
     max-height: 25px;
 }
 
+#fuel-dashboard {
+    margin: 20px 0;
+    padding: 16px;
+    border: 1px solid #303030;
+    border-radius: 8px;
+}
+
+.fuel-metrics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+}
+
+#fuel-periods {
+    width: min(900px, 90vw);
+    max-height: 85vh;
+    border-radius: 8px;
+    padding: 24px;
+    color: #ccc;
+    background: #141414;
+    border: 1px solid #292929;
+    box-shadow: 0 20px 70px rgb(0 0 0 / 75%);
+}
+
+#fuel-periods::backdrop { background: rgb(0 0 0 / 75%); }
+#fuel-periods table { background: #191919; }
+#fuel-periods thead, #fuel-periods tfoot { background: #0e0e0e; }
+#fuel-periods form { margin-top: 20px; }
+.fuel-periods-scroll { overflow-x: auto; }
+
 .expenses-category-table tfoot tr {
     background-color: rgba(139, 0, 0, 0.1);
     font-weight: bold;

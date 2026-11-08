@@ -31,6 +31,7 @@ test('formulário de parcelamento permite trocar cartão sem campos de combustí
     const divs = { account: element(), card: element() };
     const context = {
         selects, divs,
+        initializeFuelForm() {},
         enhanceSearchableSelect() { return null; },
         buttons: { otherOptions: element() },
         document: {
@@ -56,5 +57,5 @@ test('formulário de parcelamento permite trocar cartão sem campos de combustí
     await Promise.resolve();
     assert.equal(selects.paymentMethod.value, 1);
     assert.equal(cardNumber.options.at(-1).value, 22);
-    selects.value.listeners.input();
+    selects.value.listeners.keyup.call(selects.value, {});
 });

@@ -17,11 +17,14 @@ class TransactionService(BaseService):
     @db_transaction.atomic
     def delete(cls, instance):
         from investments.services.transaction import InvestmentTransactionService
+        from statement.services.fuel_entries import mark_gap_after
 
+        mark_gap_after(instance)
         InvestmentTransactionService.remove_statement_contribution(instance)
         return super().delete(instance)
 
     @classmethod
+    @db_transaction.atomic
     def create(cls, form, user=None, id=None):
         """
         Sobrescreve o método 'create' da classe mãe redefinindo o atributo home_screen
@@ -36,9 +39,13 @@ class TransactionService(BaseService):
                 raise ValidationError('A opção Despesa fixa só pode ser usada em despesas.')
             instance.fixed = True
         instance.home_screen = cls._set_home_screen(instance)
-        return super().create(form, user=user)
+        instance = super().create(form, user=user)
+        if hasattr(form, 'save_fuel_entry'):
+            form.save_fuel_entry(instance)
+        return instance
 
     @classmethod
+    @db_transaction.atomic
     def update(cls, form, instance):
         """
         Sobrescreve o método 'update' da classe mãe redefinindo o atributo home_screen
@@ -56,7 +63,10 @@ class TransactionService(BaseService):
         if 'event_type' in form.data and instance.event_type == 'fixed_expense':
             instance.fixed = True
         instance.home_screen = cls._set_home_screen(instance)
-        return super().update(form, instance)
+        instance = super().update(form, instance)
+        if hasattr(form, 'save_fuel_entry'):
+            form.save_fuel_entry(instance)
+        return instance
 
     @classmethod
     def get_by_filter(cls, order=None, first=False, **kwargs):

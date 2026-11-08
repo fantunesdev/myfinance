@@ -347,7 +347,10 @@ class BaseView:
         Restaura valores originais de campos do model que não vieram no POST,
         porque o ModelForm sobrescreve esses campos como None ao validar.
         """
+        model_fields = {field.name for field in original_instance._meta.fields}
         for field_name, field in form.fields.items():
+            if field_name not in model_fields:
+                continue
             widget = field.widget
             # Campos que podem ser nulos intencionalmente (hidden, checkbox, etc.) são ignorados
             if isinstance(widget, (HiddenInput, CheckboxInput, MultipleHiddenInput)):

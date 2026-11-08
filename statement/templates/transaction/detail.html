@@ -55,6 +55,20 @@
                     <p style="font-size: 18px;">Tipo: <b>{{ instance.type }}</b></p>
                     <p style="font-size: 18px;">Efetivado: <b>{{ instance.effected }}</b></p>
 
+                    {% if instance.fuel_entry %}
+                    <section class="box-observation" aria-label="Dados do abastecimento">
+                        <h3>Abastecimento</h3>
+                        <p>Litros: <b>{{ instance.fuel_entry.liters|default_if_none:'Não informado' }}</b></p>
+                        <p>Total pago: <b>{{ instance.fuel_entry.amount_paid }} {{ instance.currency_id }}</b></p>
+                        <p>Preço efetivo por litro: <b>{{ instance.fuel_entry.price_per_liter|floatformat:3|default:'Dados insuficientes' }} {{ instance.currency_id }}</b></p>
+                        <p>Distância informada: <b>{{ instance.fuel_entry.distance_km|default_if_none:'Não informada' }} km</b></p>
+                        <p>Hodômetro: <b>{{ instance.fuel_entry.odometer_km|default_if_none:'Não informado' }} km</b></p>
+                        <p>Tanque cheio: <b>{{ instance.fuel_entry.full_tank|yesno:'Sim,Não,Não informado' }}</b></p>
+                        <p>Consumo pela distância informada: <b>{{ instance.fuel_entry.consumption|floatformat:2|default:'Dados insuficientes' }} km/l</b></p>
+                        <p>Custo pela distância informada: <b>{{ instance.fuel_entry.cost_per_km|floatformat:2|default:'Dados insuficientes' }} {{ instance.currency_id }}/km</b></p>
+                        {% if instance.fuel_entry.break_before %}<p>Há uma interrupção do acompanhamento antes deste abastecimento.</p>{% endif %}
+                    </section>
+                    {% endif %}
                     {% if instance.observation %}
                     <p style="font-size: 18px;">Observações:</p>
                     <div class="box-observation">

@@ -1,5 +1,7 @@
 import secrets
+from decimal import Decimal
 
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.db import transaction as db_transaction
 from login.models import User
@@ -401,6 +403,52 @@ class Transaction(models.Model):
         """Ordena as transações pela data de lançamento."""
 
         ordering = ['posted_date']
+
+
+class FuelEntry(models.Model):
+    """Um abastecimento físico, independentemente das parcelas do pagamento."""
+
+    transaction = models.OneToOneField(Transaction, related_name='fuel_entry', on_delete=models.CASCADE)
+    liters = models.DecimalField(max_digits=10, decimal_places=3, null=True, blank=True,
+                                validators=[MinValueValidator(Decimal('0.001'))])
+    amount_paid = models.DecimalField(max_digits=12, decimal_places=2,
+                                     validators=[MinValueValidator(Decimal('0.01'))])
+    informed_price_per_liter = models.DecimalField(
+        max_digits=10, decimal_places=4, null=True, blank=True,
+        validators=[MinValueValidator(Decimal('0.0001'))],
+    )
+    distance_km = models.DecimalField(max_digits=10, decimal_places=1, null=True, blank=True,
+                                      validators=[MinValueValidator(Decimal('0.1'))])
+    odometer_km = models.DecimalField(max_digits=10, decimal_places=1, null=True, blank=True,
+                                      validators=[MinValueValidator(Decimal('0'))])
+    full_tank = models.BooleanField(null=True, blank=True)
+    break_before = models.BooleanField(default=False)
+
+    @property
+    def price_per_liter(self):
+        if self.informed_price_per_liter is not None:
+            return Decimal(str(self.informed_price_per_liter))
+        return Decimal(str(self.amount_paid)) / Decimal(str(self.liters)) if self.liters else None
+
+    @property
+    def consumption(self):
+        return self.distance_km / self.liters if self.distance_km and self.liters else None
+
+    @property
+    def cost_per_km(self):
+        return self.amount_paid / self.distance_km if self.distance_km else None
+
+    class Meta:
+        ordering = ['transaction__posted_date', 'transaction_id']
+        constraints = [
+            models.CheckConstraint(condition=models.Q(liters__isnull=True) | models.Q(liters__gt=0),
+                                   name='fuel_liters_positive'),
+            models.CheckConstraint(condition=models.Q(amount_paid__gt=0), name='fuel_amount_positive'),
+            models.CheckConstraint(condition=models.Q(distance_km__isnull=True) | models.Q(distance_km__gt=0),
+                                   name='fuel_distance_positive'),
+            models.CheckConstraint(condition=models.Q(odometer_km__isnull=True) | models.Q(odometer_km__gte=0),
+                                   name='fuel_odometer_nonnegative'),
+        ]
 
 
 class CSVImportConfig(models.Model):

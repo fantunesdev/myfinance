@@ -5,6 +5,7 @@ import * as monthsData from '../data/months-report.js';
 import * as annualData from '../data/annual-report.js';
 import * as services from '../data/services.js';
 import * as chartPolicy from '../data/chart-policy.js';
+import { hideFuelDashboard, showFuelDashboard } from '../layout/fuel-dashboard.js';
 
 const yearSeletct = document.getElementById('id_year');
 const decreaseButton = document.getElementById('id_decrease');
@@ -26,7 +27,7 @@ async function drawAnnualStatementChart(select) {
     setExpensesCategoryToggleMode('bar');
 
     const year = yearSeletct.value;
-    const transactions = await services.getTransactionsByYear(year, false, true);
+    const transactions = await services.getTransactionsByYear(year, { expand: 'account,card,card_number' }, true);
     await loadDashboardLookups();
 
     const visibleTransactions = Array.isArray(transactions) ? transactions.filter(isHomeScreenTransaction) : [];
@@ -78,6 +79,7 @@ async function drawAnnualOverviewChart(select) {
 }
 
 async function destroyCharts() {
+    hideFuelDashboard();
     // Restaurar visibilidade dos gráficos
     const lineChart = document.getElementById('line-chart');
     const doughnutChart = document.getElementById('donnut-chart').parentElement;
@@ -127,7 +129,7 @@ async function drawExpensesCategoryChart() {
     if (expensesCategoryChart) expensesCategoryChart.style.display = 'block';
 
     const year = yearSeletct.value;
-    const transactions = await services.getTransactionsByYear(year, false, true);
+    const transactions = await services.getTransactionsByYear(year, { expand: 'account,card,card_number' }, true);
     await loadDashboardLookups();
     const categories = dashboardLookups.categories;
     const visibleTransactions = Array.isArray(transactions) ? transactions.filter(isHomeScreenTransaction) : [];
@@ -330,6 +332,7 @@ async function updateExpensesCategoryChart() {
         sessionStorage.setItem('bar_chart_level', 'categories');
 
         // Ocultar tabela
+        hideFuelDashboard();
         const tableContainer = document.getElementById('expenses-category-table-container');
         if (tableContainer) {
             tableContainer.style.display = 'none';
@@ -379,9 +382,11 @@ function renderExpensesCategoryTable(itemName, itemId, itemType = 'categories') 
 
     // Gerar HTML da tabela
     renderDashboardTransactionsTable(itemName, filteredTransactions);
+    showFuelDashboard(itemId, itemType);
 }
 
 function renderDashboardTransactionsTable(title, transactions) {
+    hideFuelDashboard();
     const tableHTML = generateExpensesTableHTML(transactions, title);
 
     // Inserir na página
@@ -538,9 +543,9 @@ async function loadDashboardLookups() {
     const [categories, subcategories, accounts, cards, banks] = await Promise.all([
         services.getResource('categories', null, lookupOptions),
         services.getResource('subcategories', null, lookupOptions),
-        services.getResource('accounts'),
-        services.getResource('cards'),
-        services.getResource('banks'),
+        services.getResource('accounts', null, lookupOptions),
+        services.getResource('cards', null, lookupOptions),
+        services.getResource('banks', null, lookupOptions),
     ]);
 
     dashboardLookups = {
@@ -564,12 +569,16 @@ function normalizeTransactions(transactions) {
         const categoryId = getResourceId(t.category);
         const subcategoryId = getResourceId(t.subcategory);
         const accountId = getResourceId(t.account);
-        const cardId = getResourceId(t.card);
+        const cardId = getResourceId(t.card) || getResourceId(t.card_number?.card);
         const category = getLookupResource('categoryById', categoryId) || t.category;
         const subcategory = getLookupResource('subcategoryById', subcategoryId) || t.subcategory;
-        const account = getLookupResource('accountById', accountId) || t.account;
-        const card = getLookupResource('cardById', cardId) || t.card;
-        const bank = getLookupResource('bankById', getResourceId(account && account.bank));
+        const mergeResource = (mapName, id, expanded) => ({
+            ...(getLookupResource(mapName, id) || {}),
+            ...(typeof expanded === 'object' && expanded !== null ? expanded : {}),
+        });
+        const account = mergeResource('accountById', accountId, t.account);
+        const card = mergeResource('cardById', cardId, t.card || t.card_number?.card);
+        const bank = mergeResource('bankById', getResourceId(account.bank), account.bank);
 
         return {
             ...t,
@@ -694,7 +703,7 @@ function getPaymentIcon(transaction) {
     const cardIcon = getNestedValue(transaction.card, ['icon']);
     const cardNumberCardIcon = getNestedValue(transaction.card_number, ['card', 'icon']);
 
-    return accountIcon || cardIcon || cardNumberCardIcon || '';
+    return cardIcon || cardNumberCardIcon || accountIcon || transaction.payment_icon || '';
 }
 
 function getPaymentUrl(transaction) {

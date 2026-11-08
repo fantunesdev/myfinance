@@ -1,6 +1,6 @@
 {% extends 'index.html' %}
 {% load static %}
-    {% block styles %}<link rel="stylesheet" href="{% static 'css/dashboards.css' %}">{% endblock %}
+    {% block styles %}<link rel="stylesheet" href="{% static 'css/dashboards.css' %}?v=20261108-2">{% endblock %}
 
     {% block title %}Dashboards{% endblock %}
 
@@ -33,6 +33,28 @@
                     <canvas id="donnut-chart" style="width: 20%;" height="15"></canvas>
                 </div>
             </div>
+            {{ fuel_report|json_script:"fuel-report" }}
+            <section id="fuel-dashboard" hidden aria-label="Acompanhamento de combustível">
+                <h3>Combustível</h3>
+                <p id="fuel-report-range"></p>
+                <div class="fuel-metrics">
+                    <button type="button" class="btn btn-primary" id="fuel-consumption" aria-haspopup="dialog"></button>
+                    <p id="fuel-cost"></p>
+                    <p id="fuel-price"></p>
+                    <p id="fuel-distance"></p>
+                </div>
+                <p id="fuel-report-status"></p>
+            </section>
+            <dialog id="fuel-periods" aria-labelledby="fuel-periods-title">
+                <h3 id="fuel-periods-title">Períodos usados na média histórica</h3>
+                <p>A média usa somente a distância entre os hodômetros de tanques cheios e os litros abastecidos no intervalo. A distância informada no formulário não entra nesta média. Os litros do abastecimento inicial ficam fora da conta.</p>
+                <div class="fuel-periods-scroll"><table class="table">
+                    <thead><tr><th>Período</th><th>Distância pelo hodômetro (km)</th><th>Litros</th><th>Consumo (km/l)</th></tr></thead>
+                    <tbody id="fuel-periods-body"></tbody>
+                    <tfoot id="fuel-periods-total"></tfoot>
+                </table></div>
+                <form method="dialog"><button class="btn btn-primary">Fechar</button></form>
+            </dialog>
             <div id="expenses-category-table-container" style="display: none;"></div>
         </div>
         <div class="box-footer">
@@ -41,6 +63,6 @@
     {% endblock content %}
 
     {% block scripts %}
-    <script src="{% static 'js/pages/dashboards-page.js' %}" type="module"></script>
+    <script src="{% static 'js/pages/dashboards-page.js' %}?v=20261108-4" type="module"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.0/dist/chart.min.js"></script>
     {% endblock %}

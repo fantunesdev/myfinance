@@ -1,6 +1,7 @@
 from django import forms
 
 from statement.forms.base_form import BaseForm
+from statement.forms.fuel_entry import FuelEntryFormMixin
 from statement.models import CardNumber, Dream, Transaction
 from statement.services.core.category import CategoryService
 from statement.services.core.subcategory import SubcategoryService
@@ -11,7 +12,7 @@ from statement.access import restrict_write_relations
 today = DateTimeUtils.today()
 
 
-class TransactionForm(BaseForm):
+class TransactionForm(FuelEntryFormMixin, BaseForm):
     """Formulário para o modelo Transaction."""
 
     type = forms.ChoiceField(
@@ -70,6 +71,7 @@ class TransactionForm(BaseForm):
         if self.data:
             card_id = self.data.get('card') or self.initial.get('card')
             self.fields['card_number'].queryset = self.fields['card_number'].queryset.filter(card_id=card_id)
+        self.setup_fuel_fields(user)
 
     def clean(self):
         cleaned = super().clean()
@@ -77,6 +79,7 @@ class TransactionForm(BaseForm):
         card = cleaned.get('card')
         if number and (not card or number.card_id != card.pk):
             self.add_error('card_number', 'O número deve pertencer ao cartão selecionado.')
+        self.clean_fuel_fields(cleaned)
         return cleaned
 
 

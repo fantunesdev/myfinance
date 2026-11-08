@@ -1,7 +1,7 @@
 import { showHide } from './index.js';
 import { buttons, divs, selects } from '../layout/elements/transaction-form-elements.js';
 import * as data from '../data/transaction-form-data.js';
-import * as general from '../layout/general.js';
+import { initializeFuelForm } from '../layout/fuel-form.js';
 import * as services from '../data/services.js';
 import * as selectInput from '../layout/elements/selects.js';
 import { enhanceSearchableSelect } from '../layout/elements/searchable-select.js';
@@ -225,86 +225,8 @@ else if (selects.releaseDate) selects.releaseDate.addEventListener('change', () 
 
 selects.type?.addEventListener('change', () => changeCategoriesInput(selects.type.value));
 selects.category.addEventListener('change', () => changeSubcategoriesInput(selects.category.value));
-selects.subcategory.addEventListener('change', () => {
-    if (selects.subcategory.value == 5 && selects.price) {
-        general.toggle('div-fuel');
-        selects.price.required = true;
-
-        selects.price.addEventListener('keyup', () => {
-            selects.observation.value = returnFuelObservation();
-        });
-        selects.value.addEventListener('keyup', () => {
-            selects.observation.value = returnFuelObservation();
-        });
-        selects.liters?.addEventListener('keyup', () => {
-            selects.observation.value = returnFuelObservation();
-        });
-        selects.km.addEventListener('keyup', () => {
-            selects.observation.value = returnFuelObservation();
-        });
-    }
-});
-
-selects.value.addEventListener('keyup', function(e) {
-    twoDigitFloatHandler.call(this, e);
-    calculateFuelPrice();
-});
-selects.price?.addEventListener('keyup', twoDigitFloatHandler);
-selects.liters?.addEventListener('keyup', function(e) {
-    twoDigitFloatHandler.call(this, e);
-    calculateFuelPrice();
-});
-
-/**
- * Calcula o preço por litro automaticamente baseado em Valor / Litros
- */
-function calculateFuelPrice() {
-    if (!selects.liters || !selects.price) return;
-    const value = parseFloat(selects.value.value) || 0;
-    const liters = parseFloat(selects.liters.value) || 0;
-    
-    if (value > 0 && liters > 0) {
-        const calculatedPrice = (value / liters).toFixed(2);
-        selects.price.value = calculatedPrice;
-    }
-}
-
-// Adiciona listeners para recalcular o preço quando Valor ou Litros mudam (enquanto digita e ao sair do campo)
-selects.value.addEventListener('input', calculateFuelPrice);
-selects.liters?.addEventListener('input', calculateFuelPrice);
-selects.value.addEventListener('change', calculateFuelPrice);
-selects.liters?.addEventListener('change', calculateFuelPrice);
-
-const divFuelToggler = document.querySelector('#div-fuel-toggler');
-divFuelToggler?.addEventListener('click', () => {
-    general.toggle('div-fuel');
-    selects.subcategory.value = 0;
-    selects.price.required = false;
-    selects.km.required = false;
-    selects.liters.required = false;
-});
-
-function returnFuelObservation() {
-    let price = parseFloat(selects.price.value) || 0;
-    let km = parseFloat(selects.km.value) || 0;
-    let value = parseFloat(selects.value.value) || 0;
-    let liters = parseFloat(selects.liters.value) || 0;
-    
-    let kmPerL = liters > 0 ? (km / liters).toFixed(1) : '—';
-    let realPerKm = km > 0 ? (value / km).toFixed(2) : '—';
-
-    return `##########  CÁLCULOS DE COMBUSTÍVEL ##########
-
-CUSTO: R$ ${realPerKm} por km.
-CONSUMO: ${kmPerL} km/l.
-
-PREÇO: R$ ${price}.
-LITROS: ${liters} l.
-DISTÂNCIA: ${km} km.
-
-#########################################
-`;
-}
+selects.value.addEventListener('keyup', twoDigitFloatHandler);
+initializeFuelForm();
 
 /**
  * Trata o valor do campo Valor de forma que sempre retorne um float de dois dígitos.

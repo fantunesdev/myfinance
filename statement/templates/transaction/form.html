@@ -87,22 +87,32 @@
                             {{ form.value.errors }}
                         </div>
 
-                        <div class="toggled" id="div-fuel">
-                            <h3 id="div-fuel-toggler" class="cursor-pointer">Módulo Combustível -</h3>
-                            <div class="form-input">
-                                <label for="id_price">Preço</label>
-                                <input type="number" name="id_price" id="id_price" class="form-control" step="any">
-                            </div>
-    
-                            <div class="form-input">
-                                <label for="id_km">Quilômetros</label>
-                                <input type="number" name="id_km" id="id_km" class="form-control" step="any">
-                            </div>
-                            <div class="form-input">
-                                <label for="id_liters">Litros</label>
-                                <input type="number" name="id_liters" id="id_liters" class="form-control" step="any">
-                            </div>
-                        </div>
+                        {% if form.fuel_available %}
+                        {{ form.fuel_tracking_present }}
+                        {{ form.fuel_history|json_script:"fuel-history" }}
+                        <section class="toggled" id="div-fuel"
+                                 data-subcategory="{{ form.fuel_subcategory_id|default_if_none:'' }}"
+                                 data-existing="{% if form.existing_fuel_entry %}true{% else %}false{% endif %}"
+                                 data-transaction="{{ form.instance.pk|default_if_none:'' }}">
+                            <h3>Abastecimento</h3>
+                            {{ form.fuel_calculation_basis }}
+                            <p>Informe o valor pago e os litros ou o preço por litro. Ao editar um deles, o outro é calculado automaticamente.</p>
+                            <div class="form-input">{{ form.fuel_price_per_liter.label_tag }}{{ form.fuel_price_per_liter }}{{ form.fuel_price_per_liter.errors }}</div>
+                            <div class="form-input">{{ form.fuel_liters.label_tag }}{{ form.fuel_liters }}{{ form.fuel_liters.errors }}</div>
+                            {% if form.fuel_existing_installment %}
+                            <div class="form-input">{{ form.fuel_amount_paid.label_tag }}{{ form.fuel_amount_paid }}{{ form.fuel_amount_paid.errors }}</div>
+                            {% endif %}
+                            <div class="form-input">{{ form.fuel_distance_km.label_tag }}{{ form.fuel_distance_km }}{{ form.fuel_distance_km.errors }}</div>
+                            <div class="form-input">{{ form.fuel_odometer_km.label_tag }}{{ form.fuel_odometer_km }}{{ form.fuel_odometer_km.errors }}</div>
+                            <div class="form-input">{{ form.fuel_full_tank.label_tag }}{{ form.fuel_full_tank }}{{ form.fuel_full_tank.errors }}</div>
+                            <div class="form-input">{{ form.fuel_break_before }} {{ form.fuel_break_before.label_tag }}{{ form.fuel_break_before.errors }}</div>
+                            <p>Marque a interrupção se faltar algum abastecimento. O próximo tanque cheio com hodômetro inicia uma nova referência.</p>
+                            {% if form.existing_fuel_entry %}
+                            <div class="form-input">{{ form.fuel_remove }} {{ form.fuel_remove.label_tag }}{{ form.fuel_remove.errors }}</div>
+                            {% endif %}
+                            <div id="fuel-preview" role="status" aria-live="polite"></div>
+                        </section>
+                        {% endif %}
                         <br>
 
                         <h3 id="btn-installment" class="cursor-pointer">Parcelamento +</h3>
@@ -198,5 +208,5 @@
     {% endblock %}
 
     {% block scripts %}
-    <script src="{% static 'js/pages/transaction-form.js' %}?v=20261101-2" type="module"></script>
+    <script src="{% static 'js/pages/transaction-form.js' %}?v=20261108-2" type="module"></script>
     {% endblock %}
