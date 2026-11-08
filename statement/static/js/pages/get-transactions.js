@@ -1,7 +1,7 @@
 import * as categoryData from '../data/categories-report.js';
 import * as subcategoryData from '../data/subcategory-expenses.js';
 import * as dataTable from '../data/expenses-table.js';
-import * as graphics from '../layout/elements/graphics.js';
+import * as graphics from '../layout/elements/graphics.js?v=20261108-2';
 import * as tables from '../layout/elements/tables.js';
 import * as services from '../data/services.js';
 import { originalTable, statementBox } from '../layout/elements/get-transactions-elements.js';
@@ -51,7 +51,7 @@ async function draw() {
 
     dashboardTransactions = transactions;
 
-    const barChart = graphics.drawBarChart(expenses, 'Despesas');
+    const barChart = graphics.drawBarChart(expenses, 'Despesas', updateBarChart);
     graphics.drawDoughnutChart(revenue, 'revenue', 'Receitas');
     graphics.drawDoughnutChart(amount, 'amount', 'Receitas/Despesas');
 
@@ -73,6 +73,7 @@ export async function updateBarChart(barChart) {
     if (category) {
         expenses = await subcategoryData.setSubcategoryDataset(category.id, transactions);
     } else {
+        sessionStorage.removeItem('bar_subcategory_clicked');
         if (barLabelClicked) {
             sessionStorage.removeItem('bar_label_clicked');
             sessionStorage.setItem('bar_chart_level', 'categories');
@@ -102,10 +103,7 @@ async function updateTable(transactions, expenses, version) {
 
     if (barLabelClicked) {
         let categories = JSON.parse(sessionStorage.getItem('categories')),
-            selectedCategory,
-            accounts = JSON.parse(sessionStorage.getItem('accounts')),
-            cards = JSON.parse(sessionStorage.getItem('cards')),
-            banks = JSON.parse(sessionStorage.getItem('banks'));
+            selectedCategory;
 
         for (let category of categories) {
             if (category.description == barLabelClicked) {
@@ -113,11 +111,10 @@ async function updateTable(transactions, expenses, version) {
             }
         }
 
-        if (!accounts) {
-            (accounts = await services.getResource('accounts')),
-                (cards = await services.getResource('cards')),
-                (banks = await services.getResource('banks'));
-        }
+        const lookupOptions = { forceRefresh: true };
+        const accounts = await services.getResource('accounts', null, lookupOptions);
+        const cards = await services.getResource('cards', null, lookupOptions);
+        const banks = await services.getResource('banks', null, lookupOptions);
 
         if (version !== barChartUpdateVersion) return;
         for (let category of categories) {
@@ -136,6 +133,13 @@ async function updateTable(transactions, expenses, version) {
                     selectedCategory.id,
                     expenses
                 );
+                const subcategoryLabel = sessionStorage.getItem('bar_subcategory_clicked');
+                if (subcategoryLabel) {
+                    const subcategory = expenses.find(expense => expense.name === subcategoryLabel);
+                    filteredTransactions = filteredTransactions.filter(
+                        transaction => subcategory && String(transaction.subcategory) === String(subcategory.id)
+                    );
+                }
 
                 tables.renderTable(statementBox, filteredTransactions, transactionAttrs);
             }

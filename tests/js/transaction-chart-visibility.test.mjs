@@ -166,6 +166,16 @@ function browser({ hidden = [], hiddenGroup = false, loading = false } = {}) {
         hideGroup: () => context.hideGroupByName(table, 'Viagem'),
         showGroup: () => context.showGroupByName(table, 'Viagem'),
         reset: () => get('reset-dashboard-button').events.click[0](),
+        async clickBar(label) {
+            const chart = charts[0];
+            const index = chart.data.labels.indexOf(label);
+            assert.notEqual(index, -1);
+            await chart.options.onClick({}, [{ index }], chart);
+        },
+        async clearBarSelection() {
+            const chart = charts[0];
+            await chart.options.onClick({}, [], chart);
+        },
         async selectCategory(label) {
             storage.set('bar_label_clicked', label);
             storage.set('bar_chart_level', 'subcategories');
@@ -188,6 +198,35 @@ test('barras acompanham ocultação e revelação sem alterar o cache completo',
     assert.deepEqual(app.bars(), { Transporte: 200, Alimentação: 150 });
     assert.equal(app.fetches(), 1);
     assert.deepEqual(JSON.parse(app.storage.get('transactions')), transactions);
+});
+
+test('clicar na subcategoria filtra somente seus lançamentos e mantém as barras irmãs', async () => {
+    const app = browser(); await app.ready;
+    await app.clickBar('Alimentação');
+    assert.deepEqual(app.renderedIds(), [2, 3]);
+    await app.clickBar('Mercado');
+    assert.deepEqual(app.renderedIds(), [2]);
+    assert.deepEqual(app.bars(), { Mercado: 100, Lanches: 50 });
+    await app.clickBar('Lanches');
+    assert.deepEqual(app.renderedIds(), [3]);
+    await app.clearBarSelection();
+    assert.equal(app.storage.get('bar_subcategory_clicked'), undefined);
+    await app.clickBar('Alimentação');
+    assert.deepEqual(app.renderedIds(), [2, 3]);
+});
+
+test('filtro de subcategoria respeita lançamentos ocultos e é limpo ao resetar', async () => {
+    const app = browser(); await app.ready;
+    await app.clickBar('Alimentação');
+    await app.clickBar('Mercado');
+    app.hide([2]); await app.settle();
+    assert.deepEqual(app.renderedIds(), []);
+    app.reveal(); await app.settle();
+    assert.deepEqual(app.renderedIds(), [2]);
+    await app.reset();
+    assert.equal(app.storage.get('bar_subcategory_clicked'), undefined);
+    await app.clickBar('Alimentação');
+    assert.deepEqual(app.renderedIds(), [2, 3]);
 });
 
 test('ocultar categoria inteira remove a barra e reset preserva a ocultação', async () => {

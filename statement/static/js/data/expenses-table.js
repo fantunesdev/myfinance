@@ -24,57 +24,34 @@ export function orderExpensesBySubcategory(transactions, categoryId, expenses) {
     return newTransactions.sort((a, b) => (a.order < b.order ? -1 : a.order > b.order ? 1 : 0));
 }
 
+const resourceId = resource => resource && typeof resource === 'object' ? resource.id : resource;
+
+function resolveResource(resources, reference) {
+    const found = (resources || []).find(resource => String(resource.id) === String(resourceId(reference)));
+    return { ...found, ...(reference && typeof reference === 'object' ? reference : {}) };
+}
+
 export function setData(transaction, transactionAttrs) {
-    let data = [],
-        account,
-        card,
-        bank,
-        releaseDateFormated = transaction.posted_date.split('-').reverse().join('/');
+    const cardReference = transaction.card || transaction.card_number?.card;
+    const card = resolveResource(transactionAttrs.cards, cardReference);
+    const account = resolveResource(transactionAttrs.accounts, transaction.account);
+    const bank = resolveResource(transactionAttrs.banks, account.bank);
+    const icon = card.icon || bank.icon || '';
+    const subcategory = (transactionAttrs.subcategories || []).find(
+        item => String(item.id) === String(resourceId(transaction.subcategory))
+    );
 
-    // Column 1 - Release dates data
-    data.push(releaseDateFormated);
-
-    // Column 2 - Cards/Accounts data
-    // If cards:
-    for (card of transactionAttrs.cards) {
-        if (transaction.card == card.id) {
-            data.push(card.icon);
-        }
-    }
-
-    // If accounts:
-    for (account of transactionAttrs.accounts) {
-        if (transaction.account == account.id) {
-            for (bank of transactionAttrs.banks) {
-                if (bank.id == account.bank) {
-                    data.push(bank.icon);
-                }
-            }
-        }
-    }
-
-    // Column 3 - Category data
-    data.push(transactionAttrs.category.description);
-
-    // Column 4 - Subcategories data
-    for (let subcategory of transactionAttrs.subcategories) {
-        if (transaction.subcategory == subcategory.id) {
-            data.push(`${subcategory.name}`);
-        }
-    }
-
-    // Column 5 - Description data
-    data.push(transaction.description);
-
-    // Column 6 - Value data
-    data.push(
+    return [
+        transaction.posted_date.split('-').reverse().join('/'),
+        icon,
+        transactionAttrs.category.description,
+        subcategory?.name || subcategory?.description || '-',
+        transaction.description,
         transaction.value.toLocaleString('pt-br', {
             style: 'currency',
             currency: transaction.currency,
-        })
-    );
-
-    return data;
+        }),
+    ];
 }
 
 export function setURLs(transaction) {

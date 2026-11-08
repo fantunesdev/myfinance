@@ -57,6 +57,10 @@ function createRow(row, type, data, anchors) {
 }
 
 function createImage(father, src) {
+    if (!src) {
+        father.textContent = '-';
+        return;
+    }
     const img = document.createElement('img');
 
     img.src = src;

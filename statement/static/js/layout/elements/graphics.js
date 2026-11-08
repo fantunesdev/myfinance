@@ -1,7 +1,3 @@
-import { updateBarChart } from '../../pages/get-transactions.js';
-
-let chart;
-
 function shouldFillMobileChartHeight() {
     return window.matchMedia && window.matchMedia('(max-width: 600px)').matches;
 }
@@ -12,10 +8,10 @@ function shouldFillMobileChartHeight() {
  * @param {Array} label - Array de labels para as barras do gráfico.
  * @returns {Object} - O gráfico de barras.
  */
-export function drawBarChart(dataset, label) {
+export function drawBarChart(dataset, label, onUpdate) {
     const father = document.getElementById('expenses-bar-chart').getContext('2d');
 
-    chart = new Chart(father, {
+    return new Chart(father, {
         type: 'bar',
         data: {
             labels: dataset.names,
@@ -52,12 +48,10 @@ export function drawBarChart(dataset, label) {
             animation: {
                 duration: 200,
             },
-            onClick: handleBarClick,
+            onClick: (event, elements, chart) => handleBarClick(event, elements, chart, onUpdate),
             onHover: handleBarHover,
         },
     });
-
-    return chart;
 }
 
 /**
@@ -65,23 +59,26 @@ export function drawBarChart(dataset, label) {
  * @param {Object} event - Recebe as informações passadas automaticamente pelo Char.js na função onClick.
  * @param {Array} elements - Recebe as propriedades específicas que são passadas automaticamente pelo Chart.js na função onClick
  */
-function handleBarClick(event, elements) {
-    if (chart && elements.length > 0) {
+function handleBarClick(event, elements, chart, onUpdate) {
+    if (!chart) return;
+    if (elements.length > 0) {
         const clickedIndex = elements[0].index,
             labelClicked = chart.data.labels[clickedIndex],
             barChartLevel = sessionStorage.getItem('bar_chart_level');
 
-        if (barChartLevel !== 'categories') {
-            return;
+        if (barChartLevel === 'categories') {
+            sessionStorage.setItem('bar_label_clicked', labelClicked);
+            sessionStorage.removeItem('bar_subcategory_clicked');
+            sessionStorage.setItem('bar_chart_level', 'subcategories');
+        } else {
+            sessionStorage.setItem('bar_subcategory_clicked', labelClicked);
         }
-
-        sessionStorage.setItem('bar_label_clicked', labelClicked);
-        sessionStorage.setItem('bar_chart_level', 'subcategories');
-        updateBarChart(chart);
+        return onUpdate?.(chart);
     } else {
         sessionStorage.removeItem('bar_label_clicked');
+        sessionStorage.removeItem('bar_subcategory_clicked');
         sessionStorage.setItem('bar_chart_level', 'categories');
-        updateBarChart(chart);
+        return onUpdate?.(chart);
     }
 }
 
@@ -90,7 +87,7 @@ function handleBarClick(event, elements) {
  * @param {Object} event - Recebe as informações passadas automaticamente pelo Char.js na função onClick.
  * @param {Array} elements - Recebe as propriedades específicas que são passadas automaticamente pelo Chart.js na função onClick
  */
-function handleBarHover(event, elements) {
+function handleBarHover(event, elements, chart) {
     if (chart) {
         chart.canvas.style.cursor = elements && elements.length > 0 ? 'pointer' : 'default';
     }
