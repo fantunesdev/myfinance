@@ -22,7 +22,8 @@ class PluggyReader:
 
     def request(self, path, params=None):
         # Fixed host and allowlist: auth is the only POST; no financial writes.
-        if path not in ("/auth", "/accounts", "/bills", "/v2/transactions") and not (
+        investment_history = path.startswith("/investments/") and path.endswith("/transactions") and self._is_uuid(path[len("/investments/"):-len("/transactions")])
+        if not investment_history and path not in ("/auth", "/accounts", "/bills", "/v2/transactions", "/investments") and not (
             path.startswith("/items/") and self._is_uuid(path.removeprefix("/items/"))
         ):
             raise ProbeError("Endpoint fora do escopo de leitura.")

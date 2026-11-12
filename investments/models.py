@@ -124,7 +124,7 @@ class InvestmentTransaction(models.Model):
     type = models.CharField(max_length=20, choices=TYPE_CHOICES)
     amount = models.DecimalField(max_digits=14, decimal_places=2, default=0, validators=[MinValueValidator(0)])
     quantity = models.DecimalField(
-        max_digits=20, decimal_places=8, null=True, blank=True, validators=[MinValueValidator(Decimal('0.00000001'))]
+        max_digits=20, decimal_places=8, null=True, blank=True, validators=[MinValueValidator(Decimal('0'))]
     )
     unit_price = models.DecimalField(
         max_digits=14, decimal_places=6, null=True, blank=True, validators=[MinValueValidator(Decimal('0.000001'))]
@@ -155,6 +155,7 @@ class InvestmentTransaction(models.Model):
         blank=True,
         editable=False,
     )
+    affects_value = models.BooleanField(default=True)
     notes = models.TextField(blank=True)
     user = models.ForeignKey(User, on_delete=models.PROTECT)
 
@@ -169,6 +170,8 @@ class InvestmentTransaction(models.Model):
         super().clean()
         if self.investment_id and self.user_id and self.investment.user_id != self.user_id:
             raise ValidationError('O investimento deve pertencer ao usuário da movimentação.')
+        if self.type != 'atualizacao' and self.quantity is not None and self.quantity <= 0:
+            raise ValidationError({'quantity': 'A quantidade deve ser positiva.'})
         if self.type == 'atualizacao':
             if self.current_value is None:
                 raise ValidationError({'current_value': 'Informe o valor atualizado.'})

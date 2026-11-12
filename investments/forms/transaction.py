@@ -12,7 +12,7 @@ class InvestmentTransactionForm(UserFilteredModelForm):
 
     class Meta:
         model = InvestmentTransaction
-        exclude = ['operation_id', 'statement_transaction', 'user']
+        exclude = ['operation_id', 'statement_transaction', 'user', 'affects_value']
         labels = {
             'investment': 'Investimento',
             'date': 'Data',

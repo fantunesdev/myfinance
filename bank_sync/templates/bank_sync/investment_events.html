@@ -1,0 +1,13 @@
+{% extends 'index.html' %}
+{% load static %}
+{% block content %}
+<div class="box"><div class="box-header"><h3>Conciliação de investimentos</h3></div><div class="box-body">
+<p>Os eventos são coletados sem gerar lançamentos. Movimentos anteriores à data-base devem ser vinculados ao histórico existente.</p>
+<form id="history-job" action="{% url 'investment_event_collect' %}" method="post">{% csrf_token %}<button class="btn btn-info">Consultar movimentações</button></form>
+<p id="history-status" role="status"></p>
+<label>Situação <select id="event-state"><option value="">Todas</option><option value="new">Novas</option><option value="historical">Históricas</option><option value="conflict">Conflitos</option><option value="linked">Vinculadas</option><option value="applied">Aplicadas</option><option value="ignored">Ignoradas</option></select></label>
+<div id="investment-events" data-url="{% url 'investment_event_list' %}"></div>
+<button id="previous-page" class="btn btn-info">Anterior</button><button id="next-page" class="btn btn-info">Próxima</button>
+</div></div>
+<script type="module" src="{% static 'bank_sync/investment-events.js' %}"></script>
+{% endblock %}

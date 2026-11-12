@@ -34,6 +34,8 @@ class InvestmentService(InvestmentBaseService):
 
     @staticmethod
     def apply_value(value, movement):
+        if not movement.affects_value:
+            return value
         if movement.type in ('aporte', 'rendimento'):
             return value + movement.amount
         if movement.type in ('resgate', 'custo'):
@@ -72,6 +74,8 @@ class InvestmentService(InvestmentBaseService):
                 income += amount
             elif movement.type == 'custo':
                 costs += amount
+            elif movement.type == 'atualizacao' and movement.quantity is not None:
+                quantity = movement.quantity
         return {
             'investment': investment,
             'asset': investment.asset,
@@ -85,7 +89,7 @@ class InvestmentService(InvestmentBaseService):
             'quantity': quantity,
             'value': value,
             'remaining_principal': invested - withdrawn_principal,
-            'unwithdrawn_income': income - costs - (withdrawn - withdrawn_principal),
+            'unwithdrawn_income': sum((m.amount if m.type == 'rendimento' else -m.amount for m in movements if m.affects_value and m.type in ('rendimento', 'custo')), Decimal('0')) - (withdrawn - withdrawn_principal),
         }
 
     @staticmethod
@@ -103,12 +107,16 @@ class InvestmentService(InvestmentBaseService):
         movements = sorted(
             (
                 movement for movement in investment.transactions.all()
-                if movement.user_id == investment.user_id and movement.type in ('aporte', 'resgate')
+                if movement.user_id == investment.user_id and movement.type in ('aporte', 'resgate', 'atualizacao')
             ),
             key=lambda movement: (movement.date, movement.pk),
         )
         for movement in movements:
             units = movement.quantity
+            if movement.type == 'atualizacao':
+                if units is not None and units != quantity:
+                    return None
+                continue
             if units is None or units <= 0:
                 return None
             if movement.type == 'aporte':

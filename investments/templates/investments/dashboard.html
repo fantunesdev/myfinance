@@ -32,7 +32,8 @@
         <div class="box-body investments-dashboard">
             {{ dashboard_config|json_script:"investment-dashboard-config" }}
             <div id="investment-load-status" role="status" aria-live="polite">Carregando investimentos…</div>
-            <button type="button" id="investment-refresh" class="btn btn-info">Atualizar</button>
+            <a href="{% url 'investment_events' %}" class="btn btn-info">Conciliar movimentações</a>
+            <button type="button" id="investment-refresh" class="btn btn-info">Atualizar pela Pluggy</button>
             <noscript>Ative o JavaScript para consultar os gráficos e as posições.</noscript>
             <div class="investment-actions">
                 <a href="{% url 'create_investment' %}" class="btn btn-info">Novo investimento</a>
@@ -66,6 +67,7 @@
                     <div class="investment-card investment-card-net-income">
                         <span id="investment-result-label">Resultado</span>
                         <strong id="investment-result">—</strong>
+                        <p id="investment-confirmed-result"></p>
                     </div>
                     <a href="{% url 'apply_available_investment_cash' %}" id="investment-available-card" class="investment-card" aria-labelledby="investment-available-title" title="Aplicar valor disponível">
                         <span id="investment-available-title">Valor disponível para investimento</span>

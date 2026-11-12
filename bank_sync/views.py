@@ -290,3 +290,16 @@ def preference(request):
     connection.prefer_pluggy = data["prefer_pluggy"]
     connection.save(update_fields=["prefer_pluggy"])
     return JsonResponse({"ok": True})
+
+
+@login_required
+@require_POST
+@api_errors
+def sync_investment_positions(request):
+    from bank_sync.investments import sync_investments
+    connection_id = body(request).get('connection_id')
+    connections = BankConnection.objects.filter(user=request.user)
+    if not connection_id and connections.count() != 1:
+        raise ValidationError('Configure ou selecione uma conexão Pluggy de investimentos.')
+    connection = connections.get(pk=connection_id) if connection_id else connections.get()
+    return JsonResponse(sync_investments(connection))

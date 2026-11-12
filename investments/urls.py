@@ -1,3 +1,5 @@
+from bank_sync import event_views
+from bank_sync.views import sync_investment_positions
 from django.urls import path
 
 from investments.views.asset import AssetView
@@ -13,6 +15,11 @@ investment_view = InvestmentView()
 transaction_view = InvestmentTransactionView()
 
 urlpatterns = [
+    path('conciliacao/',event_views.event_page,name='investment_events'),
+    path('conciliacao/eventos/',event_views.event_list,name='investment_event_list'),
+    path('conciliacao/coletar/',event_views.enqueue,name='investment_event_collect'),
+    path('conciliacao/<int:pk>/',event_views.review,name='investment_event_review'),
+    path('sincronizar-pluggy/', sync_investment_positions, name='sync_investment_positions'),
     path('', dashboard_view.dashboard, name='investments_dashboard'),
     path('wallet/default/criar/', dashboard_view.create_default_wallet, name='create_default_investment_wallet'),
     path('aplicar/', investment_view.apply_available_cash, name='apply_available_investment_cash'),

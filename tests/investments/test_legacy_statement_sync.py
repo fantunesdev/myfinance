@@ -201,3 +201,20 @@ class LegacyStatementSyncTests(TestCase):
                 statement_transaction=statement
             ).exists()
         )
+
+    def test_reconciled_deposit_protects_statement_value_and_deletion(self):
+        from uuid import uuid4
+        from bank_sync.models import BankConnection, InvestmentEvent, ReconciledInvestmentOperation
+        statement = self.statement()
+        credit = self.wallet.transactions.get(statement_transaction=statement)
+        connection = BankConnection.objects.create(user=self.user, item_id=uuid4())
+        event = InvestmentEvent.objects.create(connection=connection, external_id=str(uuid4()), facts={})
+        operation = ReconciledInvestmentOperation.objects.create(event=event, kind='buy', state='linked', evidence='Correspondência conferida.')
+        operation.movements.add(credit)
+        statement.value = 500
+        with self.assertRaises(ValidationError), transaction.atomic():
+            statement.save()
+        statement.refresh_from_db()
+        with self.assertRaises(ValidationError), transaction.atomic():
+            TransactionService.delete(statement)
+        self.assertEqual(self.cash(), Decimal('316.33'))

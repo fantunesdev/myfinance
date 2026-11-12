@@ -32,9 +32,9 @@ const snapshot = revision => ({ schema_version: 1, user_id: 1, revision, has_def
 function browser(storage = new Map()) {
     const elements = new Map();
     const get = id => { if (!elements.has(id)) elements.set(id, new Element()); return elements.get(id); };
-    get('investment-dashboard-config').textContent = JSON.stringify({ userId: 1, apiUrl: '/api/investments/dashboard/' });
+    get('investment-dashboard-config').textContent = JSON.stringify({ userId: 1, apiUrl: '/api/investments/dashboard/', syncUrl: '/investimentos/sincronizar-pluggy/' });
     get('line-chart').parentElement = new Element();
-    const document = new Element(); document.getElementById = get; document.createElement = tag => new Element(tag); document.visibilityState = 'visible';
+    const document = new Element(); document.querySelector = () => ({ value: 'csrf-test' }); document.getElementById = get; document.createElement = tag => new Element(tag); document.visibilityState = 'visible';
     const window = new Element(); window.location = { href: 'https://test/investimentos/', assign() { throw Error('unexpected navigation'); } };
     window.sessionStorage = { getItem: key => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value), removeItem: key => storage.delete(key) };
     window.history = { state: null, pushState(state, _, url) { this.state = state; window.location.href = String(url); }, replaceState(state, _, url) { this.state = state; window.location.href = String(url); } };
@@ -45,7 +45,9 @@ function browser(storage = new Map()) {
     }
     let calls = 0, revision = 'a', status = 200;
     const fetcher = async () => { calls++; return { status, ok: status === 200, headers: { get: key => key === 'content-type' ? 'application/json' : revision }, json: async () => snapshot(revision) }; };
+    const syncRequests = [];
     const context = vm.createContext({ window, document, Chart, URL, Intl, console, clearTimeout, setTimeout,
+        fetch: async (url, options) => { syncRequests.push({ url, options }); return { status, ok: status === 200, headers: { get: () => 'application/json' }, json: async () => ({ checked: 40, updated: 1, pending: 0, source_updated_at: '2026-11-11T14:00:00Z' }) }; },
         ...storeModule,
         createInvestmentStore: options => storeModule.createInvestmentStore({ ...options, fetcher }),
         stackedAreaChart: { drawStackedAreaChart: () => new Chart(get('line-chart').getContext(), { type: 'line' }) },
@@ -55,7 +57,7 @@ function browser(storage = new Map()) {
         } },
     });
     vm.runInContext(source.replace(/^import .*;\n/gm, ''), context);
-    return { get, window, document, storage, calls: () => calls, change: (next, code = 200) => { revision = next; status = code; } };
+    return { get, window, document, storage, syncRequests, calls: () => calls, change: (next, code = 200) => { revision = next; status = code; } };
 }
 
 function descendants(element, tag) {
@@ -191,4 +193,16 @@ test('notifications preserve accordion state; errors retain data and expired aut
     page.change('c', 403); page.get('investment-refresh').emit('click'); await tick();
     assert.equal(groups(page).length, 0);
     assert.equal(page.get('investment-total').textContent, '—');
+});
+
+
+test('refresh requests a CSRF protected position synchronization then reloads the dashboard', async () => {
+    const page = browser(); await tick();
+    page.get('investment-refresh').emit('click'); await tick();
+    assert.equal(page.syncRequests.length, 1);
+    assert.equal(page.syncRequests[0].url, '/investimentos/sincronizar-pluggy/');
+    assert.equal(page.syncRequests[0].options.method, 'POST');
+    assert.equal(page.syncRequests[0].options.headers['X-CSRFToken'], 'csrf-test');
+    assert.equal(page.calls(), 2);
+    assert.match(page.get('investment-load-status').textContent, /40 posições/);
 });

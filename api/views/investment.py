@@ -26,6 +26,7 @@ class InvestmentApiView(BaseView):
         data.update(request.data)
         protected = {
             'operation_id',
+            'affects_value',
             'statement_transaction',
             'funding_transaction',
             'redemption_principal',

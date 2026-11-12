@@ -18,6 +18,7 @@ class InvestmentsDashboardView(BaseView):
             'dashboard_config': {
                 'userId': request.user.pk,
                 'apiUrl': reverse('investments-dashboard'),
+                'syncUrl': reverse('sync_investment_positions'),
             }
         }
         return self._render(

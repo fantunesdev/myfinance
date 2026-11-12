@@ -464,6 +464,10 @@ async function refresh(force = false) {
         renderMetrics();
         renderTables();
         renderCharts();
+        if (dashboard.totals.confirmed_net_income !== undefined) {
+            const result = document.getElementById('investment-confirmed-result');
+            if (result) result.textContent = `Realizado confirmado (parcial): ${money.format(Number(dashboard.totals.confirmed_net_income))}. ${dashboard.reconciliation_pending} eventos pendentes. O resultado e o gráfico legados ainda incluem valores em revisão.`;
+        }
         message('');
     } catch (error) {
         if (error.auth) {
@@ -516,7 +520,36 @@ for (const [container, getChart] of [
 window.addEventListener('popstate', event => {
     changeState(event.state?.investmentDashboard || stateFromUrl(window.location.href, DEFAULT_STATE), false);
 });
-document.getElementById('investment-refresh').addEventListener('click', () => refresh(true));
+async function syncPluggy() {
+    const button = document.getElementById('investment-refresh');
+    if (button.disabled) return;
+    button.disabled = true;
+    message('Consultando investimentos na Pluggy…');
+    try {
+        const token = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+        const response = await fetch(config.syncUrl, {
+            method: 'POST', credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': token || '' },
+            body: JSON.stringify({}),
+        });
+        if (!(response.headers.get('content-type') || '').includes('application/json')) {
+            throw new Error('Sessão expirada ou consulta indisponível. Entre novamente.');
+        }
+        const result = await response.json();
+        if (response.status === 401 || response.status === 403) {
+            store.clear();
+            await refresh(true);
+            return;
+        }
+        if (!response.ok) throw new Error(result.detail || 'Não foi possível sincronizar.');
+        store.invalidate();
+        await refresh(true);
+        message(`${result.checked} posições conferidas; ${result.updated} atualizadas; ${result.pending} pendentes de vínculo. Referência da conexão: ${result.source_updated_at ? new Date(result.source_updated_at).toLocaleString('pt-BR') : 'não informada'}.`);
+    } catch (error) {
+        message(`${error.message} Os valores exibidos são da última atualização.`, true);
+    } finally { button.disabled = false; }
+}
+document.getElementById('investment-refresh').addEventListener('click', syncPluggy);
 let refreshTimer;
 window.addEventListener('investments:changed', event => {
     if (!store.invalidate(event.detail?.revision)) return;

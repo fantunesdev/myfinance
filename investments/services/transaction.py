@@ -55,10 +55,14 @@ class InvestmentTransactionService(InvestmentBaseService):
         original.refresh_from_db()
         instance = form.save(commit=False)
         instance.user = original.user
+        if hasattr(original, 'pluggy_snapshot') or original.reconciled_operations.exists():
+            raise ValidationError('Esta avaliação é da Pluggy e não pode ser editada manualmente.')
         if original.statement_transaction_id:
             raise ValidationError('Este aporte vem do extrato. Edite o lançamento financeiro de origem.')
         if original.operation_id:
             members = cls.operation_members(original)
+            if any(item.reconciled_operations.exists() for item in members):
+                raise ValidationError('A operação está conciliada e não pode ser editada isoladamente.')
             if (
                 len(members) != 2
                 or any(item.redemption_principal is not None for item in members)
@@ -102,9 +106,13 @@ class InvestmentTransactionService(InvestmentBaseService):
     def delete(cls, instance):
         cls.lock_user(instance.user)
         instance = cls.model.objects.get(pk=instance.pk)
+        if hasattr(instance, 'pluggy_snapshot') or instance.reconciled_operations.exists():
+            raise ValidationError('Esta avaliação é da Pluggy e não pode ser excluída manualmente.')
         if instance.statement_transaction_id:
             raise ValidationError('Este aporte vem do extrato. Exclua ou altere o lançamento financeiro de origem.')
         members = cls.operation_members(instance) if instance.operation_id else [instance]
+        if any(item.reconciled_operations.exists() or item.cash_allocations_out.exists() for item in members):
+            raise ValidationError('A operação está conciliada ou financia uma aplicação; revise suas dependências.')
         ids = [item.pk for item in members]
         if cls.model.objects.filter(funding_transaction_id__in=ids).exclude(pk__in=ids).exists():
             raise ValidationError(
@@ -208,6 +216,8 @@ class InvestmentTransactionService(InvestmentBaseService):
         amount = cls.statement_amount(statement_transaction.value)
         if existing:
             financial_change = existing.amount != amount or existing.date != statement_transaction.payment_date
+            if financial_change and existing.reconciled_operations.exists():
+                raise ValidationError('Este aporte já foi conciliado. Revise a conciliação antes de alterar valor ou data.')
             before = cls.snapshot_balances(statement_transaction.user, [wallet.pk]) if financial_change else None
             existing.amount = amount
             existing.date = statement_transaction.payment_date
@@ -238,7 +248,7 @@ class InvestmentTransactionService(InvestmentBaseService):
             if cls._should_sync_statement_transaction(statement_transaction):
                 raise cls.unlinked_statement_error(statement_transaction)
             return
-        if existing.funded_transactions.exists() or existing.operation_id:
+        if existing.funded_transactions.exists() or existing.cash_allocations_out.exists() or existing.reconciled_operations.exists() or existing.operation_id:
             raise ValidationError(
                 'Este lançamento já financia uma aplicação. Desfaça a aplicação antes de excluir ou recategorizar a origem.'
             )
@@ -278,7 +288,8 @@ class InvestmentTransactionService(InvestmentBaseService):
             # Applying a particular funding entry is a single operation; retrying POST must not apply it twice.
             if funding_transaction.funded_transactions.exists():
                 raise ValidationError('Este aporte já foi aplicado. Edite ou desfaça a aplicação existente.')
-            if amount > funding_transaction.amount or transaction_date < funding_transaction.date:
+            allocated = sum((a.amount for a in funding_transaction.cash_allocations_out.all()), Decimal('0'))
+            if amount > funding_transaction.amount - allocated or transaction_date < funding_transaction.date:
                 raise ValidationError('O valor e a data devem respeitar o aporte de origem.')
         position = InvestmentService.get_position(source, as_of=transaction_date)
         if amount > position['value']:
@@ -416,11 +427,23 @@ class InvestmentTransactionService(InvestmentBaseService):
 
     @classmethod
     def validate_funding(cls, instance):
+        if hasattr(instance, 'cash_allocations_out'):
+            used = sum((a.amount for a in instance.cash_allocations_out.all()), Decimal('0'))
+            used += sum((item.amount for item in instance.funded_transactions.all()), Decimal('0'))
+            if used > instance.amount:
+                raise ValidationError('O crédito já está alocado e não pode ser reduzido abaixo do valor utilizado.')
+            if instance.cash_allocations_out.exists() and (
+                instance.type not in ('aporte', 'rendimento') or instance.investment_id != cls.get_default_wallet(instance.user).pk
+            ):
+                raise ValidationError('Um crédito alocado deve permanecer como crédito do caixa.')
+            if any(a.debit.date < instance.date for a in instance.cash_allocations_out.select_related('debit')):
+                raise ValidationError('O crédito deve ser anterior à sua alocação.')
         if instance.funding_transaction_id:
             funding = cls.model.objects.get(pk=instance.funding_transaction_id)
             if instance.user_id != funding.user_id or instance.date < funding.date:
                 raise ValidationError('A aplicação deve respeitar o usuário e a data do aporte de origem.')
             used = sum((item.amount for item in funding.funded_transactions.all()), Decimal('0'))
+            used += sum((a.amount for a in funding.cash_allocations_out.all()), Decimal('0'))
             if used > funding.amount:
                 raise ValidationError('A aplicação excede o aporte de origem.')
         funded = list(instance.funded_transactions.all())
@@ -455,6 +478,8 @@ class InvestmentTransactionService(InvestmentBaseService):
                     quantity += movement.quantity or Decimal('0')
                 elif movement.type == 'resgate':
                     quantity -= movement.quantity or Decimal('0')
+                elif movement.type == 'atualizacao' and movement.quantity is not None:
+                    quantity = movement.quantity
             daily[day] = (value, quantity)
         return daily
 
