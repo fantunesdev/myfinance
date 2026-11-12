@@ -322,3 +322,8 @@ logs/*
 # Credenciais e exportações locais do piloto Pluggy
 .env.pluggy
 /pluggy-output/
+
+# Cópias geradas de estáticos; os originais pertencem aos respectivos apps.
+/statement/static/bank_sync/
+/statement/static/django_extensions/
+/statement/static/investments/
