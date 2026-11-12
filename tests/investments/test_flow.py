@@ -319,6 +319,37 @@ class InvestmentFlowTests(TestCase):
         chart = sum(Decimal(str(item['values'][-1])) for item in InvestmentService.get_progression_datasets(self.user))
         self.assertEqual(chart, self.value())
 
+    def test_progression_separates_contributions_from_valuation_adjustments(self):
+        self.record(amount=1000)
+        self.record(amount=500, date=date(2026, 2, 1))
+        for unused in range(2):
+            self.record(type='atualizacao', amount=0, current_value=1800, date=date(2026, 2, 1))
+        fixed = next(d for d in InvestmentService.get_progression_datasets(self.user) if d['label'] == 'Renda fixa')
+        self.assertEqual(fixed['values'], [1000.0, 1800.0])
+        self.assertEqual(fixed['valuation_adjustments'], [0.0, 300.0])
+        self.assertEqual(InvestmentService.get_position(self.investment)['income'], 0)
+
+    def test_monthly_applications_remain_in_history_before_later_reconciliation(self):
+        self.record(amount=1000, date=date(2026, 8, 6))
+        allocations = [
+            (date(2026, 9, 4), date(2026, 9, 9), Decimal('3493.17')),
+            (date(2026, 10, 4), date(2026, 10, 6), Decimal('3122.29')),
+            (date(2026, 11, 6), date(2026, 11, 6), Decimal('3122.29')),
+        ]
+        for received, applied, amount in allocations:
+            credit = self.record(self.wallet, amount=amount, date=received)
+            Service.transfer_between_investments(self.wallet, self.investment, amount, date=applied, funding_transaction=credit)
+        self.record(type='atualizacao', amount=0, current_value=12000, date=date(2026, 11, 11))
+        fixed = next(d for d in InvestmentService.get_progression_datasets(self.user) if d['label'] == 'Renda fixa')
+        curve = dict(zip(fixed['names'], fixed['values']))
+        self.assertEqual(curve['09/09/2026'], 4493.17)
+        self.assertEqual(curve['06/10/2026'], 7615.46)
+        self.assertEqual(curve['06/11/2026'], 10737.75)
+        self.assertEqual(curve['11/11/2026'], 12000)
+        self.assertEqual(fixed['valuation_adjustments'][-1], 1262.25)
+        self.assertEqual(self.value(self.wallet), 0)
+        self.assertEqual(InvestmentService.get_position(self.investment)['income'], 0)
+
     def test_cashflows_after_valuation_count_with_prefetch(self):
         self.record()
         self.record(type='atualizacao', amount=0, current_value=1100, date=date(2026, 2, 1))

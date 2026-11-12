@@ -70,6 +70,16 @@ function drawProgressionChart() {
     const investedDatasets = datasets.filter(dataset => dataset.label !== 'Moeda');
     if (!investedDatasets.length || !investedDatasets[0].names.length) return;
 
+    const note = document.getElementById('investment-chart-note');
+    const labels = investedDatasets[0].names;
+    for (let i = labels.length - 1; note && i >= 0; i--) {
+        const adjustment = investedDatasets.reduce((total, dataset) => total + Number(dataset.valuation_adjustments?.[i] || 0), 0);
+        if (Math.abs(adjustment) < 0.005) continue;
+        note.textContent = `Em ${labels[i]}, a avaliação/reconciliação ajustou o patrimônio em ${money.format(adjustment)}. Esse ajuste não é um novo aporte nem lucro realizado. Os pontos anteriores seguem os lançamentos históricos disponíveis.`;
+        note.hidden = false;
+        break;
+    }
+
     window.investmentChart = stackedAreaChart.drawStackedAreaChart(
         investedDatasets,
         'Evolução Patrimonial',
@@ -414,6 +424,8 @@ function renderMetrics() {
 }
 
 function renderCharts() {
+    const note = document.getElementById('investment-chart-note');
+    if (note) { note.hidden = true; note.textContent = ''; }
     const allocation = getAllocationData();
     drawAllocationChart(allocation);
     if (state.assetType) drawDistributionChart(allocation);

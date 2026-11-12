@@ -40,6 +40,18 @@ export function drawStackedAreaChart(datasets, label, options = {}) {
                     },
                     color: 'rgba(204,204,204,1)',
                 },
+                tooltip: {
+                    callbacks: {
+                        afterBody: items => {
+                            if (!items.length) return [];
+                            const index = items[0].dataIndex;
+                            const adjustment = datasets.reduce((total, dataset) => total + Number(dataset.valuation_adjustments?.[index] || 0), 0);
+                            if (Math.abs(adjustment) < 0.005) return [];
+                            const formatted = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(adjustment);
+                            return [`Avaliação/reconciliação: ${formatted}`, 'Não representa novo aporte nem lucro realizado.'];
+                        },
+                    },
+                },
             },
             animation: {
                 duration: 200,

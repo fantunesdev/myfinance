@@ -189,12 +189,19 @@ class InvestmentService(InvestmentBaseService):
         )
         investment_values = defaultdict(Decimal)
         snapshots_by_date = {}
+        valuation_adjustments = defaultdict(lambda: defaultdict(Decimal))
 
         for transaction in transactions:
+            previous_value = investment_values[transaction.investment_id]
             investment_values[transaction.investment_id] = cls.apply_value(
-                investment_values[transaction.investment_id],
+                previous_value,
                 transaction,
             )
+            if transaction.type == 'atualizacao' and transaction.affects_value:
+                label = transaction.investment.asset.get_asset_type_display()
+                valuation_adjustments[transaction.date][label] += (
+                    investment_values[transaction.investment_id] - previous_value
+                )
             snapshots_by_date[transaction.date] = cls._build_progression_snapshot(investments, investment_values)
 
         labels = [date.strftime('%d/%m/%Y') for date in snapshots_by_date.keys()]
@@ -213,6 +220,10 @@ class InvestmentService(InvestmentBaseService):
                 'color': colors.get(label, 'rgba(120, 120, 120, 1)'),
                 'names': labels,
                 'values': [float(snapshot.get(label, Decimal('0'))) for snapshot in snapshots_by_date.values()],
+                'valuation_adjustments': [
+                    float(valuation_adjustments[day].get(label, Decimal('0')))
+                    for day in snapshots_by_date
+                ],
             }
             for label in asset_type_labels
         ]
