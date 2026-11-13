@@ -125,16 +125,18 @@ export function setCategoriesDataset(report, revenue) {
         values = [],
         colors = [],
         category,
-        green = 139;
+        green = 150;
+    const revenueCount = revenue ? report.filter(category => category.amount !== 0).length : 0;
+    const greenStep = 70 / Math.max(revenueCount - 1, 1);
 
     for (category of report) {
-        if (!revenue && category.amount === 0) continue;
+        if (category.amount === 0) continue;
 
         names.push(category.name);
         values.push(category.amount);
         if (revenue) {
-            colors.push(`rgba(0, ${green}, 0, 1)`);
-            green -= 30;
+            colors.push(`rgba(0, ${Math.round(green)}, 0, 1)`);
+            green = Math.max(80, green - greenStep);
         } else {
             colors.push(`rgba(139, 0, 0, 1)`);
         }

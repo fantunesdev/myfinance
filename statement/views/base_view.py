@@ -12,8 +12,6 @@ from django.shortcuts import redirect, render
 from django.http import Http404
 from django.utils.decorators import method_decorator
 from statement.forms.general_forms import ExclusionForm
-from statement.services.core.account import AccountService
-from statement.services.core.card import CardService
 from statement.services.next_month_view import NextMonthViewService
 from statement.access import restrict_write_relations
 
@@ -265,24 +263,9 @@ class BaseView:
             current_year = today.year
             current_month = today.month
 
-        # Contas do usuário (extracts) e cartões para o menu de faturas.
-        # Para faturas, além dos cartões cujo `user` é o proprietário, incluir
-        # cartões que possuam `CardNumber` com `dependente == user`.
-        owned_cards = CardService.get_all(user)
-        dependent_cards = CardService.model.objects.filter(card_numbers__dependente=user).distinct()
-        # Combina mantendo a ordenação do queryset do proprietário primeiro,
-        # seguido dos cartões dependentes que não estejam já na lista do proprietário.
-        invoices_list = list(owned_cards)
-        invoices_list_ids = {c.id for c in invoices_list}
-        for c in dependent_cards:
-            if c.id not in invoices_list_ids:
-                invoices_list.append(c)
-
         self.templatetags = {
             'current_year': current_year,
             'current_month': current_month,
-            'extracts': AccountService.get_all(user),
-            'invoices': invoices_list,
             'class_title': self.class_title,
             'column_names': self.column_names,
             'urls': {

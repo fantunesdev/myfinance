@@ -34,6 +34,7 @@ TEMPLATES = [{'BACKEND': 'django.template.backends.django.DjangoTemplates', 'APP
                   'django.contrib.auth.context_processors.auth',
                   'login.context_processors.inactivity_logout',
                   'login.context_processors.app_version',
+                  'statement.context_processors.sidebar_navigation',
                   'django.contrib.messages.context_processors.messages',
               ]}}]
 REST_FRAMEWORK = {
