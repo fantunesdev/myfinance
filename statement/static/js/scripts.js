@@ -13,8 +13,6 @@ const pathName = window.location.pathname,
  * Encolhe e estica a barra lateral.
  */
 function toggleSidebar() {
-    toggle = document.getElementsByClassName('toggle');
-
     if (body.classList.length === 0) {
         recallSidebar();
     } else {
@@ -70,15 +68,20 @@ function expandSidebar() {
  * @param {string} id - Uma string com o id html do submenu a ser retraído/expandido.
  */
 function toggleSubMenu(id) {
-    let subMenu = document.querySelector(`#${id}`),
-        subMenuButton = document.querySelector(`#${id}-button`);
+    const subMenu = document.getElementById(id);
+    setMenuOpen(subMenu, !subMenu.classList.contains('active'));
+}
 
-    if (hasToggled(subMenu.classList)) {
-        subMenu.classList.remove('active');
-        subMenuButton.lastElementChild.lastElementChild.outerHTML = "<i class='fa-solid fa-angle-up'></i>";
-    } else {
-        subMenu.classList.add('active');
-        subMenuButton.lastElementChild.lastElementChild.outerHTML = "<i class='fa-solid fa-angle-down'></i>";
+// Mantém o painel, o botão e a seta do submenu no mesmo estado.
+function setMenuOpen(menu, open) {
+    menu.classList.toggle('active', open);
+    const button = document.querySelector(`[data-menu-target="${menu.id}"]`);
+    if (!button) return;
+    button.setAttribute('aria-expanded', String(open));
+    const arrow = button.querySelector('.fa-angle-down, .fa-angle-up');
+    if (arrow) {
+        arrow.classList.toggle('fa-angle-up', open);
+        arrow.classList.toggle('fa-angle-down', !open);
     }
 }
 
@@ -88,15 +91,11 @@ function toggleSubMenu(id) {
  * @param {string} id - Uma string com o ID HTML da caixa a ser colapsada/revelada.
  */
 function toggleBox(id) {
-    let element = document.querySelector(`#${id}`);
+    const element = document.getElementById(id);
+    const open = !element.classList.contains('active');
+    setMenuOpen(element, open);
 
-    if (hasToggled(element.classList)) {
-        element.classList.remove('active');
-    } else {
-        element.classList.add('active');
-    }
-
-    if (id == 'search') {
+    if (id === 'search' && open) {
         search.focus();
     }
 }
@@ -177,6 +176,18 @@ function searchByDescription() {
 }
 
 // EVENT LISTENERS
+
+// A captura também detecta cliques em componentes que interrompem a propagação.
+// O botão faz parte do contexto para que o clique de abertura não feche o menu.
+document.addEventListener('click', (event) => {
+    for (const button of document.querySelectorAll('[data-menu-target]')) {
+        const menu = document.getElementById(button.dataset.menuTarget);
+        if (menu && menu.classList.contains('active')
+            && !menu.contains(event.target) && !button.contains(event.target)) {
+            setMenuOpen(menu, false);
+        }
+    }
+}, true);
 
 // Evento do icone hamburger para encolher/expandir o menu lateral.
 // Evento do icone hamburger para encolher/expandir o menu lateral.

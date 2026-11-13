@@ -6,7 +6,7 @@
                     <a id="sidebar-button"><i class="fa-solid fa-bars"></i></a>
                 </li>
                 <li class="align-right">
-                    <a onclick="toggleBox('search')" class="btn-search"><i class="fa-solid fa-magnifying-glass"></i></a>
+                    <a onclick="toggleBox('search')" data-menu-target="search" aria-controls="search" aria-expanded="false" class="btn-search"><i class="fa-solid fa-magnifying-glass"></i></a>
                 </li>
                 <li>
                     <a href="{% url 'get_profile' %}"><i class="fa-solid fa-user-gear"></i></a>
@@ -19,9 +19,9 @@
                 <li class="profile-button">
                     {% spaceless %}
                     {% if user.photo %}
-                    <a onclick="toggleBox('profile')"><img id="profile-photo-button" src="{{ user.photo.url }}" alt=""></a>
+                    <a onclick="toggleBox('profile')" data-menu-target="profile" aria-controls="profile" aria-expanded="false"><img id="profile-photo-button" src="{{ user.photo.url }}" alt=""></a>
                     {% else %}
-                    <a onclick="toggleBox('profile')"><img id="profile-photo-button" src="{% static 'img/default-profile.png' %}" alt=""></a>
+                    <a onclick="toggleBox('profile')" data-menu-target="profile" aria-controls="profile" aria-expanded="false"><img id="profile-photo-button" src="{% static 'img/default-profile.png' %}" alt=""></a>
                     {% endif %}
                     {% endspaceless %}
                 </li>

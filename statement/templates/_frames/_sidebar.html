@@ -62,7 +62,7 @@
                 </li>
                 {% comment %}*** INICIO ÍTEM COM DROPDOWN ***{% endcomment %}
                 <li>
-                    <a id="conta-submenu-button" onclick="toggleSubMenu('conta-submenu')">
+                    <a id="conta-submenu-button" onclick="toggleSubMenu('conta-submenu')" data-menu-target="conta-submenu" aria-controls="conta-submenu" aria-expanded="false">
                         <div>
                             <i class="fa-solid fa-building-columns"></i>
                         </div>
@@ -82,7 +82,7 @@
                         {% endfor %}
                     </ul>
                 <li>
-                    <a id="fatura-submenu-button" onclick="toggleSubMenu('fatura-submenu')">
+                    <a id="fatura-submenu-button" onclick="toggleSubMenu('fatura-submenu')" data-menu-target="fatura-submenu" aria-controls="fatura-submenu" aria-expanded="false">
                         <div>
                             <i class="fa-solid fa-credit-card"></i>
                         </div>
