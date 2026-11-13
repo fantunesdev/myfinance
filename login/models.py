@@ -38,6 +38,11 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     use_next_month = models.BooleanField(default=False)
     enable_fuel_tracking = models.BooleanField(default=False)
+    inactivity_logout_enabled = models.BooleanField(default=False)
+    inactivity_logout_minutes = models.PositiveSmallIntegerField(
+        default=10,
+        validators=[MinValueValidator(1), MaxValueValidator(1440)],
+    )
     fuel_subcategory = models.ForeignKey(
         'statement.Subcategory',
         null=True,

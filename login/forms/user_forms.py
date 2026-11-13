@@ -2,7 +2,34 @@ from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.password_validation import validate_password
 
-from login.models import User
+from login.models import Profile, User
+
+
+class InactivityLogoutForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ['inactivity_logout_enabled', 'inactivity_logout_minutes']
+        labels = {
+            'inactivity_logout_enabled': 'Sair automaticamente por inatividade',
+            'inactivity_logout_minutes': 'Tempo de inatividade em minutos',
+        }
+        help_texts = {
+            'inactivity_logout_enabled': 'A atividade em qualquer aba do MyFinance mantém o acesso neste navegador.',
+            'inactivity_logout_minutes': 'Informe de 1 a 1440 minutos. Atualizações automáticas não renovam o prazo.',
+        }
+        widgets = {
+            'inactivity_logout_minutes': forms.NumberInput(attrs={'class': 'form-control', 'min': 1, 'max': 1440}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['inactivity_logout_minutes'].required = False
+
+    def clean_inactivity_logout_minutes(self):
+        minutes = self.cleaned_data.get('inactivity_logout_minutes')
+        if minutes is None and self.cleaned_data.get('inactivity_logout_enabled'):
+            raise forms.ValidationError('Informe o tempo de inatividade em minutos.')
+        return minutes if minutes is not None else (self.instance.inactivity_logout_minutes or 10)
 
 
 class UserForm(forms.ModelForm):

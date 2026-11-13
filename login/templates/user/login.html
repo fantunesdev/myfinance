@@ -14,6 +14,9 @@
         <form method="post">
             <div class="box-body">
                 {% csrf_token %}
+                {% if request.GET.inactive == '1' %}
+                    <p role="status">Você saiu por inatividade. Entre novamente para continuar.</p>
+                {% endif %}
 
                 <div class="form-group">
                     {{ login_form.username.errors }}

@@ -1,6 +1,6 @@
 (() => {
     const userId = document.querySelector('meta[name="myfinance-user-id"]')?.content;
-    if (!userId) return;
+    if (!userId || window.myfinanceInactivityExpired) return;
     const prefix = `myfinance:investments:v1:${userId}:`;
     let stopped = false;
     let reconnectTimer;
@@ -24,7 +24,7 @@
     });
 
     function connect() {
-        if (stopped || [WebSocket.OPEN, WebSocket.CONNECTING].includes(window.socket?.readyState)) return;
+        if (stopped || window.myfinanceInactivityExpired || [WebSocket.OPEN, WebSocket.CONNECTING].includes(window.socket?.readyState)) return;
         clearTimeout(reconnectTimer);
         const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
         const socket = new WebSocket(`${protocol}//${location.host}/ws/`);
@@ -67,6 +67,11 @@
         } catch { /* Storage unavailable. */ }
     });
     window.addEventListener('pagehide', () => {
+        stopped = true;
+        clearTimeout(reconnectTimer);
+        window.socket?.close();
+    });
+    window.addEventListener('myfinance:inactivity', () => {
         stopped = true;
         clearTimeout(reconnectTimer);
         window.socket?.close();

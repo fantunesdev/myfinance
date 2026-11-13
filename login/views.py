@@ -1,8 +1,12 @@
+import secrets
+
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
+from django.http import JsonResponse
 from django.shortcuts import redirect, render
+from django.views.decorators.http import require_POST
 
 from clients.transaction_classifier.transaction_classifier import TransactionClassifierClient
 from login.entities.user import User
@@ -62,6 +66,7 @@ def login_user(request):
             user = authenticate(request, username=username, password=password)
             if user:
                 login(request, user)
+                request.session['inactivity_browser_id'] = secrets.token_urlsafe(24)
                 return redirect('get_current_month_transactions')
             else:
                 messages.error(request, 'As credenciais estão incorretas')
@@ -114,6 +119,32 @@ def logout_user(request):
     """
     logout(request)
     return redirect('login_user')
+
+
+@require_POST
+def inactivity_logout(request):
+    """Log out only the browser session which reported inactivity (CSRF protected)."""
+    if not request.user.is_authenticated:
+        return JsonResponse({'success': True})
+    browser_id = request.session.get('inactivity_browser_id')
+    if not browser_id or not secrets.compare_digest(request.POST.get('session', '').encode(), browser_id.encode()):
+        return JsonResponse({'success': False}, status=409)
+    logout(request)
+    return JsonResponse({'success': True})
+
+
+@login_required
+def edit_inactivity_logout(request):
+    profile, _ = Profile.objects.get_or_create(user=request.user)
+    form = user_forms.InactivityLogoutForm(
+        request.POST if request.method == 'POST' else None, instance=profile,
+    )
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        return redirect('get_profile')
+    return render(request, 'base/form.html', {
+        'form': form, 'class_title': 'Privacidade e segurança',
+    })
 
 
 @login_required

@@ -9,6 +9,8 @@ from .views import *
 urlpatterns = [
     path('cadastrar/', create_user, name='create_user'),
     path('perfil/', get_profile, name='get_profile'),
+    path('perfil/inatividade/editar/', edit_inactivity_logout, name='edit_inactivity_logout'),
+    path('inatividade/logout/', inactivity_logout, name='inactivity_logout'),
     path('perfil/editar/', update_profile, name='update_profile'),
     path('perfil/configuracoes/editar/', update_configs, name='update_configs'),
     path('perfil/notificacoes/titles/editar/', edit_user_notification_titles, name='edit_user_notification_titles'),

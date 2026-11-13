@@ -8,6 +8,19 @@
         <meta name="myfinance-user-id" content="{{ request.user.pk|default:'' }}">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        {% if inactivity_logout_config %}
+            <style>
+                html.myfinance-privacy-hidden body > :not(#inactivity-screen) { display: none !important; }
+                html.myfinance-privacy-hidden #inactivity-screen {
+                    position: fixed; inset: 0; z-index: 2147483647;
+                    display: grid; place-items: center; background: #fff; color: #222;
+                    font: 18px sans-serif; padding: 24px;
+                }
+            </style>
+            {{ inactivity_logout_config|json_script:"inactivity-logout-config" }}
+            <meta name="myfinance-csrf" content="{{ csrf_token }}">
+            <script src="{% static 'js/inactivity-logout.js' %}"></script>
+        {% endif %}
         {% comment %} ÍCONES EXTERNOS {% endcomment %}
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
