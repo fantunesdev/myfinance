@@ -1,13 +1,57 @@
 {% extends 'index.html' %}
 {% load static %}
+{% block title %}Conciliação de investimentos{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{% static 'bank_sync/investment-events.css' %}">
+{% endblock %}
 {% block content %}
-<div class="box"><div class="box-header"><h3>Conciliação de investimentos</h3></div><div class="box-body">
-<p>Os eventos são coletados sem gerar lançamentos. Movimentos anteriores à data-base devem ser vinculados ao histórico existente.</p>
-<form id="history-job" action="{% url 'investment_event_collect' %}" method="post">{% csrf_token %}<button class="btn btn-info">Consultar movimentações</button></form>
-<p id="history-status" role="status"></p>
-<label>Situação <select id="event-state"><option value="">Todas</option><option value="new">Novas</option><option value="historical">Históricas</option><option value="conflict">Conflitos</option><option value="linked">Vinculadas</option><option value="applied">Aplicadas</option><option value="ignored">Ignoradas</option></select></label>
-<div id="investment-events" data-url="{% url 'investment_event_list' %}"></div>
-<button id="previous-page" class="btn btn-info">Anterior</button><button id="next-page" class="btn btn-info">Próxima</button>
-</div></div>
+<div class="box investment-reconciliation">
+    <div class="box-header reconciliation-header">
+        <div>
+            <a href="{% url 'investments_dashboard' %}" class="reconciliation-back">← Investimentos</a>
+            <h3>Conciliação de investimentos</h3>
+            <p>Confira as pendências e consulte as movimentações já resolvidas.</p>
+        </div>
+        <form id="history-job" action="{% url 'investment_event_collect' %}" method="post">
+            {% csrf_token %}
+            <button id="history-collect" class="btn btn-info" type="submit">Consultar Pluggy</button>
+            <small>Busca eventos sem alterar os saldos.</small>
+        </form>
+    </div>
+    <div class="box-body">
+        <div class="reconciliation-toolbar">
+            <nav class="reconciliation-tabs" aria-label="Movimentações de investimentos">
+                <button type="button" data-view="pending" aria-pressed="true">A revisar <span id="pending-count">—</span></button>
+                <button type="button" data-view="resolved" aria-pressed="false">Histórico <span id="resolved-count">—</span></button>
+            </nav>
+            <p id="history-status" role="status"></p>
+        </div>
+        <input type="hidden" id="event-state" value="pending">
+        <p id="event-help" class="reconciliation-help" hidden></p>
+        <p id="event-action-status" class="reconciliation-feedback" role="status" hidden></p>
+        <p id="event-updates" class="reconciliation-help" hidden>Há dados novos. Feche a revisão atual para atualizar a lista.</p>
+        <div id="event-selection" class="reconciliation-selection" hidden>
+            <span id="selected-count"></span>
+            <button type="button" id="clear-selection" class="reconciliation-link">Limpar seleção</button>
+        </div>
+        <section id="event-empty" class="reconciliation-empty" hidden aria-live="polite">
+            <span id="empty-icon" aria-hidden="true">✓</span>
+            <h4 id="empty-title"></h4>
+            <p id="empty-description"></p>
+            <button type="button" id="show-history" class="btn btn-info" hidden>Ver histórico</button>
+        </section>
+        <div id="investment-events" data-url="{% url 'investment_event_list' %}" data-review-base="{% url 'investment_events' %}" aria-busy="true">
+            <p>Carregando movimentações…</p>
+        </div>
+        <div class="reconciliation-pagination">
+            <p id="event-count" aria-live="polite"></p>
+            <div id="event-pagination" hidden>
+                <button type="button" id="previous-page" class="btn btn-info" disabled>Anterior</button>
+                <span id="page-label"></span>
+                <button type="button" id="next-page" class="btn btn-info" disabled>Próxima</button>
+            </div>
+        </div>
+    </div>
+</div>
 <script type="module" src="{% static 'bank_sync/investment-events.js' %}"></script>
 {% endblock %}

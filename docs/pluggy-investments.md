@@ -10,6 +10,26 @@ persistida de eventos dos títulos e das liquidações das contas bancárias. A 
 não altera lançamentos financeiros. A cobertura depende do histórico efetivamente
 fornecido pela instituição; ausência de eventos não comprova ausência de operações.
 
+## Página de conciliação
+
+A aba **A revisar** é a visão inicial e reúne apenas eventos novos, históricos
+pendentes e alterações na fonte. Quando tudo foi resolvido, ela mostra zero
+pendências e um acesso ao histórico. Os totais das abas consideram todos os
+eventos do usuário, independentemente da página exibida.
+
+A aba **Histórico** contém eventos registrados, vinculados ou ignorados. A lista
+é ordenada por data e paginada, com detalhes recolhidos e sem formulários de
+reaplicação. Ao abrir um evento, são mostrados os lançamentos e comprovantes
+vinculados. A classificação confirmada prevalece sobre o rótulo original da
+instituição; os dados originais continuam disponíveis nos detalhes. Operações
+agrupadas identificam que seus comprovantes pertencem ao conjunto.
+
+Nas pendências, os campos acompanham a ação escolhida. Eventos anteriores à
+data-base oferecem vínculo ou descarte justificado; conflitos oferecem a
+preservação justificada dos registros locais. Compras e transferências podem ser
+agrupadas quando necessário. A consulta em segundo plano preserva o texto da
+revisão aberta e avisa quando a lista tiver informações novas.
+
 ## Processamento
 
 Além do servidor web, mantenha um processo com o mesmo código, configurações,
