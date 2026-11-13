@@ -13,10 +13,10 @@ const pathName = window.location.pathname,
  * Encolhe e estica a barra lateral.
  */
 function toggleSidebar() {
-    if (body.classList.length === 0) {
-        recallSidebar();
-    } else {
+    if (body.classList.contains('toggled-sidebar')) {
         expandSidebar();
+    } else {
+        recallSidebar();
     }
 }
 
@@ -25,12 +25,10 @@ function toggleSidebar() {
  */
 function recallSidebar() {
     let body = document.getElementsByTagName('body')[0];
-    let logo = document.getElementsByTagName('body')[0].children[1].children[0];
     let toggle = document.getElementsByClassName('toggle');
     let inverseToggle = document.getElementsByClassName('inverse-toggle');
 
     body.classList.add('toggled-sidebar');
-    logo.children[1].classList.add('toggled');
 
     for (let i of toggle) {
         i.classList.add('toggled');
@@ -46,12 +44,10 @@ function recallSidebar() {
  */
 function expandSidebar() {
     let body = document.getElementsByTagName('body')[0];
-    let logo = document.getElementsByTagName('body')[0].children[1].children[0];
     let toggle = document.getElementsByClassName('toggle');
     let inverseToggle = document.getElementsByClassName('inverse-toggle');
 
     body.classList.remove('toggled-sidebar');
-    logo.children[1].classList.remove('toggled');
 
     for (let i of toggle) {
         i.classList.remove('toggled');

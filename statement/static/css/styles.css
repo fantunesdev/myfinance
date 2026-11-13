@@ -96,6 +96,16 @@ aside {
     font-size: 15px;
     background: #212121;
     grid-area: sidebar;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-version {
+    margin-top: auto;
+    padding: 16px 6px;
+    color: #999;
+    font-size: 11px;
+    overflow-wrap: anywhere;
 }
 
 main {
@@ -263,6 +273,42 @@ header > section {
     grid-area: logout;
 }
 
+#profile {
+    width: 380px;
+    max-width: calc(100vw - 10px);
+    grid-template-columns: minmax(0, 1fr) auto;
+    max-height: none;
+    opacity: 0;
+    clip-path: inset(0 0 100% 100% round 10px);
+    visibility: hidden;
+    pointer-events: none;
+    transition: clip-path .3s ease, opacity .3s ease, visibility 0s linear .3s;
+}
+
+#profile.active {
+    opacity: 1;
+    clip-path: inset(0 0 0 0 round 10px);
+    visibility: visible;
+    pointer-events: auto;
+    transition-delay: 0s;
+}
+
+#profile .dados > p {
+    margin-left: 16px;
+    margin-right: 16px;
+    overflow-wrap: anywhere;
+}
+
+#profile .profile {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+#profile .logout {
+    margin-right: 25px;
+}
+
 header > section > div> img {
     height: 100px;
     width: 100px;
@@ -328,6 +374,10 @@ header > section > div > p:last-child {
 
 /* INÍCIO MENU LATERAL */
 
+body.toggled-sidebar logo > div > span {
+    display: none;
+}
+
 .toggled-sidebar {
     font-family: Ubuntu;
     margin: 0;
@@ -341,13 +391,6 @@ header > section > div > p:last-child {
     "sidebar main"
     "footer footer";
     transition: all .25s linear;
-}
-
-/* Quando o sidebar é recolhido/oculto, fazer o main ocupar toda a largura */
-body.toggled-sidebar main {
-    grid-column: 1 / -1;
-    width: 100%;
-    margin-left: 0;
 }
 
 aside > ul {

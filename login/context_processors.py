@@ -4,6 +4,13 @@ import time
 from django.urls import reverse
 
 from login.models import Profile
+from statement.models import Version
+
+
+def app_version(request):
+    if not request.user.is_authenticated:
+        return {}
+    return {'app_version': Version.objects.order_by('-id').values_list('version', flat=True).first()}
 
 
 def inactivity_logout(request):

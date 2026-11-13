@@ -133,4 +133,7 @@
                     </a>
                 </li>
             </ul>
+            {% if app_version %}
+                <div class="sidebar-version" aria-label="Versão {{ app_version }}">{{ app_version }}</div>
+            {% endif %}
         </aside>

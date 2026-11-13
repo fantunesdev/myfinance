@@ -34,7 +34,7 @@ urlpatterns = [
     path('', include(router.urls)),
     # Perfil
     path('next_month_view/', NextMonthView.as_view(), name='next_month_view'),
-    # Retorno de configurações default para o FrontEnd antes de autenticar
+    # Configurações disponíveis apenas para usuários autenticados
     path('defaults/', Defaults.as_view(), name='defaults'),
     # Portfolio
     path('fixed-income/progression/', FixedIncomeProgressionList.as_view(), name='fixed_income_progression'),
