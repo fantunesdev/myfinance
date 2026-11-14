@@ -394,8 +394,11 @@ class TransactionView(BaseView):
                 continue
 
             if instance.type == 'saida':   # Saídas
-                # Despesas com cartão
-                if instance.card:
+                payment_card = instance.card
+                if not payment_card and getattr(instance, 'card_number_id', None):
+                    payment_card = instance.card_number.card
+                # Pré-pagos são gastos à vista, mesmo quando vinculados a um cartão.
+                if payment_card and not payment_card.prepaid:
                     card += instance.value
                 # Despesas à vista
                 else:

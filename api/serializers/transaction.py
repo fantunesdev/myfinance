@@ -3,6 +3,7 @@ from rest_framework import serializers
 from api.serializers.base_serializer import BaseSerializer
 from statement.models import Account, Bank, Transaction, Card, CardNumber, Category, Dream, Subcategory
 from statement.access import visible_card_numbers, visible_cards
+from statement.services.core.card import CardService
 
 
 class BankSerializer(serializers.ModelSerializer):
@@ -59,6 +60,7 @@ class TransactionSerializer(BaseSerializer):
     dream = serializers.SerializerMethodField()
     installment = serializers.SerializerMethodField()
     source_notification = serializers.SerializerMethodField()
+    expense_chart = serializers.SerializerMethodField()
 
     class Meta:
         model = Transaction
@@ -67,6 +69,17 @@ class TransactionSerializer(BaseSerializer):
     def _user(self):
         request = self.context.get('request')
         return getattr(request, 'user', None)
+
+    def get_expense_chart(self, obj):
+        card = None
+        if obj.card_id and obj.card_id in self._visible_ids('cards'):
+            card = obj.card
+        elif obj.card_number_id and obj.card_number_id in self._visible_ids('numbers'):
+            card = obj.card_number.card
+        if not card or card.prepaid:
+            return {'kind': 'cash'}
+        start, end = CardService.get_billing_cycle(card, obj.payment_date)
+        return {'kind': 'card', 'cycle_start': start.isoformat(), 'cycle_end': end.isoformat()}
 
     def _visible_ids(self, relation):
         # A many=True serializer shares its context: resolve visibility once per response.

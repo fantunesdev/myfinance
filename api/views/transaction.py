@@ -444,7 +444,7 @@ class TransactionView(BaseView):
         from django.db.models import QuerySet
         if isinstance(instances, QuerySet):
             instances = instances.select_related(
-                'account__bank', 'card', 'card_number', 'dream',
+                'account__bank', 'card', 'card_number__card', 'dream',
                 'installment', 'source_notification__card',
             )
         context = {'request': request} if request else {}

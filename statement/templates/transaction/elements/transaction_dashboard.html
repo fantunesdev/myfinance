@@ -1,7 +1,7 @@
     {% load custom_filters %}
     {% load static %}
 
-        {% block styles %}<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">{% endblock %}
+        {% block styles %}<link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=20261114-2">{% endblock %}
 
         <div class="box box-primary box-max-width-2000 v-center-div dashboard-box">
             <div class="box-header">
@@ -19,6 +19,15 @@
                             <i class="fa-solid fa-chart-line"></i>
                         </div>
                         <canvas id="expenses-bar-chart" width="40" height="15"></canvas>
+                        <div id="monthly-expenses-line-controls" hidden>
+                            <div class="monthly-expenses-line-views" role="group" aria-label="Evolução dos gastos">
+                                <button type="button" class="btn btn-primary" id="monthly-expenses-view-combined" aria-pressed="true"><i class="fa-solid fa-layer-group" aria-hidden="true"></i> Consolidado</button>
+                                <button type="button" class="btn" id="monthly-expenses-view-card" aria-pressed="false"><i class="fa-solid fa-credit-card" aria-hidden="true"></i> Cartão</button>
+                                <button type="button" class="btn" id="monthly-expenses-view-cash" aria-pressed="false"><i class="fa-solid fa-money-bill-wave" aria-hidden="true"></i> À vista</button>
+                            </div>
+                            <p id="monthly-expenses-line-description" class="font-14" aria-live="polite"></p>
+                            <p id="monthly-expenses-line-summary" class="font-14" aria-live="polite"></p>
+                        </div>
                         <canvas id="monthly-expenses-line-chart" width="40" height="15" style="display: none;"></canvas>
                         <br>
                         <b class="font-16">Total de gastos: {{ dashboard.expenses | to_reais }}</b>

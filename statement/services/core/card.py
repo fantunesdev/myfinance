@@ -1,4 +1,5 @@
 import re
+from datetime import timedelta
 
 from dateutil.relativedelta import relativedelta
 
@@ -11,6 +12,13 @@ class CardService(BaseService):
 
     model = Card
     user_field = 'user'
+
+    @staticmethod
+    def get_billing_cycle(card, payment_date):
+        """Intervalo de compras cuja data de processamento cai nesta fatura."""
+        end = payment_date + relativedelta(day=card.closing_day)
+        previous_closing = payment_date + relativedelta(months=-1, day=card.closing_day)
+        return previous_closing + timedelta(days=1), end
 
     @staticmethod
     def set_processing_date(card, date):

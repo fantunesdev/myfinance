@@ -17,6 +17,7 @@ const yearNavigation = document.getElementById('id_year'),
 
 let monthlyExpensesLineChart = null;
 let activeExpensesChart = 'bar';
+let monthlyExpensesLineView = 'combined';
 let dashboardTransactions = [];
 let barChart = null;
 let barChartUpdateVersion = 0;
@@ -235,9 +236,20 @@ function drawMonthlyExpensesLineChart() {
         monthlyExpensesLineChart.destroy();
         monthlyExpensesLineChart = null;
     }
+    // Chart.js restaura o display original do canvas ao destruir a instância.
+    canvas.style.display = 'block';
 
     const categories = JSON.parse(sessionStorage.getItem('categories') || '[]');
-    const dataset = setMonthlyExpensesLineDataset(getVisibleTransactions(dashboardTransactions), categories);
+    const dataset = setMonthlyExpensesLineDataset(getVisibleTransactions(dashboardTransactions), categories, monthlyExpensesLineView);
+    const titles = { combined: 'Gastos consolidados', card: 'Gastos no cartão', cash: 'Gastos à vista' };
+    const title = titles[monthlyExpensesLineView];
+    const description = document.getElementById('monthly-expenses-line-description');
+    if (description) description.textContent = dataset.description;
+    const summary = document.getElementById('monthly-expenses-line-summary');
+    if (summary) {
+        const currency = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+        summary.textContent = `Saldo inicial: ${currency.format(dataset.initialBalance)} · Total nesta visão: ${currency.format(dataset.values.at(-1) || 0)}`;
+    }
 
     monthlyExpensesLineChart = new Chart(canvas.getContext('2d'), {
         type: 'line',
@@ -245,12 +257,12 @@ function drawMonthlyExpensesLineChart() {
             labels: dataset.names,
             datasets: [
                 {
-                    label: 'Gastos no mês',
+                    label: title,
                     data: dataset.values,
                     borderColor: 'rgba(139, 0, 0, 1)',
                     backgroundColor: 'rgba(139, 0, 0, 0.15)',
                     fill: true,
-                    tension: 0.2,
+                    tension: 0,
                 },
             ],
         },
@@ -259,7 +271,7 @@ function drawMonthlyExpensesLineChart() {
             maintainAspectRatio: !shouldFillMobileChartHeight,
             scales: {
                 y: {
-                    beginZero: true,
+                    beginAtZero: true,
                 },
             },
             plugins: {
@@ -268,7 +280,7 @@ function drawMonthlyExpensesLineChart() {
                 },
                 title: {
                     display: true,
-                    text: 'Gastos no mês',
+                    text: title,
                     font: {
                         size: 18,
                         family: 'Ubuntu',
@@ -285,49 +297,94 @@ function drawMonthlyExpensesLineChart() {
     return monthlyExpensesLineChart;
 }
 
-function setMonthlyExpensesLineDataset(transactions, categories) {
-    const [year, month] = sessionStorage.getItem('year-month').split(',');
-    const selectedYear = Number(year);
-    const selectedMonth = Number(month);
-    const daysInMonth = new Date(selectedYear, selectedMonth, 0).getDate();
-    const dailyExpenses = Array(daysInMonth).fill(0);
-    const labels = Array.from({ length: daysInMonth }, (_, index) => String(index + 1).padStart(2, '0'));
-    let accumulated = 0;
+function setMonthlyExpensesLineDataset(transactions, categories, view = 'combined') {
+    const [year, month] = sessionStorage.getItem('year-month').split(',').map(Number);
+    const monthStart = Date.UTC(year, month - 1, 1);
+    const monthEnd = Date.UTC(year, month, 0);
+    const expenses = transactions.filter(transaction => transaction.type !== 'entrada'
+        && isDashboardExpense(transaction, categories)
+        && (view === 'combined' || getExpenseKind(transaction) === view));
+    const purchases = [];
+    let initialBalance = 0;
+    for (const transaction of expenses) {
+        const date = getMonthlyExpenseDate(transaction);
+        if (isPreviousInstallment(transaction)) {
+            initialBalance += Number(transaction.value || 0);
+        } else if (date !== null) {
+            purchases.push({ date, value: Number(transaction.value || 0) });
+        }
+    }
+    purchases.sort((a, b) => a.date - b.date);
 
-    for (const transaction of transactions) {
-        if (transaction.type === 'entrada') continue;
-        if (!isDashboardExpense(transaction, categories)) continue;
-
-        const transactionDay = getMonthlyExpenseDay(transaction, selectedYear, selectedMonth, daysInMonth);
-        if (!transactionDay) continue;
-
-        dailyExpenses[transactionDay - 1] += Number(transaction.value || 0);
+    if (view === 'combined') {
+        let accumulated = initialBalance;
+        return {
+            initialBalance,
+            names: ['Saldo inicial', ...purchases.map(purchase => formatExpenseDay(purchase.date))],
+            values: [initialBalance, ...purchases.map(purchase => accumulated += purchase.value)],
+            description: 'Parcelas anteriores no saldo inicial; demais compras na ordem da tabela.',
+        };
     }
 
-    const values = dailyExpenses.map(value => {
-        accumulated += value;
-        return accumulated;
-    });
-
-    return { names: labels, values };
+    let start = view === 'cash' ? monthStart : null;
+    let end = view === 'cash' ? monthEnd : null;
+    if (view === 'card') {
+        for (const transaction of expenses) {
+            const cycle = transaction.expense_chart;
+            const cycleStart = getMonthlyExpenseDate({ posted_date: cycle?.cycle_start });
+            const cycleEnd = getMonthlyExpenseDate({ posted_date: cycle?.cycle_end });
+            if (cycleStart === null || cycleEnd === null) continue;
+            start = start === null ? cycleStart : Math.min(start, cycleStart);
+            end = end === null ? cycleEnd : Math.max(end, cycleEnd);
+        }
+    }
+    // Preserva também datas de compras antigas/importadas fora do ciclo cadastrado.
+    for (const purchase of purchases) {
+        start = start === null ? purchase.date : Math.min(start, purchase.date);
+        end = end === null ? purchase.date : Math.max(end, purchase.date);
+    }
+    start ??= monthStart;
+    end ??= monthEnd;
+    const daily = new Map();
+    for (const purchase of purchases) daily.set(purchase.date, (daily.get(purchase.date) || 0) + purchase.value);
+    const names = [];
+    const values = [];
+    let accumulated = initialBalance;
+    for (let date = start; date <= end; date += 86400000) {
+        names.push(formatExpenseDay(date));
+        accumulated += daily.get(date) || 0;
+        values.push(accumulated);
+    }
+    return {
+        names, values, initialBalance,
+        description: expenses.length === 0 ? 'Nenhum gasto nesta visão.' : view === 'card'
+            ? 'Compras por dia nos ciclos das faturas; parcelas anteriores no saldo inicial.'
+            : 'Gastos à vista por dia; parcelas anteriores no saldo inicial.',
+    };
 }
 
-function getMonthlyExpenseDay(transaction, selectedYear, selectedMonth, daysInMonth) {
+function getExpenseKind(transaction) {
+    return transaction.expense_chart?.kind || (transaction.card || transaction.card_number ? 'card' : 'cash');
+}
+
+function isPreviousInstallment(transaction) {
+    return Boolean(transaction.installment || transaction.installment_id || Number(transaction.installments_number) > 1)
+        && Number(transaction.paid) > 1;
+}
+
+function formatExpenseDay(date) {
+    return String(new Date(date).getUTCDate()).padStart(2, '0');
+}
+
+function getMonthlyExpenseDate(transaction) {
     const postedDate = parseDbDateParts(transaction.posted_date);
-    const isInstallment = Boolean(
-        transaction.installment || transaction.installment_id || Number(transaction.installments_number) > 1
-    );
-    const isLaterInstallment = isInstallment && Number(transaction.paid || 0) > 1;
+    if (!postedDate) return null;
 
-    if (isLaterInstallment && postedDate && isBeforeMonth(postedDate, selectedYear, selectedMonth)) {
-        return 1;
-    }
+    const date = new Date(Date.UTC(postedDate.year, postedDate.month - 1, postedDate.day));
+    if (date.getUTCFullYear() !== postedDate.year || date.getUTCMonth() + 1 !== postedDate.month
+        || date.getUTCDate() !== postedDate.day) return null;
 
-    if (postedDate) {
-        return Math.min(postedDate.day, daysInMonth);
-    }
-
-    return null;
+    return date.getTime();
 }
 
 function parseDbDateParts(date) {
@@ -346,10 +403,6 @@ function parseDbDateParts(date) {
     return { year, month, day };
 }
 
-function isBeforeMonth(date, year, month) {
-    return date.year < year || (date.year === year && date.month < month);
-}
-
 function isDashboardExpense(transaction, categories) {
     return chartPolicy.showInMonthlyExpenseLine(transaction);
 }
@@ -360,14 +413,16 @@ async function setMonthlyExpensesChartMode(mode) {
     if (!barCanvas || !lineCanvas || !monthlyExpensesChartToggle) return;
 
     activeExpensesChart = mode;
+    const lineControls = document.getElementById('monthly-expenses-line-controls');
+    if (lineControls) lineControls.hidden = mode !== 'line';
 
     if (mode === 'line') {
         sessionStorage.removeItem('bar_label_clicked');
         sessionStorage.setItem('bar_chart_level', 'categories');
         await updateBarChart(barChart);
-        drawMonthlyExpensesLineChart();
         barCanvas.style.display = 'none';
         lineCanvas.style.display = 'block';
+        drawMonthlyExpensesLineChart();
         monthlyExpensesChartToggle.innerHTML = '<i class="fa-solid fa-chart-column"></i>';
         monthlyExpensesChartToggle.setAttribute('title', 'Gastos por categoria');
         monthlyExpensesChartToggle.setAttribute('aria-label', 'Gastos por categoria');
@@ -425,5 +480,23 @@ if (monthlyExpensesChartToggle) {
             event.preventDefault();
             monthlyExpensesChartToggle.click();
         }
+    });
+}
+
+const monthlyExpensesLineViews = ['combined', 'card', 'cash'];
+for (const view of monthlyExpensesLineViews) {
+    const button = document.getElementById(`monthly-expenses-view-${view}`);
+    if (!button) continue;
+    button.addEventListener('click', () => {
+        if (monthlyExpensesLineView === view) return;
+        monthlyExpensesLineView = view;
+        for (const option of monthlyExpensesLineViews) {
+            const optionButton = document.getElementById(`monthly-expenses-view-${option}`);
+            if (!optionButton) continue;
+            optionButton.setAttribute('aria-pressed', String(option === view));
+            if (option === view) optionButton.classList.add('btn-primary');
+            else optionButton.classList.remove('btn-primary');
+        }
+        if (activeExpensesChart === 'line') drawMonthlyExpensesLineChart();
     });
 }

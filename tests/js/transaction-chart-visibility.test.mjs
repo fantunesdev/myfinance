@@ -51,9 +51,10 @@ const subcategories = [
     { id: 301, category: 30, description: 'Aporte', show_in_monthly_expense_category_bar: false },
 ];
 
-function browser({ hidden = [], hiddenGroup = false, loading = false } = {}) {
+function browser({ hidden = [], hiddenGroup = false, loading = false,
+    transactions: reportTransactions = transactions, pathname = '/relatorio_financeiro/2026/11/' } = {}) {
     const storage = new Map(Object.entries({
-        transactions: JSON.stringify(transactions), categories: JSON.stringify(categories),
+        transactions: JSON.stringify(reportTransactions), categories: JSON.stringify(categories),
         subcategories: JSON.stringify(subcategories), accounts: '[]', cards: '[]', banks: '[]',
         'myfinance:hiddenRows:/2026/11/': JSON.stringify(hidden.map(String)),
         'myfinance:groups:/2026/11/': '[{"name":"Viagem","ids":["2","4"]}]',
@@ -66,7 +67,7 @@ function browser({ hidden = [], hiddenGroup = false, loading = false } = {}) {
         if (!elements.has(id)) elements.set(id, new Element());
         return elements.get(id);
     };
-    const rows = transactions.map(transaction => {
+    const rows = reportTransactions.map(transaction => {
         const row = new Element();
         row.checkbox = { checked: false };
         const attrs = { 'data-tx-id': String(transaction.id), 'data-value': String(transaction.value),
@@ -93,7 +94,7 @@ function browser({ hidden = [], hiddenGroup = false, loading = false } = {}) {
     const subcategoryRequests = [];
     let renderedTransactions = [];
     const window = new Element();
-    window.location = { pathname: '/relatorio_financeiro/2026/11/' };
+    window.location = { pathname };
     window.dispatchEvent = event => {
         for (const handler of window.events[event.type] || []) pending.push(Promise.resolve(handler(event)));
     };
@@ -112,9 +113,13 @@ function browser({ hidden = [], hiddenGroup = false, loading = false } = {}) {
         requestAnimationFrame() {}, setTimeout() {},
         console: { debug() {}, error(message, error) { throw error ?? new Error(message); } },
         Chart: class {
-            constructor(canvas, config) { this.data = config.data; this.options = config.options; charts.push(this); }
+            constructor(canvas, config) {
+                this.data = config.data; this.options = config.options; charts.push(this);
+                this.canvas = canvas.canvas;
+                this.initialDisplay = this.canvas.style.display;
+            }
             update() { this.updates = (this.updates || 0) + 1; }
-            destroy() {}
+            destroy() { this.canvas.style.display = this.initialDisplay; }
         },
         originalTable: table, statementBox: get('statement-box'),
         services: {
@@ -186,6 +191,12 @@ function browser({ hidden = [], hiddenGroup = false, loading = false } = {}) {
         deferSubcategories: () => { deferSubcategories = true; },
         resolveSubcategory: index => subcategoryRequests[index](),
         line: () => controller.setMonthlyExpensesChartMode('line'),
+        chooseLineView(view) {
+            get(`monthly-expenses-view-${view}`).events.click[0]();
+        },
+        lineData: () => charts.at(-1).data,
+        lineControls: () => get('monthly-expenses-line-controls'),
+        lineCanvas: () => get('monthly-expenses-line-chart'),
     };
 }
 
@@ -292,4 +303,127 @@ test('alternar para linhas mantém a mesma visibilidade das despesas', async () 
     assert.equal(app.charts.at(-1).data.datasets[0].data.at(-1), 550);
     app.reveal(); await app.settle();
     assert.equal(app.charts.at(-1).data.datasets[0].data.at(-1), 650);
+});
+
+const creditCycle = { kind: 'card', cycle_start: '2026-10-04', cycle_end: '2026-11-03' };
+const creditTransactions = [
+    ...Array.from({ length: 5 }, (_, i) => ({
+        ...transactions[1], id: i + 10, posted_date: `2026-0${i + 1}-20`,
+        payment_date: '2026-11-10', value: 100, installment: i + 1, paid: 2,
+        expense_chart: creditCycle,
+    })),
+    { ...transactions[1], id: 20, posted_date: '2026-10-10', value: 200, expense_chart: creditCycle },
+    { ...transactions[1], id: 21, posted_date: '2026-11-02', value: 50, expense_chart: creditCycle },
+];
+
+test('cartão segue o ciclo de fechamento com parcelas antigas no saldo inicial', async () => {
+    const app = browser({ transactions: creditTransactions });
+    await app.ready; await app.line(); app.chooseLineView('card');
+    const { labels, datasets } = app.lineData();
+    assert.equal(labels.length, 31);
+    assert.equal(labels[0], '04');
+    assert.equal(labels[27], '31');
+    assert.equal(labels[28], '01');
+    assert.equal(labels.at(-1), '03');
+    assert.ok(labels.every(label => /^\d{2}$/.test(label)));
+    assert.deepEqual(Array.from(datasets[0].data), [
+        ...Array(6).fill(500), ...Array(23).fill(700), ...Array(2).fill(750),
+    ]);
+    assert.equal(app.charts.at(-1).options.scales.y.beginAtZero, true);
+    app.hide([10, 20]); await app.settle();
+    assert.equal(app.lineData().datasets[0].data[0], 400);
+    assert.equal(app.lineData().datasets[0].data.at(-1), 450);
+    app.reveal(); await app.settle();
+    assert.equal(app.lineData().datasets[0].data.at(-1), 750);
+});
+
+test('consolidado segue a ordem cronológica da tabela sem estender parcelas antigas até janeiro', async () => {
+    const app = browser({ transactions: [...creditTransactions].reverse() });
+    await app.ready; await app.line();
+    const { labels, datasets } = app.lineData();
+    assert.deepEqual(Array.from(labels), ['Saldo inicial', '10', '02']);
+    assert.deepEqual(Array.from(datasets[0].data), [500, 700, 750]);
+    assert.equal(app.lineControls().hidden, false);
+});
+
+test('as três visões separam cartão, à vista e pré-pago e preservam o total consolidado', async () => {
+    const app = browser({ transactions: [
+        ...creditTransactions,
+        { ...transactions[1], id: 30, posted_date: '2026-11-10', value: 80, expense_chart: { kind: 'cash' } },
+        { ...transactions[1], id: 31, posted_date: '2026-11-25', value: 20,
+            card: 10, expense_chart: { kind: 'cash' } },
+    ] });
+    await app.ready; await app.line();
+    const combinedTotal = app.lineData().datasets[0].data.at(-1);
+    app.chooseLineView('card');
+    assert.equal(app.lineCanvas().style.display, 'block');
+    const cardTotal = app.lineData().datasets[0].data.at(-1);
+    app.chooseLineView('cash');
+    assert.equal(app.lineCanvas().style.display, 'block');
+    const { labels, datasets } = app.lineData();
+    assert.deepEqual(Array.from(labels), Array.from({ length: 30 }, (_, i) => String(i + 1).padStart(2, '0')));
+    assert.deepEqual(Array.from(datasets[0].data), [
+        ...Array(9).fill(0), ...Array(15).fill(80), ...Array(6).fill(100),
+    ]);
+    assert.equal(cardTotal + datasets[0].data.at(-1), combinedTotal);
+    assert.equal(combinedTotal, 850);
+});
+
+test('primeira parcela aparece na data da compra; parcelas posteriores formam o saldo inicial', async () => {
+    const app = browser({ transactions: [
+        { ...creditTransactions[0], id: 10, posted_date: '20/10/2026', paid: 1, value: 80 },
+        { ...creditTransactions[0], id: 11, posted_date: '2025-12-20', paid: 2, value: 100 },
+    ] });
+    await app.ready; await app.line();
+    assert.deepEqual(Array.from(app.lineData().labels), ['Saldo inicial', '20']);
+    assert.deepEqual(Array.from(app.lineData().datasets[0].data), [100, 180]);
+    app.chooseLineView('card');
+    assert.equal(app.lineData().datasets[0].data[15], 100);
+    assert.equal(app.lineData().datasets[0].data[16], 180);
+});
+
+test('ciclos distintos são combinados por datas reais e compras de mesmo dia são somadas', async () => {
+    const app = browser({ transactions: [
+        { ...creditTransactions[5], id: 20, posted_date: '2026-10-30', value: 50 },
+        { ...creditTransactions[5], id: 21, posted_date: '2026-10-30', value: 75,
+            expense_chart: { kind: 'card', cycle_start: '2026-10-08', cycle_end: '2026-11-07' } },
+        { ...creditTransactions[5], id: 22, posted_date: '2026-11-04', value: 25,
+            expense_chart: { kind: 'card', cycle_start: '2026-10-08', cycle_end: '2026-11-07' } },
+    ] });
+    await app.ready; await app.line(); app.chooseLineView('card');
+    assert.equal(app.lineData().labels[0], '04');
+    assert.equal(app.lineData().labels.at(-1), '07');
+    assert.equal(app.lineData().datasets[0].data[26], 125);
+    assert.equal(app.lineData().datasets[0].data[31], 150);
+});
+
+test('visão sem gastos e datas inválidas não criam compras nem alteram o total', async () => {
+    const app = browser({ transactions: [
+        { ...transactions[1], id: 1, posted_date: '2026-11-04', value: 50 },
+        { ...transactions[1], id: 2, posted_date: '2026-02-30', value: 100 },
+        { ...transactions[1], id: 3, posted_date: '2025-01-01', value: 200,
+            subcategory_show_in_monthly_expense_line: false },
+        { ...transactions[0], id: 4, posted_date: '2025-01-01' },
+    ] });
+    await app.ready; await app.line();
+    assert.equal(app.lineData().datasets[0].data.at(-1), 50);
+    app.chooseLineView('card');
+    assert.equal(app.lineData().labels.length, 30);
+    assert.ok(app.lineData().datasets[0].data.every(value => value === 0));
+    app.chooseLineView('cash');
+    assert.deepEqual(Array.from(app.lineData().datasets[0].data), [...Array(3).fill(0), ...Array(27).fill(50)]);
+});
+
+test('relatório de dezembro usa o ciclo de novembro sem deslocar datas das compras', async () => {
+    const app = browser({ pathname: '/relatorio_financeiro/2026/12/', transactions: [
+        { ...creditTransactions[0], value: 100,
+            expense_chart: { kind: 'card', cycle_start: '2026-11-04', cycle_end: '2026-12-03' } },
+        { ...creditTransactions[5], posted_date: '2026-11-10', payment_date: '2026-12-10', value: 50,
+            expense_chart: { kind: 'card', cycle_start: '2026-11-04', cycle_end: '2026-12-03' } },
+    ] });
+    await app.ready; await app.line(); app.chooseLineView('card');
+    assert.equal(app.lineData().labels.length, 30);
+    assert.equal(app.lineData().datasets[0].data[0], 100);
+    assert.equal(app.lineData().labels[6], '10');
+    assert.equal(app.lineData().datasets[0].data[6], 150);
 });
