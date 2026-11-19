@@ -8,10 +8,12 @@ from django.db.models import Q
 from django.utils import timezone
 from bank_sync.models import InvestmentHistoryJob, BankConnection
 from bank_sync.investment_events import collect
+from bank_sync.auto_reconciliation import auto_reconcile
+from bank_sync.event_import import import_events
 
 
 class Command(BaseCommand):
-    help = 'Processa a fila persistida de históricos de investimentos (somente coleta).'
+    help = 'Coleta históricos, preserva vínculos e registra movimentações com evidência completa.'
 
     def add_arguments(self, parser):
         parser.add_argument('--once', action='store_true')
@@ -46,8 +48,19 @@ class Command(BaseCommand):
                     continue
                 try:
                     count = collect(job, lease_token=token)
-                    job.state = 'succeeded'
-                    job.message = f'{count} eventos coletados; lançamentos dependem de conciliação.'
+                    with transaction.atomic():
+                        job.state = 'succeeded'
+                        job.save(update_fields=['state'])
+                        result = auto_reconcile(job.connection, job=job, lease_token=token)
+                        imported = import_events(job.connection, job=job, lease_token=token)
+                        job.progress['automatic_events'] = len(result['events'])
+                        job.progress['automatic_bank_entries'] = len(result['bank_entries'])
+                        job.progress['imported_events'] = len(imported['applied'])
+                        job.progress['adopted_events'] = len(imported['adopted'])
+                        job.message = (f'{count} eventos coletados; {len(result["events"])} eventos e '
+                                       f'{len(result["bank_entries"])} comprovantes vinculados; '
+                                       f'{len(imported["applied"])} movimentações registradas automaticamente.')
+                        job.save(update_fields=['progress', 'message'])
                 except Exception:
                     job.state = 'failed'
                     job.message = 'Coleta incompleta. Nenhum lançamento financeiro foi aplicado; tente novamente.'

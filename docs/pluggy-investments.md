@@ -70,6 +70,92 @@ confirmação não duplica seus lançamentos.
 
 ## Histórico e revisões
 
+A aba **Extrato bancário** mostra comprovantes bancários BRL efetivados,
+sem vínculo com uma conciliação: resgates (`Resgate - `), aplicações
+(`Aplicação - `), compras de criptomoedas (`Compra - Criptomoedas`) e liquidações
+B3 (`Débito B3 - `). São descrições reconhecidas, não uma classificação universal
+de todos os bancos. A lista tem paginação própria e não aumenta o contador de
+eventos de investimento a revisar. Um comprovante pode chegar sem evento no
+histórico de investimentos e também pode corresponder a um lançamento local já
+existente. Sua exibição não cria lançamentos nem modifica saldos.
+
+Nessa aba, é possível vincular um comprovante a um lançamento próprio do mesmo
+valor e sentido, até sete dias antes/depois, ou confirmar com justificativa que
+o valor já está incluído no histórico. Nenhuma dessas ações cria movimentos
+financeiros. Quando uma compra de criptomoedas tem um resgate de origem
+documentado, a opção **Registrar resgate e compra** registra o fluxo inteiro.
+O usuário informa somente a moeda e a quantidade que o extrato não trouxe.
+O aplicativo não fabrica eventos da Pluggy para preencher essa ausência.
+
+As conferências ficam em **Extrato bancário → Conferidos**, com justificativa
+e lançamentos vinculados. Cada revisão do comprovante exige nova conferência,
+preservando a anterior. Lançamentos vinculados não podem ser editados ou
+excluídos isoladamente. Um lançamento não pode explicar dois comprovantes
+independentes da mesma versão da fonte.
+
+Após uma coleta completa bem-sucedida, o trabalhador tenta vincular registros
+existentes e importar operações completas automaticamente. O botão **Processar
+dados recebidos** faz a mesma verificação com os dados já coletados, sem consultar
+a Pluggy. Atualizar as posições também agenda o processamento do histórico.
+Os vínculos criados
+pela aplicação financeira de um evento já são guardados atomicamente e não são
+refeitos. A identificação usa o ID externo estável do evento, e não só seu valor.
+
+A recuperação de vínculos de compra/resgate exige correspondência única entre
+título mapeado (ou origem consolidada documentada), data exata, valor líquido,
+quantidade quando disponível e comprovante bancário do mesmo tipo de operação.
+O lançamento deve ter um par de caixa do mesmo valor/data. Comprovantes isolados
+exigem também banco, família do ativo, par de caixa e ausência de eventos que
+possam disputar o mesmo registro. Duplicidades, revisões, Pix do mesmo valor,
+taxas sem correspondência e fontes incompletas continuam para revisão. Não são
+criados aportes, resgates ou rendimentos na etapa que apenas recupera vínculos.
+
+A etapa seguinte registra eventos novos posteriores à abertura auditada:
+compras com quantidade e caixa de origem inequívocos, resgates com custo e
+quantidade conhecidos e proventos com valores bruto/líquido e crédito bancário.
+Tudo fica vinculado ao ID externo original na mesma transação financeira.
+Novos títulos de renda fixa e ações com ticker explícito podem ser cadastrados
+a partir de compra, posição oficial, data de aquisição e instituição identificadas.
+Sem origem de dinheiro,
+com dados conflitantes, duplicidades ou histórico de custo incompleto, a operação
+permanece pendente com o motivo. Essa etapa não infere aportes externos a partir
+de diferenças de saldo.
+
+Para compra de cripto recebida só no extrato, o aplicativo exige débito e resgate
+únicos, da mesma conta, data e valor. Se o resgate já está registrado, consome
+exatamente o crédito de caixa existente. Se a instituição só informou o encerramento
+do título, exige aquisição conciliada, resgates anteriores documentados e posição
+anterior confirmando a quantidade remanescente. Eventuais correções de registros
+consolidados ficam em uma auditoria com valores anteriores/posteriores e provas;
+os fatos e snapshots originais da instituição são preservados.
+
+O resgate, o caixa e a compra são registrados atomicamente. O destino fica na
+custódia do banco, separado de Bitcoin em outras exchanges. Sem cotação fornecida,
+o valor inicial é o custo pago; não é apresentado como uma cotação de mercado.
+Uma repetição não cria nova compra. Se o evento oficial chegar depois, ele adota
+os registros existentes pela mesma quantidade, liquidação, título e valor.
+Revisões da fonte preservam os movimentos e abrem conflito; manter os registros
+exige confirmação com justificativa. Compras e resgates nunca são apagados ou
+reaplicados para acompanhar uma revisão silenciosamente.
+
+Quando todos os títulos BRL mapeados da conexão têm abertura auditada,
+comprovantes até a menor dessas datas ficam em **Anteriores à abertura**.
+Essa separação é temporal: não afirma uma correspondência individual e não
+marca os comprovantes como conciliados. Eles continuam disponíveis para consulta.
+Novas operações sem registro permanecem em **A conferir**. Revisões e decisões
+manuais são preservadas; conflitos não são resolvidos automaticamente.
+
+Para uma prévia operacional: `python manage.py reconcile_investment_history
+--connection ID`. Acrescente `--apply` para gravar somente os vínculos. O comando
+exige que a última coleta da conexão tenha sido concluída com sucesso e que não
+haja execução em andamento; não solicita uma atualização externa.
+
+Resgates históricos também podem ser vinculados ao investimento consolidado
+usado na abertura auditada do título individual, quando existir o par de
+transferências do mesmo valor, na data-base, entre títulos de renda fixa do
+mesmo banco. Exige valor líquido idêntico e data próxima; o vínculo apenas
+documenta a correspondência e não transfere dinheiro entre esses títulos.
+
 A abertura auditada de novembro de 2026 tem uma data-base. Eventos anteriores
 podem ser vinculados ao existente; não podem criar lançamentos isolados sobre a
 abertura, pois isso duplicaria patrimônio. Substituir essa abertura por uma

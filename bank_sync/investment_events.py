@@ -74,6 +74,35 @@ def operation_for(event):
     return membership.operation if membership else getattr(event, 'operation', None)
 
 
+def legacy_link_candidates(user, event, investment):
+    """Historical redemptions may predate the split of a consolidated holding."""
+    baseline = getattr(investment, 'reconciliation_baseline', None)
+    when = event_date(event.facts)
+    if (not baseline or when > baseline.date or classify(event.facts)[0] != 'sell'
+            or investment.asset.asset_type != 'fixed_income' or event.facts.get('netAmount') is None):
+        return Movement.objects.none()
+    origins = set()
+    for opening in Movement.objects.filter(
+        user=user, investment=investment, type='aporte', date=baseline.date,
+        operation_id__isnull=False,
+    ):
+        members = list(Movement.objects.filter(user=user, operation_id=opening.operation_id))
+        if len(members) != 2:
+            continue
+        for debit in members:
+            if (debit.type == 'resgate' and debit.amount == opening.amount
+                    and debit.investment_id != investment.pk
+                    and debit.investment.broker_id == investment.broker_id
+                    and debit.investment.asset.asset_type == 'fixed_income'
+                    and debit.investment.default_wallet_for_id is None):
+                origins.add(debit.investment_id)
+    return Movement.objects.filter(
+        user=user, investment__user=user, investment_id__in=origins,
+        type='resgate', amount=D(event.facts['netAmount']),
+        date__range=(when - timedelta(days=7), when + timedelta(days=7)),
+    )
+
+
 def flag_conflict(operation, reason):
     operation.state = 'conflict'
     operation.save(update_fields=['state'])
@@ -136,9 +165,9 @@ def collect(job, reader=None, lease_token=None):
                         event.reason = 'Movimentação revisada pela fonte; revise a operação completa.'
                 event.investments.add(source)
                 kind, reason = classify(facts)
-                if event.state != 'conflict':
+                if event.state in ('new', 'historical'):
                     event.reason = reason
-                if not operation_for(event) and event.state != 'conflict' and source.investment_id:
+                if not operation_for(event) and event.state in ('new', 'historical') and source.investment_id:
                     baseline = getattr(source.investment, 'reconciliation_baseline', None)
                     if baseline and event_date(facts) <= baseline.date:
                         event.state = 'historical'
@@ -254,12 +283,25 @@ def reconcile(
     if action == 'link':
         ids = list(set(int(x) for x in movement_ids))
         rows = list(Movement.objects.filter(user=user, pk__in=ids))
-        if not rows or len(rows) != len(ids) or not any(x.investment_id == inv.pk for x in rows):
+        legacy_ids = set(legacy_link_candidates(user, event, inv).values_list('pk', flat=True))
+        if not rows or len(rows) != len(ids) or not any(x.investment_id == inv.pk or x.pk in legacy_ids for x in rows):
             raise ValidationError('Selecione lançamentos próprios da operação e do título.')
         if not evidence.strip():
             raise ValidationError('Descreva a correspondência documental.')
+        cash = list(InvestmentCashEvidence.objects.select_for_update().filter(
+            connection=event.connection, pk__in=cash_ids,
+        ))
+        if cash_ids:
+            direction = 'DEBIT' if kind in ('buy', 'tax') else 'CREDIT'
+            if (len(cash) != len(set(cash_ids)) or event.facts.get('netAmount') is None
+                    or any(c.operations.exists() or c.facts.get('status') != 'POSTED'
+                           or c.facts.get('currencyCode') != 'BRL' or c.facts.get('type') != direction
+                           or abs((event_date(c.facts) - event_date(event.facts)).days) > 7 for c in cash)
+                    or sum((abs(D(c.facts['amount'])) for c in cash), D(0)) != D(event.facts['netAmount'])):
+                raise ValidationError('A liquidação deve corresponder ao valor, sentido e data do evento.')
         op = ReconciledInvestmentOperation.objects.create(event=event, kind=kind, state='linked', evidence=evidence)
         op.movements.set(rows)
+        op.cash_evidence.set(cash)
         event.state = 'linked'
         event.save(update_fields=['state'])
         return op
@@ -390,10 +432,10 @@ def reconcile(
                 inv,
                 'rendimento' if pnl > 0 else 'custo',
                 abs(pnl),
-                affects_value=False,
+                affects_value=True,
             )
         if gross > net:
-            add(inv, 'custo', gross - net, affects_value=False)
+            add(inv, 'custo', gross - net, affects_value=True)
         allocated = (position['value'] * units / position['quantity']).quantize(D('0.01'))
         add(
             inv,

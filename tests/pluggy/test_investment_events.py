@@ -13,7 +13,7 @@ from bank_sync.models import (
     InvestmentReconciliationBaseline,
     ReconciledInvestmentOperation,
 )
-from bank_sync.investment_events import reconcile, classify
+from bank_sync.investment_events import reconcile, classify, legacy_link_candidates
 from investments.models import Asset, Broker, Investment, InvestmentTransaction
 from investments.services.investment import InvestmentService
 from investments.services.transaction import InvestmentTransactionService
@@ -21,6 +21,56 @@ from login.models import User
 
 
 class EventTests(TestCase):
+    def test_historical_redemption_can_link_documented_consolidated_origin_and_cash(self):
+        self.inv.asset.asset_type = 'fixed_income'
+        self.inv.asset.save()
+        InvestmentReconciliationBaseline.objects.create(
+            investment=self.inv, date=date(2026, 11, 11), evidence='Abertura conciliada',
+        )
+        origin = Investment.objects.create(
+            user=self.user, asset=self.inv.asset, broker=self.inv.broker,
+            description='CDB consolidado', start_date=date(2020, 1, 1),
+        )
+        opening_uuid = uuid4()
+        for investment, kind in [(origin, 'resgate'), (self.inv, 'aporte')]:
+            InvestmentTransaction.objects.create(
+                user=self.user, investment=investment, date=date(2026, 11, 11),
+                type=kind, amount=200, operation_id=opening_uuid,
+            )
+        legacy = InvestmentTransaction.objects.create(
+            user=self.user, investment=origin, date=date(2026, 11, 10), type='resgate', amount=85,
+        )
+        self.event.state = 'historical'
+        self.event.facts.update(type='SELL', date='2026-11-10T00:00:00Z')
+        self.event.save()
+        self.assertEqual(list(legacy_link_candidates(self.user, self.event, self.inv)), [legacy])
+        before = list(InvestmentTransaction.objects.values())
+        op = reconcile(self.user, self.event.pk, 1, 'link', movement_ids=[legacy.pk],
+                       cash_ids=[self.cash.pk], evidence='Resgate registrado no consolidado antes da abertura.')
+        self.assertTrue(op.movements.filter(pk=legacy.pk).exists())
+        self.assertTrue(op.cash_evidence.filter(pk=self.cash.pk).exists())
+        self.assertEqual(list(InvestmentTransaction.objects.values()), before)
+
+    def test_same_broker_without_documented_opening_is_not_a_legacy_candidate(self):
+        self.inv.asset.asset_type = 'fixed_income'
+        self.inv.asset.save()
+        InvestmentReconciliationBaseline.objects.create(
+            investment=self.inv, date=date(2026, 11, 11), evidence='Abertura conciliada',
+        )
+        origin = Investment.objects.create(
+            user=self.user, asset=self.inv.asset, broker=self.inv.broker,
+            description='Outro CDB', start_date=date(2020, 1, 1),
+        )
+        movement = InvestmentTransaction.objects.create(
+            user=self.user, investment=origin, date=date(2026, 11, 10), type='resgate', amount=85,
+        )
+        self.event.state = 'historical'
+        self.event.facts.update(type='SELL', date='2026-11-10T00:00:00Z')
+        self.event.save()
+        self.assertFalse(legacy_link_candidates(self.user, self.event, self.inv).exists())
+        with self.assertRaises(ValidationError):
+            reconcile(self.user, self.event.pk, 1, 'link', movement_ids=[movement.pk], evidence='Sem vínculo')
+
     def setUp(self):
         self.user = User.objects.create(username='events', email='events@example.invalid')
         self.conn = BankConnection.objects.create(user=self.user, item_id=uuid4())

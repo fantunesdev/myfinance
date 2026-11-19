@@ -1,5 +1,6 @@
 """JSON contract for the dashboard. Accounting stays in InvestmentService."""
 from decimal import Decimal
+from django.db.models import F, Q
 
 from django.urls import reverse
 from django.utils import timezone
@@ -61,7 +62,10 @@ def dashboard_payload(user, revision):
             InvestmentTransaction.objects.filter(
                 user=user,
                 type__in=['rendimento', 'custo'],
-                reconciled_operations__state__in=['applied', 'linked'],
+            ).filter(
+                Q(reconciled_operations__state__in=['applied', 'linked'])
+                | Q(bank_cash_reviews__action='apply', bank_cash_reviews__trade__state='applied',
+                    bank_cash_reviews__revision=F('bank_cash_reviews__cash__revision'))
             )
             .values('id', 'type', 'amount')
             .distinct()

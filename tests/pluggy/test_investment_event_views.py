@@ -77,7 +77,7 @@ class InvestmentEventListTests(TestCase):
         self.assertEqual(status, 200)
         self.assertEqual(data['filter'], 'pending')
         self.assertEqual(data['count'], 2)
-        self.assertEqual(data['summary'], {'pending': 2, 'resolved': 3, 'total': 5})
+        self.assertEqual(data['summary'], {'pending': 2, 'resolved': 3, 'total': 5, 'bank_pending': 0, 'bank_prior': 0})
         self.assertEqual({e['state'] for e in data['events']}, {'historical', 'conflict'})
         self.assertIn(pending.pk, [e['id'] for e in data['events']])
 
@@ -92,6 +92,61 @@ class InvestmentEventListTests(TestCase):
         self.assertEqual((status, history['count'], len(history['events']), history['pages']), (200, 21, 20, 2))
         status, last = self.get(state='resolved', page=999)
         self.assertEqual((status, last['page'], len(last['events'])), (200, 2, 1))
+
+    def test_bank_statement_redemption_and_crypto_purchase_visible_without_investment_event(self):
+        for kind, amount, description in [
+            ('CREDIT', 1184.90, 'Resgate - Cdb Porq Obj Banco Inter S A'),
+            ('DEBIT', -1184.90, 'Compra - Criptomoedas'),
+        ]:
+            InvestmentCashEvidence.objects.create(
+                connection=self.connection, external_id=str(uuid4()), account_id=uuid4(),
+                facts={'date': '2026-11-16T00:00:00Z', 'type': kind, 'amount': amount,
+                       'description': description, 'status': 'POSTED', 'currencyCode': 'BRL'},
+            )
+        before = list(InvestmentTransaction.objects.values())
+        status, data = self.get(state='bank')
+        self.assertEqual((status, data['count'], data['summary']['bank_pending']), (200, 2, 2))
+        self.assertEqual(data['summary']['pending'], 0)
+        self.assertEqual(data['events'], [])
+        self.assertEqual({row['facts']['type'] for row in data['bank_entries']}, {'CREDIT', 'DEBIT'})
+        self.assertEqual(list(InvestmentTransaction.objects.values()), before)
+        self.assertFalse(InvestmentEvent.objects.exists())
+        self.assertEqual(self.get()[1]['bank_entries'], [])
+
+    def test_bank_statement_filter_excludes_other_users_settled_and_noninvestment_rows(self):
+        event = self.event('linked')
+        operation = ReconciledInvestmentOperation.objects.create(
+            event=event, kind='sell', state='linked', evidence='Conferido'
+        )
+        for connection, overrides, linked in [
+            (self.other_connection, {}, False),
+            (self.connection, {}, True),
+            (self.connection, {'status': 'PENDING'}, False),
+            (self.connection, {'currencyCode': 'USD'}, False),
+            (self.connection, {'description': 'Compra supermercado'}, False),
+            (self.connection, {'type': 'CREDIT'}, False),
+        ]:
+            row = InvestmentCashEvidence.objects.create(
+                connection=connection, external_id=str(uuid4()), account_id=uuid4(),
+                facts={'date': '2026-11-16T00:00:00Z', 'type': 'DEBIT', 'amount': -10,
+                       'description': 'Compra - Criptomoedas', 'status': 'POSTED',
+                       'currencyCode': 'BRL', **overrides},
+            )
+            if linked:
+                row.operations.add(operation)
+        self.assertEqual(self.get(state='bank')[1]['bank_entries'], [])
+
+    def test_bank_statement_tab_is_paginated_newest_first(self):
+        for day in range(1, 23):
+            InvestmentCashEvidence.objects.create(
+                connection=self.connection, external_id=str(uuid4()), account_id=uuid4(),
+                facts={'date': f'2026-11-{day:02d}T00:00:00Z', 'type': 'CREDIT', 'amount': 10,
+                       'description': 'Resgate - CDB', 'status': 'POSTED', 'currencyCode': 'BRL'},
+            )
+        status, data = self.get(state='bank')
+        self.assertEqual((status, data['count'], len(data['bank_entries']), data['pages']), (200, 22, 20, 2))
+        self.assertEqual(data['bank_entries'][0]['facts']['date'][:10], '2026-11-22')
+        self.assertEqual(len(self.get(state='bank', page=2)[1]['bank_entries']), 2)
 
     def test_resolved_provento_uses_confirmed_classification_and_readonly_evidence(self):
         event = self.event('applied', type='SELL', description='Rendimento')

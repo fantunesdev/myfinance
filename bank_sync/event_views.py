@@ -1,4 +1,5 @@
 from datetime import timedelta
+from decimal import Decimal
 from math import ceil
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
@@ -17,7 +18,8 @@ from bank_sync.models import (
     ReconciledInvestmentOperation,
 )
 from bank_sync.views import api_errors, body
-from bank_sync.investment_events import reconcile, classify, event_date, operation_for
+from bank_sync.cash_reviews import bank_rows as cash_rows, candidates as cash_movements, review_cash
+from bank_sync.investment_events import reconcile, classify, event_date, operation_for, legacy_link_candidates
 from investments.models import InvestmentTransaction
 
 
@@ -33,11 +35,17 @@ def event_list(request):
     pending_states = ('new', 'historical', 'conflict')
     resolved_states = ('applied', 'linked', 'ignored')
     all_rows = InvestmentEvent.objects.filter(connection__user=request.user)
+    # Bank statements can arrive before (or without) an investment event.
+    # Expose them independently; a bank description alone cannot establish an
+    # asset, quantity, cost basis or a safe new financial movement.
+    bank_rows = cash_rows(request.user)
     counts = dict(all_rows.values('state').annotate(total=Count('id')).values_list('state', 'total'))
     summary = {
         'pending': sum(counts.get(s, 0) for s in pending_states),
         'resolved': sum(counts.get(s, 0) for s in resolved_states),
         'total': sum(counts.values()),
+        'bank_pending': bank_rows.filter(reviewed=False, prior_to_baseline=False).count(),
+        'bank_prior': bank_rows.filter(reviewed=False, prior_to_baseline=True).count(),
     }
     selected_state = request.GET.get('state') or 'pending'
     if selected_state == 'pending':
@@ -46,12 +54,20 @@ def event_list(request):
         rows = all_rows.filter(state__in=resolved_states)
     elif selected_state == 'all':
         rows = all_rows
+    elif selected_state in ('bank', 'bank_history', 'bank_prior'):
+        rows = all_rows.none()
     elif selected_state in pending_states + resolved_states:
         rows = all_rows.filter(state=selected_state)
     else:
-        raise ValidationError('Situação inválida. Selecione pendências ou histórico.')
+        raise ValidationError('Situação inválida. Selecione pendências, histórico ou extrato sem vínculo.')
     page_size = 20
-    count = rows.count()
+    if selected_state in ('bank', 'bank_history', 'bank_prior'):
+        bank_rows = bank_rows.filter(reviewed=selected_state == 'bank_history')
+        if selected_state != 'bank_history':
+            bank_rows = bank_rows.filter(prior_to_baseline=selected_state == 'bank_prior')
+        count = bank_rows.count()
+    else:
+        count = rows.count()
     pages = max(1, ceil(count / page_size))
     page = min(max(1, int(request.GET.get('page', 1))), pages)
     events = list(
@@ -110,9 +126,15 @@ def event_list(request):
                     date__range=(when - timedelta(days=7), when + timedelta(days=7)),
                 )
                 .order_by('date', 'id')
-                .values('id', 'date', 'type', 'amount', 'notes')
+                .values('id', 'date', 'type', 'amount', 'notes', 'investment__description')
             )
-        if event.state == 'new' and source_kind != 'transfer':
+            if len(owned_sources) == 1:
+                candidates += [
+                    {**m, 'legacy': True} for m in legacy_link_candidates(request.user, event, owned_sources[0].investment)
+                    .exclude(pk__in=[m['id'] for m in candidates])
+                    .values('id', 'date', 'type', 'amount', 'notes', 'investment__description')
+                ]
+        if event.state in ('new', 'historical') and source_kind != 'transfer':
             cash_candidates = list(
                 InvestmentCashEvidence.objects.filter(
                     connection_id=event.connection_id,
@@ -124,6 +146,9 @@ def event_list(request):
                     facts__date__lt=(when + timedelta(days=8)).isoformat(),
                 ).values('id', 'facts')[:30]
             )
+            if event.state == 'historical' and event.facts.get('netAmount') is not None:
+                cash_candidates = [c for c in cash_candidates
+                                   if abs(Decimal(str(c['facts']['amount']))) == Decimal(str(event.facts['netAmount']))]
         return {
             'id': event.pk,
             'revision': event.revision,
@@ -143,6 +168,7 @@ def event_list(request):
                 'id': op.pk,
                 'kind': op.kind,
                 'state': op.state,
+                'automatic': op.automatic,
                 'event_count': len({op.event_id, *(member.event_id for member in op.event_memberships.all())}),
             }
             if op
@@ -181,6 +207,39 @@ def event_list(request):
                 credits.append(
                     {'id': credit.pk, 'date': credit.date, 'notes': credit.notes, 'available': str(available)}
                 )
+    bank_entries = []
+    if selected_state in ('bank', 'bank_history', 'bank_prior'):
+        from bank_sync.bank_trades import purchase_options
+        from bank_sync.models import InvestmentBankTrade
+        from django.db.models import Q
+        for cash in bank_rows.order_by('-facts__date', '-id')[(page - 1) * page_size : page * page_size]:
+            review = cash.reviews.filter(revision=cash.revision).first()
+            trade = InvestmentBankTrade.objects.filter(Q(credit=cash) | Q(debit=cash)).select_related('investment__asset', 'source__investment').first()
+            if trade and trade.state == 'conflict':
+                review = None
+            bank_entries.append({
+                'id': cash.pk, 'revision': cash.revision, 'facts': cash.facts,
+                'review': {'action': review.action, 'evidence': review.evidence,
+                           'automatic': review.automatic} if review else None,
+                'prior_to_baseline': cash.prior_to_baseline,
+                'previously_reviewed': not review and cash.reviews.exists(),
+                'purchase_options': purchase_options(cash) if not review else [],
+                'trade': {'id': trade.pk, 'state': trade.state, 'investment': trade.investment.description,
+                          'symbol': trade.investment.asset.symbol, 'quantity': format(trade.quantity, 'f'),
+                          'amount': str(trade.amount), 'source': trade.source.investment.description} if trade else None,
+                'candidates': [
+                    {'id': m.pk, 'date': m.date, 'amount': m.amount,
+                     'type': m.type, 'current_value': m.current_value,
+                     'investment': m.investment.description, 'broker': m.investment.broker.description}
+                    for m in (review.movements.select_related('investment__broker').all()
+                              if review else cash_movements(request.user, cash))
+                ],
+            })
+        for entry in bank_entries:
+            for option in entry['purchase_options']:
+                for related in bank_entries:
+                    if related['id'] == option['credit_id']:
+                        related['funding_for_debit'] = entry['id']
     return JsonResponse(
         {
             'credits': credits,
@@ -191,6 +250,7 @@ def event_list(request):
             'filter': selected_state,
             'summary': summary,
             'events': [event_data(event) for event in events],
+            'bank_entries': bank_entries,
             'jobs': list(
                 InvestmentHistoryJob.objects.filter(connection__user=request.user)
                 .order_by('-id')
@@ -203,20 +263,57 @@ def event_list(request):
 @login_required
 @require_POST
 @api_errors
+def bank_review(request, pk):
+    data = body(request)
+    if data.get('action') == 'keep':
+        from bank_sync.bank_trades import keep_bank_trade
+        trade = keep_bank_trade(request.user, pk, int(data['revision']), data.get('evidence', ''))
+        return JsonResponse({'trade_id': trade.pk})
+    review = review_cash(request.user, pk, int(data['revision']), data['action'],
+                         data.get('movement_id'), data.get('evidence', ''))
+    return JsonResponse({'review_id': review.pk})
+
+
+@login_required
+@require_POST
+@api_errors
+def bank_purchase(request, pk):
+    from bank_sync.bank_trades import register_purchase
+    data = body(request)
+    trade = register_purchase(request.user, pk, int(data['revision']), int(data['source_id']),
+                              int(data['credit_id']), data['symbol'], data['quantity'], data.get('evidence', ''))
+    return JsonResponse({'trade_id': trade.pk, 'investment_id': trade.investment_id,
+                         'quantity': format(trade.quantity, 'f'), 'amount': str(trade.amount)})
+
+
+@login_required
+@require_POST
+@api_errors
+def auto_link(request):
+    from bank_sync.auto_reconciliation import auto_reconcile
+    from bank_sync.event_import import import_events
+    connections = BankConnection.objects.filter(user=request.user).select_related('user')
+    if connections.count() != 1:
+        raise ValidationError('Selecione uma conexão inequívoca.')
+    with transaction.atomic():
+        connection = connections.get()
+        result = auto_reconcile(connection)
+        imported = import_events(connection)
+    return JsonResponse({'events': len(result['events']), 'bank_entries': len(result['bank_entries']),
+                         'registered': len(imported['applied']), 'adopted': len(imported['adopted'])})
+
+
+@login_required
+@require_POST
+@api_errors
 def enqueue(request):
+    from bank_sync.history_queue import queue_history
     with transaction.atomic():
         connections = BankConnection.objects.select_for_update().filter(user=request.user)
         if connections.count() != 1:
             raise ValidationError('Selecione uma conexão inequívoca.')
         connection = connections.get()
-        now = timezone.now()
-        InvestmentHistoryJob.objects.filter(connection=connection, state='running', lease_until__lt=now).update(
-            state='failed',
-            message='Execução interrompida; uma nova coleta pode ser solicitada.',
-        )
-        job = InvestmentHistoryJob.objects.filter(connection=connection, state__in=['queued', 'running']).first()
-        if not job:
-            job = InvestmentHistoryJob.objects.create(connection=connection)
+        job = queue_history(connection)
     return JsonResponse({'job_id': job.pk, 'state': job.state}, status=202)
 
 

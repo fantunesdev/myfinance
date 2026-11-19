@@ -55,13 +55,13 @@ class InvestmentTransactionService(InvestmentBaseService):
         original.refresh_from_db()
         instance = form.save(commit=False)
         instance.user = original.user
-        if hasattr(original, 'pluggy_snapshot') or original.reconciled_operations.exists():
+        if hasattr(original, 'pluggy_snapshot') or original.reconciled_operations.exists() or original.bank_cash_reviews.exists():
             raise ValidationError('Esta avaliação é da Pluggy e não pode ser editada manualmente.')
         if original.statement_transaction_id:
             raise ValidationError('Este aporte vem do extrato. Edite o lançamento financeiro de origem.')
         if original.operation_id:
             members = cls.operation_members(original)
-            if any(item.reconciled_operations.exists() for item in members):
+            if any(item.reconciled_operations.exists() or item.bank_cash_reviews.exists() for item in members):
                 raise ValidationError('A operação está conciliada e não pode ser editada isoladamente.')
             if (
                 len(members) != 2
@@ -106,12 +106,12 @@ class InvestmentTransactionService(InvestmentBaseService):
     def delete(cls, instance):
         cls.lock_user(instance.user)
         instance = cls.model.objects.get(pk=instance.pk)
-        if hasattr(instance, 'pluggy_snapshot') or instance.reconciled_operations.exists():
+        if hasattr(instance, 'pluggy_snapshot') or instance.reconciled_operations.exists() or instance.bank_cash_reviews.exists():
             raise ValidationError('Esta avaliação é da Pluggy e não pode ser excluída manualmente.')
         if instance.statement_transaction_id:
             raise ValidationError('Este aporte vem do extrato. Exclua ou altere o lançamento financeiro de origem.')
         members = cls.operation_members(instance) if instance.operation_id else [instance]
-        if any(item.reconciled_operations.exists() or item.cash_allocations_out.exists() for item in members):
+        if any(item.reconciled_operations.exists() or item.bank_cash_reviews.exists() or item.cash_allocations_out.exists() for item in members):
             raise ValidationError('A operação está conciliada ou financia uma aplicação; revise suas dependências.')
         ids = [item.pk for item in members]
         if cls.model.objects.filter(funding_transaction_id__in=ids).exclude(pk__in=ids).exists():
@@ -216,7 +216,7 @@ class InvestmentTransactionService(InvestmentBaseService):
         amount = cls.statement_amount(statement_transaction.value)
         if existing:
             financial_change = existing.amount != amount or existing.date != statement_transaction.payment_date
-            if financial_change and existing.reconciled_operations.exists():
+            if financial_change and (existing.reconciled_operations.exists() or existing.bank_cash_reviews.exists()):
                 raise ValidationError('Este aporte já foi conciliado. Revise a conciliação antes de alterar valor ou data.')
             before = cls.snapshot_balances(statement_transaction.user, [wallet.pk]) if financial_change else None
             existing.amount = amount
@@ -248,7 +248,7 @@ class InvestmentTransactionService(InvestmentBaseService):
             if cls._should_sync_statement_transaction(statement_transaction):
                 raise cls.unlinked_statement_error(statement_transaction)
             return
-        if existing.funded_transactions.exists() or existing.cash_allocations_out.exists() or existing.reconciled_operations.exists() or existing.operation_id:
+        if existing.funded_transactions.exists() or existing.cash_allocations_out.exists() or existing.reconciled_operations.exists() or existing.bank_cash_reviews.exists() or existing.operation_id:
             raise ValidationError(
                 'Este lançamento já financia uma aplicação. Desfaça a aplicação antes de excluir ou recategorizar a origem.'
             )

@@ -58,7 +58,10 @@ function field(id, label, control) {
     const wrapper = el('div', undefined, 'reconciliation-field');
     control.id = id;
     const caption = el('label', label);
-    caption.htmlFor = id;
+    if (control.getAttribute('role') === 'group') {
+        caption.id = `${id}-label`;
+        control.setAttribute('aria-labelledby', caption.id);
+    } else caption.htmlFor = id;
     wrapper.append(caption, control);
     return wrapper;
 }
@@ -70,6 +73,19 @@ function choices(options) {
         select.append(option);
     }
     return select;
+}
+function multipleChoices(options) {
+    const group = el('div', undefined, 'reconciliation-choices');
+    group.setAttribute('role', 'group');
+    for (const [value, label] of options) {
+        const row = el('label', undefined, 'reconciliation-choice');
+        const input = el('input'); input.type = 'checkbox'; input.value = value;
+        row.append(input, el('span', label)); group.append(row);
+    }
+    return group;
+}
+function checkedIds(group) {
+    return [...group.querySelectorAll('input:checked')].map(input => Number(input.value));
 }
 function section() { return el('fieldset'); }
 function show(section, visible) { section.hidden = !visible; section.disabled = !visible; }
@@ -115,6 +131,7 @@ function resolvedDetails(event, body) {
         ignored: 'Evento ignorado com justificativa.',
     };
     body.append(el('p', descriptions[event.state] || 'Evento concluído.'));
+    if (event.operation?.automatic) body.append(el('p', 'Vinculado automaticamente a registros existentes, sem alterar saldos.', 'reconciliation-help'));
     if (event.state === 'ignored' && event.reason) body.append(el('p', event.reason, 'reconciliation-help'));
     if (event.operation?.event_count > 1) body.append(el('p', `Esta conciliação reúne ${event.operation.event_count} eventos. Os lançamentos e comprovantes abaixo correspondem ao conjunto.`, 'reconciliation-help'));
     if (event.matched_movements?.length) {
@@ -135,6 +152,126 @@ function resolvedDetails(event, body) {
         body.append(records);
     }
     facts(event, body);
+}
+function bankRow(entry) {
+    const row = el('details', undefined, 'reconciliation-event');
+    row.dataset.bankId = entry.id;
+    if (!entry.review) row.dataset.review = 'true';
+    const body = el('div', undefined, 'reconciliation-event-body');
+    const f = entry.facts;
+    const summary = el('summary');
+    const description = el('span', undefined, 'reconciliation-event-description');
+    description.append(el('strong', f.description || 'Movimentação bancária'),
+        el('span', f.type === 'DEBIT' ? 'Saída da conta' : 'Entrada na conta', 'reconciliation-event-kind'));
+    summary.append(el('span', date(f.date), 'reconciliation-event-date'), description,
+        el('strong', amount(f.amount, true), 'reconciliation-event-amount'),
+        el('span', entry.review ? entry.review.action === 'apply' ? 'Registrado pela integração' : entry.review.automatic ? 'Vínculo automático' : 'Conferido' : entry.prior_to_baseline ? 'Anterior à abertura' : 'A conferir', 'reconciliation-badge'));
+    if (entry.review?.action !== 'apply') body.append(el('p', entry.purchase_options?.length
+        ? 'O app identificou o resgate que financiou esta compra. Complete os dados que a instituição não informou para registrar o fluxo inteiro.'
+        : entry.funding_for_debit ? 'Este resgate será registrado junto à compra de criptomoedas. Você não precisa cadastrar ou conferir as duas pontas separadamente.'
+        : 'Este comprovante é a evidência bancária da operação. Vinculá-lo a um lançamento existente não movimenta dinheiro.', 'reconciliation-help'));
+    if (entry.previously_reviewed) body.append(el('p', 'A instituição alterou este comprovante. Confira a nova versão; a conferência anterior foi preservada.', 'reconciliation-help'));
+    if (entry.trade?.state === 'conflict') body.append(el('p', 'A instituição alterou dados usados nesta operação. Os lançamentos foram preservados. Compare a alteração antes de manter os registros.', 'reconciliation-help'));
+    if (entry.prior_to_baseline) body.append(el('p', 'Comprovante anterior à abertura conciliada da carteira. Fica disponível para consulta e não é uma nova pendência. Isso não afirma que exista um lançamento individual correspondente.', 'reconciliation-help'));
+    if (!entry.review && !entry.trade && /criptomoedas/i.test(f.description || '')) {
+        body.append(el('p', 'O extrato não identifica a moeda nem a quantidade comprada. Esses dados precisam ser confirmados antes de registrar a compra.', 'reconciliation-help'));
+    }
+    let built = false;
+    row.addEventListener('toggle', () => {
+        if (row.open && !built) {
+            built = true;
+            if (entry.review) {
+                body.append(el('p', entry.review.action === 'apply' ? 'Resgate e compra registrados pela integração.' : entry.review.action === 'link' ? 'Vinculado a lançamento existente.' : 'Conferido como já incluído no histórico.'),
+                    el('p', entry.review.evidence));
+                if (entry.trade) body.append(el('p', `${entry.trade.source} → ${entry.trade.investment} · ${entry.trade.quantity.replace('.', ',')} ${entry.trade.symbol} · custo de ${amount(entry.trade.amount)}. O valor da compra não é uma cotação atual.`));
+                if (entry.candidates.length) {
+                    const records = el('details', undefined, 'reconciliation-facts');
+                    records.append(el('summary', 'Ver lançamentos registrados'));
+                    for (const m of entry.candidates) records.append(el('p', `${date(m.date)} · ${movementKinds[m.type] || 'Lançamento'} · ${m.investment} · ${amount(m.type === 'atualizacao' ? m.current_value : m.amount)}`));
+                    body.append(records);
+                }
+            } else if (entry.funding_for_debit) {
+                const openPurchase = el('button', 'Abrir compra de criptomoedas', 'btn btn-primary');
+                openPurchase.type = 'button';
+                openPurchase.addEventListener('click', () => {
+                    const purchase = list.querySelector(`[data-bank-id="${entry.funding_for_debit}"]`);
+                    if (purchase) { purchase.open = true; purchase.scrollIntoView({ block: 'start' }); }
+                });
+                body.append(openPurchase);
+            } else bankForm(entry, body, row);
+        }
+        if (!row.open && stale && !reviewOpen()) load(true);
+    });
+    row.append(summary, body);
+    return row;
+}
+function bankForm(entry, body, details) {
+    const form = el('form', undefined, 'reconciliation-form');
+    const key = `bank-${entry.id}`;
+    const actions = [['', 'Selecione como conferir']];
+    if (entry.trade?.state === 'conflict') actions.push(['keep', 'Manter os registros após conferir a alteração']);
+    else {
+        if (entry.purchase_options?.length) actions.push(['purchase', 'Registrar resgate e compra']);
+        if (entry.candidates.length) actions.push(['link', 'Vincular a um lançamento existente']);
+        actions.push(['covered', 'Confirmar que já está incluído no histórico']);
+    }
+    const action = choices(actions); action.required = true;
+    if (entry.purchase_options?.length && !entry.candidates.length) action.value = 'purchase';
+    const existing = choices([['', 'Selecione o lançamento correspondente'], ...entry.candidates.map(m =>
+        [String(m.id), `${date(m.date)} · ${m.investment} · ${m.broker} · ${amount(m.amount)}`])]);
+    const existingSection = section();
+    existing.required = true;
+    existingSection.append(field(`${key}-movement`, 'Lançamento já registrado', existing));
+    const evidence = el('textarea'); evidence.required = true;
+    evidence.placeholder = 'Explique qual registro ou histórico já inclui esta movimentação.';
+    const evidenceField = field(`${key}-evidence`, 'Justificativa da conferência', evidence);
+    form.append(field(`${key}-action`, 'Como deseja conferir?', action), existingSection, evidenceField);
+    const tradeSection = section();
+    const source = choices((entry.purchase_options || []).map(c => [String(c.source_id), `${c.description} · resgate de ${amount(c.amount)}`]));
+    const symbol = el('input'); symbol.type = 'text'; symbol.required = true; symbol.placeholder = 'Ex.: BTC';
+    const quantity = el('input'); quantity.type = 'number'; quantity.step = '0.00000001'; quantity.min = '0.00000001'; quantity.required = true;
+    tradeSection.append(el('p', 'O app identificou o resgate que financiou a compra. Confirme somente a criptomoeda e a quantidade que o extrato não trouxe.', 'reconciliation-help'),
+        field(`${key}-source`, 'Resgate de origem', source), field(`${key}-symbol`, 'Criptomoeda', symbol),
+        field(`${key}-quantity`, 'Quantidade recebida', quantity));
+    form.append(tradeSection);
+    if (!entry.candidates.length && !entry.purchase_options?.length) body.append(el('p', 'Não encontramos lançamento do mesmo valor e sentido próximo desta data. Se esta operação ainda não foi registrada, mantenha o comprovante pendente. A opção de histórico não cadastra compras ou resgates.', 'reconciliation-help'));
+    const submit = el('button', 'Confirmar conferência', 'btn btn-primary'); submit.type = 'submit';
+    const cancel = el('button', 'Fechar revisão', 'reconciliation-link'); cancel.type = 'button';
+    cancel.addEventListener('click', () => { details.open = false; });
+    const buttons = el('div', undefined, 'reconciliation-form-actions'); buttons.append(submit, cancel); form.append(buttons);
+    let submitting = false;
+    const refresh = () => {
+        const purchasing = action.value === 'purchase';
+        show(existingSection, action.value === 'link'); show(tradeSection, purchasing);
+        evidence.required = !purchasing;
+        evidenceField.hidden = purchasing;
+        submit.disabled = submitting || !action.value;
+        submit.textContent = purchasing ? 'Registrar resgate e compra' : 'Confirmar conferência';
+    };
+    action.addEventListener('change', refresh);
+    form.addEventListener('submit', async event => {
+        event.preventDefault(); if (submitting) return;
+        submitting = true; refresh();
+        try {
+            if (action.value === 'purchase') {
+                const option = entry.purchase_options.find(c => String(c.source_id) === source.value);
+                await post(`${list.dataset.reviewBase}extrato/${entry.id}/comprar/`, {
+                    revision: entry.revision, source_id: option.source_id, credit_id: option.credit_id,
+                    symbol: symbol.value, quantity: quantity.value, evidence: evidence.value,
+                });
+                feedback('Resgate e compra registrados. Os dois comprovantes estão em Extrato → Conferidos.');
+            } else {
+                await post(`${list.dataset.reviewBase}extrato/${entry.id}/`, {
+                revision: entry.revision, action: action.value,
+                movement_id: action.value === 'link' ? Number(existing.value) : null, evidence: evidence.value,
+                });
+                feedback('Comprovante conferido sem alterar saldos. Consulte-o em Extrato → Conferidos.');
+            }
+            await load(true);
+        } catch (error) { feedback(error.message, true); }
+        finally { submitting = false; refresh(); }
+    });
+    body.append(form); refresh();
 }
 function reviewForm(event, body, data, details) {
     if (event.state === 'historical') body.append(el('p', 'Este evento é anterior ao saldo conciliado. Vincule-o a um registro existente para evitar uma nova aplicação sobre o mesmo dinheiro.', 'reconciliation-help'));
@@ -157,10 +294,10 @@ function reviewForm(event, body, data, details) {
     if (event.state === 'new' && !event.candidates.length && event.mapped !== false) action.value = 'apply';
     form.append(field(`${key}-action`, 'Como deseja resolver?', action));
     const existingSection = section();
-    const existing = choices(event.candidates.map(m => [String(m.id), `${date(m.date)} · ${movementKinds[m.type] || m.type} · ${amount(m.amount)}${m.description ? ` · ${m.description.slice(0, 80)}` : ''}`]));
-    existing.multiple = true; existing.required = true; existing.size = Math.min(5, Math.max(2, event.candidates.length));
+    const existing = multipleChoices(event.candidates.map(m => [String(m.id), `${date(m.date)} · ${movementKinds[m.type] || m.type} · ${amount(m.amount)}${m.legacy ? ` · ${m.investment__description} (registro consolidado)` : ''}${m.description ? ` · ${m.description.slice(0, 80)}` : ''}`]));
     existingSection.append(field(`${key}-existing`, 'Lançamentos do MyFinance', existing));
     if (!event.candidates.length) existingSection.append(el('p', 'Não há lançamentos próximos a esta data para vincular.', 'reconciliation-help'));
+    if (event.candidates.some(m => m.legacy)) existingSection.append(el('p', 'Há um resgate compatível no investimento consolidado que financiou a abertura deste título. Confira a correspondência antes de vinculá-lo; o vínculo não move dinheiro.', 'reconciliation-help'));
     form.append(existingSection);
     const classificationSection = section();
     const classificationOptions = [['', 'Selecione a natureza comprovada'], ['income', 'Provento recebido']];
@@ -169,8 +306,7 @@ function reviewForm(event, body, data, details) {
     classification.required = true;
     classificationSection.append(field(`${key}-kind`, 'O que este evento representa?', classification)); form.append(classificationSection);
     const cashSection = section();
-    const cash = choices(event.cash_candidates.map(c => [String(c.id), `${date(c.facts.date)} · ${c.facts.type === 'DEBIT' ? 'Débito' : 'Crédito'} ${amount(c.facts.amount, true)} · ${c.facts.description || 'Movimentação bancária'}`]));
-    cash.multiple = true; cash.required = true; cash.size = Math.min(5, Math.max(2, event.cash_candidates.length));
+    const cash = multipleChoices(event.cash_candidates.map(c => [String(c.id), `${date(c.facts.date)} · ${c.facts.type === 'DEBIT' ? 'Débito' : 'Crédito'} ${amount(c.facts.amount, true)} · ${c.facts.description || 'Movimentação bancária'}`]));
     cashSection.append(field(`${key}-cash`, 'Liquidação na conta bancária', cash));
     if (!event.cash_candidates.length) cashSection.append(el('p', 'Não há liquidações disponíveis nessa data. Consulte a Pluggy antes de registrar a operação.', 'reconciliation-help'));
     form.append(cashSection);
@@ -219,7 +355,7 @@ function reviewForm(event, body, data, details) {
         const transfer = kind === 'transfer';
         show(existingSection, action.value === 'link');
         show(classificationSection, applying && (event.source_kind || event.kind) === 'ambiguous');
-        show(cashSection, applying && !transfer);
+        show(cashSection, (applying && !transfer) || (action.value === 'link' && event.cash_candidates.length > 0));
         show(principalSection, applying && ['sell', 'transfer'].includes(kind));
         show(fundingSection, applying && ['buy', 'tax'].includes(kind));
         show(feeSection, applying && kind === 'buy' && grouped);
@@ -251,14 +387,16 @@ function reviewForm(event, body, data, details) {
         if (submitting) return;
         submitting = true; submit.disabled = true;
         try {
+            if (action.value === 'link' && !checkedIds(existing).length) throw Error('Marque ao menos um lançamento do MyFinance para vincular.');
+            if (action.value === 'apply' && event.kind !== 'transfer' && !checkedIds(cash).length) throw Error('Marque a liquidação na conta bancária antes de registrar a operação.');
             const grouped = action.value === 'apply' && selected.has(event.id) && selected.size > 1;
             const allocations = !fundingSection.hidden ? [...allocationRows.children].map(row => ({ credit_id: Number(row.querySelector('[data-credit]').value), amount: row.querySelector('[data-amount]').value })) : [];
             if (new Set(allocations.map(a => a.credit_id)).size !== allocations.length) throw Error('Selecione cada entrada de origem uma única vez.');
             await post(`${list.dataset.reviewBase}${event.id}/`, {
                 revision: event.revision, action: action.value, evidence: evidence.value,
                 events: grouped ? [...selected.values()].map(item => ({ id: item.id, revision: item.revision })) : [],
-                movement_ids: !existingSection.hidden ? [...existing.selectedOptions].map(o => Number(o.value)) : [],
-                cash_ids: !cashSection.hidden ? [...cash.selectedOptions].map(o => Number(o.value)) : [],
+                movement_ids: !existingSection.hidden ? checkedIds(existing) : [],
+                cash_ids: !cashSection.hidden ? checkedIds(cash) : [],
                 allocations, principal: !principalSection.hidden ? principal.value : null,
                 kind: !classificationSection.hidden ? classification.value : null,
                 shared_cost: !feeSection.hidden ? sharedCost.value || '0' : '0',
@@ -316,12 +454,18 @@ async function load(force = false) {
         page = data.page;
         byId('pending-count').textContent = data.summary.pending;
         byId('resolved-count').textContent = data.summary.resolved;
+        byId('bank-count').textContent = data.summary.bank_pending ?? 0;
+        const bank = ['bank', 'bank_history', 'bank_prior'].includes(state.value);
+        const bankHistory = state.value === 'bank_history';
+        const bankPrior = state.value === 'bank_prior';
+        byId('bank-filter').hidden = !bank;
+        if (bank) byId('bank-view').value = state.value;
         const running = collectionStatus(data.jobs);
-        const nextSignature = JSON.stringify([state.value, page, data.events, data.credits]);
+        const nextSignature = JSON.stringify([state.value, page, data.events, data.credits, data.bank_entries]);
         if (force || !reviewOpen() || signature === nextSignature) {
             if (force || signature !== nextSignature) {
                 selected.clear(); contexts.clear(); updateSelection();
-                list.replaceChildren(...data.events.map(event => eventRow(event, data)));
+                list.replaceChildren(...(bank ? (data.bank_entries || []).map(bankRow) : data.events.map(event => eventRow(event, data))));
                 signature = nextSignature;
             }
             stale = false;
@@ -336,13 +480,19 @@ async function load(force = false) {
             : pending ? 'Consulte a Pluggy para buscar movimentações dos seus investimentos.' : 'Os eventos aparecerão aqui depois de serem conciliados ou ignorados.';
         byId('show-history').hidden = !pending || !data.summary.resolved;
         byId('empty-icon').textContent = pending && data.summary.total ? '✓' : '—';
+        if (bank) {
+            byId('empty-title').textContent = bankPrior ? 'Nenhum comprovante anterior à abertura' : bankHistory ? 'Nenhum comprovante conferido' : 'Nenhuma movimentação de investimento sem vínculo';
+            byId('empty-description').textContent = 'Use o filtro do extrato para alternar entre comprovantes a conferir e conferidos.';
+        }
         byId('event-help').hidden = empty || stale;
-        byId('event-help').textContent = pending ? 'Abra um evento para conferir e resolver a pendência.' : 'Eventos concluídos ficam disponíveis para consulta e não exigem outra ação.';
+        byId('event-help').textContent = bank
+            ? bankPrior ? 'Comprovantes anteriores à abertura conciliada, para consulta. Não são novas pendências e não foram marcados como conciliados individualmente.' : bankHistory ? 'Conferências do extrato, com a justificativa e os vínculos registrados.' : 'Abra um comprovante para vinculá-lo ao registro existente ou confirmar que já está incluído no histórico. Operações ainda não cadastradas devem continuar pendentes.'
+            : pending ? 'Abra um evento para conferir e resolver a pendência.' : 'Eventos concluídos ficam disponíveis para consulta e não exigem outra ação.';
         byId('event-pagination').hidden = data.pages <= 1 || stale;
         byId('previous-page').disabled = page <= 1;
         byId('next-page').disabled = page >= data.pages;
         byId('page-label').textContent = `${page} de ${data.pages}`;
-        byId('event-count').textContent = empty ? '' : `Mostrando ${(page - 1) * data.page_size + 1}–${Math.min(page * data.page_size, data.count)} de ${data.count} eventos ${pending ? 'a revisar' : 'concluídos'}.`;
+        byId('event-count').textContent = empty ? '' : `Mostrando ${(page - 1) * data.page_size + 1}–${Math.min(page * data.page_size, data.count)} de ${data.count} ${bank ? `comprovantes ${bankPrior ? 'anteriores à abertura' : bankHistory ? 'conferidos' : 'a conferir'}` : `eventos ${pending ? 'a revisar' : 'concluídos'}`}.`;
         if (running) poll = setTimeout(() => load(), 3000);
     } catch (error) {
         if (request !== requestNumber) return;
@@ -350,6 +500,7 @@ async function load(force = false) {
         if (error.auth) {
             list.replaceChildren(); byId('event-empty').hidden = true;
             byId('pending-count').textContent = '—'; byId('resolved-count').textContent = '—';
+            byId('bank-count').textContent = '—';
             selected.clear(); contexts.clear(); updateSelection();
         }
     } finally { if (request === requestNumber) list.setAttribute('aria-busy', 'false'); }
@@ -357,11 +508,22 @@ async function load(force = false) {
 function changeView(view) {
     state.value = view; page = 1; signature = ''; stale = false;
     clearSelection(); feedback('');
-    for (const button of document.querySelectorAll('[data-view]')) button.setAttribute('aria-pressed', String(button.dataset.view === view));
+    for (const button of document.querySelectorAll('[data-view]')) button.setAttribute('aria-pressed', String(button.dataset.view === view || (['bank_history', 'bank_prior'].includes(view) && button.dataset.view === 'bank')));
     load(true);
 }
 for (const button of document.querySelectorAll('[data-view]')) button.addEventListener('click', () => changeView(button.dataset.view));
 byId('show-history').addEventListener('click', () => changeView('resolved'));
+byId('bank-view').addEventListener('change', event => changeView(event.target.value));
+byId('auto-link').addEventListener('click', async event => {
+    const button = event.currentTarget; button.disabled = true; feedback('');
+    try {
+        const result = await post(button.dataset.url, {});
+        feedback(`${result.events} eventos e ${result.bank_entries} comprovantes vinculados automaticamente. ${result.registered || 0} movimentações registradas com os dados recebidos.${result.registered ? '' : ' Nenhum saldo foi alterado.'}`);
+        if (reviewOpen()) { stale = true; byId('event-updates').hidden = false; }
+        else await load();
+    } catch (error) { feedback(error.message, true); }
+    finally { button.disabled = false; }
+});
 byId('clear-selection').addEventListener('click', clearSelection);
 byId('history-job').addEventListener('submit', async event => {
     event.preventDefault(); byId('history-collect').disabled = true; feedback('');

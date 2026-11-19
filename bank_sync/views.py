@@ -302,4 +302,7 @@ def sync_investment_positions(request):
     if not connection_id and connections.count() != 1:
         raise ValidationError('Configure ou selecione uma conexão Pluggy de investimentos.')
     connection = connections.get(pk=connection_id) if connection_id else connections.get()
-    return JsonResponse(sync_investments(connection))
+    result = sync_investments(connection)
+    from bank_sync.history_queue import queue_history
+    job = queue_history(connection)
+    return JsonResponse({**result, 'history_job_id': job.pk, 'history_state': job.state})

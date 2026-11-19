@@ -21,7 +21,7 @@
 }
 .reconciliation-header p, #history-status { margin: 0; }
 .reconciliation-header form { display: grid; gap: 8px; text-align: right; }
-.reconciliation-tabs { display: flex; gap: 6px; }
+.reconciliation-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
 .reconciliation-tabs button {
     background: transparent;
     border: 1px solid #444;
@@ -31,7 +31,21 @@
     padding: 10px 14px;
     cursor: pointer;
 }
-.reconciliation-tabs button[aria-pressed="true"] { background: #581e25; border-color: #a34852; }
+.investment-reconciliation .btn,
+.reconciliation-tabs button[aria-pressed="true"] {
+    background: #5e0000;
+    border-color: #2e0000;
+    color: #eee;
+}
+.investment-reconciliation .btn:hover:not(:disabled),
+.reconciliation-tabs button:hover {
+    background: #8b0000;
+    border-color: #8b0000;
+    color: #eee;
+}
+.investment-reconciliation .btn:disabled { opacity: .5; cursor: not-allowed; }
+#bank-filter { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+#bank-view { background: #202020; color: inherit; border: 1px solid #555; border-radius: 4px; padding: 8px; }
 .reconciliation-tabs span { border-radius: 10px; background: rgb(255 255 255 / 10%); padding: 2px 7px; margin-left: 6px; }
 .reconciliation-toolbar { margin-bottom: 18px; }
 .reconciliation-help { line-height: 1.6; }
@@ -88,7 +102,12 @@
     font: inherit;
 }
 .reconciliation-form textarea { min-height: 86px; resize: vertical; }
-.reconciliation-form select[multiple] { min-height: 95px; }
+.reconciliation-choices { border: 1px solid #555; border-radius: 4px; padding: 6px; max-height: 260px; overflow-y: auto; }
+.reconciliation-choice { display: flex; align-items: flex-start; gap: 10px; padding: 10px; margin: 3px 0; border: 1px solid transparent; border-radius: 4px; cursor: pointer; line-height: 1.5; }
+.reconciliation-choice span { min-width: 0; overflow-wrap: anywhere; }
+.reconciliation-choice input { flex-shrink: 0; width: 18px; height: 18px; margin: 1px 0 0; accent-color: #8b0000; }
+.reconciliation-choice:has(input:checked) { background: #5e0000; border-color: #8b0000; }
+.reconciliation-choice:focus-within { outline: 2px solid #b56971; outline-offset: 1px; }
 .reconciliation-form small { color: #adb5bd; line-height: 1.5; }
 .reconciliation-allocation { display: grid; grid-template-columns: minmax(0, 1fr) 145px auto; gap: 10px; align-items: end; margin-bottom: 10px; }
 .reconciliation-allocation .reconciliation-field { margin: 0; }

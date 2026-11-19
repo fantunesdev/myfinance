@@ -150,6 +150,7 @@ class InvestmentEventRevision(models.Model):
 
 
 class ReconciledInvestmentOperation(models.Model):
+    automatic = models.BooleanField(default=False)
     event = models.OneToOneField(InvestmentEvent, on_delete=models.PROTECT, related_name='operation')
     kind = models.CharField(max_length=24)
     state = models.CharField(max_length=20)
@@ -194,3 +195,32 @@ class InvestmentCashEvidence(models.Model):
 class InvestmentOperationEvent(models.Model):
     event = models.OneToOneField(InvestmentEvent, on_delete=models.PROTECT, related_name='operation_membership')
     operation = models.ForeignKey(ReconciledInvestmentOperation, on_delete=models.PROTECT, related_name='event_memberships')
+
+
+class InvestmentCashReview(models.Model):
+    automatic = models.BooleanField(default=False)
+    cash = models.ForeignKey(InvestmentCashEvidence, on_delete=models.PROTECT, related_name='reviews')
+    revision = models.PositiveIntegerField()
+    action = models.CharField(max_length=16, choices=[('link', 'Vinculado'), ('covered', 'Já incluído no histórico'), ('apply', 'Registrado pela integração')])
+    trade = models.ForeignKey('InvestmentBankTrade', null=True, blank=True, on_delete=models.PROTECT, related_name='reviews')
+    evidence = models.TextField()
+    movements = models.ManyToManyField('investments.InvestmentTransaction', related_name='bank_cash_reviews')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['cash', 'revision'], name='unique_investment_cash_review')]
+
+
+class InvestmentBankTrade(models.Model):
+    credit = models.OneToOneField(InvestmentCashEvidence, on_delete=models.PROTECT, related_name='funded_purchase')
+    debit = models.OneToOneField(InvestmentCashEvidence, on_delete=models.PROTECT, related_name='investment_purchase')
+    credit_revision = models.PositiveIntegerField()
+    debit_revision = models.PositiveIntegerField()
+    source = models.ForeignKey(ExternalInvestment, on_delete=models.PROTECT, related_name='bank_trades')
+    investment = models.ForeignKey('investments.Investment', on_delete=models.PROTECT, related_name='bank_trades')
+    quantity = models.DecimalField(max_digits=20, decimal_places=8)
+    amount = models.DecimalField(max_digits=14, decimal_places=2)
+    evidence = models.TextField()
+    state = models.CharField(max_length=16, default='applied')
+    journal = models.JSONField(default=dict)
+    created_at = models.DateTimeField(auto_now_add=True)

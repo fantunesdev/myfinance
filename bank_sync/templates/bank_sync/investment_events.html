@@ -15,7 +15,8 @@
         <form id="history-job" action="{% url 'investment_event_collect' %}" method="post">
             {% csrf_token %}
             <button id="history-collect" class="btn btn-info" type="submit">Consultar Pluggy</button>
-            <small>Busca eventos sem alterar os saldos.</small>
+            <button id="auto-link" class="btn btn-primary" type="button" data-url="{% url 'investment_auto_link' %}">Processar dados recebidos</button>
+            <small>Registra operações com dados completos e separa o que precisa de confirmação.</small>
         </form>
     </div>
     <div class="box-body">
@@ -23,10 +24,14 @@
             <nav class="reconciliation-tabs" aria-label="Movimentações de investimentos">
                 <button type="button" data-view="pending" aria-pressed="true">A revisar <span id="pending-count">—</span></button>
                 <button type="button" data-view="resolved" aria-pressed="false">Histórico <span id="resolved-count">—</span></button>
+                <button type="button" data-view="bank" aria-pressed="false">Extrato bancário <span id="bank-count">—</span></button>
             </nav>
             <p id="history-status" role="status"></p>
         </div>
         <input type="hidden" id="event-state" value="pending">
+        <label id="bank-filter" class="reconciliation-help" hidden>Comprovantes do extrato
+            <select id="bank-view"><option value="bank">A conferir</option><option value="bank_history">Conferidos</option><option value="bank_prior">Anteriores à abertura</option></select>
+        </label>
         <p id="event-help" class="reconciliation-help" hidden></p>
         <p id="event-action-status" class="reconciliation-feedback" role="status" hidden></p>
         <p id="event-updates" class="reconciliation-help" hidden>Há dados novos. Feche a revisão atual para atualizar a lista.</p>

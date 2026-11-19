@@ -556,7 +556,7 @@ async function syncPluggy() {
         if (!response.ok) throw new Error(result.detail || 'Não foi possível sincronizar.');
         store.invalidate();
         await refresh(true);
-        message(`${result.checked} posições conferidas; ${result.updated} atualizadas; ${result.pending} pendentes de vínculo. Referência da conexão: ${result.source_updated_at ? new Date(result.source_updated_at).toLocaleString('pt-BR') : 'não informada'}.`);
+        message(`${result.checked} posições conferidas; ${result.updated} atualizadas; ${result.pending} pendentes de vínculo. ${result.history_job_id ? 'As movimentações estão sendo processadas em segundo plano. ' : ''}Referência da conexão: ${result.source_updated_at ? new Date(result.source_updated_at).toLocaleString('pt-BR') : 'não informada'}.`);
     } catch (error) {
         message(`${error.message} Os valores exibidos são da última atualização.`, true);
     } finally { button.disabled = false; }
