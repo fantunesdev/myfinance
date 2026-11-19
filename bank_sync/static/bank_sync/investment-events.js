@@ -37,15 +37,25 @@ function feedback(message, error = false) {
     target.hidden = !message;
 }
 async function jsonResponse(response) {
-    if (!(response.headers.get('content-type') || '').includes('application/json')) {
+    const loginRedirect = response.redirected && /\/login\/?$/.test(new URL(response.url, window.location.origin).pathname);
+    if (loginRedirect || response.status === 401) {
         const error = Error('Entre novamente para continuar.');
         error.auth = true;
         throw error;
     }
-    const data = await response.json();
+    if (response.status >= 500) {
+        throw Error(`Não foi possível carregar os dados. O servidor apresentou um erro (HTTP ${response.status}). Tente novamente.`);
+    }
+    if (!(response.headers.get('content-type') || '').includes('application/json')) {
+        throw Error(response.status === 403
+            ? 'Não foi possível validar a solicitação. Atualize a página e tente novamente.'
+            : 'O servidor retornou uma resposta inesperada. Atualize a página e tente novamente.');
+    }
+    let data;
+    try { data = await response.json(); }
+    catch { throw Error('O servidor retornou uma resposta inválida. Atualize a página e tente novamente.'); }
     if (!response.ok) {
         const error = Error(data.detail || 'Não foi possível concluir a operação.');
-        error.auth = [401, 403].includes(response.status);
         throw error;
     }
     return data;
@@ -497,6 +507,7 @@ async function load(force = false) {
     } catch (error) {
         if (request !== requestNumber) return;
         feedback(error.message, true);
+        if (!signature) list.replaceChildren();
         if (error.auth) {
             list.replaceChildren(); byId('event-empty').hidden = true;
             byId('pending-count').textContent = '—'; byId('resolved-count').textContent = '—';

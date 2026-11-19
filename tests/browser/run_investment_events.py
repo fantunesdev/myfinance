@@ -486,6 +486,36 @@ def run_browser(base, data, output):
         assert purchase_page.evaluate('document.documentElement.scrollWidth <= innerWidth')
         purchase_page.screenshot(path=str(output / 'automatic-redemption-crypto-purchase-mobile.png'), full_page=True)
         results.append('Resgate importado automaticamente; só moeda e quantidade faltantes são confirmadas para registrar a compra de BTC')
+        endpoint = re.compile(r'/conciliacao/eventos/\?')
+        for status, content_type, body, expected in [
+            (500, 'text/html', '<html>Erro interno</html>', 'erro (HTTP 500)'),
+            (403, 'text/html', '<html>CSRF inválido</html>', 'Atualize a página'),
+            (200, 'application/json', '{', 'resposta inválida'),
+        ]:
+            faulty = context('resolved-demo')
+            faulty.route(endpoint, lambda route, _request, status=status, content_type=content_type, body=body:
+                         route.fulfill(status=status, content_type=content_type, body=body))
+            fault_page = faulty.new_page()
+            fault_page.on('pageerror', lambda error: errors.append(str(error)))
+            fault_page.goto('/investimentos/conciliacao/')
+            expect(fault_page.locator('#event-action-status')).to_contain_text(expected)
+            expect(fault_page.locator('#event-action-status')).not_to_contain_text('Entre novamente')
+            assert faulty.request.get('/investimentos/conciliacao/eventos/').status == 200
+            faulty.unroute(endpoint)
+            fault_page.locator('[data-view="pending"]').click()
+            expect(fault_page.locator('#pending-count')).to_have_text('0')
+            faulty.close()
+        results.append('HTTP 500, falha CSRF e JSON inválido mostram o erro correto sem simular sessão expirada')
+        expired = context('resolved-demo')
+        expired.route(endpoint, lambda route: route.fulfill(status=302, headers={'Location': '/login/?reconciliation_expired=1'}))
+        expired.route(re.compile(r'/login/\?reconciliation_expired=1'),
+                      lambda route: route.fulfill(status=200, content_type='text/html', body='<html>Login</html>'))
+        expired_page = expired.new_page()
+        expired_page.on('pageerror', lambda error: errors.append(str(error)))
+        expired_page.goto('/investimentos/conciliacao/')
+        expect(expired_page.locator('#event-action-status')).to_have_text('Entre novamente para continuar.')
+        expired.close()
+        results.append('Redirecionamento real ao login continua indicando sessão expirada')
         assert not errors, errors
         browser.close()
     (output / 'results.json').write_text(json.dumps(results, ensure_ascii=False, indent=2))
