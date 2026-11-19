@@ -1,5 +1,6 @@
 
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
 from django.shortcuts import redirect
 from django.http import Http404
 from django.utils.decorators import method_decorator
@@ -49,8 +50,12 @@ class InstallmentView(BaseView):
         form = self._set_form(request, instance)
         if form.is_valid():
             self._preserve_unrendered_fields_after_validation(form, self._first_transaction)
-            self._custom_actions(request=request, form=form, instance=form.instance)
-            return redirect(self.redirect_url)
+            try:
+                self._custom_actions(request=request, form=form, instance=form.instance)
+            except ValidationError as error:
+                form.add_error(None, error)
+            else:
+                return redirect(self.redirect_url)
 
         additional_context = self._add_context_on_templatetags(request, instance)
         specific_content = {
@@ -89,7 +94,7 @@ class InstallmentView(BaseView):
             'installment': id,
             'user': request.user,
         }
-        transactions = TransactionService.get_by_filter(**kwargs)
+        transactions = TransactionService.get_by_filter(**kwargs).order_by('paid', 'pk')
         return transactions
 
     def _get_transaction(self, request, id):
@@ -103,13 +108,13 @@ class InstallmentView(BaseView):
             'installment': id,
             'user': request.user,
         }
-        transactions = TransactionService.get_by_filter(first=True, **kwargs)
+        transactions = TransactionService.get_by_filter(**kwargs).order_by('paid', 'pk').first()
         return transactions
 
     def _add_context_on_templatetags(self, request, instance):
         card_numbers = list(visible_card_numbers(request.user).values('id', 'number', 'name', 'card_id', 'home_screen'))
         return {
-            'transactions': TransactionService.get_by_filter(installment=instance, user=request.user),
+            'transactions': TransactionService.get_by_filter(installment=instance, user=request.user).order_by('paid', 'pk'),
             'card_numbers_json': card_numbers,
         }
 

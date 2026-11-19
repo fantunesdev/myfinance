@@ -1,5 +1,8 @@
 import copy
 import datetime
+from decimal import Decimal
+from django.core.exceptions import ValidationError
+from django.db import transaction as db_transaction
 from django.forms.models import model_to_dict
 
 from statement.forms.core.transaction import TransactionForm
@@ -188,6 +191,8 @@ class InstallmentService(BaseService):
         """
         Gerencia o número de parcelas adicionando ou removendo caso necessário
         """
+        if transactions.filter(source_type__in=['pluggy', 'pluggy_projection']).exists():
+            return cls._update_received_plan(request, form, transactions)
         transactions_number = transactions.first().installments_number
         form_number = form.cleaned_data['installments_number']
 
@@ -204,6 +209,44 @@ class InstallmentService(BaseService):
                 cls._update_transactions(request, form, update)
             case transactions_number:
                 cls._update_transactions(request, form, transactions)
+
+    @classmethod
+    @db_transaction.atomic
+    def _update_received_plan(cls, request, form, transactions):
+        from django.contrib.auth import get_user_model
+        get_user_model().objects.select_for_update().get(pk=request.user.pk)
+        rows = list(transactions.select_for_update().order_by('paid', 'pk'))
+        anchor = rows[0]
+        if form.cleaned_data['installments_number'] != anchor.installments_number:
+            raise ValidationError('O total de parcelas recebidas deve ser corrigido na origem. Novas parcelas serão importadas pela Pluggy.')
+        # Source occurrences already contain individual amounts and billing dates.
+        # Editing the plan must not recalculate these from the original purchase.
+        if (form.cleaned_data.get('posted_date') != anchor.posted_date
+                or form.cleaned_data.get('card') != anchor.card
+                or cls._is_truthy(form.cleaned_data.get('reorder_posted_dates'))):
+            raise ValidationError('Altere as datas ou o cartão nas parcelas individuais deste parcelamento importado.')
+        same_value = Decimal(str(form.cleaned_data['value'])) == Decimal(str(anchor.value))
+        for row in rows:
+            item = copy.copy(form)
+            item.data = form.data.copy()
+            item.cleaned_data = form.cleaned_data.copy()
+            preserve = ['paid', 'installment', 'installments_number', 'posted_date', 'payment_date',
+                        'source_type', 'source_app', 'event_type', 'original_description',
+                        'merchant_description', 'source_category', 'source_notification']
+            if same_value:
+                preserve.append('value')
+            for name in preserve:
+                value = getattr(row, name)
+                item.cleaned_data[name] = value
+                if hasattr(value, 'pk'):
+                    value = value.pk
+                elif isinstance(value, datetime.date):
+                    value = value.isoformat()
+                item.data[name] = '' if value is None else value
+            row_form = cls._set_transaction_form(item, row)
+            if not row_form.is_valid():
+                raise ValidationError(str(row_form.errors))
+            TransactionService.update(row_form, row)
 
     @classmethod
     def _update_transactions(cls, request, form, transactions):

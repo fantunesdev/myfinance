@@ -158,7 +158,105 @@ class PluggyIntegrationTests(TestCase):
         with patch("statement.views.core.transaction.InstallmentService.create") as create:
             view._custom_actions(None, None, target)
             create.assert_not_called()
-        self.assertIsNone(target.installment_id)
+        self.assertIsNotNone(target.installment_id)
+
+    def forecast_purchase(self, amounts):
+        rows = []
+        for number, amount in enumerate(amounts, 1):
+            raw = deepcopy(self.raw)
+            raw.update(id=str(uuid4()), amount=amount, date='2026-11-17T03:00:00Z')
+            raw['creditCardMetadata'].update(purchaseDate='2026-11-17', installmentNumber=number,
+                                            totalInstallments=len(amounts), billId=None,
+                                            billForecastDate=['2026-12', '2027-01', '2027-02'][number - 1])
+            rows.append(raw)
+        self.tx_id = rows[0]['id']
+        first = self.ingest(rows=rows, bills=[])
+        map_account(self.user, first.account_id, self.card.pk, {})
+        return list(ExternalTransaction.objects.filter(account=first.account).order_by('pk'))
+
+    def test_forecast_months_and_rounding_group_received_occurrences(self):
+        rows = self.forecast_purchase([53.27, 53.25, 53.25])
+        # The bank can deliver the final installment before the first.
+        for row in reversed(rows):
+            confirm(self.user, row.pk, row.revision, 'create', self.create_data())
+        targets = list(Transaction.objects.order_by('paid'))
+        self.assertEqual([t.payment_date for t in targets], [date(2026, 12, 10), date(2027, 1, 10), date(2027, 2, 10)])
+        self.assertEqual([t.value for t in targets], [53.27, 53.25, 53.25])
+        self.assertEqual([t.paid for t in targets], [1, 2, 3])
+        self.assertEqual(len({t.installment_id for t in targets}), 1)
+        self.assertIsNotNone(targets[0].installment_id)
+
+    def test_forecast_due_day_is_clamped_and_official_bill_has_priority(self):
+        from bank_sync.services import payment_due_date
+        rows = self.forecast_purchase([100, 100])
+        row = rows[1]
+        self.card.expiration_day = 31
+        self.card.save()
+        row.account.refresh_from_db()
+        row.facts['forecast'] = '2028-02'
+        self.assertEqual(payment_due_date(row), date(2028, 2, 29))
+        self.assertEqual(payment_due_date(row, '2028-03-01'), date(2028, 3, 1))
+        row.facts['forecast'] = 'invalid'
+        with self.assertRaises(ValidationError):
+            payment_due_date(row)
+        self.tx_id = self.raw['id']
+        official = self.mapped()
+        official.facts['forecast'] = '2027-01'
+        self.assertEqual(payment_due_date(official), date(2026, 11, 10))
+
+    def test_repeated_purchase_date_without_forecast_offsets_only_future_occurrences(self):
+        from bank_sync.services import payment_due_date
+        row = self.forecast_purchase([100, 100])[1]
+        row.facts['forecast'] = None
+        self.assertEqual(payment_due_date(row), date(2027, 1, 10))
+        row.facts['date'] = '2026-12-17'
+        self.assertEqual(payment_due_date(row), date(2027, 1, 10))
+
+    def test_repair_preview_then_apply_preserves_manual_dates_and_expenses(self):
+        from django.core.management import call_command
+        from statement.models import Installment
+        rows = self.forecast_purchase([202.90, 202.90])
+        for row in rows:
+            confirm(self.user, row.pk, row.revision, 'create', self.create_data())
+        targets = list(Transaction.objects.order_by('paid'))
+        Transaction.objects.filter(pk__in=[t.pk for t in targets]).update(installment=None, payment_date=date(2026, 12, 10))
+        Transaction.objects.filter(pk=targets[0].pk).update(installments_number=-2)
+        Installment.objects.all().delete()
+        args = dict(user=self.user.pk, transactions=[t.pk for t in targets], stdout=io.StringIO())
+        call_command('reconcile_pluggy_installments', **args)
+        self.assertEqual(Installment.objects.count(), 0)
+        call_command('reconcile_pluggy_installments', apply=True, **args)
+        self.assertEqual(Installment.objects.count(), 1)
+        self.assertEqual(set(Transaction.objects.values_list('installments_number', flat=True)), {2})
+        self.assertEqual(set(Transaction.objects.values_list('payment_date', flat=True)), {date(2026, 12, 10)})
+        call_command('reconcile_pluggy_installments', apply=True, source_dates=True, **args)
+        self.assertEqual(list(Transaction.objects.order_by('paid').values_list('payment_date', flat=True)),
+                         [date(2026, 12, 10), date(2027, 1, 10)])
+        self.assertEqual(Transaction.objects.count(), 2)
+        self.assertEqual(Installment.objects.count(), 1)
+
+    def test_editing_received_plan_preserves_rounding_dates_and_ordinals(self):
+        from django.forms.models import model_to_dict
+        from statement.forms.core.installment import InstallmentForm
+        from statement.services.core.installment import InstallmentService
+        rows = self.forecast_purchase([53.27, 53.25, 53.25])
+        for row in reversed(rows):
+            confirm(self.user, row.pk, row.revision, 'create', self.create_data())
+        targets = Transaction.objects.order_by('paid')
+        anchor = targets.first()
+        before = list(targets.values_list('value', 'paid', 'payment_date', 'source_type'))
+        data = model_to_dict(anchor)
+        data.update(description='Farmácia revisada', reorder_posted_dates='False')
+        data = {key: '' if value is None else value for key, value in data.items()}
+        form = InstallmentForm(self.user, data=data, instance=anchor)
+        self.assertTrue(form.is_valid(), form.errors)
+        InstallmentService.update_installment_plan(SimpleNamespace(user=self.user), form, targets)
+        self.assertEqual(list(targets.values_list('value', 'paid', 'payment_date', 'source_type')), before)
+        self.assertEqual(set(targets.values_list('description', flat=True)), {'Farmácia revisada'})
+        form.cleaned_data['installments_number'] = 4
+        with self.assertRaises(ValidationError):
+            InstallmentService.update_installment_plan(SimpleNamespace(user=self.user), form, targets)
+        self.assertEqual(Transaction.objects.count(), 3)
 
     def test_failed_fetch_keeps_previous_snapshot_and_releases_lease(self):
         row = self.ingest()
@@ -291,7 +389,11 @@ class PluggyIntegrationTests(TestCase):
         for sequence, source in rows.items():
             source.refresh_from_db()
             self.assertEqual((source.state, source.transaction_id), ("linked", locals_[sequence].pk))
-        self.assertEqual(list(Transaction.objects.order_by("pk").values()), before)
+        after = list(Transaction.objects.order_by("pk").values())
+        self.assertEqual(len({t['installment_id'] for t in after}), 1)
+        for record in before + after:
+            record.pop('installment_id')
+        self.assertEqual(after, before)
         confirm(self.user, rows[2].pk, rows[2].revision, "link", {"transaction_id": locals_[2].pk})
         self.assertEqual(Transaction.objects.count(), 3)
 

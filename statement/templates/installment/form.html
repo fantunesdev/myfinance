@@ -21,6 +21,7 @@
                     </h3>
                 </div>
                 <div class="box-body">
+                    {{ form.non_field_errors }}
                     <div class="box-description">
                         <p style="font-size: 18px;">Descrição: <b>{{ transactions.first.description }}.</b></p>
                         <p style="font-size: 18px;">Valor Total: <b>{{ transactions | total_amount }}.</b></p>

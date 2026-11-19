@@ -4,6 +4,7 @@ import json
 import os
 import re
 import uuid
+from calendar import monthrange
 from datetime import date, timedelta
 from decimal import Decimal, InvalidOperation
 
@@ -261,13 +262,27 @@ def payment_due_date(row, estimate=None):
     if estimate:
         return source_date(estimate)
     card = row.account.card
+    forecast = row.facts.get('forecast')
+    if forecast and card:
+        try:
+            year, month = map(int, str(forecast)[:7].split('-'))
+            if not re.fullmatch(r'\d{4}-\d{2}(?:-\d{2}(?:T.*)?)?', str(forecast)):
+                raise ValueError
+            return date(year, month, min(card.expiration_day, monthrange(year, month)[1]))
+        except (ValueError, TypeError):
+            raise ValidationError('Mês previsto da fatura inválido. Confira o vencimento antes de importar.') from None
     # facts.date describes this installment, whereas purchase_date is the
     # original purchase and would move later installments back to the first bill.
     posted = source_date(row.facts.get("date") or row.facts.get("purchase_date"))
     if not card or not posted:
         return None
     try:
-        return CardService.set_processing_date(card, posted)
+        result = CardService.set_processing_date(card, posted)
+        # Some institutions repeat the original purchase date for all future occurrences.
+        if (row.facts.get('payment_type') == 'INSTALLMENT' and type(row.facts.get('number')) is int
+                and row.facts['number'] > 1 and posted == source_date(row.facts.get('purchase_date'))):
+            result += relativedelta(months=row.facts['number'] - 1)
+        return result
     except ValueError:
         raise ValidationError("Confira os dias de fechamento e vencimento do cartão cadastrado.") from None
 
@@ -300,6 +315,12 @@ def candidates(row, limit=20):
     except ValidationError:
         pass
     qs = qs.order_by("payment_date", "id")
+    if facts.get('payment_type') == 'INSTALLMENT':
+        from .installment_groups import installment_bundle
+        siblings = installment_bundle(row)
+        other_ids = [s.transaction_id for s in siblings if s.pk != row.pk and s.transaction_id
+                     and s.facts['number'] != facts.get('number') and s.transaction.paid == s.facts['number']]
+        qs = qs.exclude(pk__in=other_ids)
     return qs if limit is None else qs[:limit]
 
 
@@ -396,6 +417,9 @@ def confirm(user, row_id, revision, action, data, *, reconcile_group=True):
     if row.state in ("imported", "linked", "ignored"):
         if action == "link" and reconcile_group and row.transaction_id == int(data["transaction_id"]):
             row.reconciled_count, row.remaining_installments = reconcile_installments(user, row, row.transaction)
+        if action in ('link', 'create') and row.transaction_id and reconcile_group:
+            from .installment_groups import attach_installment_group
+            attach_installment_group(row, row.transaction)
         return row
     if action == "keep" and row.transaction_id and row.state == "conflict":
         row.state = "linked"
@@ -534,4 +558,7 @@ def confirm(user, row_id, revision, action, data, *, reconcile_group=True):
     row.save(update_fields=["transaction", "state"])
     if action == "link" and reconcile_group:
         row.reconciled_count, row.remaining_installments = reconcile_installments(user, row, target)
+    if reconcile_group:
+        from .installment_groups import attach_installment_group
+        attach_installment_group(row, target)
     return row
