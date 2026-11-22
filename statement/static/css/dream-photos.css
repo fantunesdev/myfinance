@@ -1,0 +1,137 @@
+.dream-photos {
+    margin-top: 28px;
+    padding-top: 20px;
+}
+.dream-photo-heading, .dream-photo-toolbar-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+.dream-photo-upload[hidden] { display: none; }
+.dream-photo-heading { justify-content: flex-start; gap: 8px; }
+.dream-photo-add.btn {
+    padding: 6px;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    opacity: .65;
+}
+.dream-photo-add.btn:hover, .dream-photo-add.btn:focus-visible {
+    background: transparent;
+    opacity: 1;
+}
+.dream-photo-upload {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0;
+}
+.dream-photo-upload input { max-width: 100%; }
+.dream-photo-picker {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.dream-photo-picker input[type="file"] {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+.dream-photo-picker:focus-within { outline: 2px solid currentColor; outline-offset: 2px; }
+.dream-photo-upload small, .dream-photo-error { flex-basis: 100%; }
+.dream-photo-error { color: #f07878; }
+.dream-photo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 16px;
+}
+.dream-photo-card { min-width: 0; }
+.dream-photo-card form { margin-top: 8px; }
+.dream-photo-card[draggable="true"],
+.dream-photo-card[draggable="true"] .dream-photo-open { cursor: grab; }
+.dream-photo-card.is-dragging { opacity: .4; }
+.dream-photo-grid[aria-busy="true"] { cursor: progress; }
+.dream-photo-remove.btn {
+    padding: 4px 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    opacity: .65;
+}
+.dream-photo-remove.btn:hover, .dream-photo-remove.btn:focus-visible {
+    background: transparent;
+    opacity: 1;
+    text-decoration: underline;
+}
+.dream-photo-open { display: block; border-radius: 10px; overflow: hidden; }
+.dream-photo-open img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    transition: transform 180ms ease;
+}
+.dream-photo-open:hover img { transform: scale(1.04); }
+.dream-photo-empty { grid-column: 1 / -1; opacity: .8; padding: 20px 0; }
+.dream-photo-dialog {
+    padding: 16px;
+    border: 0;
+    border-radius: 12px;
+    background: #111;
+    color: #fff;
+    width: min(1100px, 96vw);
+    max-width: 96vw;
+    max-height: 95dvh;
+    box-sizing: border-box;
+}
+.dream-photo-dialog::backdrop { background: rgb(0 0 0 / 85%); }
+.dream-photo-viewer { position: relative; }
+.dream-photo-viewer:fullscreen { background: #111; }
+.dream-photo-toolbar, .dream-photo-navigation {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+.dream-photo-dialog button:disabled { opacity: .4; cursor: default; }
+.dream-photo-stage { overflow: hidden; margin: 12px 0; touch-action: pan-y; }
+.dream-photo-track { display: flex; transition: transform 350ms ease; }
+.dream-photo-slide { flex: 0 0 100%; min-width: 0; }
+.dream-photo-expand { display: block; cursor: zoom-in; }
+.dream-photo-slide img { display: block; width: 100%; height: min(68dvh, 720px); object-fit: contain; }
+.dream-photo-dialog.is-fullscreen {
+    width: 100dvw;
+    height: 100dvh;
+    max-width: 100dvw;
+    max-height: 100dvh;
+    margin: 0;
+    padding: 0;
+    border-radius: 0;
+}
+.dream-photo-dialog.is-fullscreen .dream-photo-stage { margin: 0; }
+.dream-photo-dialog.is-fullscreen .dream-photo-slide img { height: 100dvh; }
+.dream-photo-dialog.is-fullscreen .dream-photo-expand { cursor: zoom-out; }
+.dream-photo-dialog.is-fullscreen .dream-photo-toolbar,
+.dream-photo-dialog.is-fullscreen .dream-photo-navigation {
+    position: absolute;
+    left: 0;
+    right: 0;
+    padding: 12px 16px;
+    z-index: 1;
+    background: rgb(0 0 0 / 55%);
+}
+.dream-photo-dialog.is-fullscreen .dream-photo-toolbar { top: 0; }
+.dream-photo-dialog.is-fullscreen .dream-photo-navigation { bottom: 0; }
+body.dream-photo-viewing { overflow: hidden; }
+@media (max-width: 480px) {
+    .dream-photo-navigation { gap: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .dream-photo-track, .dream-photo-open img { transition: none; }
+}

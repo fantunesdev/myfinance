@@ -1,8 +1,10 @@
 from decimal import Decimal, InvalidOperation
 
 from django import template
+from statement.utils.notes_html import formatted_notes
 
 register = template.Library()
+register.filter('formatted_notes', formatted_notes)
 
 
 @register.filter(name='to_currency')

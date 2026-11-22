@@ -1,0 +1,10 @@
+.simple-rich-text [hidden] { display: none; }
+.simple-rich-text-toolbar { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.simple-rich-text-toolbar .btn { padding: 8px 12px; }
+.simple-rich-text-content { min-height: 150px; height: auto; overflow-wrap: anywhere; }
+.simple-rich-text-content, .formatted-notes { white-space: pre-wrap; }
+.box-observation.formatted-notes { padding: 20px 25px; }
+.box-observation.formatted-notes > :first-child { margin-top: 0; }
+.box-observation.formatted-notes > :last-child { margin-bottom: 0; }
+.simple-rich-text-content ul, .simple-rich-text-content ol,
+.formatted-notes ul, .formatted-notes ol { padding-left: 24px; }

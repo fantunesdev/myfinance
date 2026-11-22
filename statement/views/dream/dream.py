@@ -1,10 +1,16 @@
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import Http404
+from django.db import transaction
+from django.db.models import Max
+from django.http import FileResponse, Http404, JsonResponse
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
+from django.views.decorators.http import require_GET, require_POST
 
 from statement.forms.dream.dream import DreamForm
-from statement.models import Dream
+from statement.forms.dream.photo import DreamPhotoForm
+from statement.models import Dream, DreamPhoto
 from statement.services.dream.dream import DreamService
 from statement.views.base_view import BaseView
 
@@ -95,4 +101,74 @@ class DreamView(BaseView):
         """
         return {
             'transactions': instance.transactions.filter(user=request.user).order_by('-posted_date'),
+            'photos': instance.photos.all(),
+            'photo_form': DreamPhotoForm(),
         }
+
+    @method_decorator(login_required)
+    @method_decorator(require_POST)
+    def upload_photos(self, request, id):
+        dream = self._get_instance(request, id)
+        form = DreamPhotoForm(request.POST, request.FILES)
+        if form.is_valid():
+            saved = []
+            try:
+                with transaction.atomic():
+                    Dream.objects.select_for_update().get(pk=dream.pk)
+                    last_position = dream.photos.aggregate(last=Max('position'))['last']
+                    next_position = last_position + 1 if last_position is not None else 0
+                    for offset, image in enumerate(form.cleaned_data['photos']):
+                        photo = DreamPhoto(dream=dream, image=image, position=next_position + offset)
+                        saved.append(photo)
+                        photo.save()
+            except Exception:
+                for photo in saved:
+                    if photo.image and photo.image._committed:
+                        photo.image.delete(save=False)
+                raise
+            messages.success(request, 'Fotos adicionadas ao sonho.')
+            return redirect('detail_dream', id=dream.pk)
+        self._context = 'detail'
+        context = self._add_context_on_templatetags(request, dream)
+        context.update(instance=dream, photo_form=form)
+        return self._render(request, None, 'dream/detail.html', context)
+
+    @method_decorator(login_required)
+    @method_decorator(require_POST)
+    def delete_photo(self, request, id, photo_id):
+        dream = self._get_instance(request, id)
+        with transaction.atomic():
+            Dream.objects.select_for_update().get(pk=dream.pk)
+            get_object_or_404(DreamPhoto, dream=dream, pk=photo_id).delete()
+        messages.success(request, 'Foto removida.')
+        return redirect('detail_dream', id=dream.pk)
+
+    @method_decorator(login_required)
+    @method_decorator(require_POST)
+    def reorder_photos(self, request, id):
+        dream = self._get_instance(request, id)
+        try:
+            photo_ids = [int(value) for value in request.POST.getlist('photo_ids')]
+        except ValueError:
+            return JsonResponse({'error': 'Ordem inválida.'}, status=400)
+        with transaction.atomic():
+            Dream.objects.select_for_update().get(pk=dream.pk)
+            photos = {photo.pk: photo for photo in dream.photos.all()}
+            if len(photo_ids) != len(photos) or set(photo_ids) != set(photos):
+                return JsonResponse({'error': 'A galeria mudou. Atualize a página e tente novamente.'}, status=400)
+            for position, photo_id in enumerate(photo_ids):
+                photos[photo_id].position = position
+            DreamPhoto.objects.bulk_update(photos.values(), ['position'])
+        return JsonResponse({'saved': True})
+
+    @method_decorator(login_required)
+    @method_decorator(require_GET)
+    def photo(self, request, id, photo_id):
+        dream = self._get_instance(request, id)
+        photo = get_object_or_404(DreamPhoto, dream=dream, pk=photo_id)
+        try:
+            response = FileResponse(photo.image.open('rb'))
+        except FileNotFoundError as error:
+            raise Http404 from error
+        response['Cache-Control'] = 'private, no-store'
+        return response

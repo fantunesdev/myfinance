@@ -1,0 +1,54 @@
+<section class="dream-photos" aria-labelledby="dream-photos-title">
+    <div class="dream-photo-heading">
+        <h3 id="dream-photos-title">Galeria</h3>
+        <button type="button" class="btn dream-photo-add" data-photo-add aria-label="Adicionar fotos" title="Adicionar fotos" aria-expanded="{% if photo_form.errors %}true{% else %}false{% endif %}" aria-controls="dream-photo-upload">
+            <i class="fa-solid fa-plus" aria-hidden="true"></i>
+        </button>
+    </div>
+    <form method="post" enctype="multipart/form-data" action="{% url 'upload_dream_photos' instance.id %}" class="dream-photo-upload" id="dream-photo-upload" {% if not photo_form.errors %}hidden{% endif %}>
+        {% csrf_token %}
+        <label class="btn dream-photo-picker" for="{{ photo_form.photos.id_for_label }}">
+            <i class="fa-solid fa-images" aria-hidden="true"></i> Escolher arquivos
+            {{ photo_form.photos }}
+        </label>
+        <span data-photo-selection aria-live="polite" aria-atomic="true" hidden></span>
+        <small>JPG, PNG, WebP ou GIF. Até 10 fotos por envio, com no máximo 10 MB cada.</small>
+        {% for error in photo_form.photos.errors %}<p role="alert" class="dream-photo-error">{{ error }}</p>{% endfor %}
+        <button type="submit" class="btn btn-primary">Adicionar selecionadas</button>
+    </form>
+    <p class="dream-photo-order-status" role="status" hidden></p>
+    <div class="dream-photo-grid" data-reorder-url="{% url 'reorder_dream_photos' instance.id %}">
+        {% for photo in photos %}
+        <div class="dream-photo-card" draggable="true" data-photo-id="{{ photo.pk }}">
+            <a href="{% url 'dream_photo' instance.id photo.id %}" class="dream-photo-open" draggable="false" data-photo-index="{{ forloop.counter0 }}" aria-label="Ampliar foto {{ forloop.counter }} de {{ photos|length }}" title="Arraste para reordenar. Use Alt + setas pelo teclado.">
+                <img src="{% url 'dream_photo' instance.id photo.id %}" alt="Foto {{ forloop.counter }} de {{ instance.description }}" loading="lazy" decoding="async" draggable="false">
+            </a>
+            <form method="post" action="{% url 'delete_dream_photo' instance.id photo.id %}">
+                {% csrf_token %}
+                <button type="submit" class="btn dream-photo-remove" aria-label="Remover foto {{ forloop.counter }}">Remover</button>
+            </form>
+        </div>
+        {% empty %}
+        <p class="dream-photo-empty">Nenhuma foto ainda.</p>
+        {% endfor %}
+    </div>
+</section>
+<dialog class="dream-photo-dialog" aria-label="Fotos do sonho">
+    <div class="dream-photo-viewer">
+        <div class="dream-photo-toolbar">
+            <span data-photo-counter aria-live="polite" aria-atomic="true"></span>
+            <div class="dream-photo-toolbar-actions">
+                <button type="button" class="btn btn-primary" data-photo-fullscreen aria-label="Tela inteira"><i class="fa-solid fa-expand" aria-hidden="true"></i></button>
+                <button type="button" class="btn btn-primary" data-photo-close aria-label="Fechar fotos"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+            </div>
+        </div>
+        <div class="dream-photo-stage">
+            <div class="dream-photo-track"></div>
+        </div>
+        <div class="dream-photo-navigation">
+            <button type="button" class="btn btn-primary" data-photo-prev aria-label="Foto anterior"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
+            <button type="button" class="btn btn-primary" data-photo-play aria-label="Reproduzir apresentação">Reproduzir</button>
+            <button type="button" class="btn btn-primary" data-photo-next aria-label="Próxima foto"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+        </div>
+    </div>
+</dialog>

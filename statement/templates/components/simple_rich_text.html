@@ -1,0 +1,13 @@
+<div class="simple-rich-text" data-rich-text>
+    <div class="simple-rich-text-toolbar" role="toolbar" aria-label="Formatar anotações" hidden>
+        <button type="button" class="btn" data-command="bold" aria-label="Negrito" title="Negrito"><i class="fa-solid fa-bold" aria-hidden="true"></i></button>
+        <button type="button" class="btn" data-command="italic" aria-label="Itálico" title="Itálico"><i class="fa-solid fa-italic" aria-hidden="true"></i></button>
+        <button type="button" class="btn" data-command="underline" aria-label="Sublinhado" title="Sublinhado"><i class="fa-solid fa-underline" aria-hidden="true"></i></button>
+        <button type="button" class="btn" data-command="insertUnorderedList" aria-label="Lista" title="Lista"><i class="fa-solid fa-list-ul" aria-hidden="true"></i></button>
+        <button type="button" class="btn" data-command="insertOrderedList" aria-label="Lista numerada" title="Lista numerada"><i class="fa-solid fa-list-ol" aria-hidden="true"></i></button>
+        <button type="button" class="btn" data-command="removeFormat" aria-label="Limpar formatação" title="Limpar formatação"><i class="fa-solid fa-eraser" aria-hidden="true"></i></button>
+        <button type="button" class="btn" data-source aria-label="Editar HTML" aria-pressed="false" title="Editar HTML"><i class="fa-solid fa-code" aria-hidden="true"></i></button>
+    </div>
+    <div class="simple-rich-text-content form-control" id="{{ widget.attrs.id }}_editor" contenteditable="true" role="textbox" aria-label="Anotações" aria-multiline="true" hidden>{{ widget.formatted_value }}</div>
+    {% include 'django/forms/widgets/textarea.html' %}
+</div>

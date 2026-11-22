@@ -1,5 +1,8 @@
 {% extends 'index.html' %}
 
+    {% block styles %}{{ form.media.css }}{% endblock %}
+    {% block scripts %}{{ form.media.js }}{% endblock %}
+
     {% block title %}
         {% spaceless %}
             {% if 'cadastrar/' in request.path %}

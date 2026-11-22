@@ -1,4 +1,5 @@
 import secrets
+import uuid
 from decimal import Decimal
 
 from django.core.validators import MinValueValidator
@@ -585,6 +586,21 @@ class Dream(models.Model):
 
     def __str__(self):
         return self.description
+
+
+def dream_photo_path(instance, filename):
+    extension = filename.rsplit('.', 1)[-1].lower()
+    return f'uploads/dreams/{instance.dream_id}/{uuid.uuid4().hex}.{extension}'
+
+
+class DreamPhoto(models.Model):
+    dream = models.ForeignKey(Dream, related_name='photos', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to=dream_photo_path)
+    created_at = models.DateTimeField(auto_now_add=True)
+    position = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['position', 'created_at', 'id']
 
 
 class Portion(models.Model):

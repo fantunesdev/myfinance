@@ -2,10 +2,15 @@ from django import forms
 from django.utils import timezone
 
 from statement.forms.base_form import BaseForm
+from statement.forms.widgets import SimpleRichTextWidget
 from statement.models import Dream
+from statement.utils.notes_html import sanitize_notes
 
 
 class DreamForm(BaseForm):
+    def clean_notes(self):
+        return sanitize_notes(self.cleaned_data.get('notes', ''))
+
     class Meta:
         today = timezone.now()
         model = Dream
@@ -36,7 +41,7 @@ class DreamForm(BaseForm):
                 },
             ),
             'status': forms.Select(),
-            'notes': forms.Textarea(
+            'notes': SimpleRichTextWidget(
                 attrs={
                     'class': 'form-control textarea',
                     'rows': 6,
