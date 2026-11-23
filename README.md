@@ -250,6 +250,23 @@ Servicos principais:
 - `nginx-myfin`: proxy HTTPS local, arquivos estaticos e media.
 - `transaction-classifier`: microservico de classificacao de transacoes.
 
+Os uploads da galeria aceitam até 10 fotos de 10 MB por envio. Os dois proxies
+precisam de `client_max_body_size 110m;` no bloco `server` do MyFinance: em
+`docker/nginx/default.conf` e no servidor HTTPS de
+`reverse_proxy/nginx-proxy.conf`. O limite inclui margem para o formulário
+multipart. Sem essa configuração, o padrão de 1 MB do Nginx pode retornar
+`413 Request Entity Too Large` antes de a requisição chegar ao Django.
+
+Após atualizar esses arquivos no servidor, valide e recarregue os proxies:
+
+```bash
+docker exec nginx-myfin nginx -t
+docker exec nginx-proxy nginx -t
+# Execute os comandos abaixo somente se ambas as validações passarem.
+docker exec nginx-myfin nginx -s reload
+docker exec nginx-proxy nginx -s reload
+```
+
 O Nginx publica HTTPS local na porta `81` do host. Em desenvolvimento, acesse:
 
 ```text
