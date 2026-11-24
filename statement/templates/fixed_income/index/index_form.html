@@ -1,27 +1,11 @@
 {% extends 'index.html' %}
 
-    {% block title %}
-        {% spaceless %}
-            {% if 'indices/cadastrar/' in request.path %}
-                Cadastrar Índice
-            {% else %}
-                Editar Índice
-            {% endif %}
-        {% endspaceless %}
-    {% endblock title %}
+    {% block title %}{% include 'components/form_title.html' with entity_title='Índice' %}{% endblock %}
 
     {% block content %}
         <div class="box box-primary box-max-width-2000 v-center-div">
             <div class="box-header">
-                <h3 class="box-title">
-                    {% spaceless %}
-                        {% if 'indices/cadastrar/' in request.path %}
-                            Cadastrar Índice
-                        {% else %}
-                            Editar Índice
-                        {% endif %}
-                    {% endspaceless %}
-                </h3>
+                <h3 class="box-title">{% include 'components/form_title.html' with entity_title='Índice' %}</h3>
             </div>
             <form method="post" enctype="multipart/form-data">
                 <div class="box-body">

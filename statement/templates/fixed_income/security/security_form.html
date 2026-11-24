@@ -1,28 +1,12 @@
 {% extends 'index.html' %}
 
-    {% block title %}
-        {% spaceless %}
-            {% if 'renda_fixa/cadastrar/' in request.path %}
-                Cadastrar Ativo de Renda Fixa
-            {% else %}
-                Editar Ativo de Renda Fixa
-            {% endif %}
-        {% endspaceless %}
-    {% endblock %}
+    {% block title %}{% include 'components/form_title.html' with entity_title='Ativo de Renda Fixa' %}{% endblock %}
 
     {% block content %}
         <div class="box box-primary box-max-width-2000 v-center-div">
             <div class="box-header">
 
-                <h3 class="box-title">
-                    {% spaceless %}
-                        {% if 'renda_fixa/cadastrar/' in request.path %}
-                            Cadastrar Ativo de Renda Fixa
-                        {% else %}
-                            Editar Ativo de Renda Fixa
-                        {% endif %}
-                    {% endspaceless %}
-                </h3>
+                <h3 class="box-title">{% include 'components/form_title.html' with entity_title='Ativo de Renda Fixa' %}</h3>
             </div>
             <form method="post" enctype="multipart/form-data">
                 <div class="box-body">

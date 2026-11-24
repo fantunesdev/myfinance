@@ -1,7 +1,7 @@
 {% extends 'index.html' %}
 {% load static %}
 
-    {% block title %}Cadastrar movimentacao{% endblock title %}
+    {% block title %}{% include 'components/form_title.html' with entity_title='Lançamento' %}{% endblock title %}
 
     {% block styles %}
     <link rel="stylesheet" href="{% static 'css/searchable-select.css' %}?v=20261101-1">
@@ -10,11 +10,7 @@
     {% block content %}
         <div class="box box-primary box-max-width-2000 v-center-div">
             <div class="box-header">
-                {% if context == 'create' %}
-                    <h3 class="box-title">Criar lançamento</h3>
-                {% else %}
-                    <h3 class="box-title">Editar lançamento {{old_instance}}</h3>
-                {% endif %}
+                <h3 class="box-title">{% include 'components/form_title.html' with entity_title='Lançamento' %}{% if old_instance %} {{ old_instance }}{% endif %}</h3>
             </div>
             <form method="post" enctype="multipart/form-data">
                 <div class="box-body">

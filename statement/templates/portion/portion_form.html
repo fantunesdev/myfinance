@@ -1,27 +1,11 @@
 {% extends 'index.html' %}
 
-{% block title %}
-{% spaceless %}
-{% if 'parcelas/cadastrar/' in request.path %}
-    Cadastrar Parcela
-{% else %}
-    Editar Parcela
-{% endif %}
-{% endspaceless %}
-{% endblock %}
+{% block title %}{% include 'components/form_title.html' with entity_title='Parcela' %}{% endblock %}
 
     {% block content %}
         <div class="box box-primary box-max-width-2000 v-center-div">
             <div class="box-header">
-                <h3 class="box-title">
-                {% spaceless %}
-                    {% if 'parcelas/cadastrar/' in request.path %}
-                        Cadastrar Parcela
-                    {% else %}
-                        Editar Parcela
-                    {% endif %}
-                {% endspaceless %}
-                </h3>
+                <h3 class="box-title">{% include 'components/form_title.html' with entity_title='Parcela' %}</h3>
             </div>
             <form method="post" enctype="multipart/form-data">
                 <div class="box-body">

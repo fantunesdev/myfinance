@@ -3,27 +3,13 @@
     {% block styles %}{{ form.media.css }}{% endblock %}
     {% block scripts %}{{ form.media.js }}{% endblock %}
 
-    {% block title %}
-        {% spaceless %}
-            {% if 'cadastrar/' in request.path %}
-                Cadastrar {{ class_title }}
-            {% else %}
-                Editar {{ class_title }}
-            {% endif %}
-        {% endspaceless %}
-    {% endblock %}
+    {% block title %}{% include 'components/form_title.html' with entity_title=class_title %}{% endblock %}
 
     {% block content %}
         <div class="box box-primary box-max-width-2000 v-center-div">
             <div class="box-header">
                 <h3 class="box-title">
-                    {% spaceless %}
-                        {% if create %}
-                            Cadastrar {{ class_title }}
-                        {% else %}
-                            Editar {{ class_title }}
-                        {% endif %}
-                    {% endspaceless %}
+                    {% include 'components/form_title.html' with entity_title=class_title %}
                 </h3>
             </div>
             <form method="post" enctype="multipart/form-data">

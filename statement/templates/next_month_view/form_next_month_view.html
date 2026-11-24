@@ -1,12 +1,14 @@
 {% extends 'index.html' %}
 {% load static %}
 
+{% block title %}Editar Configuração - Próximo Mês{% endblock %}
+
 {% block content %}
         <div class="box box-primary box-max-width-2000 v-center-div">
             <form method="post">
                 {% csrf_token %}
                 <div class="box-header">
-                    <h3 class="box-title"></h3>
+                    <h3 class="box-title">Editar Configuração - Próximo Mês</h3>
                 </div>
                 <div class="box-body">
                     <label for="id_day">{{ form_next_month_view.day.label }}</label>

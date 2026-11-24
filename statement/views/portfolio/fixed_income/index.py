@@ -6,7 +6,7 @@ from statement.views.base_view import BaseView
 
 class IndexView(BaseView):
     class_has_user = False
-    class_title = 'papel'
+    class_title = 'Índice'
     class_form = IndexForm
     model = Index
     service = IndexService

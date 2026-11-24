@@ -10,7 +10,7 @@ class FixedIncomeView(BaseView):
     """
 
     class_has_user = True
-    class_title = 'Renda Variável'
+    class_title = 'Ativo de Renda Fixa'
     column_names = ['Conta', 'Papel']
     class_form = FixedIncomeForm
     model = FixedIncome

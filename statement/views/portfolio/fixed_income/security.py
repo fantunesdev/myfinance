@@ -6,7 +6,7 @@ from statement.views.base_view import BaseView
 
 class FixedIncomeSecurityView(BaseView):
     class_has_user = False
-    class_title = 'papel'
+    class_title = 'Ativo de Renda Fixa'
     class_form = FixedIncomeSecurityForm
     model = FixedIncomeSecurity
     service = FixedIncomeSecurityService
