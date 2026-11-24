@@ -12,8 +12,7 @@ from django.urls import reverse
 from investments.models import Asset
 from login.models import Profile, User
 from statement.models import (Card, Category, Currency, Device, Dream,
-                              FixedExpenses, Flag, Index, Subcategory,
-                              Transaction)
+                              FixedExpenses, Flag, Subcategory, Transaction)
 
 
 class Titles(HTMLParser):
@@ -88,7 +87,6 @@ def records(web):
         dream=Dream.objects.create(user=user, description='Sonho'),
         card=Card.objects.create(user=user, flag=flag, description='Cartão', closing_day=5, expiration_day=10),
         fixed_expense=FixedExpenses.objects.create(user=user, description='Despesa', start_date=date(2026, 1, 1)),
-        index=Index.objects.create(description='Índice'),
         asset=Asset.objects.create(user=user, description='Ativo', asset_type='fixed_income'),
     )
 
@@ -99,7 +97,6 @@ def records(web):
     ('create_dream', [], 'update_dream', 'dream', 'Sonhos'),
     ('create_card', [], 'update_card', 'card', 'Cartão'),
     ('create_fixed_expense', [], 'update_fixed_expense', 'fixed_expense', 'Despesa Fixa'),
-    ('create_index', [], 'update_index', 'index', 'Índice'),
     ('create_asset', [], 'update_asset', 'asset', 'Ativos'),
 ])
 @pytest.mark.parametrize('method', ['get', 'post'])
@@ -118,9 +115,6 @@ def test_create_and_edit_titles_including_invalid_submissions(records, create_na
 @pytest.mark.parametrize('template,entity', [
     ('portion/portion_form.html', 'Parcela'),
     ('fixed_expenses/fixed_expenses_form.html', 'Despesa Fixa'),
-    ('fixed_income/form.html', 'Ativo de Renda Fixa'),
-    ('fixed_income/security/security_form.html', 'Ativo de Renda Fixa'),
-    ('fixed_income/index/index_form.html', 'Índice'),
 ])
 @pytest.mark.parametrize('create', [False, True])
 def test_custom_form_titles_follow_mode_instead_of_url(web, template, entity, create):

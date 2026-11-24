@@ -102,9 +102,7 @@ Mais do que um CRUD, este projeto demonstra minha capacidade de transformar uma 
 
 ### Investimentos
 
-O projeto tem dois conjuntos de funcionalidades de investimento.
-
-No app `investments`:
+As funcionalidades de investimento estão concentradas no app `investments`:
 
 - Dashboard de investimentos.
 - Corretoras, bancos, exchanges, carteiras e outros brokers.
@@ -114,14 +112,6 @@ No app `investments`:
 - Quantidade, preco unitario, valor atual e vencimento por movimentacao.
 - Carteira padrao e fluxos de aplicar a partir da carteira ou resgatar para a carteira.
 - Vinculo opcional entre movimentacao de investimento e lancamento financeiro.
-
-No modulo de carteira do app `statement`:
-
-- Indices financeiros, como CDI ou SELIC, com codigo do Banco Central.
-- Serie historica de indices.
-- Tipos de titulo de renda fixa, como CDB, LCI ou Tesouro.
-- Ativos de renda fixa com principal, data de investimento, vencimento, indice e taxa contratada.
-- Tickers, setores, ativos de renda variavel e transacoes de compra/venda.
 
 ### Usuarios, autenticacao e perfil
 
@@ -138,7 +128,6 @@ No modulo de carteira do app `statement`:
 - Endpoints para categorias, subcategorias, feedbacks de categorizacao, contas, bancos, cartoes, notificacoes, transacoes, investimentos e movimentacoes de investimento.
 - JWT em `/api/token/`, refresh em `/api/token/refresh/` e validacao em `/api/validate-token/`.
 - Endpoints do classificador em `/api/transaction-classifier/`.
-- Endpoint de progressao de renda fixa em `/api/fixed-income/progression/`.
 - WebSocket via Django Channels, Redis e ASGI.
 
 ## Stack

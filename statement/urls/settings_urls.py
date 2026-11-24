@@ -15,12 +15,7 @@ urlpatterns = [
     path('subcategorias/', include('statement.urls.core.subcategory')),
     path('importacao_csv/', include('statement.urls.core.csv_import_config')),
     path('despesas_fixas/', include('statement.urls.core.fixed_expenses')),
-    # Renda Fixa
-    path('indices/', include('statement.urls.portfolio.fixed_income.index_urls')),
     path('notificacoes/', include('statement.urls.core.notification')),
     path('appconfig/editar/', settings_view.edit_app_config, name='edit_app_config'),
     path('notifications/titles/edit/', settings_view.edit_notification_titles, name='edit_notification_titles'),
-    # Renda Variável
-    path('setor/', include('statement.urls.portfolio.variable_income.sector')),
-    path('papel/', include('statement.urls.portfolio.variable_income.ticker')),
 ]

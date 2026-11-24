@@ -13,10 +13,6 @@ from statement.services.core.fixed_expenses import FixedExpensesService
 from statement.services.core.flag import FlagService
 from statement.services.core.notification import NotificationService
 from statement.services.core.subcategory import SubcategoryService
-from statement.services.portfolio.fixed_income.index import IndexService
-from statement.services.portfolio.fixed_income.security import FixedIncomeSecurityService
-from statement.services.portfolio.variable_income.sector import SectorService
-from statement.services.portfolio.variable_income.ticker import TickerService
 from statement.views.base_view import BaseView
 
 
@@ -53,12 +49,6 @@ class SettingsView(BaseView):
             'subcategories': SubcategoryService.get_all(),
             'fixed_expenses': FixedExpensesService.get_all(request.user),
             'csv_import_configs': CSVImportConfigService.get_all(request.user),
-            # Renda Fixa
-            'indexes': IndexService.get_all(request.user),
-            'fixed_income_securities': FixedIncomeSecurityService.get_all(request.user),
-            # Renda Variável
-            'sectors': SectorService.get_all(request.user),
-            'tickers': TickerService.get_all(request.user),
             'app_config_enable_transaction_classifier': enable_transaction_classifier,
             'notification_titles': [],
             'recent_notifications': [],

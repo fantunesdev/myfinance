@@ -11,7 +11,6 @@ from api.views.default_views import Defaults
 from api.views.investment import InvestmentTransactionView, InvestmentView
 from api.views.next_month_view_view import NextMonthView
 from api.views.notification import NotificationView
-from api.views.portfolio.fixed_income_views import FixedIncomeProgressionList
 from api.views.subcategory import SubcategoryView
 from api.views.transaction import TransactionView
 from api.views.transaction_classifier import TransactionClassifierView
@@ -36,8 +35,6 @@ urlpatterns = [
     path('next_month_view/', NextMonthView.as_view(), name='next_month_view'),
     # Configurações disponíveis apenas para usuários autenticados
     path('defaults/', Defaults.as_view(), name='defaults'),
-    # Portfolio
-    path('fixed-income/progression/', FixedIncomeProgressionList.as_view(), name='fixed_income_progression'),
     # Autenticação JWT
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
