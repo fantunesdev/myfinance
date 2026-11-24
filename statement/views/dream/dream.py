@@ -8,9 +8,10 @@ from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_GET, require_POST
 
+from statement.forms.dream.document import DreamDocumentForm
 from statement.forms.dream.dream import DreamForm
 from statement.forms.dream.photo import DreamPhotoForm
-from statement.models import Dream, DreamPhoto
+from statement.models import Dream, DreamDocument, DreamPhoto
 from statement.services.dream.dream import DreamService
 from statement.views.base_view import BaseView
 
@@ -103,6 +104,8 @@ class DreamView(BaseView):
             'transactions': instance.transactions.filter(user=request.user).order_by('-posted_date'),
             'photos': instance.photos.all(),
             'photo_form': DreamPhotoForm(),
+            'documents': instance.documents.all(),
+            'document_form': DreamDocumentForm(),
         }
 
     @method_decorator(login_required)
@@ -171,4 +174,55 @@ class DreamView(BaseView):
         except FileNotFoundError as error:
             raise Http404 from error
         response['Cache-Control'] = 'private, no-store'
+        return response
+
+    @method_decorator(login_required)
+    @method_decorator(require_POST)
+    def upload_documents(self, request, id):
+        dream = self._get_instance(request, id)
+        form = DreamDocumentForm(request.POST, request.FILES)
+        if form.is_valid():
+            saved = []
+            try:
+                with transaction.atomic():
+                    for file in form.cleaned_data['documents']:
+                        document = DreamDocument(dream=dream, file=file, name=file.name, size=file.size)
+                        saved.append(document)
+                        document.save()
+            except Exception:
+                for document in saved:
+                    if document.file and document.file._committed:
+                        document.file.delete(save=False)
+                raise
+            messages.success(request, 'Documentos adicionados ao sonho.')
+            return redirect('detail_dream', id=dream.pk)
+        self._context = 'detail'
+        context = self._add_context_on_templatetags(request, dream)
+        context.update(instance=dream, document_form=form)
+        return self._render(request, None, 'dream/detail.html', context)
+
+    @method_decorator(login_required)
+    @method_decorator(require_POST)
+    def delete_document(self, request, id, document_id):
+        dream = self._get_instance(request, id)
+        get_object_or_404(DreamDocument, dream=dream, pk=document_id).delete()
+        messages.success(request, 'Documento removido.')
+        return redirect('detail_dream', id=dream.pk)
+
+    @method_decorator(login_required)
+    @method_decorator(require_GET)
+    def document(self, request, id, document_id):
+        dream = self._get_instance(request, id)
+        document = get_object_or_404(DreamDocument, dream=dream, pk=document_id)
+        try:
+            response = FileResponse(
+                document.file.open('rb'),
+                content_type='application/pdf',
+                filename=document.name,
+                as_attachment=request.GET.get('download') == '1',
+            )
+        except FileNotFoundError as error:
+            raise Http404 from error
+        response['Cache-Control'] = 'private, no-store'
+        response['X-Content-Type-Options'] = 'nosniff'
         return response

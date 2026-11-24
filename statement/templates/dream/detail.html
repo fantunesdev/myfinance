@@ -52,6 +52,7 @@
                     {% endif %}
 
                     {% include 'dream/photos.html' %}
+                    {% include 'dream/documents.html' %}
 
                     <br><br>
                     <a href="{% url 'create_transaction' 'saida' %}?dream={{ instance.id }}"><input type="button" value="Cadastrar Aporte" class="btn btn-primary"></a>
@@ -114,4 +115,5 @@
     {% block scripts %}
     <script src="{% static 'js/pages/mobile-row-detail.js' %}" type="module"></script>
     <script src="{% static 'js/pages/dream-photos.js' %}" type="module"></script>
+    <script src="{% static 'js/pages/dream-documents.js' %}" type="module"></script>
     {% endblock %}

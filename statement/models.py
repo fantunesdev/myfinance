@@ -603,6 +603,21 @@ class DreamPhoto(models.Model):
         ordering = ['position', 'created_at', 'id']
 
 
+def dream_document_path(instance, filename):
+    return f'uploads/dream-documents/{instance.dream_id}/{uuid.uuid4().hex}.pdf'
+
+
+class DreamDocument(models.Model):
+    dream = models.ForeignKey(Dream, related_name='documents', on_delete=models.CASCADE)
+    file = models.FileField(upload_to=dream_document_path)
+    name = models.CharField(max_length=255)
+    size = models.PositiveIntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at', 'id']
+
+
 class Portion(models.Model):
     """
     Classe que representa uma parcela de um sonho.

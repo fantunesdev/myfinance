@@ -1,0 +1,39 @@
+<section class="dream-documents" aria-labelledby="dream-documents-title">
+    <div class="dream-photo-heading">
+        <h3 id="dream-documents-title">Documentos</h3>
+        <button type="button" class="btn dream-photo-add" data-document-add aria-label="Adicionar documentos" title="Adicionar documentos" aria-expanded="{% if document_form.errors %}true{% else %}false{% endif %}" aria-controls="dream-document-upload">
+            <i class="fa-solid fa-plus" aria-hidden="true"></i>
+        </button>
+    </div>
+    <form method="post" enctype="multipart/form-data" action="{% url 'upload_dream_documents' instance.id %}" class="dream-photo-upload" id="dream-document-upload" {% if not document_form.errors %}hidden{% endif %}>
+        {% csrf_token %}
+        <label class="btn dream-photo-picker" for="{{ document_form.documents.id_for_label }}">
+            <i class="fa-solid fa-file-pdf" aria-hidden="true"></i> Escolher PDFs
+            {{ document_form.documents }}
+        </label>
+        <span data-document-selection aria-live="polite" aria-atomic="true" hidden></span>
+        <small>Até 10 PDFs por envio, com no máximo 10 MB cada.</small>
+        {% for error in document_form.documents.errors %}<p role="alert" class="dream-photo-error">{{ error }}</p>{% endfor %}
+        <button type="submit" class="btn btn-primary">Adicionar documentos selecionados</button>
+    </form>
+    <div class="dream-document-list">
+        {% for document in documents %}
+        <div class="dream-document-row">
+            <a class="dream-document-name" href="{% url 'dream_document' instance.id document.id %}" target="_blank" rel="noopener">
+                <i class="fa-solid fa-file-pdf" aria-hidden="true"></i>
+                <span>{{ document.name }}</span>
+            </a>
+            <small>{{ document.size|filesizeformat }}</small>
+            <div class="dream-document-actions">
+                <a class="btn dream-photo-remove" href="{% url 'dream_document' instance.id document.id %}?download=1" aria-label="Baixar {{ document.name }}" title="Baixar PDF"><i class="fa-solid fa-download" aria-hidden="true"></i></a>
+                <form method="post" action="{% url 'delete_dream_document' instance.id document.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn dream-photo-remove" aria-label="Remover {{ document.name }}">Remover</button>
+                </form>
+            </div>
+        </div>
+        {% empty %}
+        <p class="dream-photo-empty">Nenhum documento ainda.</p>
+        {% endfor %}
+    </div>
+</section>

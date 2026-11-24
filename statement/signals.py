@@ -31,7 +31,7 @@ def ensure_notification_title_exists(sender, instance, created, **kwargs):
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
-from statement.models import Account, Card, CardNumber, DreamPhoto, Transaction
+from statement.models import Account, Card, CardNumber, DreamDocument, DreamPhoto, Transaction
 from statement.services.core.transaction import TransactionService
 
 
@@ -39,6 +39,13 @@ from statement.services.core.transaction import TransactionService
 def delete_dream_photo_file(sender, instance, **kwargs):
     if instance.image:
         storage, name = instance.image.storage, instance.image.name
+        transaction.on_commit(lambda: storage.delete(name))
+
+
+@receiver(post_delete, sender=DreamDocument)
+def delete_dream_document_file(sender, instance, **kwargs):
+    if instance.file:
+        storage, name = instance.file.storage, instance.file.name
         transaction.on_commit(lambda: storage.delete(name))
 
 

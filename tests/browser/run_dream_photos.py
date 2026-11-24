@@ -27,6 +27,7 @@ def run():
         from django.test import Client
         from PIL import Image
         from playwright.sync_api import expect, sync_playwright
+        from reportlab.pdfgen.canvas import Canvas
         from login.models import Profile, User
         from statement.models import AppConfig, Currency, Dream, Version
 
@@ -54,6 +55,13 @@ def run():
             path = Path(directory) / f'photo-{number}.png'
             Image.new('RGB', (900, 600), color).save(path)
             images.append(str(path))
+        pdfs = []
+        for name in ['Nota fiscal.pdf', 'Recibo.pdf']:
+            path = Path(directory) / name
+            canvas = Canvas(str(path))
+            canvas.drawString(40, 800, 'Nota fiscal de teste')
+            canvas.save()
+            pdfs.append(str(path))
         with socket.socket() as sock:
             sock.bind(('127.0.0.1', 0))
             port = sock.getsockname()[1]
@@ -109,7 +117,7 @@ def run():
                 page.get_by_role('button', name='Adicionar fotos', exact=True).click()
                 page.locator('input[name=photos]').set_input_files(images)
                 expect(page.locator('[data-photo-selection]')).to_have_text('3 fotos selecionadas')
-                expect(page.locator('.dream-photo-picker')).to_be_visible()
+                expect(page.locator('#dream-photo-upload .dream-photo-picker')).to_be_visible()
                 page.get_by_role('button', name='Adicionar selecionadas').click()
                 expect(page.locator('.dream-photo-card')).to_have_count(3)
                 expect(page.locator('#dream-photo-upload')).to_be_hidden()
@@ -220,6 +228,35 @@ def run():
                 page.get_by_role('button', name='Fechar fotos').click()
                 page.get_by_role('button', name='Remover foto 1', exact=True).click()
                 expect(page.locator('.dream-photo-card')).to_have_count(2)
+                expect(page.get_by_role('heading', name='Documentos', exact=True)).to_be_visible()
+                expect(page.locator('#dream-document-upload')).to_be_hidden()
+                page.get_by_role('button', name='Adicionar documentos', exact=True).click()
+                page.locator('input[name=documents]').set_input_files(pdfs)
+                expect(page.locator('[data-document-selection]')).to_have_text('2 documentos selecionados')
+                page.get_by_role('button', name='Adicionar documentos selecionados').click()
+                expect(page.locator('.dream-document-row')).to_have_count(2)
+                expect(page.locator('#dream-document-upload')).to_be_hidden()
+                document_link = page.get_by_role('link', name='Nota fiscal.pdf', exact=True)
+                response = page.request.get(document_link.evaluate('el => el.href'))
+                assert response.status == 200
+                assert response.headers['content-type'] == 'application/pdf'
+                assert response.headers['content-disposition'].startswith('inline;')
+                assert response.body().startswith(b'%PDF-')
+                with page.expect_download() as download:
+                    page.get_by_role('link', name='Baixar Nota fiscal.pdf', exact=True).click()
+                assert download.value.suggested_filename == 'Nota fiscal.pdf'
+                invalid_pdf = Path(directory) / 'invalid.pdf'
+                invalid_pdf.write_text('Not a PDF')
+                page.get_by_role('button', name='Adicionar documentos', exact=True).click()
+                page.locator('input[name=documents]').set_input_files(str(invalid_pdf))
+                page.get_by_role('button', name='Adicionar documentos selecionados').click()
+                expect(page.locator('#dream-document-upload')).to_be_visible()
+                expect(page.get_by_role('alert')).to_have_text('O arquivo enviado não é um PDF válido.')
+                expect(page.locator('.dream-document-row')).to_have_count(2)
+                expect(page.locator('.dream-photo-card')).to_have_count(2)
+                page.get_by_role('button', name='Remover Nota fiscal.pdf', exact=True).click()
+                expect(page.locator('.dream-document-row')).to_have_count(1)
+                page.locator('.dream-documents').screenshot(path='/tmp/myfinance-dream-documents-mobile.png')
                 page.goto(f'{origin}/sonhos/editar/{dream.pk}/')
                 editor = page.get_by_role('textbox', name='Anotações', exact=True)
                 expect(editor).to_be_visible()
@@ -272,7 +309,7 @@ def run():
                 assert not errors, errors
                 browser.close()
                 print(
-                    'PASS: gallery, ordering, carousel, fullscreen, notes editor, HTML source, formatting, persistence, HTML sanitization.'
+                    'PASS: gallery, ordering, carousel, fullscreen, PDF upload, validation, opening, download, removal, notes editor.'
                 )
         finally:
             server.terminate()

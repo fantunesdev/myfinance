@@ -1,4 +1,4 @@
-.dream-photos {
+.dream-photos, .dream-documents {
     margin-top: 28px;
     padding-top: 20px;
 }
@@ -46,6 +46,16 @@
 .dream-photo-picker:focus-within { outline: 2px solid currentColor; outline-offset: 2px; }
 .dream-photo-upload small, .dream-photo-error { flex-basis: 100%; }
 .dream-photo-error { color: #f07878; }
+.dream-document-row { display: flex; align-items: center; gap: 16px; padding: 10px 0; }
+.dream-document-name { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1; color: inherit; }
+.dream-document-name span { overflow-wrap: anywhere; }
+.dream-document-row small { opacity: .65; white-space: nowrap; }
+.dream-document-actions { display: flex; align-items: center; gap: 16px; }
+@media (max-width: 480px) {
+    .dream-document-row { flex-wrap: wrap; gap: 8px 16px; }
+    .dream-document-name { flex-basis: calc(100% - 80px); }
+    .dream-document-actions { margin-left: auto; }
+}
 .dream-photo-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
