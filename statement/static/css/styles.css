@@ -1112,10 +1112,6 @@ td a:hover {
     margin: 20px 0;
 }
 
-.date-input {
-    max-width: 100px;
-}
-
 .textarea {
     height: 200px;
     resize: vertical;
@@ -1172,6 +1168,12 @@ td textarea {
     margin: 2px;
     height: auto;
     min-height: 28px;
+}
+
+input[type="date"],
+td input[type="date"] {
+    width: 12rem;
+    max-width: 100%;
 }
 
 input[type="text"]:focus,
