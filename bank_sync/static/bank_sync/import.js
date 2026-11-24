@@ -86,6 +86,9 @@ async function api(path, data) {
     }
     const response = await fetch(base + path, options);
     if (!response.headers.get('content-type')?.includes('application/json')) {
+        if (response.status >= 500) {
+            throw new Error(`Erro no servidor ao processar a operação (HTTP ${response.status}). Consulte o resultado antes de repetir a confirmação.`);
+        }
         throw new Error('Sessão expirada ou resposta indisponível. Recarregue a página; depois consulte o resultado antes de repetir uma confirmação.');
     }
     const result = await response.json();

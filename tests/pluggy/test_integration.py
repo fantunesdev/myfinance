@@ -452,6 +452,28 @@ class PluggyIntegrationTests(TestCase):
         self.assertTrue(predicted.confirmed)
         self.assertEqual(Transaction.objects.count(), 2)
 
+    def test_installment_group_import_avoids_mysql_target_table_subquery(self):
+        from django.db import connection
+
+        def mysql_target_table_rule(execute, sql, params, many, context):
+            query = sql.upper().replace('`', '').replace('"', '')
+            if query.startswith('UPDATE STATEMENT_TRANSACTION') and 'SELECT' in query:
+                self.fail('MySQL 1093: installment UPDATE must not read its target table in a subquery')
+            return execute(sql, params, many, context)
+
+        row = self.mapped()
+        with connection.execute_wrapper(mysql_target_table_rule):
+            confirmed = confirm(self.user, row.pk, row.revision, 'create', self.create_data(project_remaining=True))
+        target = confirmed.transaction
+        target.refresh_from_db()
+        projection = ProjectedInstallment.objects.get(account=row.account)
+        self.assertIsNotNone(target.installment_id)
+        self.assertEqual(projection.transaction.installment_id, target.installment_id)
+        self.assertEqual(Transaction.objects.filter(user=self.user).count(), 2)
+        # Retrying the same confirmation must not create expenses or forecasts again.
+        confirm(self.user, row.pk, row.revision, 'create', self.create_data(project_remaining=True))
+        self.assertEqual(Transaction.objects.filter(user=self.user).count(), 2)
+
     def test_pending_open_bill_automatically_uses_card_due_date(self):
         self.raw["status"] = "PENDING"
         self.raw["creditCardMetadata"]["billId"] = None

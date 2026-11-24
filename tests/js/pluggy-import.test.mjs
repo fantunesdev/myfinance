@@ -23,7 +23,7 @@ class Element {
     querySelector() { return { value: 'csrf-test' }; }
     all() { return [this, ...this.children.flatMap(c => c.all())]; }
 }
-function setup(row = null, active = true) {
+function setup(row = null, active = true, failedReviewStatus = null) {
     const elements = new Map();
     const get = id => {
         if (!elements.has(id)) elements.set(id, new Element());
@@ -42,6 +42,9 @@ function setup(row = null, active = true) {
         document: { getElementById: get, createElement: tag => new Element(tag) },
         fetch: async (url, options) => {
             calls.push({ url, options });
+            if (url.endsWith('review/') && failedReviewStatus) {
+                return {status:failedReviewStatus,ok:false,headers:{get:()=> 'text/html'}};
+            }
             return { ok: true, headers: { get: () => 'application/json' },
                 json: async () => url.includes('prepare/') ? payload : {} };
         },
@@ -100,6 +103,16 @@ test('suggestions initialize editable category, subcategory and description', as
     assert.ok(controls.some(n=>n.tag==='input' && n.value==='TC name'));
     assert.ok(controls.some(n=>n.tag==='select' && n.value===1));
     assert.ok(controls.some(n=>n.tag==='select' && n.value===2));
+});
+
+test('HTML server errors are reported as server failures and preserve selected purchases', async () => {
+    const page = setup(row(), true, 500);
+    await flush();
+    page.get('pluggy-save').listeners.click();
+    await flush();
+    assert.ok(page.get('pluggy-message').textContent.includes('HTTP 500'));
+    assert.ok(!page.get('pluggy-message').textContent.includes('Sessão expirada'));
+    assert.equal(page.get('pluggy-rows').all().find(n => n['aria-label']?.startsWith('Selecionar')).checked, true);
 });
 
 test('new purchases start selected and dates display in Brazilian format', async () => {

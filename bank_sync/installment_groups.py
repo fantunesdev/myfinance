@@ -76,8 +76,13 @@ def attach_installment_group(row, target):
         members.append(target)
     Transaction.objects.filter(user=user, pk__in=[t.pk for t in members]).update(installment=plan, installments_number=total)
     anchors = [s.pk for s in bundle] if bundle else [row.pk]
-    projected_ids = ProjectedInstallment.objects.filter(anchor_id__in=anchors, transaction__user=user,
-                                                       account=row.account).values_list('transaction_id', flat=True)
+    # Materialize before UPDATE: the ownership join reads statement_transaction,
+    # which MySQL forbids inside a subquery updating that same table (1093).
+    projected_ids = list(
+        ProjectedInstallment.objects.filter(
+            anchor_id__in=anchors, transaction__user=user, account=row.account
+        ).values_list('transaction_id', flat=True)
+    )
     Transaction.objects.filter(user=user, pk__in=projected_ids).update(installment=plan)
     target.installment = plan
     target.installments_number = total

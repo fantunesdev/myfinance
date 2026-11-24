@@ -1172,7 +1172,7 @@ td textarea {
 
 input[type="date"],
 td input[type="date"] {
-    width: 12rem;
+    width: 120px;
     max-width: 100%;
 }
 
