@@ -38,14 +38,22 @@
                     <p style="font-size: 18px;">Valor Total: <b>{{ instance.target_value|to_reais }}</b></p>
                     <p style="font-size: 18px;">Status: <b>{{ instance.get_status_display }}</b></p>
                     <p style="font-size: 18px;">Acumulado: <b>{% get_cumulative_total_for_dream instance.id request.user %}</b></p>
+                    {% if instance.status == 'completed' %}
+                    <p style="font-size: 18px;">Valor Economizado: <b>{% get_remaining_value_for_dream instance.id instance.target_value request.user %}</b></p>
+                    {% else %}
                     <p style="font-size: 18px;">Valor Restante: <b>{% get_remaining_value_for_dream instance.id instance.target_value request.user %}</b></p>
                     <p style="font-size: 18px;">Progresso: <b>{{ instance.progress_percentage|floatformat:1 }}%</b></p>
+                    {% endif %}
+                    {% if instance.limit_date %}
                     <p style="font-size: 18px;">Data Limite: <b>{{ instance.limit_date }}</b></p>
-                    {% if instance.completion_date %}
+                    {% endif %}
+                    {% if instance.status == 'completed' and instance.completion_date %}
                     <p style="font-size: 18px;">Data de Conclusão: <b>{{ instance.completion_date }}</b></p>
                     {% endif %}
+                    {% if instance.status == 'active' and instance.limit_date %}
                     <p style="font-size: 18px;">Meses Restantes: <b>{% calculate_remaining_months instance %}</b></p>
                     <p style="font-size: 18px;">Valor das Parcelas: <b>{% calcule_remaining_installment_value instance.id instance.target_value instance.limit_date request.user %}</b></p>
+                    {% endif %}
                     {% if instance.notes %}
                     <p style="font-size: 18px;">Anotações:</p>
                     <div class="box-observation formatted-notes">{{ instance.notes|formatted_notes }}</div>

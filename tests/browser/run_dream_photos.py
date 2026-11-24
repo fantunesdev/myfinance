@@ -48,6 +48,7 @@ def run():
             target_value=10000,
             limit_date=date(2027, 12, 1),
         )
+        undated_dream = Dream.objects.create(user=user, description='Sonho sem prazo', target_value=1000)
         client = Client()
         client.force_login(user)
         images = []
@@ -306,10 +307,37 @@ def run():
                 expect(editor.locator('b')).to_have_text('Texto')
                 expect(editor.locator('img')).to_have_count(0)
                 page.locator('[data-rich-text]').screenshot(path='/tmp/myfinance-dream-notes-editor.png')
+                def show_dream(status):
+                    page.goto(f'{origin}/sonhos/editar/{dream.pk}/')
+                    page.locator('[name=status]').select_option(status)
+                    page.locator('[name=completion_date]').fill('2026-11-24')
+                    page.locator('[name=limit_date]').fill('2027-12-01')
+                    page.get_by_role('button', name='Salvar', exact=True).click()
+                    page.goto(f'{origin}/sonhos/{dream.pk}/')
+
+                show_dream('active')
+                for label in ['Valor Restante:', 'Progresso:', 'Meses Restantes:', 'Valor das Parcelas:']:
+                    expect(page.get_by_text(label, exact=False)).to_be_visible()
+                expect(page.get_by_text('Data de Conclusão:', exact=False)).to_have_count(0)
+                show_dream('completed')
+                expect(page.get_by_text('Valor Economizado:', exact=False)).to_contain_text('R$ 10.000,00')
+                expect(page.get_by_text('Data de Conclusão:', exact=False)).to_be_visible()
+                for label in ['Valor Restante:', 'Progresso:', 'Meses Restantes:', 'Valor das Parcelas:']:
+                    expect(page.get_by_text(label, exact=False)).to_have_count(0)
+                show_dream('paused')
+                for label in ['Meses Restantes:', 'Valor das Parcelas:', 'Data de Conclusão:', 'Valor Economizado:']:
+                    expect(page.get_by_text(label, exact=False)).to_have_count(0)
+                expect(page.get_by_text('Valor Restante:', exact=False)).to_be_visible()
+                show_dream('active')
+                for label in ['Valor Restante:', 'Progresso:', 'Meses Restantes:', 'Valor das Parcelas:']:
+                    expect(page.get_by_text(label, exact=False)).to_be_visible()
+                page.goto(f'{origin}/sonhos/{undated_dream.pk}/')
+                for label in ['Data Limite:', 'Meses Restantes:', 'Valor das Parcelas:']:
+                    expect(page.get_by_text(label, exact=False)).to_have_count(0)
                 assert not errors, errors
                 browser.close()
                 print(
-                    'PASS: gallery, ordering, carousel, fullscreen, PDF upload, validation, opening, download, removal, notes editor.'
+                    'PASS: gallery, ordering, carousel, PDFs, notes editor, and detail fields by dream status and deadline.'
                 )
         finally:
             server.terminate()
