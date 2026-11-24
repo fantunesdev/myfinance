@@ -28,6 +28,7 @@ urlpatterns = [
     path('', transaction_view.get_current_month),
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
+    path('auth/', include('login.social_urls', namespace='social')),
     path('login/', login_user, name='login_user'),
     path('logout/', logout_user, name='logout_user'),
     path('investimentos/', include('investments.urls')),

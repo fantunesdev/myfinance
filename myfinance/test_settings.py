@@ -11,6 +11,7 @@ INSTALLED_APPS = [
     'bank_sync',
     'investments',
     'rest_framework',
+    'social_django',
 ]
 AUTH_USER_MODEL = 'login.User'
 DATABASES = {'default': {'ENGINE': 'django.db.backends.sqlite3', 'NAME': ':memory:'}}

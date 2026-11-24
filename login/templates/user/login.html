@@ -11,6 +11,7 @@
         <div class="header">
             <h3 class="box-title">MyFinance - Login</h3>
         </div>
+        {% for message in messages %}<p role="alert">{{ message }}</p>{% endfor %}
         <form method="post">
             <div class="box-body">
                 {% csrf_token %}
@@ -19,13 +20,14 @@
                 {% endif %}
 
                 <div class="form-group">
+                    {{ login_form.non_field_errors }}
                     {{ login_form.username.errors }}
                     <label>Usuário: </label>
                     {{ login_form.username }}
                 </div>
 
                 <div class="form-group">
-                    {{ login_form.passwor1.errors }}
+                    {{ login_form.password.errors }}
                     <label>Senha: </label>
                     {{ login_form.password }}
                 </div>
@@ -33,5 +35,21 @@
                 <a href="/usuarios/cadastrar">Cadastrar novo usuário</a>
             </div>
         </form>
+        {% if google_login_enabled %}
+            <section class="social-login" aria-labelledby="social-login-title">
+                <h4 id="social-login-title" class="social-login-title">Login social</h4>
+                <form method="post" action="{% url 'social:begin' 'google-oauth2' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="social-login-google" aria-label="Entrar com Google" title="Entrar com Google">
+                        <svg width="24" height="24" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+                            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6C44.4 38.03 46.98 31.87 46.98 24.55z"/>
+                            <path fill="#FBBC05" d="M10.53 28.59A14.41 14.41 0 0 1 9.75 24c0-1.59.27-3.13.77-4.59l-7.98-6.19A23.87 23.87 0 0 0 0 24c0 3.87.93 7.53 2.56 10.78l7.97-6.19z"/>
+                            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.91-5.8l-7.73-6c-2.15 1.45-4.92 2.3-8.18 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                        </svg>
+                    </button>
+                </form>
+            </section>
+        {% endif %}
     </div>
 {% endblock %}

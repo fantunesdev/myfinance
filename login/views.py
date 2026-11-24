@@ -1,9 +1,10 @@
 import secrets
+import time
 
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth.forms import SetPasswordForm
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
@@ -81,14 +82,20 @@ def change_password(request):
     Método que altera a senha do usuário.
     :request (django.http.HttpRequest): - Informações sobre o cabeçalho, método e outros dados da requisição.
     """
-    if request.method == 'POST':
-        password_form = PasswordChangeCustomForm(request.user, request.POST)
-        if password_form.is_valid():
-            user = password_form.save()
-            update_session_auth_hash(request, user)
-            return redirect('get_profile')
+    if request.user.has_usable_password():
+        form_class = PasswordChangeCustomForm
     else:
-        password_form = PasswordChangeForm(request.user)
+        verified = request.session.get('google_reauthenticated', {})
+        if verified.get('user') != str(request.user.pk) or not 0 <= time.time() - verified.get('at', 0) <= 300:
+            messages.error(request, 'Confirme sua conta Google no perfil antes de definir uma senha.')
+            return redirect('get_profile')
+        form_class = SetPasswordForm
+    password_form = form_class(request.user, request.POST if request.method == 'POST' else None)
+    if request.method == 'POST' and password_form.is_valid():
+        user = password_form.save()
+        request.session.pop('google_reauthenticated', None)
+        update_session_auth_hash(request, user)
+        return redirect('get_profile')
     return render(request, 'user/password_form.html', {'form_senha': password_form})
 
 

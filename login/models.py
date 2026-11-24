@@ -36,6 +36,7 @@ class Profile(models.Model):
     """
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    social_login_enabled = models.BooleanField(default=True)
     use_next_month = models.BooleanField(default=False)
     enable_fuel_tracking = models.BooleanField(default=False)
     inactivity_logout_enabled = models.BooleanField(default=False)

@@ -62,7 +62,7 @@ def web(db):
                         'django.contrib.messages.context_processors.messages',
                     ]}}],
     ):
-        user = User.objects.create_user(username='form-titles', name='Form titles', email='titles@test.invalid', is_staff=True)
+        user = User.objects.create_user(username='form-titles', name='Form titles', email='titles@test.invalid', password='Titles!123', is_staff=True)
         Profile.objects.create(user=user)
         client = Client()
         client.force_login(user)

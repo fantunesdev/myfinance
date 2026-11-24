@@ -454,3 +454,71 @@ classificador, que agora também contém a fila e os checkpoints. O worker é in
 automaticamente pela API. Veja o README do classificador para recuperação após
 reinícios e limites da fila local. Nenhum comando de migração deve usar as
 configurações de teste ao atualizar a instalação real.
+
+### Login com Google
+
+O login social é opcional e mantém o acesso por usuário e senha. Para habilitar:
+
+1. Instale as dependências atualizadas com `poetry install`.
+   No Docker, reconstrua a imagem quando `pyproject.toml` ou `poetry.lock`
+   mudar: reiniciar o container recarrega configurações, mas não instala as
+   dependências novas. O código de login social exige as versões do lockfile;
+   uma imagem antiga pode retornar `unexpected keyword argument: id_key`.
+2. Aplique as migrações no ambiente real com `poetry run python manage.py migrate`
+   (sem usar configurações de teste).
+3. No Google Cloud, configure a tela de consentimento e crie um cliente OAuth
+   do tipo **Aplicativo da Web**, com credenciais separadas por ambiente.
+4. Cadastre o callback exato `https://SEU_DOMINIO/auth/complete/google-oauth2/`.
+   Para desenvolvimento HTTP local, use `http://localhost:8000/auth/complete/google-oauth2/`.
+   O endereço deve corresponder ao host, porta e protocolo de acesso.
+5. Configure as variáveis e reinicie a aplicação:
+
+```env
+SOCIAL_LOGIN_ENABLED=true
+GOOGLE_OAUTH2_KEY=
+GOOGLE_OAUTH2_SECRET=
+```
+
+Em produção, use HTTPS, `SESSION_COOKIE_SECURE=true` e
+`CSRF_COOKIE_SECURE=true`. Se houver proxy TLS, revise a configuração existente
+`TRUST_HTTPS_PROXY` para que o callback use o protocolo público correto.
+Nunca versione as credenciais. Em modo de teste do Google, autorize os usuários
+na tela de consentimento antes da homologação.
+
+O primeiro acesso exige e-mail verificado e cria usuário sem senha, sem privilégios
+administrativos, e seu perfil. Nome, e-mail e foto locais não são sobrescritos nos
+acessos seguintes. A identidade é vinculada pelo identificador estável do Google,
+e os tokens do provedor não são persistidos.
+
+Se o e-mail já estiver cadastrado, entre pelo método atual e use **Conectar ou
+confirmar conta Google** no perfil. A coincidência de e-mail não vincula contas
+automaticamente. Para definir a primeira senha, confirme uma conta Google
+conectada e acesse **Alterar Senha** em até cinco minutos. A desconexão do Google
+é bloqueada quando ele for o único método de acesso.
+
+Para desativar, defina `SOCIAL_LOGIN_ENABLED=false` e reinicie. Isso oculta os
+controles e bloqueia os endpoints sociais, preservando os vínculos no banco.
+Contas sem senha precisarão do recurso reativado para voltar a entrar; defina um
+método alternativo antes de uma desativação permanente.
+
+Cada usuário também pode ativar ou desativar sua preferência em **Perfil → Login
+social**, sem reiniciar a aplicação. O acesso com Google só funciona quando a
+configuração global e a preferência do usuário estão ativadas. A preferência
+começa ativada para preservar o comportamento das contas existentes e permitir
+o cadastro pelo Google.
+
+Desativar bloqueia novos acessos e vinculações pelo Google, preservando os
+vínculos e a sessão atual. Para evitar perda de acesso, o usuário precisa ter uma
+senha definida antes de desativar. Ele pode entrar com usuário e senha e reativar
+a opção posteriormente. A preferência pode ser editada mesmo quando o recurso
+estiver indisponível globalmente. A migração `login.0007` adiciona esse campo ao
+perfil; aplique-a com `poetry run python manage.py migrate` no ambiente real.
+
+Validação automatizada isolada:
+
+```bash
+poetry run pytest tests/security/test_social_login.py --ds=myfinance.test_settings
+```
+
+Os testes simulam as respostas HTTP do Google. Antes da liberação, homologue
+login, cancelamento e vinculação com credenciais reais no domínio de destino.

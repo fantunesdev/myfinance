@@ -9,6 +9,45 @@
 
 {% block content %}
     <div class="box box-primary">
+        <div class="box-header"><h3 class="box-title">Login social</h3></div>
+        <div class="box-body">
+            <p>Login social para sua conta: {% if user_social_login_enabled %}Ativado{% else %}Desativado{% endif %}.</p>
+            <p>Desativar impede novos acessos com Google e preserva suas contas vinculadas. A sessão atual continua aberta.</p>
+            <form method="post" action="{% url 'social:preference' %}">
+                {% csrf_token %}
+                {% if user_social_login_enabled %}
+                    <input type="hidden" name="enabled" value="false">
+                    <button type="submit" class="btn">Desativar login social</button>
+                {% else %}
+                    <input type="hidden" name="enabled" value="true">
+                    <button type="submit" class="btn btn-primary">Ativar login social</button>
+                {% endif %}
+            </form>
+            {% if google_login_enabled %}
+            {% for account in google_accounts %}
+                <p>Conta Google conectada.</p>
+                <form method="post" action="{% url 'social:disconnect_individual' 'google-oauth2' account.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn">Desconectar Google</button>
+                </form>
+            {% endfor %}
+            {% if user_social_login_enabled %}
+            <form method="post" action="{% url 'social:begin' 'google-oauth2' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary">Conectar ou confirmar conta Google</button>
+            </form>
+            {% if not user.has_usable_password %}
+                <p>Para definir uma senha, confirme sua conta Google e acesse Alterar Senha em até cinco minutos.</p>
+            {% endif %}
+            {% else %}
+                <p>Ative o login social para sua conta para conectar o Google.</p>
+            {% endif %}
+            {% else %}
+                <p role="status">Conexão com Google indisponível. O administrador precisa configurar e habilitar a integração antes que você possa conectar sua conta.</p>
+            {% endif %}
+        </div>
+    </div>
+    <div class="box box-primary">
         <div class="box-header"><h3 class="box-title">Privacidade e segurança</h3></div>
         <div class="box-body">
             <p>Sair automaticamente por inatividade:

@@ -70,6 +70,7 @@ INSTALLED_APPS = [
     'api',
     'channels',
     'oauth2_provider',
+    'social_django',
 ]
 
 MIDDLEWARE = [
@@ -97,6 +98,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'login.context_processors.inactivity_logout',
                 'login.context_processors.app_version',
+                'login.context_processors.social_login',
                 'statement.context_processors.sidebar_navigation',
                 'django.contrib.messages.context_processors.messages',
             ],
@@ -262,3 +264,27 @@ LOGGING = {
         },
     },
 }
+
+
+# Google login is opt-in; credentials are never stored in the repository.
+SOCIAL_AUTH_PIPELINE = (
+    'social_core.pipeline.social_auth.social_details',
+    'social_core.pipeline.social_auth.social_uid',
+    'social_core.pipeline.social_auth.auth_allowed',
+    'social_core.pipeline.social_auth.social_user',
+    'login.pipeline.provision_user',
+)
+
+SOCIAL_LOGIN_ENABLED = os.getenv('SOCIAL_LOGIN_ENABLED', 'false').lower() in ('true', '1', 'yes')
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.getenv('GOOGLE_OAUTH2_KEY', '')
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.getenv('GOOGLE_OAUTH2_SECRET', '')
+SOCIAL_AUTH_GOOGLE_OAUTH2_USE_UNIQUE_USER_ID = True
+SOCIAL_AUTH_GOOGLE_OAUTH2_ID_KEY = 'sub'
+SOCIAL_AUTH_GOOGLE_OAUTH2_AUTH_EXTRA_ARGUMENTS = {'prompt': 'select_account'}
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = '/'
+SOCIAL_AUTH_LOGIN_ERROR_URL = '/login/'
+SOCIAL_AUTH_SANITIZE_REDIRECTS = True
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+    'social_core.backends.google.GoogleOAuth2',
+)
