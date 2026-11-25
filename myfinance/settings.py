@@ -214,7 +214,7 @@ SIMPLE_JWT = {
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-        'LOCATION': 'redis://localhost:6379/1',
+        'LOCATION': os.getenv('CACHE_URL', 'redis://localhost:6379/1'),
     }
 }
 
@@ -233,6 +233,7 @@ os.makedirs(LOG_DIR, exist_ok=True)
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'filters': {'recovery_url': {'()': 'login.log_filters.RecoveryURLFilter'}},
     'formatters': {
         'verbose': {
             'format': '[{asctime}] {levelname} {name}: {message}',
@@ -241,6 +242,7 @@ LOGGING = {
     },
     'handlers': {
         'file': {
+            'filters': ['recovery_url'],
             'level': 'INFO',
             'class': 'logging.handlers.TimedRotatingFileHandler',
             'filename': os.path.join(LOG_DIR, 'myfinance.log'),
@@ -288,3 +290,20 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'social_core.backends.google.GoogleOAuth2',
 )
+
+# Password recovery: the Gmail sender is independent of social-login credentials.
+PUBLIC_BASE_URL = os.getenv('PUBLIC_BASE_URL', 'http://localhost:8000' if DEBUG else '')
+PASSWORD_RESET_TIMEOUT = int(os.getenv('PASSWORD_RESET_TIMEOUT', '1800'))
+PASSWORD_RESET_RATE_WINDOW = int(os.getenv('PASSWORD_RESET_RATE_WINDOW', '900'))
+PASSWORD_RESET_IP_LIMIT = int(os.getenv('PASSWORD_RESET_IP_LIMIT', '30'))
+PASSWORD_RESET_EMAIL_LIMIT = int(os.getenv('PASSWORD_RESET_EMAIL_LIMIT', '3'))
+EMAIL_BACKEND = os.getenv(
+    'EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend' if DEBUG else 'login.email_backend.GmailBackend',
+)
+EMAIL_TIMEOUT = int(os.getenv('EMAIL_TIMEOUT', '15'))
+GMAIL_SENDER_EMAIL = os.getenv('GMAIL_SENDER_EMAIL', '')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', GMAIL_SENDER_EMAIL or 'MyFinance <no-reply@localhost>')
+GMAIL_CLIENT_ID = os.getenv('GMAIL_CLIENT_ID', '')
+GMAIL_CLIENT_SECRET = os.getenv('GMAIL_CLIENT_SECRET', '')
+GMAIL_REFRESH_TOKEN = os.getenv('GMAIL_REFRESH_TOKEN', '')
+GMAIL_REFRESH_TOKEN_FILE = os.getenv('GMAIL_REFRESH_TOKEN_FILE', '')

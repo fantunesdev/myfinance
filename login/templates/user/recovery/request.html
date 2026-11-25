@@ -1,0 +1,13 @@
+{% extends 'user/recovery/base.html' %}
+{% block recovery_content %}
+<p>Informe seu e-mail cadastrado para receber um link de recuperação de senha.</p>
+<p>Se sua conta usa somente o Google, entre com Google para definir uma senha no perfil.</p>
+<form method="post">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    {{ form.email.label_tag }}
+    {{ form.email.errors }}
+    {{ form.email }}
+    <button type="submit" class="btn btn-primary">Enviar instruções</button>
+</form>
+{% endblock %}

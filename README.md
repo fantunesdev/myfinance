@@ -522,3 +522,26 @@ poetry run pytest tests/security/test_social_login.py --ds=myfinance.test_settin
 
 Os testes simulam as respostas HTTP do Google. Antes da liberação, homologue
 login, cancelamento e vinculação com credenciais reais no domínio de destino.
+
+## Planos de evolução
+
+- [Recuperação de senha e envio pela Gmail API](docs/plano-recuperacao-senha.md):
+  escopo, decisões e pendências da implementação.
+
+
+### Recuperação de senha
+
+A tela de login oferece **Esqueci minha senha**. Contas ativas com senha local
+recebem um link de uso único, válido por 30 minutos. Contas exclusivamente Google
+continuam usando a confirmação Google no perfil para definir a primeira senha.
+
+O envio usa a Gmail API e um worker dedicado, `process_password_reset_emails`.
+A migração `login.0008` cria a fila. Atualize também o repositório Docker, que
+inclui o serviço `password-reset-email`, o repasse das variáveis Gmail e sua
+integração com o deploy. JWTs e tokens de dispositivo permanecem válidos;
+a recuperação invalida as sessões web antigas.
+
+Veja [Configuração Google e operação da recuperação](docs/recuperacao-senha.md)
+para habilitar a API, autorizar a conta remetente com `authorize_gmail`, configurar
+as variáveis no Compose e homologar o recebimento. Em desenvolvimento o padrão é
+o backend de console; em produção configure `login.email_backend.GmailBackend`.

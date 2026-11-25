@@ -1,0 +1,11 @@
+Olá,
+
+Recebemos uma solicitação de recuperação de senha para seu usuário {{ username }} no MyFinance.
+
+Para definir uma nova senha, acesse:
+{{ reset_url }}
+
+Este link é de uso único e expira em {{ minutes }} minutos.
+Se você não solicitou a recuperação, ignore esta mensagem. Sua senha continuará a mesma.
+
+MyFinance

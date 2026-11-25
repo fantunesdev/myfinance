@@ -1,0 +1,8 @@
+{% extends 'user/recovery/base.html' %}
+{% block recovery_title %}Solicitação recebida{% endblock %}
+{% block recovery_heading %}Solicitação recebida{% endblock %}
+{% block recovery_content %}
+<p role="status">Se houver uma conta elegível, você receberá as instruções.</p>
+<p>Confira também a pasta de spam. O envio pode levar alguns minutos.</p>
+<p><a href="{% url 'password_reset' %}">Solicitar novamente</a></p>
+{% endblock %}

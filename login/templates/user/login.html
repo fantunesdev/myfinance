@@ -33,6 +33,8 @@
                 </div>
                 <input type="submit" value="Logar" class="btn btn-primary">
                 <a href="/usuarios/cadastrar">Cadastrar novo usuário</a>
+                {% url 'password_reset' as recovery_url %}
+                {% if recovery_url %}<p><a href="{{ recovery_url }}">Esqueci minha senha</a></p>{% endif %}
             </div>
         </form>
         {% if google_login_enabled %}

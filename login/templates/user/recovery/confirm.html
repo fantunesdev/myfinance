@@ -1,0 +1,23 @@
+{% extends 'user/recovery/base.html' %}
+{% block recovery_title %}Definir nova senha{% endblock %}
+{% block recovery_heading %}Definir nova senha{% endblock %}
+{% block recovery_content %}
+{% if validlink %}
+<form method="post">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    {% for field in form %}
+    <div class="form-group">
+        {{ field.label_tag }}
+        {{ field.errors }}
+        {{ field }}
+        {% if field.help_text %}<div class="password-help">{{ field.help_text|safe }}</div>{% endif %}
+    </div>
+    {% endfor %}
+    <button type="submit" class="btn btn-primary">Salvar nova senha</button>
+</form>
+{% else %}
+<p role="alert">Este link é inválido, expirou ou já foi utilizado.</p>
+<p><a href="{% url 'password_reset' %}">Solicitar um novo link</a></p>
+{% endif %}
+{% endblock %}

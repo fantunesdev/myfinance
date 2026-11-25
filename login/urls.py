@@ -7,6 +7,7 @@ from statement.views.next_month_view import edit_next_month_view
 from .views import *
 
 urlpatterns = [
+    path('senha/', include('login.recovery_urls')),
     path('cadastrar/', create_user, name='create_user'),
     path('perfil/', get_profile, name='get_profile'),
     path('perfil/inatividade/editar/', edit_inactivity_logout, name='edit_inactivity_logout'),

@@ -1,0 +1,7 @@
+{% extends 'user/recovery/base.html' %}
+{% block recovery_title %}Senha atualizada{% endblock %}
+{% block recovery_heading %}Senha atualizada{% endblock %}
+{% block recovery_content %}
+<p role="status">Sua senha foi atualizada. Entre novamente para acessar sua conta.</p>
+<a href="{% url 'login_user' %}" class="btn btn-primary">Entrar</a>
+{% endblock %}

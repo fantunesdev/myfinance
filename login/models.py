@@ -1,8 +1,21 @@
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.utils import timezone
 
 from login.manager import UserManager
+
+
+class PasswordResetDelivery(models.Model):
+    """Short-lived outbox: tokens and recipient addresses are never persisted."""
+
+    user = models.ForeignKey('login.User', null=True, on_delete=models.CASCADE)
+    credential_fingerprint = models.CharField(max_length=64, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    available_at = models.DateTimeField(default=timezone.now, db_index=True)
+    locked_until = models.DateTimeField(null=True)
+    claim = models.UUIDField(null=True)
+    attempts = models.PositiveSmallIntegerField(default=0)
 
 # Create your models here.
 
