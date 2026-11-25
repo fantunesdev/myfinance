@@ -15,6 +15,7 @@
         <form method="post">
             <div class="box-body">
                 {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.GET.next }}">
                 {% if request.GET.inactive == '1' %}
                     <p role="status">Você saiu por inatividade. Entre novamente para continuar.</p>
                 {% endif %}

@@ -56,7 +56,7 @@ def public_origin():
     return value
 
 
-def allow_request(request, email):
+def allow_request(request, email, purpose="password-reset"):
     """Atomic counters; never trust caller-supplied forwarding headers."""
     window = getattr(settings, 'PASSWORD_RESET_RATE_WINDOW', 900)
     limits = (
@@ -67,7 +67,7 @@ def allow_request(request, email):
     try:
         for kind, value, limit in limits:
             digest = salted_hmac('password-reset-rate', value, algorithm='sha256').hexdigest()
-            key = f'password-reset:{kind}:{digest}'
+            key = f'{purpose}:{kind}:{digest}'
             if cache.add(key, 1, timeout=window):
                 count = 1
             else:

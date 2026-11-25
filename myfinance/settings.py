@@ -55,7 +55,7 @@ ENVIRONMENT = os.getenv('ENVIRONMENT')
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
+    'login.admin_apps.SecurityAdminConfig',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -79,6 +79,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'login.middleware.TwoFactorSessionMiddleware',
     'login.middleware.PrivatePageCacheMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -187,9 +188,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',
+        'login.authentication.SecureSessionAuthentication',
         'statement.authentication.DeviceTokenAuthentication',
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'login.authentication.SecureJWTAuthentication',
         'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
         # 'rest_framework.authentication.BasicAuthentication'
     ],
@@ -307,3 +308,6 @@ GMAIL_CLIENT_ID = os.getenv('GMAIL_CLIENT_ID', '')
 GMAIL_CLIENT_SECRET = os.getenv('GMAIL_CLIENT_SECRET', '')
 GMAIL_REFRESH_TOKEN = os.getenv('GMAIL_REFRESH_TOKEN', '')
 GMAIL_REFRESH_TOKEN_FILE = os.getenv('GMAIL_REFRESH_TOKEN_FILE', '')
+
+TWO_FACTOR_ENCRYPTION_KEY = os.getenv('TWO_FACTOR_ENCRYPTION_KEY', '')
+OAUTH2_PROVIDER = {**globals().get('OAUTH2_PROVIDER', {}), 'OAUTH2_VALIDATOR_CLASS': 'login.oauth_validator.TwoFactorOAuthValidator'}

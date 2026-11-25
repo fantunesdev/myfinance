@@ -10,5 +10,6 @@ class RecoveryURLFilter(logging.Filter):
     def filter(self, record):
         message = record.getMessage()
         record.msg = self.pattern.sub(r'\1[redacted]/', message)
+        record.msg = re.sub(r'(/usuarios/seguranca/email/confirmar/)[^/\s?]+/', r'\1[redacted]/', record.msg)
         record.args = ()
         return True

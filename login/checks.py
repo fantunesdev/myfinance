@@ -29,4 +29,11 @@ def password_recovery_configuration(app_configs, **kwargs):
             issues.append(Error(f'{name} precisa ser positivo.', id='login.E001'))
     if not 0 < (getattr(settings, 'EMAIL_TIMEOUT', None) or 15) <= 30:
         issues.append(Error('EMAIL_TIMEOUT precisa estar entre 1 e 30 segundos.', id='login.E002'))
+    key = getattr(settings, 'TWO_FACTOR_ENCRYPTION_KEY', '')
+    if key:
+        try:
+            from cryptography.fernet import Fernet
+            Fernet(key.encode())
+        except Exception:
+            issues.append(Error('TWO_FACTOR_ENCRYPTION_KEY deve ser uma chave Fernet válida.', id='login.E003'))
     return issues

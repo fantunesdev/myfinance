@@ -9,6 +9,14 @@
 
 {% block content %}
     <div class="box box-primary">
+        <div class="box-header"><h3 class="box-title">Segurança da conta</h3></div>
+        <div class="box-body">
+            <p>E-mail de recuperação: {{ user.email }} — {% if user.email_verified_at %}Confirmado{% else %}Pendente de confirmação{% endif %}.</p>
+            <p>Autenticação em duas etapas: {% if user.two_factor_enabled %}Ativada{% else %}Desativada{% endif %}.</p>
+            <a class="btn btn-primary" href="{% url 'account_security' %}">Gerenciar e-mail e autenticador</a>
+        </div>
+    </div>
+    <div class="box box-primary">
         <div class="box-header"><h3 class="box-title">Login social</h3></div>
         <div class="box-body">
             <p>Login social para sua conta: {% if user_social_login_enabled %}Ativado{% else %}Desativado{% endif %}.</p>
@@ -25,7 +33,7 @@
             </form>
             {% if google_login_enabled %}
             {% for account in google_accounts %}
-                <p>Conta Google conectada.</p>
+                <p>Conta Google conectada: {% if account.extra_data.email %}{{ account.extra_data.email }}{% else %}Endereço ainda não identificado. Confirme a conta Google para atualizar.{% endif %}</p>
                 <form method="post" action="{% url 'social:disconnect_individual' 'google-oauth2' account.id %}">
                     {% csrf_token %}
                     <button type="submit" class="btn">Desconectar Google</button>

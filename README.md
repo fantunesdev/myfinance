@@ -545,3 +545,17 @@ Veja [Configuração Google e operação da recuperação](docs/recuperacao-senh
 para habilitar a API, autorizar a conta remetente com `authorize_gmail`, configurar
 as variáveis no Compose e homologar o recebimento. Em desenvolvimento o padrão é
 o backend de console; em produção configure `login.email_backend.GmailBackend`.
+
+
+### Segurança da conta e 2FA
+
+O perfil distingue o e-mail de recuperação das contas Google vinculadas.
+Alterações de e-mail exigem confirmação no novo endereço e preservam o anterior
+até a conclusão. O usuário pode ativar um autenticador TOTP com códigos de
+recuperação de uso único. Login local, Google, Admin, JWT e sessões respeitam a
+segunda etapa, e recuperar a senha não desativa o autenticador.
+
+Veja [Identidade e autenticação em duas etapas](docs/identidade-2fa.md) para
+configuração, regras de recuperação, automações e publicação. A migração
+`login.0009` e a atualização da imagem são necessárias. Configure e preserve
+`TWO_FACTOR_ENCRYPTION_KEY` em produção antes de ativar o primeiro autenticador.

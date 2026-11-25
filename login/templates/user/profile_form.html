@@ -30,11 +30,7 @@
                     {{ profile_form.name.errors }}
                 </div>
 
-                <div class="form-group">
-                    <label>Senha: </label>
-                    {{ profile_form.email }}
-                    {{ profile_form.email.errors }}
-                </div>
+                <p>Para alterar seu e-mail de recuperação, acesse <a href="{% url 'account_security' %}">Segurança da conta</a>.</p>
 
                 <div class="form-group">
                     <label>Username: </label>

@@ -1,0 +1,12 @@
+{% extends 'user/security/form.html' %}
+{% block content %}
+<div class="box box-primary box-500 center-div">
+    <div class="header"><h3 class="box-title">Guarde seus códigos de recuperação</h3></div>
+    <div class="box-body">
+        <p>Estes códigos aparecem somente agora. Guarde-os fora do celular. Cada código pode ser usado uma única vez, inclusive para confirmar uma ação de segurança. Os códigos anteriores foram invalidados.</p>
+        <ul>{% for code in codes %}<li><code>{{ code }}</code></li>{% endfor %}</ul>
+        <p>Se perder o autenticador e todos os códigos, entre em contato com o administrador. Recuperar a senha por e-mail não desativa o 2FA.</p>
+    </div>
+    <div class="box-footer"><a href="{% url 'account_security' %}">Voltar à segurança da conta</a></div>
+</div>
+{% endblock %}

@@ -1,6 +1,6 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from login.api_auth import SecureTokenView, SecureRefreshView
 
 from api.views.account import AccountView
 from api.views.bank import BankView
@@ -36,7 +36,7 @@ urlpatterns = [
     # Configurações disponíveis apenas para usuários autenticados
     path('defaults/', Defaults.as_view(), name='defaults'),
     # Autenticação JWT
-    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('token/', SecureTokenView.as_view(), name='token_obtain_pair'),
+    path('token/refresh/', SecureRefreshView.as_view(), name='token_refresh'),
     path('validate-token/', ValidateTokenView.as_view(), name='validate_token'),
 ]

@@ -1,0 +1,13 @@
+{% extends 'user/security/form.html' %}
+{% block content %}
+<div class="box box-primary box-500 center-div">
+    <div class="header"><h3 class="box-title">Confirmar e-mail de recuperação</h3></div>
+    <div class="box-body">
+        {% if validlink %}
+        <p>Confirme o uso de {{ target_email }} como e-mail de recuperação desta conta. Esta ação não conecta nem troca sua conta Google.</p>
+        <form method="post">{% csrf_token %}<button class="btn btn-primary" type="submit">Confirmar endereço</button></form>
+        {% else %}<p role="alert">O link não pertence a esta conta, expirou ou foi substituído. Entre na conta correta ou solicite outra confirmação.</p>{% endif %}
+    </div>
+    <div class="box-footer"><a href="{% url 'account_security' %}">Voltar à segurança da conta</a></div>
+</div>
+{% endblock %}

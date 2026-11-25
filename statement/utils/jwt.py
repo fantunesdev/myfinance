@@ -53,6 +53,8 @@ class JWTUtils:
         if not isinstance(user, User):
             raise ValueError('User is not an User model.')
         refresh = RefreshToken.for_user(user)
+        refresh['security_version'] = user.security_version
+        refresh['amr'] = ['service']
         return str(refresh.access_token)
 
     @staticmethod

@@ -160,8 +160,11 @@ envios e mantém a resposta pública genérica.
 
 Links expiram em 30 minutos, por padrão. A troca de senha invalida os links e as
 sessões web anteriores. Não ocorre login automático. As associações Google e a
-preferência de login social são preservadas. **JWTs e tokens de dispositivo não
-são revogados por este fluxo**; sua política de revogação permanece separada.
+preferência de login social são preservadas. A recuperação mantém o 2FA: depois de trocar a senha, o usuário ainda precisa
+do autenticador ou de um código de recuperação para entrar. JWTs e tokens de
+dispositivo não são revogados por este fluxo de troca de senha. Alterações de
+2FA e de e-mail confirmado usam uma versão de segurança para revogar os acessos
+humanos anteriores; veja [Identidade e 2FA](identidade-2fa.md).
 
 ## Privacidade dos logs
 

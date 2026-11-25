@@ -1,0 +1,47 @@
+{% extends 'index.html' %}
+{% block title %}Segurança da conta{% endblock %}
+{% block content %}
+<div class="box box-primary">
+    <div class="box-header"><h3 class="box-title">E-mail de recuperação</h3></div>
+    <div class="box-body">
+        <p>{{ user.email }} — {% if user.email_verified_at %}Confirmado{% else %}Pendente de confirmação{% endif %}.</p>
+        <p>É neste endereço que você recebe a recuperação de senha. Ele pode ser diferente da conta Google.</p>
+        <a class="btn btn-primary" href="{% url 'change_account_email' %}">Confirmar ou alterar e-mail</a>
+        {% if user.pending_email %}
+            <p>Confirmação aguardando em {{ user.pending_email }}. Seu endereço atual continua valendo.</p>
+            <form method="post" action="{% url 'cancel_account_email' %}">{% csrf_token %}<button class="btn" type="submit">Cancelar solicitação</button></form>
+        {% endif %}
+    </div>
+</div>
+<div class="box box-primary">
+    <div class="box-header"><h3 class="box-title">Contas Google conectadas</h3></div>
+    <div class="box-body">
+        {% for account in linked_accounts %}
+        <p>{% if account.extra_data.email %}{{ account.extra_data.email }}{% else %}Google conectado. Confirme a conta Google para identificar o endereço.{% endif %}</p>
+        {% if account.extra_data.email %}
+        <a href="{% url 'change_account_email' %}?email={{ account.extra_data.email|urlencode }}">Usar este e-mail do Google como e-mail de recuperação</a>
+        {% endif %}
+        {% empty %}<p>Nenhuma conta Google conectada.</p>{% endfor %}
+        {% if google_login_enabled and user_social_login_enabled %}
+        <form method="post" action="{% url 'social:begin' 'google-oauth2' %}">{% csrf_token %}<button class="btn" type="submit">Conectar ou confirmar conta Google</button></form>
+        {% endif %}
+    </div>
+</div>
+<div class="box box-primary">
+    <div class="box-header"><h3 class="box-title">Autenticação em duas etapas</h3></div>
+    <div class="box-body">
+        <p>{% if user.two_factor_enabled %}Ativada. {{ recovery_codes_remaining }} códigos de recuperação disponíveis.{% else %}Desativada.{% endif %}</p>
+        <p>Use um aplicativo autenticador. O código será solicitado depois da senha ou do Google.</p>
+        <a class="btn btn-primary" href="{% url 'two_factor_setup' %}">{% if user.two_factor_enabled %}Substituir autenticador{% else %}Configurar autenticador{% endif %}</a>
+        {% if user.two_factor_enabled %}
+        <form method="post" action="{% url 'two_factor_manage' %}">
+            {% csrf_token %}
+            <p>Para continuar, confirme sua identidade e use um código novo do autenticador ou um código de recuperação. Um código já utilizado não pode ser repetido.</p>
+            <label for="security-code">Código</label><input id="security-code" class="form-control" name="code" autocomplete="one-time-code" maxlength="64" required>
+            <button class="btn" name="action" value="codes" type="submit">Gerar novos códigos de recuperação</button>
+            <button class="btn" name="action" value="disable" type="submit">Desativar 2FA</button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -17,6 +17,10 @@ from social_django.models import UserSocialAuth
 
 from login.models import Profile, User
 from login.pipeline import SocialLoginError
+from login import security
+from login.security_views import safe_destination, require_recent
+from social_django.utils import psa
+from social_core.actions import do_complete
 
 
 def is_enabled():
@@ -39,6 +43,9 @@ def begin(request, backend):
     if request.user.is_authenticated and Profile.objects.filter(user=request.user, social_login_enabled=False).exists():
         messages.error(request, 'Ative o login social no perfil antes de conectar ou confirmar sua conta Google.')
         return redirect('get_profile')
+    if request.user.is_authenticated and request.user.two_factor_enabled and not security.otp_recent(request):
+        request.session['security_return'] = '/usuarios/seguranca/'
+        return redirect('security_reauthenticate')
     # Bind this flow to the local identity that explicitly initiated it.
     request.session['google_flow_user'] = str(request.user.pk) if request.user.is_authenticated else ''
     request.session['google_flow_at'] = time.time()
@@ -66,7 +73,7 @@ def complete(request, backend):
     request.GET = request.GET.copy()
     request.GET.pop('next', None)
     try:
-        result = social_views.complete(request, backend)
+        result = complete_with_policy(request, backend)
     except (SocialAuthBaseException, RequestException) as error:
         message = (
             str(error)
@@ -78,6 +85,9 @@ def complete(request, backend):
     if request.user.is_authenticated:
         request.session['inactivity_browser_id'] = secrets.token_urlsafe(24)
         request.session['google_reauthenticated'] = {'user': str(request.user.pk), 'at': time.time()}
+        request.session['reauthenticated_at'] = time.time()
+        if request.session.get('security_return'):
+            return redirect(safe_destination(request, request.session.pop('security_return')))
     return result
 
 
@@ -85,6 +95,8 @@ def complete(request, backend):
 @login_required
 @require_POST
 def disconnect(request, backend, association_id):
+    if request.user.two_factor_enabled and not security.recent(request):
+        return redirect('security_reauthenticate')
     check_backend(backend)
     with transaction.atomic():
         user = User.objects.select_for_update().get(pk=request.user.pk)
@@ -107,6 +119,8 @@ def disconnect(request, backend, association_id):
 @login_required
 @require_POST
 def update_preference(request):
+    if request.user.two_factor_enabled and not security.recent(request):
+        return redirect('security_reauthenticate')
     value = request.POST.get('enabled')
     if value not in ('true', 'false'):
         return HttpResponseBadRequest('Informe se deseja ativar ou desativar o login social.')
@@ -125,3 +139,15 @@ def update_preference(request):
                 'Login social ativado para sua conta.' if enabled else 'Login social desativado para sua conta.',
             )
     return redirect('get_profile')
+
+
+@psa('social:complete')
+def complete_with_policy(request, backend):
+    def do_login(provider, user, social_user):
+        backend_path = f'{provider.__module__}.{provider.__class__.__name__}'
+        security.begin_login(request, user, backend_path, google=True)
+
+    result = do_complete(request.backend, do_login, user=request.user, redirect_name='next', request=request)
+    if request.session.get('pending_mfa') and not request.user.is_authenticated:
+        return redirect('two_factor_challenge')
+    return result

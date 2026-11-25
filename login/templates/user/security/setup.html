@@ -1,0 +1,18 @@
+{% extends 'user/security/form.html' %}
+{% block content %}
+<div class="box box-primary box-500 center-div">
+    <div class="header"><h3 class="box-title">Configurar autenticador</h3></div>
+    <div class="box-body">
+        {% if qr %}
+        <p>Escaneie o QR Code no aplicativo autenticador ou digite a chave manualmente. Não compartilhe a imagem nem a chave.</p>
+        <img src="{{ qr }}" alt="QR Code para configurar o autenticador" style="max-width:100%;background:white;padding:12px;box-sizing:border-box;">
+        <p style="overflow-wrap:anywhere;">Chave: <code>{{ secret }}</code></p>
+        <form method="post">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary" type="submit">Confirmar e ativar</button></form>
+        {% else %}
+        <p>A configuração será ativada somente após você confirmar um código. Se estiver substituindo um autenticador, o anterior continua válido até concluir.</p>
+        <form method="post">{% csrf_token %}<button class="btn btn-primary" name="action" value="start" type="submit">Gerar QR Code</button></form>
+        {% endif %}
+    </div>
+    <div class="box-footer"><a href="{% url 'account_security' %}">Voltar à segurança da conta</a></div>
+</div>
+{% endblock %}

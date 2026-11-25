@@ -54,6 +54,8 @@ def provision_user(backend, uid, details, response, user=None, social=None, id_k
                 )
             if social is None:
                 social = UserSocialAuth.objects.create(user=user, provider=backend.name, uid=str(uid), id_key=id_key)
+            social.extra_data = {'email': email, 'email_verified': True}
+            social.save(update_fields=['extra_data'])
     except IntegrityError:
         # Roll back user/profile as well if two callbacks race for one identity.
         raise SocialLoginError(backend, 'Não foi possível conectar a conta. Tente novamente ou use o acesso atual.')

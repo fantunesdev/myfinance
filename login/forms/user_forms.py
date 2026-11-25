@@ -52,6 +52,12 @@ class UserForm(forms.ModelForm):
             'username': forms.TextInput(attrs=attrs),
         }
 
+    def clean_email(self):
+        email = self.cleaned_data['email'].strip().casefold()
+        if User.objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError('Já existe uma conta com este e-mail.')
+        return email
+
     def clean_password2(self):
         password1 = self.cleaned_data.get('password1')
         password2 = self.cleaned_data.get('password2')
@@ -84,9 +90,8 @@ class ProfileForm(forms.ModelForm):
     attrs = {'class': 'form-control'}
 
     name = forms.CharField(widget=forms.TextInput(attrs=attrs))
-    email = forms.CharField(widget=forms.EmailInput(attrs=attrs))
     username = forms.CharField(widget=forms.TextInput(attrs=attrs))
 
     class Meta:
         model = User
-        fields = ['name', 'email', 'username', 'photo']
+        fields = ['name', 'username', 'photo']

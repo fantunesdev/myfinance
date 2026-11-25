@@ -107,7 +107,7 @@ def test_new_and_returning_login_keep_stable_identity_and_local_data():
     assert not user.is_staff and not user.is_superuser
     assert Profile.objects.filter(user=user).count() == 1
     association = UserSocialAuth.objects.get()
-    assert association.uid == 'google-123' and association.id_key == 'sub' and association.extra_data == {}
+    assert association.uid == 'google-123' and association.id_key == 'sub' and association.extra_data == {'email': 'new@example.com', 'email_verified': True}
     old_browser = client.session['inactivity_browser_id']
     client.logout()
     user.name = 'Edited locally'

@@ -14,6 +14,8 @@ from login.entities.user import User
 from login.forms import user_forms
 from login.forms.password_form import PasswordChangeCustomForm
 from login.models import Profile
+from login import security
+from login.security_views import require_recent, safe_destination
 from login.services import user_services
 from login.services.profile import ProfileService
 from statement.models import AppConfig
@@ -66,9 +68,10 @@ def login_user(request):
             password = login_form.cleaned_data['password']
             user = authenticate(request, username=username, password=password)
             if user:
-                login(request, user)
-                request.session['inactivity_browser_id'] = secrets.token_urlsafe(24)
-                return redirect('get_current_month_transactions')
+                destination = safe_destination(request, request.POST.get('next') or request.GET.get('next'))
+                if security.begin_login(request, user, user.backend, destination=destination):
+                    return redirect('two_factor_challenge')
+                return redirect(destination)
             else:
                 messages.error(request, 'As credenciais estão incorretas')
     else:
@@ -82,6 +85,9 @@ def change_password(request):
     Método que altera a senha do usuário.
     :request (django.http.HttpRequest): - Informações sobre o cabeçalho, método e outros dados da requisição.
     """
+    if request.user.two_factor_enabled and not security.recent(request):
+        request.session['security_return'] = request.path
+        return redirect('security_reauthenticate')
     if request.user.has_usable_password():
         form_class = PasswordChangeCustomForm
     else:

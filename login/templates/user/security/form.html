@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}{{ security_title }}{% endblock %}
+{% block content %}
+<div class="box box-primary box-500 center-div">
+    <div class="header"><h3 class="box-title">{{ security_title }}</h3></div>
+    <div class="box-body">
+        {% for message in messages %}<p role="status">{{ message }}</p>{% endfor %}
+        {% if not google_only %}<form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button class="btn btn-primary" type="submit">Confirmar</button>
+        </form>{% endif %}
+        {% if show_google and google_login_enabled %}
+        <p>Confirme o autenticador primeiro, se estiver ativado, e depois confirme a conta Google.</p>
+        <form method="post" action="{% url 'social:begin' 'google-oauth2' %}">{% csrf_token %}<button class="btn" type="submit">Confirmar conta Google</button></form>
+        {% endif %}
+    </div>
+    <div class="box-footer"><a href="{% url 'login_user' %}">Voltar ao login</a></div>
+</div>
+{% endblock %}
