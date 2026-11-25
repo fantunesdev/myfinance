@@ -7,10 +7,12 @@
     Perfil
 {% endblock title %}
 
-{% block styles %}<link rel="stylesheet" href="{% static 'css/profile.css' %}?v=3">{% endblock %}
+{% block styles %}<link rel="stylesheet" href="{% static 'css/profile.css' %}?v=8">{% endblock %}
 {% block content %}
 <div class="profile-shell">
-<div class="profile-hero" id="minha-conta">
+<article class="box box-primary" id="minha-conta">
+<div class="box-header"><h3 class="box-title">Perfil</h3></div>
+<div class="box-body profile-hero">
     {% if user.photo %}<img src="{{ user.photo.url }}" alt="Foto de perfil" class="profile-avatar">{% else %}<img src="{% static 'img/default-profile.png' %}" alt="Foto de perfil" class="profile-avatar">{% endif %}
     <div class="profile-identity">
 <span class="profile-eyebrow">MINHA CONTA</span>
@@ -18,23 +20,24 @@
 <p>@{{ user.username }} <span aria-hidden="true">·</span> {{ user.email }}</p>
 <small>Membro desde {{ user.date_joined|date:"m/Y" }} · Último acesso: {{ user.last_login|date:"d/m/Y H:i"|default:"—" }}</small>
 </div>
-    <div class="profile-actions">
+</div>
+    <div class="box-footer profile-actions">
 <a data-profile-modal href="{% url 'update_profile' %}" class="btn btn-primary">Editar perfil</a>
 <a data-profile-modal href="{% url 'change_password' %}" class="btn">Alterar senha</a>
 </div>
-</div>
+</article>
 
 <nav class="profile-nav" aria-label="Seções do perfil">
-<a href="#seguranca">Segurança</a>
-<a href="#preferencias">Preferências</a>
-<a href="#financeiro">Financeiro</a>
-<a href="#integracoes">Integrações</a>
+<a href="#seguranca" class="btn">Segurança</a>
+<a href="#preferencias" class="btn">Preferências</a>
+<a href="#financeiro" class="btn">Financeiro</a>
+<a href="#integracoes" class="btn">Integrações</a>
 </nav>
 <section id="seguranca" class="profile-section">
 <h2>Segurança e acesso</h2>
 <p>Controle como você entra e protege sua conta.</p>
 <div class="profile-grid">
-<article class="box profile-security-summary">
+<article class="box box-primary profile-security-summary">
 <div class="box-header">
 <h3 class="box-title">Segurança da conta</h3>
 </div>
@@ -52,7 +55,7 @@
 <a data-profile-modal class="btn btn-primary" href="{% url 'account_security' %}">Gerenciar e-mail e autenticador</a>
 </div>
 </article>
-<div class="box">
+<div class="box box-primary">
         <div class="box-header">
 <h3 class="box-title">Privacidade e segurança</h3>
 </div>
@@ -69,10 +72,10 @@
         </div>
     </div>
 </div>
-<details class="box profile-details">
-<summary>
+<details class="box box-primary profile-details">
+<summary class="box-header">
 <span>
-<strong>Login social</strong>
+<strong class="box-title">Login social</strong>
 <small>Contas Google conectadas e permissão de acesso</small>
 </span>
 <span class="profile-chevron" aria-hidden="true">⌄</span>
@@ -120,7 +123,9 @@
 <section id="preferencias" class="profile-section">
 <h2>Preferências</h2>
 <p>Deixe o MyFinance do seu jeito.</p>
-<article class="box profile-preferences">
+<article class="box box-primary">
+<div class="box-header"><h3 class="box-title">Exibição e acompanhamento</h3></div>
+<div class="box-body profile-preferences">
 <div class="profile-setting">
 <div>
 <h3>Virada do mês</h3>
@@ -142,16 +147,17 @@
 </div>
 <a data-profile-modal class="btn" href="{% url 'get_all_subcategory_chart_config' %}">Configurar</a>
 </div>
+</div>
 </article>
 </section>
 
 <section id="financeiro" class="profile-section">
 <h2>Cadastros financeiros</h2>
 <p>Suas contas, cartões e compromissos recorrentes.</p>
-<details class="box profile-details">
-<summary>
+<details class="box box-primary profile-details">
+<summary class="box-header">
 <span>
-<strong>Contas</strong>
+<strong class="box-title">Contas</strong>
 <small>Bancos, saldos e limites</small>
 </span>
 <span class="profile-chevron" aria-hidden="true">⌄</span>
@@ -205,10 +211,10 @@
             <span>Total de itens listados: {{ profile.accounts.count }}</span>
         </div>
     </details>
-<details class="box profile-details">
-<summary>
+<details class="box box-primary profile-details">
+<summary class="box-header">
 <span>
-<strong>Cartões de Crédito</strong>
+<strong class="box-title">Cartões de Crédito</strong>
 <small>Limites, fechamento e vencimento</small>
 </span>
 <span class="profile-chevron" aria-hidden="true">⌄</span>
@@ -262,10 +268,10 @@
             <span>Total de itens listados: {{ profile.cards.count }}</span>
         </div>
     </details>
-<details class="box profile-details">
-<summary>
+<details class="box box-primary profile-details">
+<summary class="box-header">
 <span>
-<strong>Despesas Fixas</strong>
+<strong class="box-title">Despesas Fixas</strong>
 <small>Despesas que se repetem todos os meses</small>
 </span>
 <span class="profile-chevron" aria-hidden="true">⌄</span>
@@ -314,10 +320,10 @@
 <section id="integracoes" class="profile-section">
 <h2>Integrações e atividade</h2>
 <p>Gerencie automações e acompanhe as notificações recebidas.</p>
-<details class="box profile-details">
-<summary>
+<details class="box box-primary profile-details">
+<summary class="box-header">
 <span>
-<strong>Inteligências Artificiais</strong>
+<strong class="box-title">Inteligências Artificiais</strong>
 <small>Treinamento e feedback do classificador</small>
 </span>
 <span class="profile-chevron" aria-hidden="true">⌄</span>
@@ -375,10 +381,10 @@
         <div class="box-footer">
 </div>
     </details>
-<details class="box profile-details">
-<summary>
+<details class="box box-primary profile-details">
+<summary class="box-header">
 <span>
-<strong>Dispositivos (API Token)</strong>
+<strong class="box-title">Dispositivos (API Token)</strong>
 <small>Tokens de acesso e configuração do Tasker</small>
 </span>
 <span class="profile-chevron" aria-hidden="true">⌄</span>
@@ -447,10 +453,10 @@
         <div class="box-footer">
 </div>
     </details>
-<details class="box profile-details">
-<summary>
+<details class="box box-primary profile-details">
+<summary class="box-header">
 <span>
-<strong>Notificações Recentes</strong>
+<strong class="box-title">Notificações Recentes</strong>
 <small>Histórico das últimas notificações recebidas</small>
 </span>
 <span class="profile-chevron" aria-hidden="true">⌄</span>
