@@ -4,7 +4,7 @@
 <div class="box box-primary box-500 center-div">
     <div class="header"><h3 class="box-title">{{ security_title }}</h3></div>
     <div class="box-body">
-        {% for message in messages %}<p role="status">{{ message }}</p>{% endfor %}
+
         {% if not google_only %}<form method="post">
             {% csrf_token %}
             {{ form.as_p }}

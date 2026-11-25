@@ -1,6 +1,7 @@
-(function() {
-    const formPrefix = document.querySelector('[name$="-TOTAL_FORMS"]')?.name.split('-')[0] || 'cardnumber_set';
-    let formCount = document.querySelectorAll(`[name="${formPrefix}-TOTAL_FORMS"]`);
+window.initializeCardForm = function(root = document) {
+    if (!root.querySelector('#card-numbers-container')) return;
+    const formPrefix = root.querySelector('[name$="-TOTAL_FORMS"]')?.name.split('-')[0] || 'cardnumber_set';
+    let formCount = root.querySelectorAll(`[name="${formPrefix}-TOTAL_FORMS"]`);
     
     if (formCount.length === 0) {
         console.error('Formset management form não encontrado');
@@ -8,13 +9,16 @@
     }
 
     const totalFormsInput = formCount[0];
-    const container = document.getElementById('card-numbers-container');
-    const addButton = document.getElementById('add-card-number');
+    const container = root.querySelector('#card-numbers-container');
+    const addButton = root.querySelector('#add-card-number');
 
     if (!container || !addButton) {
         console.error('Container ou botão de adicionar não encontrado');
         return;
     }
+
+    if (container.dataset.initialized) return;
+    container.dataset.initialized = 'true';
 
     // Ensure management TOTAL_FORMS reflects actual rendered forms on load
     (function syncTotalForms() {
@@ -27,12 +31,13 @@
     })();
 
     // Extrai templates dos elementos vazios
-    const emptyFormInput = document.querySelector('[data-empty-form-input]');
-    const emptyFormHome = document.querySelector('[data-empty-form-home]');
-    const emptyFormDependente = document.querySelector('[data-empty-form-dependente]');
-    const emptyFormId = document.querySelector('[data-empty-form-id]');
-    const emptyFormDelete = document.querySelector('[data-empty-form-delete]');
-    const emptyFormName = document.querySelector('[data-empty-form-name]');
+    const emptyFormInput = root.querySelector('[data-empty-form-input]');
+    const emptyFormHome = root.querySelector('[data-empty-form-home]');
+    const emptyFormDependente = root.querySelector('[data-empty-form-dependente]');
+    const emptyFormId = root.querySelector('[data-empty-form-id]');
+    const emptyFormDelete = root.querySelector('[data-empty-form-delete]');
+    const emptyFormVisibleTo = root.querySelector('[data-empty-form-visible-to]');
+    const emptyFormName = root.querySelector('[data-empty-form-name]');
 
     // Função para formatar número do cartão
     function formatCardNumber(value) {
@@ -100,10 +105,10 @@
                 const originalId = input.getAttribute('data-original-id') || input.id;
                 
                 if (originalName) {
-                    input.name = originalName.replace(/__prefix__|_\d+_/g, `_${index}_`);
+                    input.name = originalName.replace(/-(?:__prefix__|\d+)-/, `-${index}-`);
                 }
                 if (originalId) {
-                    input.id = originalId.replace(/__prefix__|_\d+_/g, `_${index}_`);
+                    input.id = originalId.replace(/-(?:__prefix__|\d+)-/, `-${index}-`);
                 }
                 
                 // Armazena o nome original para próximas atualizações
@@ -116,10 +121,11 @@
             labels.forEach(label => {
                 const forAttr = label.getAttribute('for');
                 if (forAttr) {
-                    label.setAttribute('for', forAttr.replace(/__prefix__|_\d+_/g, `_${index}_`));
+                    label.setAttribute('for', forAttr.replace(/-(?:__prefix__|\d+)-/, `-${index}-`));
                 }
             });
         });
+        totalFormsInput.value = forms.length;
     }
 
     function removeCardNumberForm(formDiv) {
@@ -177,6 +183,7 @@
         const deleteHtml = emptyFormDelete ? emptyFormDelete.innerHTML.replace(/__prefix__/g, currentCount) : '';
         const nameHtml = emptyFormName ? emptyFormName.innerHTML.replace(/__prefix__/g, currentCount) : '';
         const homeHtml = emptyFormHome ? emptyFormHome.innerHTML.replace(/__prefix__/g, currentCount) : '';
+        const visibleToHtml = emptyFormVisibleTo ? emptyFormVisibleTo.innerHTML.replace(/__prefix__/g, currentCount) : '';
         const dependenteHtml = emptyFormDependente ? emptyFormDependente.innerHTML.replace(/__prefix__/g, currentCount) : '';
         
         newFormDiv.innerHTML = `
@@ -195,6 +202,7 @@
                 <label>Dependente</label>
                 ${dependenteHtml}
             </div>
+            <div class="form-group-inline"><label>Dependentes com acesso a este número</label>${visibleToHtml}</div>
             <div class="form-group-inline home-screen-wrapper">
                 ${homeHtml}
             </div>
@@ -245,7 +253,7 @@
     });
 
     // Adiciona listeners aos forms existentes
-    document.querySelectorAll('.card-number-form').forEach(addRemoveEventToForm);
+    root.querySelectorAll('.card-number-form').forEach(addRemoveEventToForm);
 
     // Before submitting the parent form, synchronize TOTAL_FORMS with DOM
     (function attachSubmitSync() {
@@ -258,7 +266,7 @@
     })();
 
     // Garante labels clicáveis para checkboxes já existentes na página
-    document.querySelectorAll('.card-number-form').forEach(formDiv => {
+    root.querySelectorAll('.card-number-form').forEach(formDiv => {
         const homeCheckbox = formDiv.querySelector('input[type="checkbox"][name$="-home_screen"]');
         if (homeCheckbox) {
             let label = formDiv.querySelector('label.home-screen-label');
@@ -283,4 +291,5 @@
             });
         }
     });
-})();
+};
+window.initializeCardForm();

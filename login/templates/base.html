@@ -17,6 +17,8 @@
 
         {% comment %} ESTILIZAÇÃO LOCAL {% endcomment %}
         <link rel="stylesheet" href="{% static 'css/login.css' %}?v=social-login-3">
+        <link rel="stylesheet" href="{% static 'css/toasts.css' %}?v=1">
+        <script src="{% static 'js/toasts.js' %}?v=1" defer></script>
         <link rel="icon" href="{% static 'img/favicon.png' %}">
 
         <title>
@@ -27,6 +29,7 @@
         </title>
     </head>
     <body>
+    {% include "_frames/_toasts.html" %}
     {% block content %}
     {% endblock %}
     </body>

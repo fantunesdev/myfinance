@@ -19,7 +19,7 @@
             </style>
             {{ inactivity_logout_config|json_script:"inactivity-logout-config" }}
             <meta name="myfinance-csrf" content="{{ csrf_token }}">
-            <script src="{% static 'js/inactivity-logout.js' %}"></script>
+            <script src="{% static 'js/inactivity-logout.js' %}?v=profile-modals-1"></script>
         {% endif %}
         {% comment %} ÍCONES EXTERNOS {% endcomment %}
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
@@ -32,6 +32,8 @@
         {% comment %} ESTILIZAÇÃO LOCAL {% endcomment %}
         <link rel="stylesheet" href="{% static 'css/styles.css' %}">
         <link rel="icon" href="{% static 'img/favicon.png' %}">
+        <link rel="stylesheet" href="{% static 'css/toasts.css' %}?v=1">
+        <script src="{% static 'js/toasts.js' %}?v=1" defer></script>
         {% block styles %} {% endblock %}
 
         <title>{% block title %}  {% endblock %} | MyFinance</title>
@@ -81,16 +83,8 @@
 
 
         {% comment %} INÍCIO MAIN {% endcomment %}
+        {% include "_frames/_toasts.html" %}
         <main>
-        {% if messages %}
-            <div class="box box-primary box-max-width-2000 v-center-div">
-                <div class="box-body">
-                    {% for message in messages %}
-                        <p role="alert">{{ message }}</p>
-                    {% endfor %}
-                </div>
-            </div>
-        {% endif %}
         {% block content %}
 
         {% endblock %}

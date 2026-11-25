@@ -1,5 +1,5 @@
 import * as services from '../../data/services.js?v=classifier-jobs-2';
-import { startClassifierJob } from './classifier-jobs.js?v=classifier-jobs-2';
+import { startClassifierJob } from './classifier-jobs.js?v=profile-modals-1';
 
 const infos = [
     {
@@ -53,17 +53,11 @@ const infos = [
         route: 'transaction-classifier/delete',
         method: 'POST'
     },
-    {
-        id: 'next-month-update-btn',
-        label: 'Editar',
-        title: 'Editar configuração de ver o próximo mês',
-        message: 'Decidi que fica mais organizado dividir as configurações em sessões. O Next Month é a primeira, mas futuramente poderão' +
-                 ' existir outras. Quando for migrar a implementação do Next Mont pra cá, criar um novo modal de formulário para as configurações.' +
-                 'e enviar por PATCH para a API. Vai precisar construir as rotas na API.',
-        route: '',
-        method: 'PATCH'
-    },
+
 ]
+
+const boundButtons = new WeakSet();
+window.addEventListener?.('profile:updated', () => infos.forEach(modalHandler));
 
 infos.forEach((info) => {
     modalHandler(info);
@@ -71,7 +65,8 @@ infos.forEach((info) => {
 
 function modalHandler(info) {
     const button = document.getElementById(info.id);
-    if (!button) return;
+    if (!button || boundButtons.has(button)) return;
+    boundButtons.add(button);
     button.addEventListener('click', function () {
         window.showModal(info.title, info.message, async function () {
             window.hideModal();
@@ -90,17 +85,17 @@ function modalHandler(info) {
                 if (response instanceof Error) {
                     throw response;
                 } else if (response && response.error) {
-                    window.showModal('Erro', response.error);
+                    window.myFinanceToast(response.error, 'error');
                 } else if (response && response.success === false) {
-                    window.showModal('Erro', response.message || 'A operação não foi concluída.');
+                    window.myFinanceToast(response.message || 'A operação não foi concluída.', 'error');
                 } else if (response && response.message) {
-                    window.showModal('Sucesso!', response.message);
+                    window.myFinanceToast(response.message, 'success');
                 } else {
-                    window.showModal('Erro!', 'Resposta desconhecida do servidor.');
+                    window.myFinanceToast('Resposta desconhecida do servidor.', 'error');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                window.showModal('Erro!', 'Erro ao processar a requisição.');
+                window.myFinanceToast('Erro ao processar a requisição.', 'error');
             } finally {
                 button.innerHTML = info.label;
             }

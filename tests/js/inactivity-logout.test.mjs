@@ -155,3 +155,15 @@ test('a new login uses a separate deadline from expired old pages', () => {
     assert.equal(fresh.requests.length, 0);
     assert.equal(fresh.classes.size, 0);
 });
+
+test('settings saved by the modal take effect immediately in this tab and other tabs', () => {
+    const b = browser(), first = b.tab(), second = b.tab();
+    first.emit('profile:inactivity-settings', { detail: { ...first.config, minutes: 5, revision: '200' } });
+    b.advance(61000); first.tick(); second.tick();
+    assert.equal(first.requests.length, 0);
+    assert.equal(second.requests.length, 0);
+    first.emit('profile:inactivity-settings', { detail: { ...first.config, session: 'another-browser', minutes: 1, revision: '300' } });
+    b.advance(240000); first.tick(); second.tick();
+    assert.equal(first.requests.length, 1);
+    assert.equal(second.requests.length, 1);
+});

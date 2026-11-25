@@ -7,21 +7,81 @@
     Perfil
 {% endblock title %}
 
+{% block styles %}<link rel="stylesheet" href="{% static 'css/profile.css' %}?v=3">{% endblock %}
 {% block content %}
-    <div class="box box-primary">
-        <div class="box-header"><h3 class="box-title">Segurança da conta</h3></div>
+<div class="profile-shell">
+<div class="profile-hero" id="minha-conta">
+    {% if user.photo %}<img src="{{ user.photo.url }}" alt="Foto de perfil" class="profile-avatar">{% else %}<img src="{% static 'img/default-profile.png' %}" alt="Foto de perfil" class="profile-avatar">{% endif %}
+    <div class="profile-identity">
+<span class="profile-eyebrow">MINHA CONTA</span>
+<h1>{{ user.name|default:user.username }}</h1>
+<p>@{{ user.username }} <span aria-hidden="true">·</span> {{ user.email }}</p>
+<small>Membro desde {{ user.date_joined|date:"m/Y" }} · Último acesso: {{ user.last_login|date:"d/m/Y H:i"|default:"—" }}</small>
+</div>
+    <div class="profile-actions">
+<a data-profile-modal href="{% url 'update_profile' %}" class="btn btn-primary">Editar perfil</a>
+<a data-profile-modal href="{% url 'change_password' %}" class="btn">Alterar senha</a>
+</div>
+</div>
+
+<nav class="profile-nav" aria-label="Seções do perfil">
+<a href="#seguranca">Segurança</a>
+<a href="#preferencias">Preferências</a>
+<a href="#financeiro">Financeiro</a>
+<a href="#integracoes">Integrações</a>
+</nav>
+<section id="seguranca" class="profile-section">
+<h2>Segurança e acesso</h2>
+<p>Controle como você entra e protege sua conta.</p>
+<div class="profile-grid">
+<article class="box profile-security-summary">
+<div class="box-header">
+<h3 class="box-title">Segurança da conta</h3>
+</div>
+<div class="box-body">
+<div class="profile-status-row">
+<span>E-mail de recuperação<small>{{ user.email }}</small>
+</span>
+<span class="profile-badge {% if user.email_verified_at %}is-success{% else %}is-warning{% endif %}">{% if user.email_verified_at %}Confirmado{% else %}Pendente{% endif %}</span>
+</div>
+<div class="profile-status-row">
+<span>Autenticação em duas etapas<small>Proteção extra para entrar na sua conta</small>
+</span>
+<span class="profile-badge {% if user.two_factor_enabled %}is-success{% else %}is-warning{% endif %}">{% if user.two_factor_enabled %}Ativada{% else %}Desativada{% endif %}</span>
+</div>
+<a data-profile-modal class="btn btn-primary" href="{% url 'account_security' %}">Gerenciar e-mail e autenticador</a>
+</div>
+</article>
+<div class="box">
+        <div class="box-header">
+<h3 class="box-title">Privacidade e segurança</h3>
+</div>
         <div class="box-body">
-            <p>E-mail de recuperação: {{ user.email }} — {% if user.email_verified_at %}Confirmado{% else %}Pendente de confirmação{% endif %}.</p>
-            <p>Autenticação em duas etapas: {% if user.two_factor_enabled %}Ativada{% else %}Desativada{% endif %}.</p>
-            <a class="btn btn-primary" href="{% url 'account_security' %}">Gerenciar e-mail e autenticador</a>
+            <p>Sair automaticamente por inatividade:
+                {% if profile.configs.inactivity_logout_enabled %}
+                    Ativado — após {{ profile.configs.inactivity_logout_minutes }} minuto(s) sem usar o MyFinance.
+                {% else %}
+                    Desativado.
+                {% endif %}
+            </p>
+            <p>O prazo considera sua atividade em todas as abas deste navegador.</p>
+            <a data-profile-modal href="{% url 'edit_inactivity_logout' %}" class="btn btn-primary">Editar privacidade e segurança</a>
         </div>
     </div>
-    <div class="box box-primary">
-        <div class="box-header"><h3 class="box-title">Login social</h3></div>
+</div>
+<details class="box profile-details">
+<summary>
+<span>
+<strong>Login social</strong>
+<small>Contas Google conectadas e permissão de acesso</small>
+</span>
+<span class="profile-chevron" aria-hidden="true">⌄</span>
+</summary>
+
         <div class="box-body">
             <p>Login social para sua conta: {% if user_social_login_enabled %}Ativado{% else %}Desativado{% endif %}.</p>
             <p>Desativar impede novos acessos com Google e preserva suas contas vinculadas. A sessão atual continua aberta.</p>
-            <form method="post" action="{% url 'social:preference' %}">
+            <form data-profile-async method="post" action="{% url 'social:preference' %}">
                 {% csrf_token %}
                 {% if user_social_login_enabled %}
                     <input type="hidden" name="enabled" value="false">
@@ -34,7 +94,7 @@
             {% if google_login_enabled %}
             {% for account in google_accounts %}
                 <p>Conta Google conectada: {% if account.extra_data.email %}{{ account.extra_data.email }}{% else %}Endereço ainda não identificado. Confirme a conta Google para atualizar.{% endif %}</p>
-                <form method="post" action="{% url 'social:disconnect_individual' 'google-oauth2' account.id %}">
+                <form data-profile-async method="post" action="{% url 'social:disconnect_individual' 'google-oauth2' account.id %}">
                     {% csrf_token %}
                     <button type="submit" class="btn">Desconectar Google</button>
                 </form>
@@ -54,241 +114,55 @@
                 <p role="status">Conexão com Google indisponível. O administrador precisa configurar e habilitar a integração antes que você possa conectar sua conta.</p>
             {% endif %}
         </div>
-    </div>
-    <div class="box box-primary">
-        <div class="box-header"><h3 class="box-title">Privacidade e segurança</h3></div>
-        <div class="box-body">
-            <p>Sair automaticamente por inatividade:
-                {% if profile.configs.inactivity_logout_enabled %}
-                    Ativado — após {{ profile.configs.inactivity_logout_minutes }} minuto(s) sem usar o MyFinance.
-                {% else %}
-                    Desativado.
-                {% endif %}
-            </p>
-            <p>A atividade em qualquer aba do MyFinance mantém o acesso neste navegador. Atualizações automáticas não renovam o prazo.</p>
-            <a href="{% url 'edit_inactivity_logout' %}" class="btn btn-primary">Editar privacidade e segurança</a>
-        </div>
-    </div>
-    <div class="box box-primary">
-        <div class="box-header">
-            <h3 class="box-title">Perfil</h3>
-        </div>
-        <div class="box-body">
-            <div class="centered-content">
-                {% if user.photo %}
-                <img src="{{ user.photo.url }}" alt="Foto de Perfil" class="profile-photo"><br>
-                {% else %}
-                <img src="{% static 'img/default-profile.png' %}" alt="Foto de Perfil" class="profile-photo"><br>
-                {% endif %}
-            </div>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th colspan="2">Id: {{ user.id }}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Nome</td>
-                        <td>{{ user.name }}</td>
-                    </tr>
-                    <tr>
-                        <td>Username</td>
-                        <td>{{ user.username }}</td>
-                    </tr>
-                    <tr>
-                        <td>E-mail</td>
-                        <td>{{ user.email }}</td>
-                    </tr>
-                    <tr>
-                        <td>Último login</td>
-                        <td>{{ user.last_login }}</td>
-                    </tr>
-                    <tr>
-                        <td>Desde</td>
-                        <td>{{ user.date_joined }}</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        <div class="box-footer">
-            <a href="{% url 'update_profile' %}"><input type="button" value="Editar Perfil" class="btn"></a>
-            <a href="{% url 'change_password' %}"><input type="button" value="Alterar Senha" class="btn"></a>
-        </div>
-        <div class="box-footer">
-            <a href="{% url 'get_all_notification' %}">Ver todas as notificações</a>
-        </div>
-    </div>
+    </details>
+</section>
 
-    <div class="box box-primary">
-        <div class="box-header">
-            <h3 class="box-title">Despesas Fixas</h3>
-        </div>
-        <div class="box-body">
-            <a href="{% url 'create_fixed_expense' %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Data Inicial</th>
-                        <th>Data Final</th>
-                        <th>Descrição</th>
-                        <th>Valor</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for fixed_expense in fixed_expenses %}
-                    <tr>
-                        <td>{{ fixed_expense.start_date | date:"d/m/Y" }}</td>
-                        <td>{{ fixed_expense.end_date | date:"d/m/Y" }}</td>
-                        <td>{{ fixed_expense.description }}</td>
-                        <td>{{ fixed_expense.value | to_reais }}</td>
-                        <td><a href="{% url 'update_fixed_expense' fixed_expense.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        <div class="box-footer">
-            <span>Total de itens listados: {{ fixed_expenses.count }}</span>
-        </div>
-    </div>
+<section id="preferencias" class="profile-section">
+<h2>Preferências</h2>
+<p>Deixe o MyFinance do seu jeito.</p>
+<article class="box profile-preferences">
+<div class="profile-setting">
+<div>
+<h3>Virada do mês</h3>
+<p>{% if profile.configs.use_next_month %}Mostrar o próximo mês a partir do dia {{ profile.configs.next_month_day }}.{% else %}Mostrar sempre o mês atual.{% endif %}</p>
+</div>
+<a data-profile-modal class="btn" href="{% url 'update_next_month_view' %}">Configurar</a>
+</div>
+<div class="profile-setting">
+<div>
+<h3>Combustível</h3>
+<p>{% if profile.configs.enable_fuel_tracking %}Acompanhamento ativo · {{ profile.configs.fuel_subcategory|default_if_none:'Sem subcategoria' }}{% else %}Acompanhamento de consumo desativado.{% endif %}</p>
+</div>
+<a data-profile-modal class="btn" href="{% url 'update_fuel_tracking' %}">Configurar</a>
+</div>
+<div class="profile-setting">
+<div>
+<h3>Gráficos</h3>
+<p>Escolha quais subcategorias aparecem em cada gráfico.</p>
+</div>
+<a data-profile-modal class="btn" href="{% url 'get_all_subcategory_chart_config' %}">Configurar</a>
+</div>
+</article>
+</section>
 
-    <div class="box box-primary">
-        <div class="box-header">
-            <h3 class="box-title">Ver o próximo mês como mês atual</h3>
-        </div>
-        <div class="box-body">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Ativo</th>
-                        <th>Dia</th>
-                        <th style="width: 250px; white-space: nowrap;">Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>{{ profile.configs.use_next_month|handle_boolean }}</td>
-                        <td>{{ profile.configs.next_month_day }}</td>
-                        <td><a href="{% url 'update_next_month_view' %}"><i class="fa-solid fa-pen-to-square action-icon cursor-pointer"></i></a></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        <div class="box-footer">
-        </div>
-    </div>
+<section id="financeiro" class="profile-section">
+<h2>Cadastros financeiros</h2>
+<p>Suas contas, cartões e compromissos recorrentes.</p>
+<details class="box profile-details">
+<summary>
+<span>
+<strong>Contas</strong>
+<small>Bancos, saldos e limites</small>
+</span>
+<span class="profile-chevron" aria-hidden="true">⌄</span>
+</summary>
 
-    <div class="box box-primary">
-        <div class="box-header">
-            <h3 class="box-title">Combustível</h3>
-        </div>
         <div class="box-body">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Acompanhar consumo</th>
-                        <th>Subcategoria</th>
-                        <th style="width: 250px; white-space: nowrap;">Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>{{ profile.configs.enable_fuel_tracking|handle_boolean }}</td>
-                        <td>{{ profile.configs.fuel_subcategory|default_if_none:'-' }}</td>
-                        <td><a href="{% url 'update_fuel_tracking' %}"><i class="fa-solid fa-pen-to-square action-icon cursor-pointer"></i></a></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        <div class="box-footer">
-        </div>
-    </div>
-
-    <div class="box box-primary">
-        <div class="box-header">
-            <h3 class="box-title">Gráficos</h3>
-        </div>
-        <div class="box-body">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Configuração</th>
-                        <th>Descrição</th>
-                        <th style="width: 250px; white-space: nowrap;">Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Subcategorias nos gráficos</td>
-                        <td>Define em quais gráficos cada subcategoria deve aparecer.</td>
-                        <td><a href="{% url 'get_all_subcategory_chart_config' %}"><i class="fa-solid fa-pen-to-square action-icon cursor-pointer"></i></a></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        <div class="box-footer">
-        </div>
-    </div>
-
-    <div class="box box-primary">
-        <div class="box-header">
-            <h3 class="box-title">Inteligências Artificiais</h3>
-        </div>
-        <div class="box-body">
-            {% if transaction_classifier_enabled %}
-                {% if transaction_classifier %}
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Nome</th>
-                                <th>Modelo</th>
-                                <th>Status</th>
-                                <th>Último Feedback</th>
-                                <th style="width: 250px; white-space: nowrap;">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for predictor in transaction_classifier %}
-                                <tr>
-                                    <td>{{ predictor.ai }}</td>
-                                    <td>{{ predictor.description }}</td>
-                                    <td>
-                                        <span data-classifier-status="{{ predictor.name }}">{{ predictor.status }}</span>
-                                        <div data-classifier-progress="{{ predictor.name }}" hidden aria-live="polite">
-                                            <progress max="100" style="width: 100%; max-width: 240px;"></progress>
-                                            <small data-classifier-message style="display: block;"></small>
-                                        </div>
-                                    </td>
-                                    <td>{{ predictor.date|default_if_none:'' }}</td>
-                                    <td>
-                                        <button id="{{ predictor.name }}-train-btn" class="btn-tiny btn-primary">Treinar</button>
-                                        <button id="{{ predictor.name }}-feedback-btn" class="btn-tiny btn-primary">Dar Feedback</button>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                    <button id="delete-feedbacks-btn" class="btn-tiny btn-primary">Apagar Feedbacks</button>
-                {% else %}
-                    <p>Transaction Classifier habilitado, porém o serviço está indisponível no momento.</p>
-                {% endif %}
-            {% else %}
-                <p>O Transaction Classifier está desabilitado.</p>
-                <a href="{% url 'setup_settings' %}"><input type="button" value="Editar Configurações Gerais" class="btn btn-primary"></a>
-            {% endif %}
-        </div>
-        <div class="box-footer"></div>
-    </div>
-
-    <div class="box box-primary">
-        <div class="box-header">
-            <h3 class="box-title">Contas</h3>
-        </div>
-        <div class="box-body">
-            <a href="{% url 'create_account' %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
-            <table class="table">
+            <a data-profile-modal href="{% url 'create_account' %}">
+<input type="button" value="Cadastrar" class="btn btn-primary">
+</a>
+            <div class="profile-table-scroll">
+<table class="table">
                 <thead>
                     <tr>
                         <th>Banco</th>
@@ -315,23 +189,37 @@
                         <td>{{ account.balance | to_reais }}</td>
                         <td>{{ account.limits | to_reais }}</td>
                         <td>{{ account.home_screen | handle_boolean }}</td>
-                        <td><a href="{% url 'update_account' account.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
+                        <td>
+<a data-profile-modal href="{% url 'update_account' account.id %}">
+<i class="fa-solid fa-pen-to-square action-icon">
+</i>
+</a>
+</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
+</div>
         </div>
         <div class="box-footer">
             <span>Total de itens listados: {{ profile.accounts.count }}</span>
         </div>
-    </div>
-    <div class="box box-primary">
-        <div class="box-header">
-            <h3 class="box-title">Cartões de Crédito</h3>
-        </div>
+    </details>
+<details class="box profile-details">
+<summary>
+<span>
+<strong>Cartões de Crédito</strong>
+<small>Limites, fechamento e vencimento</small>
+</span>
+<span class="profile-chevron" aria-hidden="true">⌄</span>
+</summary>
+
         <div class="box-body">
-            <a href="{% url 'create_card' %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
-            <table class="table">
+            <a data-profile-modal href="{% url 'create_card' %}">
+<input type="button" value="Cadastrar" class="btn btn-primary">
+</a>
+            <div class="profile-table-scroll">
+<table class="table">
                 <thead>
                     <tr>
                         <th>Ícone</th>
@@ -358,31 +246,150 @@
                         <td>{{ card.account }}</td>
                         <td>{{ card.closing_day}}</td>
                         <td>{{ card.expiration_day}}</td>
-                        <td><a href="{% url 'update_card' card.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
+                        <td>
+<a data-profile-modal href="{% url 'update_card' card.id %}">
+<i class="fa-solid fa-pen-to-square action-icon">
+</i>
+</a>
+</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
+</div>
         </div>
         <div class="box-footer">
             <span>Total de itens listados: {{ profile.cards.count }}</span>
         </div>
-    </div>
+    </details>
+<details class="box profile-details">
+<summary>
+<span>
+<strong>Despesas Fixas</strong>
+<small>Despesas que se repetem todos os meses</small>
+</span>
+<span class="profile-chevron" aria-hidden="true">⌄</span>
+</summary>
 
-    <div class="box box-primary">
-        <div class="box-header">
-            <h3 class="box-title">Dispositivos (API Token)</h3>
+        <div class="box-body">
+            <a data-profile-modal href="{% url 'create_fixed_expense' %}">
+<input type="button" value="Cadastrar" class="btn btn-primary">
+</a>
+            <div class="profile-table-scroll">
+<table class="table">
+                <thead>
+                    <tr>
+                        <th>Data Inicial</th>
+                        <th>Data Final</th>
+                        <th>Descrição</th>
+                        <th>Valor</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fixed_expense in fixed_expenses %}
+                    <tr>
+                        <td>{{ fixed_expense.start_date | date:"d/m/Y" }}</td>
+                        <td>{{ fixed_expense.end_date | date:"d/m/Y" }}</td>
+                        <td>{{ fixed_expense.description }}</td>
+                        <td>{{ fixed_expense.value | to_reais }}</td>
+                        <td>
+<a data-profile-modal href="{% url 'update_fixed_expense' fixed_expense.id %}">
+<i class="fa-solid fa-pen-to-square action-icon">
+</i>
+</a>
+</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+</div>
         </div>
+        <div class="box-footer">
+            <span>Total de itens listados: {{ fixed_expenses.count }}</span>
+        </div>
+    </details>
+</section>
+
+<section id="integracoes" class="profile-section">
+<h2>Integrações e atividade</h2>
+<p>Gerencie automações e acompanhe as notificações recebidas.</p>
+<details class="box profile-details">
+<summary>
+<span>
+<strong>Inteligências Artificiais</strong>
+<small>Treinamento e feedback do classificador</small>
+</span>
+<span class="profile-chevron" aria-hidden="true">⌄</span>
+</summary>
+
+        <div class="box-body">
+            {% if transaction_classifier_enabled %}
+                {% if transaction_classifier %}
+                    <div class="profile-table-scroll">
+<table class="table">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Modelo</th>
+                                <th>Status</th>
+                                <th>Último Feedback</th>
+                                <th style="width: 250px; white-space: nowrap;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for predictor in transaction_classifier %}
+                                <tr>
+                                    <td>{{ predictor.ai }}</td>
+                                    <td>{{ predictor.description }}</td>
+                                    <td>
+                                        <span data-classifier-status="{{ predictor.name }}">{{ predictor.status }}</span>
+                                        <div data-classifier-progress="{{ predictor.name }}" hidden aria-live="polite">
+                                            <progress max="100" style="width: 100%; max-width: 240px;">
+</progress>
+                                            <small data-classifier-message style="display: block;">
+</small>
+                                        </div>
+                                    </td>
+                                    <td>{{ predictor.date|default_if_none:'' }}</td>
+                                    <td>
+                                        <button id="{{ predictor.name }}-train-btn" class="btn-tiny btn-primary">Treinar</button>
+                                        <button id="{{ predictor.name }}-feedback-btn" class="btn-tiny btn-primary">Dar Feedback</button>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+</div>
+                    <button id="delete-feedbacks-btn" class="btn-tiny btn-primary">Apagar Feedbacks</button>
+                {% else %}
+                    <p>Transaction Classifier habilitado, porém o serviço está indisponível no momento.</p>
+                {% endif %}
+            {% else %}
+                <p>O Transaction Classifier está desabilitado.</p>
+                <a href="{% url 'setup_settings' %}">
+<input type="button" value="Editar Configurações Gerais" class="btn btn-primary">
+</a>
+            {% endif %}
+        </div>
+        <div class="box-footer">
+</div>
+    </details>
+<details class="box profile-details">
+<summary>
+<span>
+<strong>Dispositivos (API Token)</strong>
+<small>Tokens de acesso e configuração do Tasker</small>
+</span>
+<span class="profile-chevron" aria-hidden="true">⌄</span>
+</summary>
+
         <div class="box-body">
             <p>Gere um token para um dispositivo (ex: Tasker). Guarde o token exibido abaixo e configure o Tasker para usá-lo no header <code>Authorization: Bearer &lt;TOKEN&gt;</code>.</p>
-            <form action="{% url 'create_device' %}" method="post" style="margin-bottom: 1rem;">
-                {% csrf_token %}
-                <label for="id_name">Nome do dispositivo</label>
-                <input type="text" id="id_name" name="name" required />
-                <input type="submit" value="Gerar Token" class="btn btn-primary" />
-            </form>
+            <a data-profile-modal href="{% url 'create_device' %}" class="btn btn-primary">Adicionar dispositivo</a>
 
-            <table class="table">
+            <div class="profile-table-scroll">
+<table class="table">
                 <thead>
                     <tr>
                         <th>Nome</th>
@@ -395,24 +402,38 @@
                     <tr>
                         <td>{{ device.name }}</td>
                         <td>
-                            <a href="#" data-token="{{ device.token }}" onclick="copyToken(event)" title="Copiar">{{ device.token }}</i></a>
+                            <a href="#" data-token="{{ device.token }}" onclick="copyToken(event)" title="Copiar">{{ device.token }}</a>
                         </td>
-                        <td style="word-break: break-all;"></td>
+
                         <td>
-                            <a href="#" data-token="{{ device.token }}" onclick="copyToken(event)" title="Copiar"><i class="fa-solid fa-clipboard action-icon"></i></a>
-                            <a href="{% url 'update_device' device.id %}" title="Editar"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
-                            <a href="{% url 'delete_device' device.id %}" title="Deletar"><i class="fa-solid fa-trash action-icon"></i></a>
+                            <a href="#" data-token="{{ device.token }}" onclick="copyToken(event)" title="Copiar">
+<i class="fa-solid fa-clipboard action-icon">
+</i>
+</a>
+                            <a data-profile-modal href="{% url 'update_device' device.id %}" title="Editar">
+<i class="fa-solid fa-pen-to-square action-icon">
+</i>
+</a>
+                            <a data-profile-modal href="{% url 'delete_device' device.id %}" title="Deletar">
+<i class="fa-solid fa-trash action-icon">
+</i>
+</a>
                         </td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="4">Nenhum dispositivo cadastrado.</td></tr>
+                    <tr>
+<td colspan="3">Nenhum dispositivo cadastrado.</td>
+</tr>
                     {% endfor %}
                 </tbody>
             </table>
+</div>
 
             <h4>Exemplo de requisição (Tasker / curl)</h4>
-            <p>URL: <b>http://192.168.100.10/api/notifications/</b></p>
-            <p>Header: <b>Authorization: Bearer &lt;DEVICE_TOKEN&gt;</b></p>
+            <p>URL: <b>http://192.168.100.10/api/notifications/</b>
+</p>
+            <p>Header: <b>Authorization: Bearer &lt;DEVICE_TOKEN&gt;</b>
+</p>
             <p>Body exemplo:</p>
             <pre>
 {
@@ -423,16 +444,24 @@
 }
             </pre>
         </div>
-        <div class="box-footer"></div>
-    </div>
+        <div class="box-footer">
+</div>
+    </details>
+<details class="box profile-details">
+<summary>
+<span>
+<strong>Notificações Recentes</strong>
+<small>Histórico das últimas notificações recebidas</small>
+</span>
+<span class="profile-chevron" aria-hidden="true">⌄</span>
+</summary>
 
-    <div class="box box-primary">
-        <div class="box-header">
-            <h3 class="box-title">Notificações Recentes</h3>
-        </div>
         <div class="box-body">
-            <a href="{% url 'create_notification' %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
-            <table class="table">
+            <a data-profile-modal href="{% url 'create_notification' %}">
+<input type="button" value="Cadastrar" class="btn btn-primary">
+</a>
+            <div class="profile-table-scroll">
+<table class="table">
                 <thead>
                     <tr>
                         <th>Título</th>
@@ -449,10 +478,19 @@
                         <td>{{ n.created_at|date:"d/m/Y H:i" }}</td>
                         <td>
                             {% if request.user.is_staff %}
-                                <a href="{% url 'update_notification' n.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
-                                <a href="{% url 'delete_notification' n.id %}"><i class="fa-solid fa-trash action-icon"></i></a>
+                                <a data-profile-modal href="{% url 'update_notification' n.id %}">
+<i class="fa-solid fa-pen-to-square action-icon">
+</i>
+</a>
+                                <a data-profile-modal href="{% url 'delete_notification' n.id %}">
+<i class="fa-solid fa-trash action-icon">
+</i>
+</a>
                             {% else %}
-                                <a href="{% url 'detail_notification' n.id %}"><i class="fa-solid fa-file-lines action-icon"></i></a>
+                                <a href="{% url 'detail_notification' n.id %}">
+<i class="fa-solid fa-file-lines action-icon">
+</i>
+</a>
                             {% endif %}
                         </td>
                     </tr>
@@ -463,16 +501,21 @@
                     {% endfor %}
                 </tbody>
             </table>
+</div>
         </div>
         <div class="box-footer">
             <a href="{% url 'get_all_notification' %}">Ver todas as notificações</a>
         </div>
-    </div>
-
+    </details>
+</section>
+</div>
+{% include "components/profile-dialog.html" %}
 {% endblock %}
-
 {% block scripts %}
-<script src="{% static 'js/pages/user/get-profile.js' %}?v=classifier-jobs-2" type="module"></script>
+<script src="{% static 'js/pages/card-form.js' %}?v=profile-modals-1" defer></script>
+<script src="{% static 'js/pages/user/profile-forms.js' %}?v=1" defer></script>
+<script src="{% static 'js/pages/user/get-profile.js' %}?v=profile-modals-1" type="module">
+</script>
 <script>
 function copyToken(e){
     e.preventDefault();
@@ -480,15 +523,15 @@ function copyToken(e){
     if(!token) return;
     if(navigator.clipboard){
         navigator.clipboard.writeText(token).then(()=>{
-            alert('Token copiado para área de transferência');
-        }).catch(()=>{ alert('Falha ao copiar token'); });
+            window.myFinanceToast('Token copiado para a área de transferência.', 'success');
+        }).catch(()=>{ window.myFinanceToast('Falha ao copiar token.', 'error'); });
     } else {
         // fallback
         const el = document.createElement('textarea');
         el.value = token;
         document.body.appendChild(el);
         el.select();
-        try{ document.execCommand('copy'); alert('Token copiado'); }catch{ alert('Falha ao copiar'); }
+        try{ document.execCommand('copy'); window.myFinanceToast('Token copiado.', 'success'); }catch{ window.myFinanceToast('Falha ao copiar token.', 'error'); }
         document.body.removeChild(el);
     }
 }

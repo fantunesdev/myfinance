@@ -8,14 +8,14 @@ const source = (await readFile(new URL('../../statement/static/js/pages/user/cla
 const flush = () => new Promise(resolve => setImmediate(resolve));
 
 function setup(fetcher, initial = {}) {
-    const events = {}, timers = [], requests = [], modals = [], storage = { ...initial };
+    const events = {}, timers = [], requests = [], modals = [], toasts = [], storage = { ...initial };
     const buttons = Object.fromEntries(['subcategory-train-btn', 'subcategory-feedback-btn', 'description-train-btn', 'description-feedback-btn', 'delete-feedbacks-btn'].map(id => [id, { disabled: false }]));
     const panels = Object.fromEntries(['description', 'subcategory'].map(predictor => {
         const progress = { hidden: false, removeAttribute() { delete this.value; } };
         const text = { textContent: '' };
         return [predictor, { hidden: true, progress, text, querySelector: selector => selector === 'progress' ? progress : text }];
     }));
-    const window = { addEventListener: (event, fn) => { events[event] = fn; }, showModal: (...args) => modals.push(args) };
+    const window = { myFinanceToast: (message, level) => toasts.push({message, level}), addEventListener: (event, fn) => { events[event] = fn; }, showModal: (...args) => modals.push(args) };
     const document = { cookie: 'csrftoken=csrf-value', getElementById: id => buttons[id], querySelector(selector) {
         if (selector.startsWith('meta')) return { content: '1' };
         if (selector === '[data-classifier-progress]') return panels.description;
@@ -30,7 +30,7 @@ function setup(fetcher, initial = {}) {
         setTimeout: () => 1, clearTimeout() {}, decodeURIComponent,
     });
     vm.runInContext(source, context);
-    return { events, timers, requests, modals, storage, buttons, panels, start: context.start };
+    return { events, timers, requests, modals, toasts, storage, buttons, panels, start: context.start };
 }
 const response = (data, status = 200) => ({ ok: status < 400, status, json: async () => data });
 const key = 'myfinance:classifier:pending:1';
@@ -92,7 +92,7 @@ test('explicit rejection unlocks controls and explains why request was not accep
     await page.start('transaction-classifier/description/feedback');
     assert.equal(page.buttons['description-feedback-btn'].disabled, false);
     assert.equal(JSON.parse(page.storage[key]).length, 0);
-    assert.equal(page.modals[0][1], 'Nenhum feedback disponível.');
+    assert.deepEqual(page.toasts, [{ message: 'Nenhum feedback disponível.', level: 'error' }]);
 });
 
 test('HTML server errors preserve uncertain acceptance and can recover the result later', async () => {
@@ -118,7 +118,8 @@ test('HTML access rejection explains the session problem without exposing a JSON
     await flush();
     await page.start('transaction-classifier/description/feedback');
     assert.equal(page.buttons['description-feedback-btn'].disabled, false);
-    assert.match(page.modals[0][1], /sessão expirou ou o acesso foi recusado/);
+    assert.match(page.toasts[0].message, /sessão expirou ou o acesso foi recusado/);
+    assert.equal(page.toasts[0].level, 'error');
     assert.equal(JSON.parse(page.storage[key]).length, 0);
 });
 
@@ -155,4 +156,16 @@ test('terminal results show the final message without a stale phase or backgroun
     })] }));
     await flush();
     assert.equal(page.panels.description.text.textContent, 'Modelo salvo.');
+});
+
+test('terminal job notifications appear once after progress and not for historical results', async () => {
+    const page = setup(async () => response({ jobs: [job()] }));
+    await flush();
+    const completed = job({ revision: 3, status: 'succeeded', message: 'Modelo salvo.' });
+    page.events['classifier:changed']({ detail: completed });
+    page.events['classifier:changed']({ detail: completed });
+    assert.deepEqual(page.toasts, [{ message: 'Modelo salvo.', level: 'success' }]);
+    const historical = setup(async () => response({ jobs: [completed] }));
+    await flush();
+    assert.equal(historical.toasts.length, 0);
 });

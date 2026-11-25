@@ -1,0 +1,9 @@
+<div id="flash-toasts" class="toast-stack" aria-label="Notificações do sistema">
+    {% for message in messages %}
+    <div class="app-toast" data-toast-level="{% if message.level >= 40 %}error{% elif message.level >= 30 %}warning{% elif message.level >= 25 %}success{% else %}info{% endif %}" role="{% if message.level >= 40 %}alert{% else %}status{% endif %}">
+        <span class="toast-symbol" aria-hidden="true">{% if message.level >= 30 %}!{% elif message.level >= 25 %}✓{% else %}i{% endif %}</span>
+        <div class="toast-content"><strong>{% if message.level >= 40 %}Não foi possível concluir{% elif message.level >= 30 %}Atenção{% elif message.level >= 25 %}Tudo certo{% else %}Informação{% endif %}</strong><p>{{ message|force_escape }}</p></div>
+        <button type="button" class="toast-close" aria-label="Fechar notificação">×</button>
+    </div>
+    {% endfor %}
+</div>

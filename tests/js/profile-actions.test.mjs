@@ -5,16 +5,16 @@ import vm from 'node:vm';
 
 const source = await readFile(new URL('../../statement/static/js/pages/user/get-profile.js', import.meta.url), 'utf8');
 function setup(id, result) {
-    const listeners = {}, modals = [], starts = [], sent = [];
+    const listeners = {}, modals = [], starts = [], sent = [], toasts = [];
     const button = { innerHTML: '', addEventListener: (name, fn) => { listeners[name] = fn; } };
     vm.runInNewContext(source.replace(/^import .*;\n/gm, ''), {
         Error, console: { error() {} },
         document: { getElementById: name => name === id ? button : null },
-        window: { showModal: (title, message, confirm) => modals.push({ title, message, confirm }), hideModal() {} },
+        window: { myFinanceToast: (message, level) => toasts.push({message, level}), showModal: (title, message, confirm) => modals.push({ title, message, confirm }), hideModal() {} },
         services: { sendRequisition: async route => { sent.push(route); return result; } },
         startClassifierJob: async route => starts.push(route),
     });
-    return { modals, starts, sent, async click() { listeners.click(); await modals[0].confirm(); } };
+    return { modals, starts, sent, toasts, async click() { listeners.click(); await modals[0].confirm(); } };
 }
 
 test('training buttons start asynchronous tracking without the legacy success modal', async () => {
@@ -31,7 +31,15 @@ test('Error instances, explicit errors and failed business results cannot open t
     for (const result of [new SyntaxError('Unexpected token <'), { error: 'Erro real', message: 'Texto adicional' }, { success: false, message: 'Recusado' }]) {
         const page = setup('delete-feedbacks-btn', result);
         await page.click();
-        assert.match(page.modals.at(-1).title, /Erro/);
+        assert.equal(page.toasts.at(-1).level, 'error');
+        assert.equal(page.toasts.some(toast => toast.level === 'success'), false);
         assert.equal(page.modals.some(modal => modal.title === 'Sucesso!'), false);
     }
+});
+
+test('deleting feedback shows the confirmed success as a toast', async () => {
+    const page = setup('delete-feedbacks-btn', { message: 'Feedbacks apagados.' });
+    await page.click();
+    assert.deepEqual(page.toasts, [{message: 'Feedbacks apagados.', level: 'success'}]);
+    assert.equal(page.modals.length, 1); // The destructive action still requires confirmation.
 });

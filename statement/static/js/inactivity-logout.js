@@ -105,6 +105,16 @@
     });
     if (channel) channel.onmessage = event => receive(event.data.name, event.data.value);
 
+    window.addEventListener('profile:inactivity-settings', event => {
+        const incoming = event.detail;
+        if (locked || !incoming || incoming.session !== initial.session ||
+            typeof incoming.enabled !== 'boolean' || !Number.isFinite(incoming.minutes) || incoming.minutes <= 0) return;
+        const shared = read('config') || config;
+        if ((incoming.revision || '') < (shared.revision || '')) return;
+        write('config', incoming);
+        check();
+    });
+
     const shared = read('config');
     if (!shared || (initial.revision || '') > (shared.revision || '')) {
         if (shared && (initial.enabled !== shared.enabled || initial.minutes !== shared.minutes)) {

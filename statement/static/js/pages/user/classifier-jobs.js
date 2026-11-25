@@ -74,6 +74,9 @@ function accept(job, authoritative = false) {
     const current = jobs.get(job.predictor);
     if (current && current.id === job.id && current.revision > job.revision) return;
     if (!authoritative && current && current.id !== job.id && Date.parse(current.created_at) > Date.parse(job.created_at)) return;
+    if (current?.id === job.id && ACTIVE.has(current.status) && ['succeeded', 'failed', 'interrupted'].includes(job.status)) {
+        window.myFinanceToast?.(job.message || labels[job.stage || job.status] || 'Operação concluída.', job.status === 'succeeded' ? 'success' : 'error');
+    }
     jobs.set(job.predictor, job);
     const request = pending.get(job.predictor);
     if (job.status !== 'submitting' && (request?.id === job.id || (request && ACTIVE.has(job.status)))) {
@@ -109,7 +112,7 @@ async function submit(request) {
             const message = [401, 403].includes(response.status)
                 ? 'A sessão expirou ou o acesso foi recusado. Recarregue a página e entre novamente, se necessário.'
                 : `O servidor recusou a solicitação (HTTP ${response.status}). Recarregue a página e tente novamente.`;
-            window.showModal('Solicitação não aceita', data.error || message);
+            window.myFinanceToast(data.error || message, 'error');
             render();
         }
     } catch {
@@ -157,6 +160,7 @@ if (document.querySelector('[data-classifier-progress]')) {
             jobs.set(request.predictor, { ...request, status: 'submitting', revision: 0 });
         }
     } catch { /* Optional storage. */ }
+    window.addEventListener('profile:updated', render);
     window.addEventListener('classifier:changed', event => accept(event.detail));
     window.addEventListener('pageshow', () => { clearInterval(timer); timer = setInterval(poll, 5000); void poll(); });
     window.addEventListener('pagehide', () => clearInterval(timer));
