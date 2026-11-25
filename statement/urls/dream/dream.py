@@ -16,7 +16,7 @@ urlpatterns = [
     path('<int:id>/fotos/<int:photo_id>/remover/', dream_view.delete_photo, name='delete_dream_photo'),
     path('editar/<int:id>/', dream_view.update, name='update_dream'),
     path('remover/<int:id>/', dream_view.delete, name='delete_dream'),
-    path('<parcelas/', include('statement.urls.dream.portion')),
+    path('parcelas/', include('statement.urls.dream.portion')),
     path('<int:id>/parcelas/', include('statement.urls.dream.portion')),
     path('<str:status>/', dream_view.get_by_status, name='get_dreams_by_status'),
     path('', dream_view.get_all, name='get_dreams'),
