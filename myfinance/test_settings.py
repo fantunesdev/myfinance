@@ -1,5 +1,6 @@
 """Isolated settings for tests: no .env, external database, Redis or network."""
 SECRET_KEY = 'isolated-tests-only'
+MAILERS = {'default': {'BACKEND': 'django.core.mail.backends.locmem.EmailBackend'}}
 INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',

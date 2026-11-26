@@ -11,7 +11,8 @@ def password_recovery_configuration(app_configs, **kwargs):
         public_origin()
     except Exception:
         issues.append(Warning('Configure PUBLIC_BASE_URL para gerar links de recuperação.', id='login.W001'))
-    if getattr(settings, 'EMAIL_BACKEND', '') == 'login.email_backend.GmailBackend':
+    mailer = getattr(settings, 'MAILERS', {}).get('default', {})
+    if mailer.get('BACKEND') == 'login.email_backend.GmailBackend':
         required = ('GMAIL_CLIENT_ID', 'GMAIL_CLIENT_SECRET', 'GMAIL_SENDER_EMAIL')
         if not all(getattr(settings, name, '') for name in required) or not (
             getattr(settings, 'GMAIL_REFRESH_TOKEN', '') or getattr(settings, 'GMAIL_REFRESH_TOKEN_FILE', '')
@@ -27,7 +28,7 @@ def password_recovery_configuration(app_configs, **kwargs):
     ):
         if getattr(settings, name, 1) <= 0:
             issues.append(Error(f'{name} precisa ser positivo.', id='login.E001'))
-    if not 0 < (getattr(settings, 'EMAIL_TIMEOUT', None) or 15) <= 30:
+    if not 0 < (mailer.get('OPTIONS', {}).get('timeout') or 15) <= 30:
         issues.append(Error('EMAIL_TIMEOUT precisa estar entre 1 e 30 segundos.', id='login.E002'))
     key = getattr(settings, 'TWO_FACTOR_ENCRYPTION_KEY', '')
     if key:

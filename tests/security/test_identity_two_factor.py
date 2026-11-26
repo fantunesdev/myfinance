@@ -52,7 +52,7 @@ def web():
         ALLOWED_HOSTS=['testserver'],
         LOGIN_URL='/login/',
         TWO_FACTOR_ENCRYPTION_KEY=KEY,
-        EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend',
+        MAILERS={'default': {'BACKEND': 'django.core.mail.backends.locmem.EmailBackend'}},
         DEFAULT_FROM_EMAIL='sender@example.com',
         PUBLIC_BASE_URL='https://finance.example.com',
         CACHES={'default': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'}},
@@ -102,7 +102,7 @@ def web():
         ],
     ):
         cache.clear()
-        mail.get_connection()
+        mail.mailers['default']
         mail.outbox.clear()
         yield
         cache.clear()

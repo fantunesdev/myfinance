@@ -132,16 +132,16 @@ As funcionalidades de investimento estão concentradas no app `investments`:
 
 ## Stack
 
-- Python 3.13
-- Django 5.2 LTS (mínimo 5.2.19)
+- Python 3.15.2
+- Django 6.1 (mínimo 6.1.3)
 - Django REST Framework
 - Django Channels, Daphne e Redis
 - MySQL como banco principal
 - PostgreSQL configurado como banco secundario
 - OAuth2 Toolkit e Simple JWT
-- Poetry
+- Poetry 2.5.2
 - JavaScript, CSS e templates Django
-- Pytest, pytest-django, Blue, isort, ESLint e Prettier
+- Pytest, pytest-django, Ruff, isort, ESLint e Prettier
 - Docker, Docker Compose e Nginx no repositorio de orquestracao
 
 ## Decisoes de arquitetura
@@ -268,18 +268,24 @@ ou configure um proxy externo para encaminhar seu dominio local para `https://12
 
 Pre-requisitos:
 
-- Python 3.13
-- Poetry
+- Python 3.15.2
+- Poetry 2.5.2
 - MySQL acessivel
 - Redis acessivel para recursos de WebSocket/cache
-- Node.js/npm para formatacao dos arquivos JavaScript
+- Node.js 26 LTS (26.13.1 ou superior na série 26) e npm para ferramentas JavaScript
 
 Instale as dependencias:
 
 ```bash
-poetry install
-npm install
+poetry env use python3.15
+poetry install --no-root
+npm ci
 ```
+
+As versões de Python e Node estão registradas em `.python-version` e `.nvmrc`.
+O Ruff substitui o Blue, mantendo aspas simples e limite de 120 caracteres.
+Os lockfiles registram as versões exatas; use `poetry install --no-root` e
+`npm ci` para reproduzir o ambiente.
 
 Configure o `.env` na raiz do projeto com as variaveis listadas acima.
 
@@ -405,8 +411,20 @@ poetry run python manage.py link_notifications_to_cards
 Testes Python:
 
 ```bash
-poetry run pytest
+poetry run pytest --ds=myfinance.test_settings tests
 ```
+
+Integração com um MySQL **exclusivo de testes**, sem carregar o `.env`:
+
+```bash
+MYFINANCE_TEST_MYSQL_PASSWORD=senha-do-mysql-de-testes \
+  poetry run pytest --ds=myfinance.mysql_test_settings tests
+```
+
+O servidor deve permitir ao usuário `root` criar o banco `test_myfinance_tests`.
+A conexão usa `127.0.0.1:3306`; defina `MYFINANCE_TEST_MYSQL_PORT` para outra porta.
+Um teste de duplicatas legadas de e-mail é ignorado no MySQL quando a collation
+impede a criação desses registros; esse cenário continua coberto no SQLite.
 
 Testes JavaScript existentes:
 
@@ -420,7 +438,7 @@ Formatacao:
 make format
 ```
 
-O `make format` executa `isort`, `blue` e `prettier` nos arquivos JavaScript de `statement/static/js/`.
+O `make format` executa `isort`, `ruff format` e `prettier` nos arquivos JavaScript de `statement/static/js/`.
 
 ## Observacoes de Operacao
 

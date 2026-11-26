@@ -1,6 +1,6 @@
 format:
 	@poetry run isort .
-	@poetry run blue . --line-length 120
+	@poetry run ruff format .
 	@npm run format:js
 install:
 	@echo "Instalando o MyFinance..."
@@ -12,7 +12,6 @@ install:
 	@poetry run python manage.py migrate login
 	@poetry run python manage.py collectstatic
 run:
-	@poetry shell
 	@poetry run daphne -b 0.0.0.0 -p 8765 myfinance.asgi:application &
 	@poetry run python manage.py runserver
 update:

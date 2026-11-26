@@ -15,8 +15,10 @@ class GmailDeliveryError(Exception):
 
 
 class GmailBackend(BaseEmailBackend):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, fail_silently=False, *, timeout=15, **kwargs):
+        super().__init__(**kwargs)
+        self.fail_silently = fail_silently
+        self.timeout = timeout
         self.access_token = None
         self.expires_at = 0
 
@@ -37,7 +39,7 @@ class GmailBackend(BaseEmailBackend):
                 'refresh_token': refresh_token,
                 'grant_type': 'refresh_token',
             },
-            timeout=(5, getattr(settings, 'EMAIL_TIMEOUT', None) or 15),
+            timeout=(5, self.timeout),
         )
         response.raise_for_status()
         data = response.json()
@@ -65,7 +67,7 @@ class GmailBackend(BaseEmailBackend):
                     'https://gmail.googleapis.com/gmail/v1/users/me/messages/send',
                     headers={'Authorization': f'Bearer {self.access_token}'},
                     json={'raw': raw},
-                    timeout=(5, getattr(settings, 'EMAIL_TIMEOUT', None) or 15),
+                    timeout=(5, self.timeout),
                 )
                 response.raise_for_status()
                 if not response.json().get('id'):

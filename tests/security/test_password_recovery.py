@@ -13,6 +13,7 @@ from django.core import mail
 from django.core.cache import cache
 from django.core.management import call_command
 from django.core.management.base import CommandError
+from django.db import IntegrityError, connection, transaction
 from django.http import HttpResponse
 from django.test import Client, override_settings
 from django.urls import include, path
@@ -39,7 +40,7 @@ def recovery_settings():
         DEBUG=False,
         ALLOWED_HOSTS=['testserver'],
         LOGIN_URL='/login/',
-        EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend',
+        MAILERS={'default': {'BACKEND': 'django.core.mail.backends.locmem.EmailBackend'}},
         DEFAULT_FROM_EMAIL='MyFinance <sender@example.com>',
         PUBLIC_BASE_URL='https://finance.example.com',
         PASSWORD_RESET_TIMEOUT=1800,
@@ -61,7 +62,7 @@ def recovery_settings():
         ],
     ):
         cache.clear()
-        mail.get_connection()
+        mail.mailers['default']
         mail.outbox.clear()
         yield
         cache.clear()
@@ -259,6 +260,7 @@ def test_public_origin_must_be_https_without_request_host_fallback(caplog):
     assert 'evil.example.com' not in caplog.text
 
 
+@pytest.mark.django_db(transaction=True)
 def test_worker_once_uses_queue_without_touching_real_email():
     user()
     submit()
@@ -275,6 +277,7 @@ def test_gmail_backend_refreshes_and_encodes_mime_without_exposing_bcc():
         SimpleNamespace(raise_for_status=lambda: None, json=lambda: {'id': 'message-2'}),
     ]
     with override_settings(
+        MAILERS={'default': {'BACKEND': 'login.email_backend.GmailBackend', 'OPTIONS': {'timeout': 7}}},
         GMAIL_CLIENT_ID='test-client',
         GMAIL_CLIENT_SECRET='test-secret',
         GMAIL_REFRESH_TOKEN='test-refresh',
@@ -282,10 +285,12 @@ def test_gmail_backend_refreshes_and_encodes_mime_without_exposing_bcc():
     ):
         with patch('login.email_backend.requests.post', side_effect=responses) as post:
             message = mail.EmailMessage('Olá', 'Mensagem de teste', settings.DEFAULT_FROM_EMAIL, ['to@example.com'])
-            backend = GmailBackend()
+            backend = mail.mailers['default']
             assert backend.send_messages([message, message]) == 2
             assert post.call_count == 3
             refresh_call, send_call, _ = post.call_args_list
+            assert refresh_call.kwargs['timeout'] == (5, 7)
+            assert send_call.kwargs['timeout'] == (5, 7)
             assert refresh_call.kwargs['data']['grant_type'] == 'refresh_token'
             assert send_call.kwargs['headers']['Authorization'] == 'Bearer test-access'
             payload = base64.urlsafe_b64decode(send_call.kwargs['json']['raw'])
@@ -382,14 +387,13 @@ def test_configuration_checks_identify_missing_gmail_and_bad_origin():
     from login.checks import password_recovery_configuration
 
     with override_settings(
-        EMAIL_BACKEND='login.email_backend.GmailBackend',
+        MAILERS={'default': {'BACKEND': 'login.email_backend.GmailBackend', 'OPTIONS': {'timeout': 60}}},
         GMAIL_CLIENT_ID='',
         GMAIL_CLIENT_SECRET='',
         GMAIL_SENDER_EMAIL='',
         GMAIL_REFRESH_TOKEN='',
         GMAIL_REFRESH_TOKEN_FILE='',
         PUBLIC_BASE_URL='',
-        EMAIL_TIMEOUT=60,
     ):
         codes = {check.id for check in password_recovery_configuration(None)}
         assert {'login.W001', 'login.W002', 'login.E002'} <= codes
@@ -414,7 +418,13 @@ def test_gmail_refresh_token_file_is_supported(tmp_path):
 
 def test_ambiguous_legacy_email_addresses_do_not_reset_arbitrary_accounts():
     user()
-    User.objects.create_user(username='ambiguous', email='RECOVERY@example.com', name='Other', password='Other!123')
+    try:
+        with transaction.atomic():
+            User.objects.create_user(username='ambiguous', email='RECOVERY@example.com', name='Other', password='Other!123')
+    except IntegrityError as exc:
+        if connection.vendor != 'mysql' or exc.args[0] != 1062 or 'login_user.email' not in str(exc):
+            raise
+        pytest.skip('A collation do banco impede e-mails duplicados que diferem apenas por maiúsculas.')
     submit()
     process_delivery()
     assert not mail.outbox

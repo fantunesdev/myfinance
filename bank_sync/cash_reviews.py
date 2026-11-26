@@ -16,7 +16,7 @@ def bank_rows(user):
     reviewed = InvestmentCashReview.objects.filter(cash_id=OuterRef('pk'), revision=OuterRef('revision')).exclude(
         action='apply', trade__state='conflict',
     )
-    prior = Q(pk__in=[])
+    prior = None
     for connection_id in user.bankconnection_set.values_list('pk', flat=True):
         sources = list(ExternalInvestment.objects.filter(
             connection_id=connection_id, investment__user=user, investment__asset__currency='BRL',
@@ -24,7 +24,12 @@ def bank_rows(user):
         baselines = [getattr(s.investment, 'reconciliation_baseline', None) for s in sources]
         if baselines and all(baselines):
             cutoff = min(b.date for b in baselines)
-            prior |= Q(connection_id=connection_id, facts__date__lt=(cutoff + timedelta(days=1)).isoformat())
+            condition = Q(connection_id=connection_id, facts__date__lt=(cutoff + timedelta(days=1)).isoformat())
+            prior = condition if prior is None else prior | condition
+    # An empty CASE is cast to bool by Django 6.1, which MySQL cannot execute.
+    prior_to_baseline = Value(False, output_field=BooleanField()) if prior is None else Case(
+        When(prior, then=Value(True)), default=Value(False), output_field=BooleanField(),
+    )
     return InvestmentCashEvidence.objects.filter(
         connection__user=user, operations__isnull=True,
         facts__status='POSTED', facts__currencyCode='BRL',
@@ -33,9 +38,7 @@ def bank_rows(user):
         | Q(facts__type='DEBIT', facts__description__istartswith='Aplicação - ')
         | Q(facts__type='DEBIT', facts__description__istartswith='Compra - Criptomoedas')
         | Q(facts__type='DEBIT', facts__description__istartswith='Débito B3 - ')
-    ).annotate(reviewed=Exists(reviewed), prior_to_baseline=Case(
-        When(prior, then=Value(True)), default=Value(False), output_field=BooleanField(),
-    ))
+    ).annotate(reviewed=Exists(reviewed), prior_to_baseline=prior_to_baseline)
 
 
 def candidates(user, cash):

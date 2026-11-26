@@ -42,7 +42,7 @@ def main():
             'from myfinance.security_test_settings import *\n'
             "DEBUG=True\nSECRET_KEY='identity-browser-tests-only-'+ 'x'*40\n"
             f'TWO_FACTOR_ENCRYPTION_KEY={Fernet.generate_key().decode()!r}\nPUBLIC_BASE_URL={base!r}\n'
-            "EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend'\nDEFAULT_FROM_EMAIL='sender@browser.invalid'\n"
+            "MAILERS={'default': {'BACKEND': 'django.core.mail.backends.locmem.EmailBackend'}}\nDEFAULT_FROM_EMAIL='sender@browser.invalid'\n"
             "INSTALLED_APPS=['login.admin_apps.SecurityAdminConfig' if name=='django.contrib.admin' else name for name in INSTALLED_APPS]\n"
             "MIDDLEWARE.insert(MIDDLEWARE.index('django.contrib.auth.middleware.AuthenticationMiddleware')+1,'login.middleware.TwoFactorSessionMiddleware')\n"
             "REST_FRAMEWORK['DEFAULT_AUTHENTICATION_CLASSES'][0]='login.authentication.SecureSessionAuthentication'\n"

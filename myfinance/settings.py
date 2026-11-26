@@ -298,10 +298,20 @@ PASSWORD_RESET_TIMEOUT = int(os.getenv('PASSWORD_RESET_TIMEOUT', '1800'))
 PASSWORD_RESET_RATE_WINDOW = int(os.getenv('PASSWORD_RESET_RATE_WINDOW', '900'))
 PASSWORD_RESET_IP_LIMIT = int(os.getenv('PASSWORD_RESET_IP_LIMIT', '30'))
 PASSWORD_RESET_EMAIL_LIMIT = int(os.getenv('PASSWORD_RESET_EMAIL_LIMIT', '3'))
-EMAIL_BACKEND = os.getenv(
-    'EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend' if DEBUG else 'login.email_backend.GmailBackend',
-)
-EMAIL_TIMEOUT = int(os.getenv('EMAIL_TIMEOUT', '15'))
+MAILERS = {
+    'default': {
+        'BACKEND': os.getenv(
+            'EMAIL_BACKEND',
+            'django.core.mail.backends.console.EmailBackend' if DEBUG else 'login.email_backend.GmailBackend',
+        ),
+        'OPTIONS': {},
+    },
+}
+if MAILERS['default']['BACKEND'] in (
+    'login.email_backend.GmailBackend',
+    'django.core.mail.backends.smtp.EmailBackend',
+):
+    MAILERS['default']['OPTIONS']['timeout'] = int(os.getenv('EMAIL_TIMEOUT', '15'))
 GMAIL_SENDER_EMAIL = os.getenv('GMAIL_SENDER_EMAIL', '')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', GMAIL_SENDER_EMAIL or 'MyFinance <no-reply@localhost>')
 GMAIL_CLIENT_ID = os.getenv('GMAIL_CLIENT_ID', '')
