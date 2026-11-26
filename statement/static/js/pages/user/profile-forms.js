@@ -12,6 +12,9 @@
     let loading;
     let opener;
     const pendingForms = new WeakSet();
+    const globalSettings = dialog.hasAttribute?.('data-global-settings-dialog') === true;
+    let customTitle = '';
+    const defaultTitle = globalSettings ? 'Configurações globais' : 'Configurações da conta';
 
     function notify(message, level = 'info') {
         window.myFinanceToast(message, level);
@@ -108,8 +111,10 @@
         ensureOpen();
         const copy = fragment(page, url);
         currentUrl = url;
-        title.textContent = page.querySelector('main .box-title, body > .box .box-title, main h2')?.textContent.trim() || 'Configurações da conta';
+        title.textContent = customTitle || page.querySelector('main .box-title, body > .box .box-title, main h2')?.textContent.trim() || defaultTitle;
         content.replaceChildren(...copy.childNodes);
+        const classifierLabel = content.querySelector('label[for="id_enable_transaction_classifier"]');
+        if (globalSettings && classifierLabel) classifierLabel.textContent = 'Ativar Transaction Classifier';
         content.scrollTop = 0;
         window.initializeCardForm?.(content);
         const firstError = content.querySelector('.errorlist, .alert-danger');
@@ -126,6 +131,7 @@
         const controller = new AbortController();
         loading = controller;
         ensureOpen(trigger);
+        customTitle = trigger?.dataset?.modalTitle || '';
         title.textContent = 'Carregando…';
         content.textContent = 'Carregando formulário…';
         content.setAttribute('aria-busy', 'true');
@@ -233,7 +239,8 @@
                 saved = !messages.failed;
                 if (!messages.any) notify(url.pathname.includes('confirmar-identidade') ? 'Identidade confirmada. Confira e confirme a alteração desejada.' : 'Alterações salvas com sucesso.', 'success');
                 await refresh(page, destination);
-                if (dialog.open) render(page, destination);
+                if (dialog.open && globalSettings && !messages.failed) { busyState(false); close(); }
+                else if (dialog.open) render(page, destination);
             } else {
                 // Identity confirmation, QR enrollment and recovery codes remain in the modal.
                 render(page, destination);

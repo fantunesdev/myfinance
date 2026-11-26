@@ -2,41 +2,61 @@
 {% load static %}
 {% load custom_filters %}
 {% load l10n %}
-
-    {% block title %}Configurações{% endblock %}
-
-    {% block content %}
+{% block title %}Configurações globais{% endblock %}
+{% block styles %}<link rel="stylesheet" href="{% static 'css/profile.css' %}?v=9">{% endblock %}
+{% block content %}
+<div class="profile-shell" data-global-settings>
+    <div class="box box-primary">
+        <div class="box-header">
+<h3 class="box-title">Configurações globais</h3>
+</div>
+        <div class="box-body">
+<p>Administre os recursos e cadastros compartilhados do MyFinance.</p>
+<p>Os modelos de CSV pertencem à sua conta.</p>
+</div>
+    </div>
+    <nav class="profile-nav" aria-label="Seções das configurações globais">
+        <a class="btn" href="#recursos">Recursos</a>
+<a class="btn" href="#importacao">Importação</a>
+<a class="btn" href="#cadastros">Cadastros</a>
+<a class="btn" href="#atividade">Notificações</a>
+    </nav>
+    <section id="recursos" class="profile-section">
+<h2>Recursos do sistema</h2>
+<p>Ative ou desative os recursos disponíveis no MyFinance.</p>
         <div class="box box-primary">
-            <div class="box-header">
-                <h3 class="box-title">Configurações Gerais</h3>
-            </div>
-            <div class="box-body">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Chave</th>
-                            <th>Valor</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Ativar Transaction Classifier</td>
-                            <td>{{ app_config_enable_transaction_classifier | bool_to_portuguese }}</td>
-                            <td><a href="{% url 'edit_app_config' %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+<div class="box-header">
+<h3 class="box-title">Configurações Gerais</h3>
+</div>
+<div class="box-body">
+            <div class="profile-setting">
+<div>
+<h3>Transaction Classifier</h3>
+<p>Classificação automática dos lançamentos.</p>
+</div>
+<span class="profile-badge {% if app_config_enable_transaction_classifier %}is-success{% else %}is-warning{% endif %}">{% if app_config_enable_transaction_classifier %}Ativado{% else %}Desativado{% endif %}</span>
+<a class="btn btn-primary" data-profile-modal data-modal-title="Configurações gerais" href="{% url 'edit_app_config' %}">Configurar</a>
+</div>
         </div>
-        {# Fixed expenses moved to user profile page #}
-        <div class="box box-primary">
-            <div class="box-header">
-                <h3 class="box-title">Configurações de CSV</h3>
-            </div>
+</div>
+    </section>
+<section id="importacao" class="profile-section">
+<h2>Importação</h2>
+<p>Defina como as colunas dos seus arquivos CSV serão interpretadas.</p>
+<details class="box box-primary profile-details">
+<summary class="box-header">
+<span>
+<strong class="box-title">Configurações de CSV</strong>
+<small>Modelos de colunas, destino e regras de batimento</small>
+</span>
+<span class="profile-chevron" aria-hidden="true">⌄</span>
+</summary>
             <div class="box-body">
-                <a href="{% url 'create_csv_import_config' %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
-                <table class="table">
+                <a data-profile-modal href="{% url 'create_csv_import_config' %}">
+<input type="button" value="Cadastrar" class="btn btn-primary">
+</a>
+                <div class="profile-table-scroll">
+<table class="table">
                     <thead>
                         <tr>
                             <th>Nome</th>
@@ -60,9 +80,18 @@
                             <td>{{ csv_config.installment_column|default_if_none:'' }}</td>
                             <td>{{ csv_config.get_installment_format_display }}</td>
                             <td>
-                                <a href="{% url 'detail_csv_import_config' csv_config.id %}"><i class="fa-solid fa-file-lines action-icon"></i></a>
-                                <a href="{% url 'update_csv_import_config' csv_config.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
-                                <a href="{% url 'delete_csv_import_config' csv_config.id %}"><i class="fa-solid fa-trash action-icon"></i></a>
+                                <a data-profile-modal href="{% url 'detail_csv_import_config' csv_config.id %}" aria-label="Ver detalhes">
+<i class="fa-solid fa-file-lines action-icon">
+</i>
+</a>
+                                <a data-profile-modal href="{% url 'update_csv_import_config' csv_config.id %}" aria-label="Editar">
+<i class="fa-solid fa-pen-to-square action-icon">
+</i>
+</a>
+                                <a data-profile-modal href="{% url 'delete_csv_import_config' csv_config.id %}" aria-label="Excluir">
+<i class="fa-solid fa-trash action-icon">
+</i>
+</a>
                             </td>
                         </tr>
                         {% empty %}
@@ -72,18 +101,30 @@
                         {% endfor %}
                     </tbody>
                 </table>
+</div>
             </div>
             <div class="box-footer">
-                <a href="{% url 'get_all_csv_import_config' %}">Ver todas as configurações de CSV</a>
+                <a data-profile-modal href="{% url 'get_all_csv_import_config' %}">Ver todas as configurações de CSV</a>
             </div>
-        </div>
-        <div class="box box-primary">
-            <div class="box-header">
-                <h3 class="box-title">Bancos</h3>
-            </div>
+        </details>
+</section>
+<section id="cadastros" class="profile-section">
+<h2>Cadastros compartilhados</h2>
+<p>Gerencie as referências usadas nas contas e nos lançamentos.</p>
+<details class="box box-primary profile-details">
+<summary class="box-header">
+<span>
+<strong class="box-title">Bancos</strong>
+<small>Instituições, códigos e ícones</small>
+</span>
+<span class="profile-chevron" aria-hidden="true">⌄</span>
+</summary>
             <div class="box-body">
-                <a href="{% url 'create_bank' %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
-                <table class="table">
+                <a data-profile-modal href="{% url 'create_bank' %}">
+<input type="button" value="Cadastrar" class="btn btn-primary">
+</a>
+                <div class="profile-table-scroll">
+<table class="table">
                     <thead>
                         <tr>
                             <th>Descrição</th>
@@ -100,23 +141,36 @@
                             <td>
                                 <img src="{{ bank.icon | handle_image }}" alt="Ícone do {{ bank.description }}" style="max-height: 25px;">
                             </td>
-                            <td><a href="{% url 'update_bank' bank.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
+                            <td>
+<a data-profile-modal href="{% url 'update_bank' bank.id %}" aria-label="Editar">
+<i class="fa-solid fa-pen-to-square action-icon">
+</i>
+</a>
+</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
+</div>
             </div>
             <div class="box-footer">
                 <span>Total de itens listados: {{ banks.count }}</span>
             </div>
-        </div>
-        <div class="box box-primary">
-            <div class="box-header">
-                <h3 class="box-title">Categorias de Entrada</h3>
-            </div>
+        </details>
+<details class="box box-primary profile-details">
+<summary class="box-header">
+<span>
+<strong class="box-title">Categorias de Entrada</strong>
+<small>Organização das receitas</small>
+</span>
+<span class="profile-chevron" aria-hidden="true">⌄</span>
+</summary>
             <div class="box-body">
-                <a href="{% url 'create_category' %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
-                <table class="table">
+                <a data-profile-modal href="{% url 'create_category' %}">
+<input type="button" value="Cadastrar" class="btn btn-primary">
+</a>
+                <div class="profile-table-scroll">
+<table class="table">
                     <thead>
                         <tr>
                             <th>Descrição</th>
@@ -130,31 +184,54 @@
                             {% if category.type == 'entrada' %}
                                 <tr>
                                     <td>{{ category.description }}</td>
-                                    <td><a href="#"><i class="fa-solid fa-circle" style="color: {{ category.color }};"></i></a></td>
-                                    <td><a href="#"><i class="{{ category.icon }}"></i></a></td>
                                     <td>
-                                        <a href="{% url 'detail_category' category.id %}"><i class="fa-solid fa-file action-icon"></i></a>
-                                        <a href="{% url 'update_category' category.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
+<a href="#">
+<i class="fa-solid fa-circle" style="color: {{ category.color }};">
+</i>
+</a>
+</td>
+                                    <td>
+<a href="#">
+<i class="{{ category.icon }}">
+</i>
+</a>
+</td>
+                                    <td>
+                                        <a data-profile-modal href="{% url 'detail_category' category.id %}" aria-label="Ver detalhes">
+<i class="fa-solid fa-file action-icon">
+</i>
+</a>
+                                        <a data-profile-modal href="{% url 'update_category' category.id %}" aria-label="Editar">
+<i class="fa-solid fa-pen-to-square action-icon">
+</i>
+</a>
                                     </td>
                                 </tr>
                             {% endif %}
                         {% endfor %}
                     </tbody>
                 </table>
+</div>
                 <br>
             </div>
             <div class="box-footer">
                 <span>Total de itens listados: {{ categories.count }}</span>
             </div>
-        </div>
-
-        <div class="box box-primary">
-            <div class="box-header">
-                <h3 class="box-title">Categorias de Saída</h3>
-            </div>
+        </details>
+<details class="box box-primary profile-details">
+<summary class="box-header">
+<span>
+<strong class="box-title">Categorias de Saída</strong>
+<small>Organização das despesas</small>
+</span>
+<span class="profile-chevron" aria-hidden="true">⌄</span>
+</summary>
             <div class="box-body">
-                <a href="{% url 'create_category' %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
-                <table class="table">
+                <a data-profile-modal href="{% url 'create_category' %}">
+<input type="button" value="Cadastrar" class="btn btn-primary">
+</a>
+                <div class="profile-table-scroll">
+<table class="table">
                     <thead>
                         <tr>
                             <th>Descrição</th>
@@ -168,30 +245,54 @@
                             {% if category.type == 'saida' %}
                                 <tr>
                                     <td>{{ category.description }}</td>
-                                    <td><a href="#"><i class="fa-solid fa-circle" style="color: {{ category.color }};"></i></a></td>
-                                    <td><a href="#"><i class="{{ category.icon }}"></i></a></td>
                                     <td>
-                                        <a href="{% url 'detail_category' category.id %}"><i class="fa-solid fa-file action-icon"></i></a>
-                                        <a href="{% url 'update_category' category.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
+<a href="#">
+<i class="fa-solid fa-circle" style="color: {{ category.color }};">
+</i>
+</a>
+</td>
+                                    <td>
+<a href="#">
+<i class="{{ category.icon }}">
+</i>
+</a>
+</td>
+                                    <td>
+                                        <a data-profile-modal href="{% url 'detail_category' category.id %}" aria-label="Ver detalhes">
+<i class="fa-solid fa-file action-icon">
+</i>
+</a>
+                                        <a data-profile-modal href="{% url 'update_category' category.id %}" aria-label="Editar">
+<i class="fa-solid fa-pen-to-square action-icon">
+</i>
+</a>
                                     </td>
                                 </tr>
                             {% endif %}
                         {% endfor %}
                     </tbody>
                 </table>
+</div>
                 <br>
             </div>
             <div class="box-footer">
                 <span>Total de itens listados: {{ categories.count }}</span>
             </div>
-        </div>
-        <div class="box box-primary">
-            <div class="box-header">
-                <h3 class="box-title">Bandeiras</h3>
-            </div>
+        </details>
+<details class="box box-primary profile-details">
+<summary class="box-header">
+<span>
+<strong class="box-title">Bandeiras</strong>
+<small>Bandeiras dos cartões</small>
+</span>
+<span class="profile-chevron" aria-hidden="true">⌄</span>
+</summary>
             <div class="box-body">
-                <a href="{% url 'create_flag' %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
-                <table class="table">
+                <a data-profile-modal href="{% url 'create_flag' %}">
+<input type="button" value="Cadastrar" class="btn btn-primary">
+</a>
+                <div class="profile-table-scroll">
+<table class="table">
                     <thead>
                         <tr>
                             <th>Descrição</th>
@@ -206,23 +307,80 @@
                             <td>
                                 <img src="{{ flag.icon | handle_image }}" alt="Ícone {{ flag.description }}" style="max-height: 35px;">
                             </td>
-                            <td><a href="{% url 'update_flag' flag.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a></td>
+                            <td>
+<a data-profile-modal href="{% url 'update_flag' flag.id %}" aria-label="Editar">
+<i class="fa-solid fa-pen-to-square action-icon">
+</i>
+</a>
+</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
+</div>
             </div>
             <div class="box-footer">
                 <span>Total de itens listados: {{ flags.count }}</span>
             </div>
-        </div>
-        <div class="box box-primary">
-            <div class="box-header">
-                <h3 class="box-title">Notificações Recentes</h3>
-            </div>
+        </details>
+<details class="box box-primary profile-details">
+<summary class="box-header">
+<span>
+<strong class="box-title">Subcategorias</strong>
+<small>Detalhamento das categorias dos lançamentos</small>
+</span>
+<span class="profile-chevron" aria-hidden="true">⌄</span>
+</summary>
+<div class="box-body">
+<a data-profile-modal class="btn btn-primary" href="{% url 'create_subcategory' %}">Cadastrar</a>
+<a data-profile-modal class="btn" href="{% url 'get_all_subcategory' %}">Ver todas</a>
+<div class="profile-table-scroll">
+<table class="table">
+<thead>
+<tr>
+<th>Descrição</th>
+<th>Categoria</th>
+<th>Ações</th>
+</tr>
+</thead>
+<tbody>{% for subcategory in subcategories %}<tr>
+<td>{{ subcategory.description }}</td>
+<td>{{ subcategory.category }}</td>
+<td>
+<a data-profile-modal href="{% url 'update_subcategory' subcategory.id %}" aria-label="Editar subcategoria">
+<i class="fa-solid fa-pen-to-square action-icon">
+</i>
+</a>
+<a data-profile-modal href="{% url 'delete_subcategory' subcategory.id %}" aria-label="Excluir subcategoria">
+<i class="fa-solid fa-trash action-icon">
+</i>
+</a>
+</td>
+</tr>{% empty %}<tr>
+<td colspan="3">Nenhuma subcategoria cadastrada.</td>
+</tr>{% endfor %}</tbody>
+</table>
+</div>
+</div>
+</details>
+</section>
+<section id="atividade" class="profile-section">
+<h2>Notificações</h2>
+<p>Consulte e gerencie as notificações recebidas.</p>
+<details class="box box-primary profile-details">
+<summary class="box-header">
+<span>
+<strong class="box-title">Notificações Recentes</strong>
+<small>Últimos registros recebidos pelo MyFinance</small>
+</span>
+<span class="profile-chevron" aria-hidden="true">⌄</span>
+</summary>
             <div class="box-body">
-                <a href="{% url 'create_notification' %}"><input type="button" value="Cadastrar" class="btn btn-primary"></a>
-                <table class="table">
+                <a data-profile-modal href="{% url 'create_notification' %}">
+<input type="button" value="Cadastrar" class="btn btn-primary">
+</a>
+                <div class="profile-table-scroll">
+<table class="table">
                     <thead>
                         <tr>
                             <th>Título</th>
@@ -238,8 +396,14 @@
                             <td>{{ n.message|truncatechars:80 }}</td>
                             <td>{{ n.created_at|date:"d/m/Y H:i" }}</td>
                             <td>
-                                <a href="{% url 'update_notification' n.id %}"><i class="fa-solid fa-pen-to-square action-icon"></i></a>
-                                <a href="{% url 'delete_notification' n.id %}"><i class="fa-solid fa-trash action-icon"></i></a>
+                                <a data-profile-modal href="{% url 'update_notification' n.id %}" aria-label="Editar">
+<i class="fa-solid fa-pen-to-square action-icon">
+</i>
+</a>
+                                <a data-profile-modal href="{% url 'delete_notification' n.id %}" aria-label="Excluir">
+<i class="fa-solid fa-trash action-icon">
+</i>
+</a>
                             </td>
                         </tr>
                         {% empty %}
@@ -249,9 +413,15 @@
                         {% endfor %}
                     </tbody>
                 </table>
+</div>
             </div>
             <div class="box-footer">
-                <a href="{% url 'get_all_notification' %}">Ver todas as notificações</a>
+                <a data-profile-modal href="{% url 'get_all_notification' %}">Ver todas as notificações</a>
             </div>
-        </div>
-    {% endblock %}
+        </details>
+</section>
+</div>
+{% include "components/profile-dialog.html" with global_settings_dialog=True %}
+{% endblock %}
+{% block scripts %}<script src="{% static 'js/pages/user/profile-forms.js' %}?v=global-settings-1" defer>
+</script>{% endblock %}

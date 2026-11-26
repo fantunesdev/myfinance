@@ -1,4 +1,4 @@
-<dialog id="profile-dialog" class="profile-dialog" aria-labelledby="profile-dialog-title">
+<dialog id="profile-dialog" class="profile-dialog" aria-labelledby="profile-dialog-title"{% if global_settings_dialog %} data-global-settings-dialog{% endif %}>
     <div class="profile-dialog-heading">
         <h2 id="profile-dialog-title">Configurações da conta</h2>
         <button type="button" class="btn profile-dialog-close" data-profile-close aria-label="Fechar formulário">×</button>

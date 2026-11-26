@@ -4,16 +4,17 @@ import test from 'node:test';
 import vm from 'node:vm';
 
 const source = await readFile(new URL('../../statement/static/js/pages/user/profile-forms.js', import.meta.url), 'utf8');
-function setup(fetcher) {
+function setup(fetcher, options = {}) {
     const events = {}, toasts = [], requests = [];
     const closeButton = { addEventListener() {}, disabled: false };
     const content = { contains: () => false, setAttribute() {} };
-    const dialog = { showModal() {}, querySelector: () => closeButton, addEventListener() {} };
+    const dialog = { open: true, close() { this.open = false; }, hasAttribute: () => options.globalSettings === true, showModal() {}, querySelector: () => closeButton, addEventListener() {} };
     const document = {
         getElementById: id => ({ 'profile-dialog': dialog, 'profile-dialog-content': content, 'profile-dialog-title': {} })[id],
+        querySelector: selector => options.querySelector?.(selector) || null,
         addEventListener: (name, callback) => { events[name] = callback; },
     };
-    const window = { fetch: true, myFinanceToast: (message, level) => toasts.push({ message, level }), addEventListener() {} };
+    const window = { dispatchEvent() {}, fetch: true, myFinanceToast: (message, level) => toasts.push({ message, level }), addEventListener() {} };
     class FormData {
         constructor(form) { this.values = new Map(form.values); }
         append(key, value) { this.values.set(key, value); }
@@ -22,6 +23,8 @@ function setup(fetcher) {
     vm.runInNewContext(source, {
         document, window, location: { href: 'https://myfinance.invalid/usuarios/perfil/', origin: 'https://myfinance.invalid' },
         URL, URLSearchParams, FormData, WeakSet, Set, AbortController,
+        CustomEvent: class { constructor(type) { this.type = type; } },
+        DOMParser: class { parseFromString(text) { return options.pages[text]; } },
         fetch: async (url, options) => { requests.push({url, options}); return fetcher(url, options); },
     });
     function form(action = 'https://myfinance.invalid/usuarios/perfil/editar/') {
@@ -33,7 +36,7 @@ function setup(fetcher) {
         const event = { target: form, submitter: button, preventDefault() { this.prevented = true; } };
         return { form, button, file, event };
     }
-    return { requests, toasts, form, submit: event => events.submit(event), closeButton };
+    return { requests, toasts, form, dialog, submit: event => events.submit(event), closeButton };
 }
 
 test('AJAX carries CSRF, files and clicked action, and prevents duplicate submission while pending', async () => {
@@ -86,4 +89,22 @@ test('a button named action cannot replace the endpoint URL through DOM named pr
     form.action = button;
     await page.submit(event);
     assert.equal(String(page.requests[0].url), endpoint);
+});
+
+test('global settings refresh their cards and close the modal when CSV CRUD redirects to a list', async () => {
+    let refreshed = 0;
+    const replacement = { querySelectorAll: () => [] };
+    const existing = { querySelectorAll: () => [], replaceWith(node) { assert.equal(node, replacement); refreshed++; } };
+    const list = { querySelectorAll: () => [], querySelector: selector => selector === 'main table' ? {} : null };
+    const home = { querySelector: selector => selector === '.profile-shell' ? replacement : null, getElementById: () => null };
+    const homeUrl = 'https://myfinance.invalid/usuarios/perfil/';
+    const page = setup(async (_, request) => ({
+        url: request?.method === 'POST' ? 'https://myfinance.invalid/financeiro/configuracoes/importacao_csv/' : homeUrl,
+        ok: true, redirected: request?.method === 'POST', headers: { get: () => 'text/html' },
+        text: async () => request?.method === 'POST' ? 'list' : 'home',
+    }), { globalSettings: true, pages: { list, home }, querySelector: selector => selector === 'main > .profile-shell' ? existing : null });
+    await page.submit(page.form('https://myfinance.invalid/financeiro/configuracoes/importacao_csv/cadastrar/').event);
+    assert.equal(refreshed, 1);
+    assert.equal(page.dialog.open, false);
+    assert.deepEqual(page.toasts, [{ message: 'Alterações salvas com sucesso.', level: 'success' }]);
 });
