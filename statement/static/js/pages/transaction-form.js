@@ -208,7 +208,7 @@ async function changeSubcategoriesInput(categoryId) {
     renderClassificationOptions(selects.subcategory, []);
     if (!categoryId || categoryId === '0') return;
 
-    const subcategories = await services.getChildrenResource('categories', 'subcategories', categoryId);
+    const subcategories = await services.getChildrenResource('categories', 'subcategories', categoryId, { forEntry: true });
     if (requestId !== subcategoryRequestId || selects.category.value !== categoryId) return;
     renderClassificationOptions(selects.subcategory, subcategories);
 }

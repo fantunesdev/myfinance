@@ -19,6 +19,22 @@ def card_source(db):
     return case
 
 
+def test_personal_subcategory_preferences_apply_to_pluggy_review_and_creation(card_source, mocker):
+    from bank_sync.views import state_data
+    from login.models import Profile
+
+    c = card_source
+    row = c.mapped()
+    subcategory_id = c.create_data()['subcategory_id']
+    profile, _ = Profile.objects.get_or_create(user=c.user)
+    profile.disabled_subcategories.add(subcategory_id)
+    mocker.patch('bank_sync.views.reverse', return_value='/card/edit/')
+    assert all(item['id'] != int(subcategory_id) for item in state_data(c.user, {})['subcategories'])
+    with pytest.raises(ValidationError, match='desativada'):
+        confirm(c.user, row.pk, row.revision, 'create', c.create_data())
+    assert not Transaction.objects.filter(user=c.user).exists()
+
+
 def test_confirmed_account_mapping_cannot_be_reassigned_to_another_card(card_source):
     from bank_sync.services import map_account
     from statement.models import Card

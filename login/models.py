@@ -66,6 +66,9 @@ class Profile(models.Model):
     """
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    disabled_subcategories = models.ManyToManyField(
+        'statement.Subcategory', blank=True, related_name='disabled_by_profiles',
+    )
     social_login_enabled = models.BooleanField(default=True)
     use_next_month = models.BooleanField(default=False)
     enable_fuel_tracking = models.BooleanField(default=False)

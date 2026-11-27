@@ -8,6 +8,7 @@ from api.views.base_view import BaseView
 from api.permissions import AuthenticatedReadStaffWrite
 from statement.models import Category
 from statement.services.core.category import CategoryService
+from statement.services.core.subcategory import SubcategoryService
 from statement.views.core.category import CategoryView as StatementView
 
 
@@ -43,7 +44,11 @@ class CategoryView(BaseView):
         :category_id: o ID da categoria à qual as subcategorias pertencem.
         """
         category = self.service.get_by_id(pk)
-        subcategories = subcategories = category.subcategories.all()
+        if request.query_params.get('available_for_entry') == '1':
+            subcategories = SubcategoryService.available_for_entry(request.user).filter(category=category)
+            serializer = SubcategorySerializer(subcategories, many=True, context={'request': request})
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        subcategories = category.subcategories.all()
         if not subcategories:
             return Response({'detail': 'Subcategorias não encontradas.'}, status=status.HTTP_404_NOT_FOUND)
         serializer = SubcategorySerializer(subcategories, many=True, context={'request': request})

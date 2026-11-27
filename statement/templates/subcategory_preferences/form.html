@@ -1,0 +1,41 @@
+{% extends 'index.html' %}
+
+{% block title %}{{ class_title }}{% endblock %}
+
+{% block content %}
+<section class="box box-primary box-max-width-2000 v-center-div chart-preferences" data-chart-preferences>
+    <div class="box-header"><h2 class="box-title">{{ class_title }}</h2></div>
+    <div class="box-body">
+        <p>Deixe os seletores com as subcategorias que fazem sentido para você. Todas ficam disponíveis por padrão; adicione abaixo apenas as que você não usa.</p>
+        <p class="chart-preferences-help">Essa escolha vale só para sua conta. Os lançamentos antigos e os gráficos continuam preservados. Você pode voltar a usar uma subcategoria removendo-a desta lista.</p>
+        <details class="chart-preferences-group" open>
+            <summary>
+                <span class="chart-preferences-heading">
+                    <strong>Subcategorias que não uso</strong>
+                    <small data-chart-summary>{{ selected|length }} subcategoria{{ selected|length|pluralize:"s" }} desativada{{ selected|length|pluralize:"s" }}</small>
+                </span>
+                <span class="chart-preferences-chevron" aria-hidden="true">⌄</span>
+            </summary>
+            <form method="post" action="{% url 'edit_subcategory_preferences' %}" data-chart-editor>
+                {% csrf_token %}
+                {{ form.errors }}
+                <div class="chart-preferences-list-heading">
+                    <h3>Ocultar nos seletores de lançamentos</h3>
+                    <button type="button" class="btn" data-chart-add aria-label="Adicionar subcategoria que não uso"><span aria-hidden="true">＋</span> Adicionar</button>
+                </div>
+                <p data-chart-empty {% if selected %}hidden{% endif %}>Todas as subcategorias estão disponíveis para você.</p>
+                <div data-chart-rows>
+                    {% for config in selected %}
+                        {% include 'subcategory_chart_config/row.html' with selected_id=config.subcategory_id selected_category=config.subcategory.category.description selected_type=config.subcategory.category.get_type_display row_index=forloop.counter %}
+                    {% endfor %}
+                </div>
+                <template data-chart-row-template>
+                    {% include 'subcategory_chart_config/row.html' with row_index='new' %}
+                </template>
+                <p class="chart-preferences-help" data-chart-status role="status">Salve para aplicar sua seleção. Remover da lista torna a subcategoria disponível novamente.</p>
+                <button type="submit" class="btn btn-primary">Salvar minhas subcategorias</button>
+            </form>
+        </details>
+    </div>
+</section>
+{% endblock %}

@@ -14,6 +14,7 @@ from api.views.category import CategoryView
 from api.views.next_month_view_view import NextMonthView
 from api.views.subcategory import SubcategoryView
 from api.views.validate_token import ValidateTokenView
+from login.models import Profile
 from statement.models import Account, Category, Dream, Version
 from statement.services.next_month_view import NextMonthViewService
 from statement.utils.jwt import JWTUtils
@@ -97,6 +98,24 @@ def test_subcategory_api_list_and_retrieve(ledger):
     assert (
         dispatch(SubcategoryView, ledger.user, 'retrieve', pk=ledger.subcategory.pk).data['id'] == ledger.subcategory.pk
     )
+
+
+def test_category_entry_choices_respect_personal_preferences_without_hiding_report_data(ledger):
+    profile = Profile.objects.create(user=ledger.user)
+    profile.disabled_subcategories.add(ledger.subcategory)
+    response = dispatch(
+        CategoryView, ledger.user, 'get_subcategories', data={'available_for_entry': '1'}, pk=ledger.category.pk
+    )
+    assert response.status_code == 200
+    assert response.data == []
+    response = dispatch(
+        CategoryView, ledger.other, 'get_subcategories', data={'available_for_entry': '1'}, pk=ledger.category.pk
+    )
+    assert [row['id'] for row in response.data] == [ledger.subcategory.pk]
+    # Taxonomy queries used by reports and historical transaction details stay complete.
+    response = dispatch(CategoryView, ledger.user, 'get_subcategories', pk=ledger.category.pk)
+    assert [row['id'] for row in response.data] == [ledger.subcategory.pk]
+    assert dispatch(SubcategoryView, ledger.user, 'retrieve', pk=ledger.subcategory.pk).status_code == 200
 
 
 def test_defaults_require_a_release_and_return_the_latest_version(ledger):

@@ -4,7 +4,7 @@ from types import SimpleNamespace
 import pytest
 from django.forms import model_to_dict
 
-from login.models import User
+from login.models import Profile, User
 from statement.forms.core.transaction import TransactionExpenseForm, TransactionForm, TransactionRevenueForm
 from statement.models import Category, Currency, Subcategory, Transaction
 from statement.services.core.category import CategoryService
@@ -35,6 +35,25 @@ def classification(db):
         type='saida',
     )
     return SimpleNamespace(**locals())
+
+
+def test_personal_subcategories_filter_new_entries_but_preserve_existing_classification(classification):
+    data = classification
+    profile = Profile.objects.create(user=data.user)
+    profile.disabled_subcategories.add(data.groceries, data.restaurants)
+    create = TransactionExpenseForm(data.user, initial={'category': data.expense.pk})
+    assert not create.fields['subcategory'].queryset.exists()
+    submitted = model_to_dict(data.transaction)
+    submitted.pop('id')
+    form = TransactionExpenseForm(data.user, submitted)
+    assert not form.is_valid()
+    assert 'subcategory' in form.errors
+    edit = TransactionForm(data.user, submitted, instance=data.transaction)
+    edit.is_valid()
+    assert 'subcategory' not in edit.errors
+    assert list(edit.fields['subcategory'].queryset) == [data.groceries]
+    data.transaction.refresh_from_db()
+    assert data.transaction.subcategory == data.groceries
 
 
 @pytest.mark.parametrize('transaction_type', ['entrada', 'saida'])

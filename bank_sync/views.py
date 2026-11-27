@@ -10,7 +10,8 @@ from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
 
 from clients.pluggy.reader import ProbeError
-from statement.models import Card, CardNumber, Category, Subcategory
+from statement.models import Card, CardNumber, Category
+from statement.services.core.subcategory import SubcategoryService
 
 from .models import BankConnection, ExternalAccount, ExternalTransaction
 from .presentation import bill_options, ledger_data, select_bill, source_rows
@@ -146,7 +147,7 @@ def state_data(user, params):
             for n in CardNumber.objects.filter(card__user=user)
         ],
         "categories": list(Category.objects.values("id", "description", "type")),
-        "subcategories": list(Subcategory.objects.values("id", "description", "category_id")),
+        "subcategories": list(SubcategoryService.available_for_entry(user).values("id", "description", "category_id")),
     }
 
 

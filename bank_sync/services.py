@@ -27,6 +27,7 @@ from statement.models import (
     Transaction,
 )
 from statement.services.core.card import CardService
+from statement.services.core.subcategory import SubcategoryService
 
 from .models import (
     BankConnection,
@@ -479,6 +480,8 @@ def confirm(user, row_id, revision, action, data, *, reconcile_group=True):
         if not due:
             raise ValidationError("Associe um cartão com fechamento e vencimento para calcular a data de pagamento.")
         category, subcategory = choose_category(data["category_id"], data["subcategory_id"], "saida")
+        if not SubcategoryService.available_for_entry(user).filter(pk=subcategory.pk).exists():
+            raise ValidationError("Esta subcategoria está desativada nas suas preferências. Escolha outra ou reative-a no perfil.")
         if candidates(row) and not data.get("distinct_purchase"):
             raise ValidationError("Há lançamentos parecidos. Vincule um deles ou confirme que esta compra é distinta.")
         current, total = facts["number"], facts["total"]

@@ -128,7 +128,7 @@ async function renderNotifications(notifications) {
                 selected: notification.category || null,
                 onChange: async (selectElem, cell) => {
                     const subcategorySelect = cell.nextSibling.querySelector('select');
-                    const subcategories = await services.getChildrenResource('categories', 'subcategories', selectElem.value);
+                    const subcategories = await services.getChildrenResource('categories', 'subcategories', selectElem.value, { forEntry: true });
                     updateSelectOptions(subcategorySelect, subcategories);
                 },
             },
@@ -158,7 +158,7 @@ async function renderNotifications(notifications) {
         if (categorySelect && subSel) {
             const selectedCategory = categorySelect.value;
             if (selectedCategory && parseInt(selectedCategory, 10) > 0) {
-                const subcats = await services.getChildrenResource('categories', 'subcategories', selectedCategory);
+                const subcats = await services.getChildrenResource('categories', 'subcategories', selectedCategory, { forEntry: true });
                 updateSelectOptions(subSel, subcats);
                 if (notification.subcategory) subSel.value = notification.subcategory;
             }

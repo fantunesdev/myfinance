@@ -182,13 +182,15 @@ export async function getSpecificResource(model, id) {
  * @param {string} id - O ID da instância.
  * @returns - Um objeto literal com todas as informações da instância.
  */
-export async function getChildrenResource(model, child, id) {
-    const sessionData = sessionStorage.getItem(`${model}-${id}-${child}`);
+export async function getChildrenResource(model, child, id, options = {}) {
+    // Entry choices depend on personal preferences and must not reuse report caches.
+    const forEntry = options.forEntry === true;
+    const sessionData = forEntry ? null : sessionStorage.getItem(`${model}-${id}-${child}`);
     if (sessionData) {
         return JSON.parse(sessionData);
     }
 
-    const url = `/api/${model}/${id}/${child}`;
+    const url = `/api/${model}/${id}/${child}${forEntry ? '/?available_for_entry=1' : ''}`;
     try {
         const response = await fetch(url);
         const contentType = response.headers.get('content-type') || '';
@@ -202,7 +204,7 @@ export async function getChildrenResource(model, child, id) {
         }
         const data = await response.json();
         const sessionStorageData = JSON.stringify(data);
-        sessionStorage.setItem(`${model}-${id}-${child}`, sessionStorageData);
+        if (!forEntry) sessionStorage.setItem(`${model}-${id}-${child}`, sessionStorageData);
         return data;
     } catch (error) {
         console.error(`Error fetching ${url}:`, error);

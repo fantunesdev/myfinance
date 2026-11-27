@@ -209,7 +209,7 @@ async function renderBox(transactions, onProgress = () => {}) {
         }
         const subcategories = isInvestmentImport || !transaction.category
             ? []
-            : await services.getChildrenResource('categories', 'subcategories', transaction.category);
+            : await services.getChildrenResource('categories', 'subcategories', transaction.category, { forEntry: true });
         const fields = isInvestmentImport
             ? getInvestmentTransactionFields(transaction, investments)
             : getTransactionFields(transaction, categories, subcategories);
@@ -272,7 +272,7 @@ function getTransactionFields(transaction, categories, subcategories) {
             onChange: async (select, cell) => {
                 const subcategorySelect = cell.nextSibling.querySelector('select');
                 const subcategories = select.value
-                    ? await services.getChildrenResource('categories', 'subcategories', select.value)
+                    ? await services.getChildrenResource('categories', 'subcategories', select.value, { forEntry: true })
                     : [];
                 updateSelectOptions(subcategorySelect, subcategories);
             },

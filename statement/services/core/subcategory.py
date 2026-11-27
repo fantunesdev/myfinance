@@ -23,6 +23,14 @@ class SubcategoryService(BaseService):
         return Subcategory.objects.select_related('category').filter(category=category_id)
 
     @classmethod
+    def available_for_entry(cls, user, current_subcategory_id=None):
+        """Personal choices for new entries; keep an existing entry's classification editable."""
+        disabled = cls.model.objects.filter(disabled_by_profiles__user=user)
+        if current_subcategory_id:
+            disabled = disabled.exclude(pk=current_subcategory_id)
+        return cls.model.objects.select_related('category').exclude(pk__in=disabled)
+
+    @classmethod
     def get_chart_config_values(cls, user, subcategory_id):
         config = cls.get_chart_config(user, subcategory_id)
         if not config:
@@ -62,7 +70,12 @@ class SubcategoryChartConfigService(BaseService):
     @classmethod
     def get_all(cls, user=None):
         SubcategoryService.ensure_chart_configs_for_user(user)
-        return super().get_all(user).select_related('subcategory', 'subcategory__category').order_by(
-            'subcategory__category__description',
-            'subcategory__description',
+        return (
+            super()
+            .get_all(user)
+            .select_related('subcategory', 'subcategory__category')
+            .order_by(
+                'subcategory__category__description',
+                'subcategory__description',
+            )
         )

@@ -32,12 +32,9 @@ class TransactionForm(FuelEntryFormMixin, BaseForm):
     )
 
     home_screen = forms.BooleanField(required=False)
-    
+
     dream = forms.ModelChoiceField(
-        queryset=Dream.objects.none(),
-        required=False,
-        widget=forms.Select(),
-        label='Sonho/Objetivo'
+        queryset=Dream.objects.none(), required=False, widget=forms.Select(), label='Sonho/Objetivo'
     )
 
     class Meta:
@@ -61,11 +58,12 @@ class TransactionForm(FuelEntryFormMixin, BaseForm):
         self.fields['category'].queryset = CategoryService.get_by_type(transaction_type)
         try:
             category_id = int(self['category'].value())
-        except (TypeError, ValueError):
+        except TypeError, ValueError:
             category_id = None
-        self.fields['subcategory'].queryset = SubcategoryService.get_by_category(category_id).filter(
-            category__type=transaction_type
-        )
+        current_subcategory_id = self.instance.subcategory_id if self.instance.pk else None
+        self.fields['subcategory'].queryset = SubcategoryService.available_for_entry(
+            user, current_subcategory_id
+        ).filter(category_id=category_id, category__type=transaction_type)
 
         restrict_write_relations(self, user)
         if self.data:

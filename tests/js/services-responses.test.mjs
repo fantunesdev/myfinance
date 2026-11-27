@@ -4,20 +4,33 @@ import test from 'node:test';
 import vm from 'node:vm';
 
 const source = await readFile(new URL('../../statement/static/js/data/services.js', import.meta.url), 'utf8');
-function setup(fetcher) {
+function setup(fetcher, cache = new Map()) {
     const requests = [], events = [];
     const context = vm.createContext({
         document: { cookie: 'csrftoken=test-csrf' },
+        sessionStorage: { getItem: key => cache.get(key), setItem: (key, value) => cache.set(key, value) },
         window: { dispatchEvent: event => events.push(event) },
         CustomEvent: class { constructor(type) { this.type = type; } },
         fetch: async (...args) => { requests.push(args); return fetcher(...args); },
     });
     vm.runInContext(source.replace(/^export /gm, ''), context);
-    return { send: context.sendRequisition, requests, events };
+    return { send: context.sendRequisition, children: context.getChildrenResource, requests, events };
 }
 function response(data, status = 200, contentType = 'application/json') {
     return { ok: status < 400, status, headers: { get: () => contentType }, json: async () => data };
 }
+
+test('personal entry choices bypass report caches and always fetch current preferences', async () => {
+    const cache = new Map([['categories-7-subcategories', '[{"id":1}]']]);
+    const page = setup(async () => response([]), cache);
+    await page.children('categories', 'subcategories', 7, { forEntry: true });
+    await page.children('categories', 'subcategories', 7, { forEntry: true });
+    assert.equal(page.requests.length, 2);
+    assert.equal(page.requests[0][0], '/api/categories/7/subcategories/?available_for_entry=1');
+    const report = await page.children('categories', 'subcategories', 7);
+    assert.equal(report[0].id, 1);
+    assert.equal(page.requests.length, 2);
+});
 
 test('HTML error pages produce an error object instead of a SyntaxError with a success message', async () => {
     const html = response(null, 500, 'text/html');

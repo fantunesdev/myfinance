@@ -120,7 +120,7 @@ async function renderNotificationsBox(notifications) {
     for (const notification of notifications) {
         try {
             const row = document.createElement('tr');
-            const subcategories = notification.category ? await services.getChildrenResource('categories', 'subcategories', notification.category) : [];
+            const subcategories = notification.category ? await services.getChildrenResource('categories', 'subcategories', notification.category, { forEntry: true }) : [];
             const fields = getTransactionFields(notification, categories, subcategories);
             renderFields(row, fields);
             // determine group key
@@ -153,7 +153,7 @@ async function renderNotificationsBox(notifications) {
                 let selectedCategory = categorySelect.value;
 
                 if (selectedCategory && parseInt(selectedCategory, 10) > 0) {
-                    const subcats = await services.getChildrenResource('categories', 'subcategories', selectedCategory);
+                    const subcats = await services.getChildrenResource('categories', 'subcategories', selectedCategory, { forEntry: true });
                     updateSelectOptions(subcategorySelect, subcats);
                     if (notification.subcategory) subcategorySelect.value = notification.subcategory;
                 }
@@ -239,7 +239,7 @@ function getTransactionFields(transaction, categories, subcategories) {
             selected: transaction.category,
             onChange: async (selectElem, cell) => {
                 const subcategorySelect = document.getElementById(`id_subcategory_${transaction.id}`) || cell.nextSibling.querySelector('select');
-                const subcategories = await services.getChildrenResource('categories', 'subcategories', selectElem.value);
+                const subcategories = await services.getChildrenResource('categories', 'subcategories', selectElem.value, { forEntry: true });
                 updateSelectOptions(subcategorySelect, subcategories);
             },
         },

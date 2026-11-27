@@ -85,7 +85,8 @@ test('trocar ou limpar a categoria atualiza as subcategorias mesmo sem campo de 
     }, null);
     selects.category.value = '2';
     await selects.category.listeners.change();
-    assert.deepEqual(calls, [['categories', 'subcategories', '2']]);
+    assert.deepEqual(calls[0].slice(0, 3), ['categories', 'subcategories', '2']);
+    assert.equal(calls[0][3].forEntry, true);
     assert.deepEqual(selects.subcategory.options, [{ id: 22, description: 'Ônibus' }]);
     assert.equal(selects.subcategory.value, '0');
 
