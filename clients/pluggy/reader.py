@@ -28,7 +28,10 @@ class PluggyReader:
         ):
             raise ProbeError("Endpoint fora do escopo de leitura.")
         auth = path == "/auth"
-        for attempt in range(3):
+        attempt = -1
+        while True:
+            # The final attempt returns or raises below; only attempts 0 and 1 can retry.
+            attempt += 1
             try:
                 response = self.session.request(
                     "POST" if auth else "GET",
@@ -73,7 +76,6 @@ class PluggyReader:
             if not isinstance(data, dict):
                 raise ProbeError("Formato de resposta inesperado.")
             return data
-        raise ProbeError("Consulta não concluída após tentativas limitadas.")
 
     @staticmethod
     def _is_uuid(value):

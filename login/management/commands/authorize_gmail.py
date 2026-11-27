@@ -30,7 +30,7 @@ class Command(BaseCommand):
         try:
             client = json.loads(Path(options['client_file']).expanduser().read_text())['web']
             client_id, client_secret = client['client_id'], client['client_secret']
-        except (OSError, ValueError, KeyError):
+        except (OSError, ValueError, KeyError, TypeError):
             raise CommandError('Informe o JSON de um cliente OAuth do tipo Aplicativo da Web.') from None
         redirect_uri = f'http://localhost:{options["port"]}{CALLBACK_PATH}'
         if redirect_uri not in client.get('redirect_uris', []):

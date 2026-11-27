@@ -24,3 +24,14 @@ kill_daphne:
 	@pkill -f "daphne" || true
 create_oauth_app:
 	@python manage.py create_oauth_app
+
+.PHONY: test coverage
+test:
+	@poetry run pytest --ds=myfinance.test_settings tests
+	@node --test tests/js/*.test.mjs
+
+coverage:
+	@poetry run coverage run -m pytest --ds=myfinance.test_settings tests
+	@poetry run coverage xml --fail-under=0
+	@poetry run coverage html --fail-under=0
+	@poetry run coverage report

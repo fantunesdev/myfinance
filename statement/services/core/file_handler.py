@@ -468,7 +468,9 @@ class FileHandlerService:
                 continue
 
             # Verifica se a notificação já existe (evita duplicata)
-            existing = NotificationService.get_by_filter(app=data['app'], title=data['title'], message=data['message'])
+            existing = NotificationService.get_by_filter(
+                user=self._user, app=data['app'], title=data['title'], message=data['message'],
+            )
 
             if existing.exists():
                 continue  # Pula notificações duplicadas

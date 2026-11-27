@@ -153,6 +153,9 @@ class InstallmentService(BaseService):
 
             # Cria uma cópia dos dados do formulário
             form_data = form.data.copy() if hasattr(form.data, 'copy') else dict(form.data)
+            # Preserve each row's calculated ordinal and due date when editing the plan.
+            form_data['paid'] = transaction.paid
+            form_data['payment_date'] = transaction.payment_date
 
             # Dinamicamente adiciona todos os campos obrigatórios que não estão no formulário
             for field_name, field in TransactionForm(transaction.user).fields.items():
@@ -282,6 +285,7 @@ class InstallmentService(BaseService):
         return last_transaction
 
     @classmethod
+    @db_transaction.atomic
     def advance_transactions(cls, form, installments):
         """
         Avança uma quantidade de parcelas a partir de uma data
@@ -295,11 +299,9 @@ class InstallmentService(BaseService):
             if transaction.payment_date > initial_date:
                 if advanced < quantity:
                     transaction.payment_date = next_expiration
-                    form_transaction = TransactionForm(transaction.user, instance=transaction)
-                    TransactionService.update(form_transaction, transaction)
+                    TransactionService.patch(transaction, {'payment_date': transaction.payment_date})
                     advanced += 1
                 else:
                     not_advanced += 1
                     transaction.payment_date = DateTimeUtils.add_months(next_expiration, not_advanced)
-                    form_transaction = TransactionForm(transaction.user, instance=transaction)
-                    TransactionService.update(form_transaction, transaction)
+                    TransactionService.patch(transaction, {'payment_date': transaction.payment_date})

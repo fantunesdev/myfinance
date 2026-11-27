@@ -432,6 +432,26 @@ Testes JavaScript existentes:
 node --test tests/js/*.test.mjs
 ```
 
+Para executar as duas suítes, use `make test`. Para medir a cobertura Python:
+
+```bash
+make coverage
+```
+
+O comando gera `coverage.xml` e `htmlcov/index.html`, com linhas e ramificações
+não exercitadas. A medição inclui os sete pacotes Python da aplicação, inclusive
+arquivos nunca importados pelos testes. Migrações, os arquivos `tests.py` e as
+configurações exclusivas de teste ficam fora da medição. O limite mínimo é 95%
+no indicador combinado de linhas e ramificações. A CI aplica esse limite na
+execução SQLite e publica os relatórios como artefato `python-coverage`;
+a suíte MySQL continua independente.
+
+Os roteiros `tests/browser/run_*.py` usam Playwright e são executados
+separadamente; não fazem parte do `pytest` nem da CI atual. A cobertura acima
+também não mede JavaScript ou templates. Muitos testes JavaScript carregam
+código via `vm` ou URLs `data:`, portanto o resumo padrão de cobertura do Node
+não representa a cobertura dos arquivos da aplicação.
+
 Formatacao:
 
 ```bash

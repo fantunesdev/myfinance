@@ -41,9 +41,9 @@ class DateTimeUtils:
                 date_value = cls.string_to_date(date_value)
                 date_value = date_value + relativedelta(months=months)
                 return date_value.strftime('%Y-%m-%d')
-            case date():
-                return date_value + relativedelta(months=months)
             case datetime():
+                return date_value + relativedelta(months=months)
+            case date():
                 return date_value + relativedelta(months=months)
 
     @staticmethod

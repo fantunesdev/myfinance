@@ -79,7 +79,7 @@ class TransactionView(BaseView):
 
         result = super().create(request)
 
-        if self.installment_info:
+        if self.installment_info and result.status_code == status.HTTP_201_CREATED:
             return self._handle_installment_creation(result)
 
         return result

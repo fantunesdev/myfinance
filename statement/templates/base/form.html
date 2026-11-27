@@ -47,7 +47,7 @@
                 <div class="box-footer">
                     <input class="btn btn-primary" type="submit" name="submit" value="Salvar">
                     <a href="{{ request.META.HTTP_REFERER }}" class="btn btn-info">Voltar</a>
-                    {% if update %}
+                    {% if update and actions_list.delete %}
                         <a href="{% url urls.delete old_instance.id %}">
                             <input type="button" value="Excluir" class="btn btn-danger">
                         </a>
