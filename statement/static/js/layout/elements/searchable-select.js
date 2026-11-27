@@ -23,6 +23,8 @@ export function enhanceSearchableSelect(select) {
         const selectedValue = select.value;
         const options = [...select.options].sort((a, b) => {
             if (hasValue(a) !== hasValue(b)) return hasValue(a) ? 1 : -1;
+            const groupOrder = alphabetical.compare(a.dataset.group || '', b.dataset.group || '');
+            if (groupOrder) return groupOrder;
             return alphabetical.compare(a.textContent, b.textContent);
         });
         select.replaceChildren(...options);
@@ -53,14 +55,25 @@ export function enhanceSearchableSelect(select) {
         if (search.disabled) return;
         const term = normalize(query.trim());
         matches = [...select.options].filter(option =>
-            hasValue(option) && !option.disabled && normalize(option.textContent).includes(term)
+            hasValue(option) && !option.disabled && normalize(`${option.dataset.group || ''} ${option.textContent}`).includes(term)
         );
         results.replaceChildren();
+        let previousGroup = '';
         resultNodes = matches.map(option => {
+            const group = option.dataset.group || '';
+            if (group && group !== previousGroup) {
+                const heading = document.createElement('li');
+                heading.className = 'searchable-select-group';
+                heading.setAttribute('role', 'presentation');
+                heading.textContent = group;
+                results.appendChild(heading);
+            }
+            previousGroup = group;
             const node = document.createElement('li');
             node.id = `${select.id}_option_${option.value}`;
             node.setAttribute('role', 'option');
             node.textContent = option.textContent;
+            if (group) node.setAttribute('aria-label', `${group}: ${option.textContent}`);
             node.addEventListener('mousedown', event => event.preventDefault());
             node.addEventListener('click', () => choose(option));
             results.appendChild(node);

@@ -1,0 +1,20 @@
+<div class="chart-preferences-row" data-chart-row>
+    <div class="chart-preferences-picker">
+        <label for="chart-{{ chart.field }}-subcategory-{{ row_index }}">{{ selected_category|default:"Subcategoria" }}{% if selected_type %} ({{ selected_type }}){% endif %}</label>
+        <div class="searchable-select">
+            <select id="chart-{{ chart.field }}-subcategory-{{ row_index }}" name="hidden_subcategories" class="form-control" required>
+                <option value="">Selecione uma subcategoria</option>
+                {% for option in options %}
+                <option value="{{ option.subcategory_id }}" data-group="{{ option.subcategory.category }} ({{ option.subcategory.category.get_type_display }})" {% if option.subcategory_id == selected_id %}selected{% endif %}>{{ option.subcategory }}</option>
+                {% endfor %}
+            </select>
+            <input id="chart-{{ chart.field }}-subcategory-{{ row_index }}_search" class="form-control" type="text" role="combobox"
+                   aria-label="Subcategoria a ocultar" aria-autocomplete="list" aria-expanded="false" aria-haspopup="listbox"
+                   aria-controls="chart-{{ chart.field }}-subcategory-{{ row_index }}_results" autocomplete="off"
+                   placeholder="Buscar categoria ou subcategoria…" hidden>
+            <ul id="chart-{{ chart.field }}-subcategory-{{ row_index }}_results" class="searchable-select-results" role="listbox"
+                aria-label="Subcategorias disponíveis" data-empty-message="Nenhuma subcategoria disponível com esse nome." hidden></ul>
+        </div>
+    </div>
+    <button type="button" class="btn chart-preferences-remove" data-chart-remove aria-label="Remover subcategoria da lista de ocultas" title="Voltar a exibir esta subcategoria">Remover</button>
+</div>

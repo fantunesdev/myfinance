@@ -31,6 +31,8 @@
 
         {% comment %} ESTILIZAÇÃO LOCAL {% endcomment %}
         <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+        <link rel="stylesheet" href="{% static 'css/chart-preferences.css' %}">
+        <link rel="stylesheet" href="{% static 'css/searchable-select.css' %}">
         <link rel="icon" href="{% static 'img/favicon.png' %}">
         <link rel="stylesheet" href="{% static 'css/toasts.css' %}?v=1">
         <script src="{% static 'js/toasts.js' %}?v=1" defer></script>
@@ -97,6 +99,7 @@
 
     {% comment %} SCRIPTS {% endcomment %}
     <script src="{% static 'js/scripts.js' %}"></script>
+    <script src="{% static 'js/pages/subcategory-chart-config.js' %}" type="module"></script>
     <script src="{% static 'js/websocket.js' %}?v=classifier-jobs-2"></script>
     {% block scripts %}{% endblock %}
 

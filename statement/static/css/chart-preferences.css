@@ -1,0 +1,33 @@
+main:has(> .chart-preferences) { min-width: 0; }
+.chart-preferences { width: 100%; min-width: 0; overflow-wrap: anywhere; }
+.chart-preferences .box-body > p { line-height: 1.6; }
+.chart-preferences-group { border: 1px solid #383838; border-radius: 6px; margin-top: 14px; scroll-margin-top: 24px; }
+.chart-preferences-group summary { display: flex; align-items: center; gap: 18px; padding: 18px; cursor: pointer; list-style: none; }
+.chart-preferences-group summary::-webkit-details-marker { display: none; }
+.chart-preferences-group summary:hover { background: #222; }
+.chart-preferences-preview { width: 140px; height: 88px; flex-shrink: 0; border-radius: 5px; border: 1px solid #333; }
+.chart-preferences-heading { flex: 1; min-width: 0; }
+.chart-preferences-heading strong { font-size: 15px; }
+.chart-preferences-heading small { display: block; margin-top: 8px; color: #aaa; font-size: 12px; line-height: 1.6; }
+.chart-preferences-location { overflow-wrap: anywhere; }
+.chart-preferences-chevron { font-size: 24px; }
+.chart-preferences-group[open] > summary .chart-preferences-chevron { transform: rotate(180deg); }
+.chart-preferences form { border-top: 1px solid #333; padding: 18px; }
+.chart-preferences-help { color: #aaa; font-size: 13px; line-height: 1.6; }
+.chart-preferences-list-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 20px 0; }
+.chart-preferences-list-heading h3 { margin: 0; font-size: 15px; }
+.chart-preferences-row { display: flex; align-items: end; gap: 12px; margin-bottom: 16px; padding: 14px; border: 1px solid #383838; border-radius: 4px; background: #202020; }
+.chart-preferences-picker { flex: 1; min-width: 0; }
+.chart-preferences-picker > label { display: block; margin-bottom: 8px; font-size: 12px; font-weight: 700; color: #ddd; }
+.chart-preferences-picker .form-control { width: 100%; box-sizing: border-box; }
+.chart-preferences-remove { flex-shrink: 0; }
+.chart-preferences [hidden] { display: none !important; }
+.chart-preferences :focus-visible { outline: 2px solid #c98686; outline-offset: 3px; }
+@media (max-width: 600px) {
+    .chart-preferences.box-primary { width: calc(100% - 10px); }
+    .chart-preferences-group summary { flex-wrap: wrap; gap: 12px; }
+    .chart-preferences-preview { width: 100px; height: 63px; }
+    .chart-preferences-heading { flex-basis: calc(100% - 150px); }
+    .chart-preferences-row { flex-wrap: wrap; }
+    .chart-preferences-picker { flex-basis: 100%; }
+}

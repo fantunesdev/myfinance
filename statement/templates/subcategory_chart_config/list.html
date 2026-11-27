@@ -1,0 +1,53 @@
+{% extends 'index.html' %}
+{% load static %}
+
+{% block title %}{{ class_title }}{% endblock %}
+
+{% block content %}
+<section class="box box-primary box-max-width-2000 v-center-div chart-preferences" data-chart-preferences>
+    <div class="box-header"><h2 class="box-title">{{ class_title }}</h2></div>
+    <div class="box-body">
+        <p>Escolha quais valores entram em cada gráfico. Por padrão, todas as subcategorias são incluídas: abra um gráfico e adicione à lista apenas as que deseja ocultar.</p>
+        <p class="chart-preferences-help">Cada gráfico tem sua própria lista de exceções. Ocultar uma subcategoria não exclui seus lançamentos. As alterações entram em vigor ao salvar.</p>
+        {% if invalid_form %}{{ invalid_form.errors }}{% endif %}
+        {% if total %}
+        {% for chart in charts %}
+        <details class="chart-preferences-group" id="chart-{{ chart.field }}" {% if chart.open %}open{% endif %}>
+            <summary>
+                <img class="chart-preferences-preview" src="{% static chart.preview %}" alt="Prévia ilustrativa: {{ chart.label }}" width="140" height="88">
+                <span class="chart-preferences-heading">
+                    <strong>{{ chart.label }}</strong>
+                    <small class="chart-preferences-location">{{ chart.location }}</small>
+                    <small data-chart-summary>{{ chart.hidden|length }} subcategoria{{ chart.hidden|length|pluralize:"s" }} oculta{{ chart.hidden|length|pluralize:"s" }}</small>
+                </span>
+                <span class="chart-preferences-chevron" aria-hidden="true">⌄</span>
+            </summary>
+            <form method="post" action="{% url 'get_all_subcategory_chart_config' %}" data-chart-editor>
+                {% csrf_token %}
+                <input type="hidden" name="chart" value="{{ chart.field }}">
+                {{ chart.form.errors }}
+                <p class="chart-preferences-help">{{ chart.help }}</p>
+                <div class="chart-preferences-list-heading">
+                    <h3>Subcategorias ocultas</h3>
+                    <button type="button" class="btn" data-chart-add aria-label="Adicionar subcategoria oculta em {{ chart.label }}" title="Adicionar subcategoria"><span aria-hidden="true">＋</span> Adicionar</button>
+                </div>
+                <p data-chart-empty {% if chart.selected %}hidden{% endif %}>Nenhuma subcategoria oculta. Todas estão visíveis neste gráfico.</p>
+                <div data-chart-rows>
+                    {% for config in chart.selected %}
+                        {% include 'subcategory_chart_config/row.html' with selected_id=config.subcategory_id selected_category=config.subcategory.category.description selected_type=config.subcategory.category.get_type_display row_index=forloop.counter %}
+                    {% endfor %}
+                </div>
+                <template data-chart-row-template>
+                    {% include 'subcategory_chart_config/row.html' with row_index='new' %}
+                </template>
+                <p class="chart-preferences-help" data-chart-status role="status">Remova uma subcategoria da lista para voltar a exibi-la. Salve para aplicar.</p>
+                <button type="submit" class="btn btn-primary">Salvar este gráfico</button>
+            </form>
+        </details>
+        {% endfor %}
+        {% else %}
+        <p>Nenhuma subcategoria cadastrada.</p>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

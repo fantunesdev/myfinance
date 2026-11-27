@@ -46,9 +46,10 @@ function picker({ selected = '1', required = true, choices } = {}) {
     select.labels = [{ htmlFor: select.id }];
     select.children = (choices || [
         ['', '---------'], ['3', 'zoológico'], ['2', 'Óleo'], ['1', 'Alimentação'], ['4', 'educação'],
-    ]).map(([value, label]) => {
+    ]).map(([value, label, group]) => {
         const option = element(value);
         option.textContent = label;
+        if (group) option.dataset.group = group;
         return option;
     });
     const search = element();
@@ -90,6 +91,23 @@ test('preserva a seleção, ordena em português e transfere rótulo e validaç�
     assert.equal(page.search.required, true);
     assert.equal(page.select.labels[0].htmlFor, page.search.id);
     assert.equal(page.search.validationMessage, '');
+});
+
+test('agrupa subcategorias por categoria e permite buscar e selecionar pelo teclado', () => {
+    const page = picker({ choices: [
+        ['', 'Selecione'], ['3', 'Aluguel', 'Casa'],
+        ['2', 'Restaurante', 'Alimentação'], ['1', 'Mercado', 'Alimentação'],
+    ] });
+    assert.equal(page.search.value, 'Mercado');
+    page.type('ALIMENTACAO');
+    assert.deepEqual(page.labels(), ['Alimentação', 'Mercado', 'Restaurante']);
+    assert.equal(page.results.children[0].attributes.role, 'presentation');
+    page.key('ArrowDown');
+    page.key('Enter');
+    assert.equal(page.select.value, '2');
+    assert.equal(page.search.value, 'Restaurante');
+    page.type('aluguel');
+    assert.deepEqual(page.labels(), ['Casa', 'Aluguel']);
 });
 
 test('filtra sem distinguir acentos ou maiúsculas e mostra uma mensagem quando não há resultados', () => {

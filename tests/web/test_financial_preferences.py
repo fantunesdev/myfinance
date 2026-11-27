@@ -81,6 +81,112 @@ def test_chart_preferences_are_read_and_saved_for_the_authenticated_user(authent
     assert not config.show_in_monthly_cashflow_donut
 
 
+def test_chart_preferences_show_exclusions_by_chart_for_the_authenticated_user(authenticated_web):
+    from login.models import User
+    from statement.models import Category, Subcategory
+
+    food = Category.objects.create(description='Alimentação')
+    market = Subcategory.objects.create(description='Mercado', category=food)
+    Subcategory.objects.create(description='Restaurante', category=food)
+    other = User.objects.create_user(username='other-chart-user', email='other@web.invalid', name='Other')
+    SubcategoryChartConfig.objects.create(user=other, subcategory=market, show_in_annual_statement=False)
+    own_config = SubcategoryChartConfig.objects.create(
+        user=authenticated_web.user,
+        subcategory=market,
+        show_in_monthly_cashflow_donut=False,
+    )
+
+    response = authenticated_web.client.get(reverse('get_all_subcategory_chart_config'))
+
+    assert response.status_code == 200
+    assert response.context['total'] == 2
+    charts = response.context['charts']
+    assert len(charts) == 5
+    assert charts[0]['hidden'] == [own_config]
+    assert charts[0]['visible_count'] == 1
+    assert charts[1]['hidden'] == []
+    assert charts[0]['selected'] == [own_config]
+    assert charts[1]['selected'] == []
+    html = response.content.decode()
+    assert 'data-chart-add' in html
+    assert 'role="combobox"' in html
+    assert 'img/chart-previews/monthly-cashflow.svg' in html
+    assert charts[0]['location'] in html
+
+
+def test_saving_chart_exclusions_preserves_other_charts_and_users(authenticated_web):
+    from login.models import User
+    from statement.models import Category, Subcategory
+
+    category = Category.objects.create(description='Categoria')
+    first = Subcategory.objects.create(description='Primeira', category=category)
+    second = Subcategory.objects.create(description='Segunda', category=category)
+    other = User.objects.create_user(username='other-chart-user', email='other@web.invalid', name='Other')
+    foreign = SubcategoryChartConfig.objects.create(user=other, subcategory=first)
+    own = SubcategoryChartConfig.objects.create(
+        user=authenticated_web.user,
+        subcategory=first,
+        show_in_annual_statement=False,
+    )
+    route = reverse('get_all_subcategory_chart_config')
+    field = 'show_in_monthly_cashflow_donut'
+
+    response = authenticated_web.client.post(route, {'chart': field, 'hidden_subcategories': [first.pk, second.pk]})
+    assert response.status_code == 302
+    own.refresh_from_db()
+    foreign.refresh_from_db()
+    assert own.show_in_monthly_cashflow_donut is False
+    assert own.show_in_annual_statement is False
+    assert foreign.show_in_monthly_cashflow_donut is True
+    assert (
+        SubcategoryChartConfig.objects.get(
+            user=authenticated_web.user, subcategory=second
+        ).show_in_monthly_cashflow_donut
+        is False
+    )
+
+    # An empty selection restores visibility in this chart only.
+    response = authenticated_web.client.post(route, {'chart': field}, follow=True)
+    assert response.status_code == 200
+    own.refresh_from_db()
+    assert own.show_in_monthly_cashflow_donut is True
+    assert own.show_in_annual_statement is False
+    assert response.context['charts'][0]['hidden'] == []
+    assert response.context['charts'][0]['open'] is True
+
+
+@pytest.mark.parametrize(
+    'data',
+    [
+        {'chart': 'user', 'hidden_subcategories': []},
+        {'chart': 'show_in_monthly_cashflow_donut', 'hidden_subcategories': ['999999']},
+        {},
+    ],
+)
+def test_invalid_chart_exclusions_do_not_change_saved_preferences(authenticated_web, data):
+    from statement.models import Category, Subcategory
+
+    category = Category.objects.create(description='Categoria')
+    subcategory = Subcategory.objects.create(description='Subcategoria', category=category)
+    config = SubcategoryChartConfig.objects.create(
+        user=authenticated_web.user,
+        subcategory=subcategory,
+        show_in_monthly_cashflow_donut=False,
+    )
+    response = authenticated_web.client.post(reverse('get_all_subcategory_chart_config'), data)
+    assert response.status_code == 200
+    assert 'errorlist' in response.content.decode()
+    config.refresh_from_db()
+    assert config.show_in_monthly_cashflow_donut is False
+    assert config.show_in_annual_statement is True
+
+
+def test_chart_preferences_without_subcategories_show_empty_state(authenticated_web):
+    response = authenticated_web.client.get(reverse('get_all_subcategory_chart_config'))
+    assert response.status_code == 200
+    assert 'Nenhuma subcategoria cadastrada.' in response.content.decode()
+
+
 def test_app_configuration_uses_a_new_instance_if_initial_lookup_fails(authenticated_web, mocker):
     mocker.patch('statement.views.settings_view.AppConfig.get_solo', side_effect=RuntimeError('lookup unavailable'))
     response = authenticated_web.client.get(reverse('edit_app_config'))

@@ -117,6 +117,7 @@
         if (globalSettings && classifierLabel) classifierLabel.textContent = 'Ativar Transaction Classifier';
         content.scrollTop = 0;
         window.initializeCardForm?.(content);
+        window.initializeChartPreferences?.(content);
         const firstError = content.querySelector('.errorlist, .alert-danger');
         if (focusErrors && firstError) {
             firstError.tabIndex = -1;

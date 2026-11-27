@@ -59,3 +59,13 @@
     color: #adb5bd;
     padding: 10px 12px;
 }
+
+.searchable-select-group {
+    color: #ddd;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 12px 12px 4px;
+    border-top: 1px solid #383838;
+}
+
+.searchable-select-group:first-child { border-top: 0; }
