@@ -160,8 +160,8 @@ function getAllocationData() {
     const types = [
         { code: 'fixed_income', label: 'Renda fixa', color: 'rgba(139, 0, 0, 1)' },
         { code: 'variable_income', label: 'Renda variável', color: 'rgba(190, 0, 0, 1)' },
-        { code: 'crypto', label: 'Cripto', color: 'rgba(211, 158, 63, 1)' },
-        { code: 'international', label: 'Exterior', color: 'rgba(142, 115, 194, 1)' },
+        { code: 'crypto', label: 'Cripto', color: 'rgba(165, 0, 0, 1)' },
+        { code: 'international', label: 'Exterior', color: 'rgba(210, 0, 0, 1)' },
     ];
     const selectedType = types.find(type => type.code === allocation.selected_type);
     const positions = allocation.positions || [];

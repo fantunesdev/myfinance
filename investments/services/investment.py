@@ -231,18 +231,18 @@ class InvestmentService(InvestmentBaseService):
         labels = [date.strftime('%d/%m/%Y') for date in snapshots_by_date.keys()]
         asset_type_labels = sorted({investment.asset.get_asset_type_display() for investment in investments.values()})
         colors = {
-            'Renda fixa': 'rgba(71, 137, 187, 1)',
-            'Renda variável': 'rgba(77, 166, 132, 1)',
-            'Cripto': 'rgba(211, 158, 63, 1)',
-            'Moeda': 'rgba(151, 163, 177, 1)',
-            'Outro': 'rgba(120, 120, 120, 1)',
-            'Exterior': 'rgba(142, 115, 194, 1)',
+            'Renda fixa': 'rgba(139, 0, 0, 1)',
+            'Renda variável': 'rgba(190, 0, 0, 1)',
+            'Cripto': 'rgba(165, 0, 0, 1)',
+            'Moeda': 'rgba(110, 0, 0, 1)',
+            'Outro': 'rgba(120, 0, 0, 1)',
+            'Exterior': 'rgba(210, 0, 0, 1)',
         }
 
         return [
             {
                 'label': label,
-                'color': colors.get(label, 'rgba(120, 120, 120, 1)'),
+                'color': colors.get(label, 'rgba(120, 0, 0, 1)'),
                 'names': labels,
                 'values': [float(snapshot.get(label, Decimal('0'))) for snapshot in snapshots_by_date.values()],
                 'valuation_adjustments': [
@@ -290,7 +290,7 @@ class InvestmentService(InvestmentBaseService):
         return [
             {
                 'label': 'Ganhos',
-                'color': 'rgba(46, 125, 90, 1)',
+                'color': 'rgba(165, 0, 0, 1)',
                 'names': labels,
                 'values': income_values,
             },
@@ -302,7 +302,7 @@ class InvestmentService(InvestmentBaseService):
             },
             {
                 'label': 'Resultado',
-                'color': 'rgba(42, 92, 148, 1)',
+                'color': 'rgba(190, 0, 0, 1)',
                 'names': labels,
                 'values': net_values,
             },
