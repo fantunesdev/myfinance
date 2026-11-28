@@ -24,6 +24,7 @@ class InstallmentService(BaseService):
         return value is True or str(value).lower() == 'true'
 
     @classmethod
+    @db_transaction.atomic
     def create(cls, form, user=None, id=None, transaction=None):
         """
         Sobrescreve o método pai adicionando o nome e a data de lançamento do parcelamento a partir da primeira parcela.
@@ -190,6 +191,7 @@ class InstallmentService(BaseService):
         return form
 
     @classmethod
+    @db_transaction.atomic
     def update_installment_plan(cls, request, form, transactions):
         """
         Gerencia o número de parcelas adicionando ou removendo caso necessário

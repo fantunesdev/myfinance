@@ -4,6 +4,7 @@ from datetime import datetime
 
 import requests
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.db import transaction as db_transaction
 from django.db.models import Q
 from rest_framework import status
 from rest_framework.decorators import action
@@ -39,6 +40,7 @@ class TransactionView(BaseView):
     installment_info = None
     form_class = TransactionForm
 
+    @db_transaction.atomic
     def create(self, request):
         error = self._owner_error(request)
         if error is not None:
