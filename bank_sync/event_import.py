@@ -156,6 +156,10 @@ def bootstrap(connection, source, event):
         description=f'{name} · {when.isoformat()}', start_date=when,
         due_date=due.date() if due else None,
         notes=f'Cadastro pela integração. Identificador externo: {source.external_id}')
+    from investments.services.products import assign_product, ensure_unclassified_opening_is_not_already_assessed
+    assign_product(inv, facts)
+    if not inv.product_id:
+        ensure_unclassified_opening_is_not_already_assessed(connection.user, inv.broker, inv.asset.asset_type, when)
     source.investment = inv
     source.save(update_fields=['investment'])
     return normalized, reference
@@ -249,7 +253,7 @@ def import_events(connection, *, job=None, lease_token=None):
                 if new_quote:
                     facts, reference = new_quote
                     movement = Movement.objects.create(user=connection.user, investment=inv,
-                        date=max(when, reference.date()), type='atualizacao', current_value=D(facts['balance']),
+                        date=max(when, reference.date()), type='atualizacao', current_value=D(facts['balance']), affects_value=inv.accepts_pluggy_value,
                         quantity=D(facts['quantity']), notes='Posição oficial após cadastro automático do título.')
                     fingerprint = hashlib.sha256(json.dumps(facts, sort_keys=True).encode()).hexdigest()
                     InvestmentSnapshot.objects.create(external=source, reference_at=reference, fingerprint=fingerprint,

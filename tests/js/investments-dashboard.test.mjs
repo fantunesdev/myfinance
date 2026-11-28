@@ -50,7 +50,7 @@ function browser(storage = new Map(), transform = data => data) {
         fetch: async (url, options) => { syncRequests.push({ url, options }); return { status, ok: status === 200, headers: { get: () => 'application/json' }, json: async () => ({ checked: 40, updated: 1, pending: 0, source_updated_at: '2026-11-11T14:00:00Z' }) }; },
         ...storeModule,
         createInvestmentStore: options => storeModule.createInvestmentStore({ ...options, fetcher }),
-        stackedAreaChart: { drawStackedAreaChart: () => new Chart(get('line-chart').getContext(), { type: 'line' }) },
+        stackedAreaChart: { drawStackedAreaChart: data => new Chart(get('line-chart').getContext(), { type: 'line', data: { datasets: data } }) },
         doughnutChart: { drawDoughnutChart: (data, label, ignored, options) => {
             const chart = new Chart(get(options.canvasId).getContext(), { type: 'doughnut' });
             chart.select = options.onSliceClick; return chart;
@@ -224,4 +224,28 @@ test('progression identifies valuation adjustments without presenting them as co
 test('progression keeps the valuation note hidden when history contains only cashflows', async () => {
     const page = browser(); await tick();
     assert.equal(page.get('investment-chart-note').hidden, true);
+});
+
+
+test('patrimony chart keeps cash during an internal transfer', async () => {
+    const page = browser(new Map(), data => ({ ...data, progression_datasets: [
+        { label: 'Moeda', color: 'rgba(151, 163, 177, 1)', names: ['01/01/2026', '02/01/2026'], values: [1000, 0] },
+        { label: 'Renda fixa', color: 'rgba(71, 137, 187, 1)', names: ['01/01/2026', '02/01/2026'], values: [0, 1000] },
+    ] }));
+    await tick();
+    const datasets = page.window.investmentChart.config.data.datasets;
+    assert.equal(datasets.length, 2);
+    assert.deepEqual([0, 1].map(index => datasets.reduce((sum, ds) => sum + ds.values[index], 0)), [1000, 1000]);
+});
+
+test('unmapped source positions are visible without increasing the displayed patrimony', async () => {
+    const page = browser(new Map(), data => ({ ...data, source_coverage: { unmapped_positions: [
+        { currency: 'BRL', value: '5638.21' }, { currency: 'USD', value: '100' },
+    ] } }));
+    await tick();
+    const note = page.get('investment-source-note');
+    assert.equal(note.hidden, false);
+    assert.match(asMoney(note.textContent), /2 posição.*R\$ 5.638,21/);
+    assert.match(note.textContent, /não estão incluídos no total nem no gráfico/);
+    assert.equal(asMoney(page.get('investment-total').textContent), 'R$ 2.000,00');
 });

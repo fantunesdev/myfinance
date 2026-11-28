@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from investments.forms.base import DateInput, UserFilteredModelForm
 from investments.models import InvestmentTransaction
 
@@ -9,6 +10,13 @@ class InvestmentTransactionForm(UserFilteredModelForm):
         super().__init__(*args, **kwargs)
         if self.user:
             self.instance.user = self.user
+
+    def clean(self):
+        cleaned = super().clean()
+        investment = cleaned.get('investment')
+        if cleaned.get('type') == 'atualizacao' and investment and investment.product_id and investment.product.valuation_policy == 'institution':
+            raise ValidationError('Atualize o saldo conferido na página do produto consolidado.')
+        return cleaned
 
     class Meta:
         model = InvestmentTransaction

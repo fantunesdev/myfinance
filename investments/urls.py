@@ -7,6 +7,7 @@ from investments.views.broker import BrokerView
 from investments.views.dashboard import InvestmentsDashboardView
 from investments.views.investment import InvestmentView
 from investments.views.transaction import InvestmentTransactionView
+from investments.views.product import product_detail
 
 asset_view = AssetView()
 broker_view = BrokerView()
@@ -26,6 +27,7 @@ urlpatterns = [
     path('', dashboard_view.dashboard, name='investments_dashboard'),
     path('wallet/default/criar/', dashboard_view.create_default_wallet, name='create_default_investment_wallet'),
     path('aplicar/', investment_view.apply_available_cash, name='apply_available_investment_cash'),
+    path('produtos/<int:pk>/', product_detail, name='detail_investment_product'),
     path('brokers/cadastrar/', broker_view.create, name='create_broker'),
     path('brokers/<int:id>/', broker_view.detail, name='detail_broker'),
     path('brokers/editar/<int:id>/', broker_view.update, name='update_broker'),

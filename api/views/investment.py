@@ -31,6 +31,8 @@ class InvestmentApiView(BaseView):
             'funding_transaction',
             'redemption_principal',
             'default_wallet_for',
+            'product',
+            'product_id',
         }
         if protected.intersection(request.data) or ('user' in data and str(data['user']) != str(request.user.pk)):
             return Response(
@@ -88,7 +90,7 @@ class InvestmentView(InvestmentApiView):
         for attempt in range(2):
             revision = dashboard_revision(request.user.pk)
             tag = (
-                f'"investments-v1-prices-{request.user.pk}-{revision}-{timezone.localdate()}"'
+                f'"investments-v1-products-{request.user.pk}-{revision}-{timezone.localdate()}"'
                 if revision
                 else None
             )

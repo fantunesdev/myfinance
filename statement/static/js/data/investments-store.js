@@ -1,5 +1,5 @@
 export const DEFAULT_STATE = Object.freeze({ assetType: '', chartMode: 'progression', showAllPositions: false, showAllBrokers: false, openPositionTypes: Object.freeze([]) });
-const TYPES = ['fixed_income', 'variable_income', 'crypto'];
+const TYPES = ['fixed_income', 'variable_income', 'crypto', 'international'];
 const POSITION_TYPES = [...TYPES, 'currency', 'other'];
 export const MAX_AGE = 5 * 60 * 1000;
 

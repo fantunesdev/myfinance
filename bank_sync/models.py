@@ -11,6 +11,7 @@ class BankConnection(models.Model):
     lease_until = models.DateTimeField(null=True, blank=True)
     lease_token = models.UUIDField(null=True, blank=True)
     prefer_pluggy = models.BooleanField(default=False)
+    valuation_policy = models.CharField(max_length=20, choices=(('pluggy', 'Posição Pluggy'), ('institution', 'Avaliação independente')), default='pluggy')
 
 
 class ExternalAccount(models.Model):

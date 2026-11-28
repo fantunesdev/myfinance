@@ -93,3 +93,27 @@ class PositionSyncTests(TestCase):
         with self.assertRaises(ValidationError):self.sync([self.row,{**self.row,'id':str(external_id)}])
         self.assertFalse(InvestmentSnapshot.objects.exists())
         self.assertEqual(self.inv.transactions.count(),1)
+
+
+    def test_preserves_principal_and_contract_terms_without_counting_profit_twice(self):
+        evidence = {
+            'amount': 180.25, 'amountOriginal': 100, 'amountProfit': None,
+            'amountWithdrawal': 150, 'taxes': 30.25, 'taxes2': 0,
+            'rate': 102, 'rateType': 'CDI', 'fixedAnnualRate': 0,
+            'taxExempt': False, 'code': None, 'isin': None,
+        }
+        self.row.update(evidence)
+        self.row['owner'] = 'Private source field outside the investment evidence scope'
+        self.sync()
+        external = ExternalInvestment.objects.get()
+        snapshot = InvestmentSnapshot.objects.get()
+        for field, value in evidence.items():
+            self.assertEqual(external.facts[field], value)
+            self.assertEqual(snapshot.facts[field], value)
+        self.assertNotIn('owner', external.facts)
+        position = InvestmentService.get_position(self.inv)
+        self.assertEqual(position['value'], Decimal('150'))
+        self.assertEqual(position['invested'], Decimal('100'))
+        self.assertEqual(position['income'], Decimal('0'))
+        self.assertEqual(self.sync()['unchanged'], 1)
+        self.assertEqual(InvestmentSnapshot.objects.count(), 1)

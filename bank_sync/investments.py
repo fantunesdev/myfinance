@@ -18,7 +18,14 @@ from investments.models import Investment, InvestmentTransaction
 from investments.services.transaction import InvestmentTransactionService
 from investments.services.investment import InvestmentService
 
-FIELDS = ('name', 'type', 'subtype', 'status', 'currencyCode', 'balance', 'amount', 'taxes', 'taxes2', 'quantity', 'value', 'date', 'purchaseDate', 'dueDate')
+# Preserve the source's accounting basis and contract terms for reconciliation.
+# These are evidence, never extra balances or realized-income transactions.
+FIELDS = (
+    'name', 'type', 'subtype', 'status', 'currencyCode', 'balance', 'amount',
+    'amountOriginal', 'amountProfit', 'amountWithdrawal', 'taxes', 'taxes2',
+    'quantity', 'value', 'date', 'purchaseDate', 'dueDate',
+    'rate', 'rateType', 'fixedAnnualRate', 'taxExempt', 'code', 'isin', 'issuerCNPJ', 'gracePeriodDate', 'ratePeriodicity',
+)
 
 
 def normalize(raw):
@@ -71,15 +78,14 @@ def sync_investments(connection, reader=None):
         if end.get('lastUpdatedAt') != item.get('lastUpdatedAt'):
             raise ProbeError('A conexão mudou durante a coleta. Tente novamente.')
         result = {'checked': len(rows), 'updated': 0, 'unchanged': 0, 'pending': 0,
-                  'source_updated_at': item.get('lastUpdatedAt')}
+                  'source_updated_at': item.get('lastUpdatedAt'), 'valuation_policy': connection.valuation_policy}
         with investment_atomic():
             locked = BankConnection.objects.select_for_update().get(pk=connection.pk)
             if locked.lease_token != token or locked.lease_until <= timezone.now():
                 raise ProbeError('Consulta expirou; nenhum lote parcial foi aplicado.')
             InvestmentTransactionService.lock_user(connection.user)
             wallet = InvestmentTransactionService.get_default_wallet(connection.user)
-            if wallet and InvestmentService.get_position(wallet)['value'] > 0:
-                raise ValidationError('Há valores no caixa ainda sem alocação. Concilie os aportes antes de atualizar as posições para evitar dupla contagem.')
+            pending_cash = wallet and InvestmentService.get_position(wallet)['value'] > 0
             for external_id, facts, reference in normalized:
                 ext, _ = ExternalInvestment.objects.get_or_create(connection=connection, external_id=external_id)
                 if ext.reference_at and reference < ext.reference_at:
@@ -105,7 +111,10 @@ def sync_investments(connection, reader=None):
                 inv = ext.investment
                 last_date = inv.transactions.order_by('-date', '-id').values_list('date', flat=True).first()
                 effective = max(reference.date(), last_date) if last_date else reference.date()
+                if inv.accepts_pluggy_value and pending_cash:
+                    raise ValidationError('Há valores no caixa ainda sem alocação. Concilie os aportes antes de atualizar as posições para evitar dupla contagem.')
                 movement = InvestmentTransaction(user=connection.user, investment=inv, type='atualizacao',
+                    affects_value=inv.accepts_pluggy_value,
                     date=effective, current_value=Decimal(facts['balance']), quantity=Decimal(facts['quantity']),
                     notes='Posição Pluggy; referência ' + reference.isoformat() + '. Não representa aporte, resgate ou rendimento realizado.')
                 movement.full_clean()
@@ -114,7 +123,8 @@ def sync_investments(connection, reader=None):
                     fingerprint=fingerprint, defaults={'facts': facts, 'movement': movement})
                 if snapshot.movement_id != movement.pk:
                     raise ProbeError('Revisão repetida da fonte; revisão manual necessária.')
-                inv.status = 'closed' if facts['status'] == 'TOTAL_WITHDRAWAL' else 'active'
+                if inv.accepts_pluggy_value:
+                    inv.status = 'closed' if facts['status'] == 'TOTAL_WITHDRAWAL' else 'active'
                 if facts['dueDate']:
                     inv.due_date = timezone.datetime.fromisoformat(facts['dueDate'].replace('Z', '+00:00')).date()
                 inv.save(update_fields=['status', 'due_date'])

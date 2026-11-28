@@ -85,6 +85,37 @@ class InvestmentDashboardTests(TestCase):
             force_authenticate(request, user=user)
         return InvestmentView.as_view({'get': 'dashboard'})(request)
 
+    def test_source_coverage_is_scoped_and_separates_currencies_without_adding_balances(self):
+        import uuid
+        from bank_sync.models import BankConnection, ExternalInvestment
+        connection = BankConnection.objects.create(user=self.user, item_id=uuid.uuid4())
+        other_connection = BankConnection.objects.create(user=self.other, item_id=uuid.uuid4())
+        for conn, status, balance, currency, investment in [
+            (connection, 'ACTIVE', '5638.21', 'BRL', None),
+            (connection, 'ACTIVE', '100', 'USD', None),
+            (connection, 'TOTAL_WITHDRAWAL', '0', 'BRL', None),
+            (connection, 'ACTIVE', '200', 'BRL', self.investment),
+            (other_connection, 'ACTIVE', '9999', 'BRL', None),
+            (connection, 'ACTIVE', 'NaN', 'BRL', None),
+            (connection, 'ACTIVE', None, 'BRL', None),
+        ]:
+            ExternalInvestment.objects.create(connection=conn, external_id=uuid.uuid4(), investment=investment,
+                facts={'name': 'LCI', 'status': status, 'balance': balance, 'currencyCode': currency})
+        response = self.get_dashboard(self.user)
+        pending = response.data['source_coverage']['unmapped_positions']
+        self.assertEqual({(row['currency'], row['value']) for row in pending}, {('BRL', '5638.21'), ('USD', '100')})
+        self.assertEqual(response.data['totals']['total'], '1000.00')
+
+    def test_unmapped_source_change_invalidates_dashboard_revision(self):
+        import uuid
+        from bank_sync.models import BankConnection, ExternalInvestment
+        connection = BankConnection.objects.create(user=self.user, item_id=uuid.uuid4())
+        revision = dashboard_revision(self.user.pk)
+        with self.captureOnCommitCallbacks(execute=True):
+            ExternalInvestment.objects.create(connection=connection, external_id=uuid.uuid4(),
+                facts={'status': 'ACTIVE', 'balance': '100', 'currencyCode': 'BRL'})
+        self.assertNotEqual(dashboard_revision(self.user.pk), revision)
+
     def test_endpoint_is_authenticated_and_scoped_to_owner(self):
         self.assertIn(self.get_dashboard().status_code, (401, 403))
         response = self.get_dashboard(self.user)

@@ -17,7 +17,7 @@ class InvestmentService(InvestmentBaseService):
 
     @classmethod
     def get_positions(cls, user):
-        investments = cls.filter_by_user(user).select_related('asset', 'broker').prefetch_related('transactions')
+        investments = cls.filter_by_user(user).select_related('asset', 'broker', 'product').prefetch_related('transactions')
         return [cls.get_position(investment) for investment in investments]
 
     @classmethod
@@ -26,7 +26,7 @@ class InvestmentService(InvestmentBaseService):
             from investments.services.transaction import InvestmentTransactionService
 
             InvestmentTransactionService.lock_user(instance.user)
-            if instance.default_wallet_for_id or instance.transactions.exists():
+            if instance.product_id or instance.default_wallet_for_id or instance.transactions.exists():
                 raise ValidationError(
                     'Investimentos com histórico e o caixa padrão não podem ser excluídos. Encerre o investimento para preservar as movimentações.'
                 )
@@ -153,7 +153,8 @@ class InvestmentService(InvestmentBaseService):
 
     @classmethod
     def get_dashboard(cls, user):
-        positions = cls.get_positions(user)
+        from investments.services.products import display_positions
+        positions = display_positions(user, cls.get_positions(user))
         total = sum((position['value'] for position in positions), Decimal('0'))
         by_type = defaultdict(Decimal)
         by_broker = defaultdict(Decimal)
@@ -180,38 +181,62 @@ class InvestmentService(InvestmentBaseService):
     @classmethod
     def get_progression_datasets(cls, user):
         investments = {
-            investment.id: investment for investment in cls.filter_by_user(user).select_related('asset', 'broker')
+            investment.id: investment for investment in cls.filter_by_user(user).select_related('asset', 'broker', 'product').prefetch_related('transactions')
         }
         transactions = (
             InvestmentTransaction.objects.filter(investment__user=user, user=user)
             .select_related('investment__asset')
             .order_by('date', 'id')
         )
+        from investments.models import ProductValuation
+        from itertools import groupby
         investment_values = defaultdict(Decimal)
         snapshots_by_date = {}
         valuation_adjustments = defaultdict(lambda: defaultdict(Decimal))
-
-        for transaction in transactions:
-            previous_value = investment_values[transaction.investment_id]
-            investment_values[transaction.investment_id] = cls.apply_value(
-                previous_value,
-                transaction,
-            )
-            if transaction.type == 'atualizacao' and transaction.affects_value:
-                label = transaction.investment.asset.get_asset_type_display()
-                valuation_adjustments[transaction.date][label] += (
-                    investment_values[transaction.investment_id] - previous_value
-                )
-            snapshots_by_date[transaction.date] = cls._build_progression_snapshot(investments, investment_values)
+        movements_by_date = {day: list(rows) for day, rows in groupby(transactions, key=lambda m: m.date)}
+        product_lots = defaultdict(list)
+        for inv in investments.values():
+            if inv.product_id and inv.product.user_id == user.pk:
+                product_lots[inv.product_id].append(inv.pk)
+        valuations_by_date = defaultdict(list)
+        for valuation in ProductValuation.objects.filter(product__user=user,
+                product__valuation_policy='institution', date__lte=timezone.localdate()).select_related('product'):
+            valuations_by_date[valuation.date].append(valuation)
+        from investments.services.products import assessed_product_value
+        active_valuations = {}
+        for day in sorted(set(movements_by_date) | set(valuations_by_date)):
+            for movement in movements_by_date.get(day, []):
+                previous = investment_values[movement.investment_id]
+                investment_values[movement.investment_id] = cls.apply_value(previous, movement)
+                if movement.type == 'atualizacao' and movement.affects_value:
+                    label = movement.investment.asset.get_asset_type_display()
+                    valuation_adjustments[day][label] += investment_values[movement.investment_id] - previous
+            for valuation in valuations_by_date.get(day, []):
+                ids = product_lots.get(valuation.product_id, [])
+                if not ids:
+                    continue
+                previous_valuation = active_valuations.get(valuation.product_id)
+                lots = [{'investment': investments[pk]} for pk in ids]
+                previous_value = assessed_product_value(lots, previous_valuation, day) if previous_valuation else sum((investment_values[pk] for pk in ids), Decimal('0'))
+                label = valuation.product.get_asset_type_display()
+                active_valuations[valuation.product_id] = valuation
+                valuation_adjustments[day][label] += valuation.value - previous_value
+            snapshot = cls._build_progression_snapshot(investments, investment_values)
+            for product_id, valuation in active_valuations.items():
+                ids = product_lots[product_id]
+                lots = [{'investment': investments[pk]} for pk in ids]
+                snapshot[valuation.product.get_asset_type_display()] += assessed_product_value(lots, valuation, day) - sum((investment_values[pk] for pk in ids), Decimal('0'))
+            snapshots_by_date[day] = snapshot
 
         labels = [date.strftime('%d/%m/%Y') for date in snapshots_by_date.keys()]
         asset_type_labels = sorted({investment.asset.get_asset_type_display() for investment in investments.values()})
         colors = {
-            'Renda fixa': 'rgba(139, 0, 0, 1)',
-            'Renda variável': 'rgba(190, 0, 0, 1)',
-            'Cripto': 'rgba(165, 0, 0, 1)',
-            'Moeda': 'rgba(94, 0, 0, 1)',
+            'Renda fixa': 'rgba(71, 137, 187, 1)',
+            'Renda variável': 'rgba(77, 166, 132, 1)',
+            'Cripto': 'rgba(211, 158, 63, 1)',
+            'Moeda': 'rgba(151, 163, 177, 1)',
             'Outro': 'rgba(120, 120, 120, 1)',
+            'Exterior': 'rgba(142, 115, 194, 1)',
         }
 
         return [

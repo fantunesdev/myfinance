@@ -37,6 +37,7 @@ class Asset(models.Model):
         ('variable_income', 'Renda variável'),
         ('crypto', 'Cripto'),
         ('currency', 'Moeda'),
+        ('international', 'Exterior'),
         ('other', 'Outro'),
     )
     INCOME_BEHAVIOR_CHOICES = (
@@ -68,13 +69,68 @@ class Asset(models.Model):
         unique_together = ('description', 'symbol', 'user')
 
 
+class InvestmentProduct(models.Model):
+    """Explicit institution product/portfolio grouping; custody lots remain intact."""
+    description = models.CharField(max_length=140)
+    user = models.ForeignKey(User, on_delete=models.PROTECT)
+    broker = models.ForeignKey(Broker, on_delete=models.PROTECT)
+    asset_type = models.CharField(max_length=30, choices=Asset.TYPE_CHOICES)
+    kind = models.CharField(max_length=20, choices=(('product', 'Produto'), ('portfolio', 'Carteira consolidada')), default='product')
+    key = models.CharField(max_length=100)
+    source_rules = models.JSONField(default=dict, blank=True)
+    valuation_policy = models.CharField(max_length=20,
+        choices=(('institution', 'Avaliação independente'), ('pluggy', 'Posição Pluggy')),
+        default='institution')
+    evidence = models.TextField()
+
+    def __str__(self):
+        return self.description
+
+    def clean(self):
+        super().clean()
+        if self.broker_id and self.user_id and self.broker.user_id != self.user_id:
+            raise ValidationError('O produto e o intermediário devem pertencer ao mesmo usuário.')
+        if not self.evidence.strip():
+            raise ValidationError({'evidence': 'Documente o agrupamento do produto.'})
+        allowed = {'type', 'subtype', 'rate', 'rateType', 'fixedAnnualRate', 'purchaseDate', 'dueDate', 'issuerCNPJ', 'code', 'isin'}
+        if not isinstance(self.source_rules, dict) or set(self.source_rules) - allowed:
+            raise ValidationError({'source_rules': 'Condições de produto inválidas.'})
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['user', 'broker', 'key'], name='unique_user_investment_product')]
+
+
+class ProductValuation(models.Model):
+    """Dated, evidenced assessment of an entire product, never an income flow."""
+    product = models.ForeignKey(InvestmentProduct, on_delete=models.PROTECT, related_name='valuations')
+    date = models.DateField()
+    value = models.DecimalField(max_digits=14, decimal_places=2, validators=[MinValueValidator(0)])
+    basis = models.CharField(max_length=20, choices=(('gross', 'Bruto'), ('net', 'Líquido'), ('reported', 'Saldo informado')))
+    source = models.CharField(max_length=120)
+    evidence = models.TextField()
+    reference_key = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def clean(self):
+        super().clean()
+        if not self.evidence.strip() or not self.source.strip():
+            raise ValidationError('Informe a origem e a evidência da avaliação.')
+        if self.product_id and self.product.valuation_policy != 'institution':
+            raise ValidationError('Este produto não usa avaliação independente.')
+
+    class Meta:
+        ordering = ['date', 'id']
+        constraints = [models.UniqueConstraint(fields=['product', 'reference_key'], name='unique_product_valuation_reference')]
+
+
 class Investment(models.Model):
-    hidden_detail_fields = ('default_wallet_for', 'default_wallet_for_id')
+    hidden_detail_fields = ('default_wallet_for', 'default_wallet_for_id', 'product', 'product_id')
     STATUS_CHOICES = (
         ('active', 'Ativo'),
         ('closed', 'Encerrado'),
     )
 
+    product = models.ForeignKey(InvestmentProduct, null=True, blank=True, editable=False, on_delete=models.PROTECT, related_name='lots')
     description = models.CharField(max_length=140)
     asset = models.ForeignKey(Asset, on_delete=models.PROTECT, related_name='investments')
     broker = models.ForeignKey(Broker, on_delete=models.PROTECT, related_name='investments')
@@ -94,6 +150,22 @@ class Investment(models.Model):
 
     def __str__(self):
         return self.description
+
+    @property
+    def accepts_pluggy_value(self):
+        if self.product_id and self.product.valuation_policy == 'institution':
+            return False
+        from bank_sync.models import ExternalInvestment
+        return not ExternalInvestment.objects.filter(investment=self,
+            connection__valuation_policy='institution').exists()
+
+    def clean(self):
+        super().clean()
+        if self.product_id and (self.product.user_id != self.user_id
+                or self.product.broker_id != self.broker_id
+                or self.product.asset_type != self.asset.asset_type
+                or self.default_wallet_for_id):
+            raise ValidationError('O lote deve corresponder ao proprietário, intermediário e categoria do produto.')
 
     @property
     def status_label(self):

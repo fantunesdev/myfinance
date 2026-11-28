@@ -1,5 +1,6 @@
 export function drawStackedAreaChart(datasets, label, options = {}) {
     const father = document.getElementById('line-chart').getContext('2d');
+    const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
     const shouldFillMobileChartHeight = window.matchMedia && window.matchMedia('(max-width: 600px)').matches;
 
     const chart = new Chart(father, {
@@ -12,19 +13,23 @@ export function drawStackedAreaChart(datasets, label, options = {}) {
                 backgroundColor: ds.color.replace('1)', '0.4)'), // Torna a área semi-transparente
                 borderColor: ds.color,
                 borderWidth: 2,
-                pointRadius: 4,
+                pointRadius: 0,
+                pointHoverRadius: 4,
+                pointHitRadius: 8,
                 fill: true,
             })),
         },
         options: {
             responsive: true,
             maintainAspectRatio: options.maintainAspectRatio ?? !shouldFillMobileChartHeight,
+            interaction: { mode: 'index', intersect: false },
             scales: {
                 ...(options.xScale ? { x: options.xScale } : {}),
                 y: {
                     stacked: true, // Ativa o empilhamento
                     beginAtZero: true,
                     min: options.yMin,
+                    ticks: { callback: value => money.format(value) },
                 },
             },
             plugins: {
@@ -42,6 +47,10 @@ export function drawStackedAreaChart(datasets, label, options = {}) {
                 },
                 tooltip: {
                     callbacks: {
+                        label: context => `${context.dataset.label}: ${money.format(context.parsed.y)}`,
+                        footer: items => items.length
+                            ? `Total visível: ${money.format(items.reduce((total, item) => total + item.parsed.y, 0))}`
+                            : '',
                         afterBody: items => {
                             if (!items.length) return [];
                             const index = items[0].dataIndex;

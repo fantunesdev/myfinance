@@ -32,13 +32,17 @@ def dashboard_payload(user, revision):
         'positions': [
             {
                 'id': position['investment'].pk,
-                'label': str(position['investment']),
+                'label': position.get('label', str(position['investment'])),
                 'asset_type': position['asset_type'],
                 'asset_type_label': position['asset_type_label'],
                 'broker': str(position['broker']),
                 'quantity': str(position['quantity']),
                 'value': str(position['value']),
-                'url': reverse('detail_investment', args=[position['investment'].pk]),
+                'url': reverse('detail_investment_product', args=[position['product'].pk]) if position.get('product') else reverse('detail_investment', args=[position['investment'].pk]),
+                'lot_count': len(position.get('lots', [position])),
+                'is_portfolio': position.get('product') is not None and position['product'].kind == 'portfolio',
+                'valuation': {'date': position['valuation'].date.isoformat(), 'source': position['valuation'].source,
+                    'basis': position['valuation'].basis, 'value': str(position['valuation'].value)} if position.get('valuation') else None,
             }
             for position in positions
         ],
@@ -54,8 +58,30 @@ def dashboard_payload(user, revision):
         'interest_datasets': dashboard['interest_datasets'],
         'has_default_wallet': InvestmentTransactionService.get_default_wallet(user) is not None,
     }
-    from bank_sync.models import InvestmentHistoryJob, InvestmentEvent
+    from bank_sync.models import ExternalInvestment, InvestmentHistoryJob, InvestmentEvent
     from investments.models import InvestmentTransaction
+
+    # Keep unmapped source balances visible without treating them as new money:
+    # they can overlap a local position or represent a pending reinvestment.
+    unmapped = []
+    for external in ExternalInvestment.objects.filter(connection__user=user, investment__isnull=True):
+        facts = external.facts
+        if facts.get('status') != 'ACTIVE':
+            continue
+        try:
+            balance = Decimal(str(facts.get('balance')))
+        except (ValueError, ArithmeticError):
+            continue
+        if not balance.is_finite() or balance <= 0:
+            continue
+        unmapped.append({
+            'id': external.pk,
+            'label': facts.get('name') or 'Posição sem vínculo',
+            'currency': facts.get('currencyCode'),
+            'value': str(balance),
+            'reference_at': facts.get('date'),
+        })
+    payload['source_coverage'] = {'unmapped_positions': unmapped}
 
     if InvestmentHistoryJob.objects.filter(connection__user=user).exists():
         recognized = (
@@ -80,6 +106,6 @@ def dashboard_payload(user, revision):
             connection__user=user, state__in=['new', 'historical', 'conflict']
         ).count()
     for position, record in zip(positions, payload['positions']):
-        price = InvestmentService.get_average_purchase_price(position['investment'])
+        price = None if position.get('product') else InvestmentService.get_average_purchase_price(position['investment'])
         record['average_purchase_price'] = str(price) if price is not None else None
     return payload

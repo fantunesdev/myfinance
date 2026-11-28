@@ -457,6 +457,7 @@ def reconcile(
             type='atualizacao',
             amount=0,
             current_value=D(saved['balance']),
+            affects_value=inv.accepts_pluggy_value,
             quantity=D(saved['quantity']),
             notes='Preservação da posição oficial após conciliação de evento.',
         )
@@ -592,6 +593,7 @@ def reconcile_purchase_group(user, events, cash_ids, allocations, shared_cost, e
                 type='atualizacao',
                 amount=0,
                 current_value=D(latest.facts['balance']),
+                affects_value=source.investment.accepts_pluggy_value,
                 quantity=D(latest.facts['quantity']),
                 notes='Posição oficial preservada após conciliação agrupada.',
             )
@@ -687,6 +689,7 @@ def reconcile_transfer_group(user, selections, principal, evidence):
                 date=max(when, latest.movement.date),
                 type='atualizacao',
                 current_value=D(latest.facts['balance']),
+                affects_value=ext.investment.accepts_pluggy_value,
                 quantity=D(latest.facts['quantity']),
                 notes='Posição oficial preservada após transferência conciliada.',
             )

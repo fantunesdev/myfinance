@@ -31,6 +31,7 @@
                 <div class="investment-actions">
                     <a href="{% url 'investments_dashboard' %}" class="btn btn-primary">Voltar</a>
                 </div>
+                {% if instance.product_id %}<p>Produto: <a href="{% url 'detail_investment_product' instance.product_id %}">{{ instance.product }}</a>. O saldo consolidado e suas avaliações estão no produto.</p>{% endif %}
                 <p class="font-16">Ativo: <strong>{{ instance.asset }}</strong></p>
                 <p class="font-16">Broker: <strong>{{ instance.broker }}</strong></p>
                 <p class="font-16">Status: <strong>{{ instance.get_status_display }}</strong></p>

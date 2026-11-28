@@ -1,0 +1,33 @@
+{% extends 'index.html' %}
+{% load custom_filters %}
+{% block title %}{{ product }}{% endblock %}
+{% block content %}
+<div class="box box-primary">
+    <div class="box-header"><h3>{{ product }}</h3></div>
+    <div class="box-body">
+        <a href="{% url 'investments_dashboard' %}" class="btn btn-primary">Voltar</a>
+        <p>{{ product.broker }} · {{ product.get_asset_type_display }}</p>
+        <p>Saldo consolidado: <strong>{{ position.value|to_reais }}</strong></p>
+        {% if position.valuation %}
+        <p>Avaliação de {{ position.valuation.date|date:'d/m/Y' }} · {{ position.valuation.source }} · {{ position.valuation.get_basis_display }}.</p>
+        <p>O saldo considera essa avaliação e os movimentos registrados em datas posteriores. Novas avaliações da Pluggy não substituem o saldo conferido.</p>
+        {% endif %}
+        <h4>Lotes e histórico</h4>
+        <p>As aplicações permanecem separadas para conferir compras, resgates e vencimentos. Os valores individuais abaixo pertencem ao histórico dos lotes; não são um rateio da avaliação consolidada.</p>
+        <table class="table"><thead><tr><th>Lote</th><th>Vencimento</th><th>Valor registrado</th></tr></thead><tbody>
+        {% for lot in lots %}<tr><td><a href="{% url 'detail_investment' lot.investment.pk %}">{{ lot.investment }}</a></td><td>{{ lot.investment.due_date|date:'d/m/Y'|default:'—' }}</td><td>{{ lot.value|to_reais }}</td></tr>{% endfor %}
+        </tbody></table>
+        {% if product.valuation_policy == 'institution' %}
+        <details><summary>Atualizar saldo conferido</summary>
+            <p>Informe o saldo total em reais, incluindo os rendimentos já contidos nele. A avaliação não cria aporte, retirada ou rendimento realizado.</p>
+            <form method="post">{% csrf_token %}{{ form.as_p }}<button type="submit" class="btn btn-primary">Registrar avaliação</button></form>
+        </details>
+        {% endif %}
+        <details><summary>Histórico de avaliações</summary>
+            <table class="table"><thead><tr><th>Data</th><th>Saldo</th><th>Origem</th><th>Conferência</th></tr></thead><tbody>
+            {% for valuation in valuations %}<tr><td>{{ valuation.date|date:'d/m/Y' }}</td><td>{{ valuation.value|to_reais }}</td><td>{{ valuation.source }} · {{ valuation.get_basis_display }}</td><td>{{ valuation.evidence }}</td></tr>{% endfor %}
+            </tbody></table>
+        </details>
+    </div>
+</div>
+{% endblock %}

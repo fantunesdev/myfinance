@@ -89,3 +89,24 @@ def protect_unlinked_investment_statement(sender, instance, **kwargs):
 def invalidate_investment_dashboard(sender, instance, raw=False, **kwargs):
     if not raw:
         mark_changed(instance.user_id)
+
+
+@receiver(post_save, sender='bank_sync.ExternalInvestment')
+@receiver(post_delete, sender='bank_sync.ExternalInvestment')
+def invalidate_source_coverage(sender, instance, raw=False, **kwargs):
+    if not raw:
+        mark_changed(instance.connection.user_id)
+
+
+@receiver(post_save, sender='investments.InvestmentProduct')
+@receiver(post_delete, sender='investments.InvestmentProduct')
+def invalidate_product(sender, instance, raw=False, **kwargs):
+    if not raw:
+        mark_changed(instance.user_id)
+
+
+@receiver(post_save, sender='investments.ProductValuation')
+@receiver(post_delete, sender='investments.ProductValuation')
+def invalidate_product_valuation(sender, instance, raw=False, **kwargs):
+    if not raw:
+        mark_changed(instance.product.user_id)

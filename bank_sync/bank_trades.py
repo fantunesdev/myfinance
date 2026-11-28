@@ -321,6 +321,9 @@ def register_purchase(user, debit_id, revision, source_id, credit_id, symbol, qu
     holdings = list(Investment.objects.filter(user=user, asset=asset, broker=source.investment.broker))
     if len(holdings) > 1:
         raise ValidationError('Há mais de uma posição dessa criptomoeda no mesmo banco.')
+    if not holdings:
+        from investments.services.products import ensure_unclassified_opening_is_not_already_assessed
+        ensure_unclassified_opening_is_not_already_assessed(user, source.investment.broker, 'crypto', event_date(debit.facts))
     target = holdings[0] if holdings else Investment.objects.create(user=user, asset=asset, broker=source.investment.broker,
         description=f'{name} ({source.investment.broker.description})', start_date=event_date(debit.facts),
         notes='Compra registrada pelo extrato. Valor inicial pelo custo pago; a instituição não forneceu cotação atual.')

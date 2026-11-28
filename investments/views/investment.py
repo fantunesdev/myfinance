@@ -16,7 +16,7 @@ from investments.views.base import InvestmentCrudView
 
 
 class InvestmentView(InvestmentCrudView):
-    class_title = 'Investimentos'
+    class_title = 'Lotes de investimento'
     class_form = InvestmentForm
     model = Investment
     service = InvestmentService

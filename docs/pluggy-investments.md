@@ -188,3 +188,73 @@ Após publicar mudanças do trabalhador, reinicie também esse contêiner. Ao
 reconstruir a imagem ou mudar variáveis do aplicativo, recrie o trabalhador com a
 mesma imagem e configuração; reiniciar não altera a imagem nem suas variáveis.
 As credenciais não são mantidas em arquivos temporários após sua criação.
+
+
+## Cobertura do patrimônio e gráfico
+
+A evolução patrimonial inclui o caixa de investimentos, para que transferências
+internas entre caixa e títulos não sejam exibidas como retirada do patrimônio.
+O gráfico usa valores em reais, cores distintas por categoria e total visível
+no tooltip. Ele continua refletindo as avaliações e os lançamentos registrados;
+não há garantia de crescimento contínuo.
+
+O painel avisa quando existem posições ativas com saldo positivo recebidas da
+Pluggy e ainda sem vínculo local. O aviso soma somente valores em BRL; saldos
+em moedas diferentes não são somados nem convertidos sem cotação comprovada.
+Esses valores não são adicionados automaticamente ao patrimônio, pois podem
+representar posições já cadastradas ou reinvestimentos ainda não conciliados.
+Um título zerado na fonte com compra de destino pendente pode produzir uma
+queda aparente até a conciliação do fluxo completo.
+
+Posições com IDs externos diferentes não devem ser fundidas apenas por nome,
+subtipo ou vencimento: podem representar lotes distintos. A comparação com a
+instituição exige confirmar o agrupamento e distinguir valor bruto, líquido,
+custo das remessas e avaliação atual, com suas respectivas datas.
+
+
+## Produtos, lotes e avaliações independentes
+
+Um `InvestmentProduct` representa um produto conferido da instituição ou uma
+carteira cujo saldo foi informado apenas no total. Cada `Investment` continua
+representando seu lote de custódia, com ID externo, compras, resgates, quantidade
+e vencimento próprios. O painel mostra os produtos consolidados; o detalhe
+permite abrir os lotes e seus comprovantes. A avaliação agregada de uma carteira
+não é rateada como se fossem cotações individuais de ações.
+
+O agrupamento é explícito e documentado. Regras de contratos revisados podem
+vincular novos lotes; condições desconhecidas ou mais de uma regra compatível
+não autorizam fusão automática. A renda fixa não é agrupada apenas pelo nome ou
+pelo valor. Contratos ainda não classificados continuam disponíveis para revisão.
+
+Na conexão com `valuation_policy=institution`, posições Pluggy são evidências:
+os snapshots e as quantidades são preservados, mas o saldo e o encerramento da
+fonte não substituem a avaliação independente. A mesma regra vale para a
+preservação de posições após conciliar eventos e para o cadastro automático.
+Compras, vendas e proventos continuam sujeitos às evidências de liquidação,
+custo, origem de caixa e idempotência já exigidas pela conciliação.
+
+`ProductValuation` registra data civil, saldo em BRL, base bruto/líquido/saldo
+informado, origem e evidência. A avaliação vale ao fechamento da data informada.
+O saldo apresentado projeta a avaliação mais recente pelos movimentos dos
+lotes em datas posteriores. Resgates consomem proporcionalmente a diferença de
+avaliação, por quantidade ou principal comprovado, inclusive no encerramento
+total. Transferências explícitas e balanceadas entre lotes do mesmo produto
+carregam essa diferença para o destino, sem diminuir o patrimônio. Movimentos anteriores recebidos tardiamente não
+são contados novamente. Uma avaliação não cria aporte, retirada ou rendimento
+realizado. O patrimônio não é uma cotação ao vivo; a data e a origem ficam no
+detalhe do produto, onde o proprietário pode registrar outra conferência.
+
+A abertura de saldo sem histórico completo (por exemplo, um produto ausente na
+fonte) não inventa compra, custo ou quantidade. Esses dados permanecem pendentes
+de conciliação. O histórico anterior à nova avaliação continua refletindo os
+lançamentos disponíveis, inclusive suas lacunas documentadas.
+
+### Correção auditada
+
+`python manage.py reconcile_institution_portfolio PLANO.json` simula por padrão,
+em transação revertida. `--apply` grava uma única vez. O plano contém proprietário,
+conexão, data, chave do lote, origem, evidência, produtos e valores conferidos,
+vínculos explícitos e totais esperados por categoria. Um hash do estado anterior
+impede aplicar uma prévia sobre uma carteira que mudou. Referências já aplicadas
+com conteúdo diferente são rejeitadas. Movimentos anteriores não são editados.
+Planos e cópias de dados pessoais devem ficar fora do versionamento.

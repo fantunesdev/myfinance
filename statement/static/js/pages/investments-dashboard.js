@@ -15,7 +15,7 @@ const chartToggle = document.getElementById('investment-chart-toggle');
 const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
 const quantity = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 8 });
 const smallUnitPrice = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 8, maximumFractionDigits: 8 });
-const typeLabels = { fixed_income: 'Renda fixa', variable_income: 'Renda variável', crypto: 'Cripto', currency: 'Disponível para investimento', other: 'Outros' };
+const typeLabels = { fixed_income: 'Renda fixa', variable_income: 'Renda variável', crypto: 'Cripto', currency: 'Disponível para investimento', international: 'Exterior', other: 'Outros' };
 
 function destroyInvestmentChart() {
     if (window.investmentChart) {
@@ -67,7 +67,7 @@ function drawProgressionChart() {
     if (chartToggle) chartToggle.hidden = false;
     setChartToggleMode('progression');
 
-    const investedDatasets = datasets.filter(dataset => dataset.label !== 'Moeda');
+    const investedDatasets = datasets;
     if (!investedDatasets.length || !investedDatasets[0].names.length) return;
 
     const note = document.getElementById('investment-chart-note');
@@ -155,12 +155,13 @@ function drawInterestChart() {
 
 function getAllocationData() {
     const allocation = { selected_type: state.assetType, positions: dashboard.positions.filter(position =>
-        ['fixed_income', 'variable_income', 'crypto'].includes(position.asset_type) && Number(position.value) > 0
+        ['fixed_income', 'variable_income', 'crypto', 'international'].includes(position.asset_type) && Number(position.value) > 0
     ) };
     const types = [
         { code: 'fixed_income', label: 'Renda fixa', color: 'rgba(139, 0, 0, 1)' },
         { code: 'variable_income', label: 'Renda variável', color: 'rgba(190, 0, 0, 1)' },
-        { code: 'crypto', label: 'Cripto', color: 'rgba(165, 0, 0, 1)' },
+        { code: 'crypto', label: 'Cripto', color: 'rgba(211, 158, 63, 1)' },
+        { code: 'international', label: 'Exterior', color: 'rgba(142, 115, 194, 1)' },
     ];
     const selectedType = types.find(type => type.code === allocation.selected_type);
     const positions = allocation.positions || [];
@@ -331,7 +332,7 @@ function renderPositionGroups(positions) {
         summary.appendChild(total);
         details.appendChild(summary);
 
-        const unitMetrics = ['variable_income', 'crypto'].includes(type);
+        const unitMetrics = ['variable_income', 'crypto'].includes(type) && !entries.some(entry => entry.is_portfolio);
         const columns = ['Investimento', 'Broker', ...(unitMetrics ? ['Quantidade', 'Preço médio'] : []), 'Valor'];
         const scroll = document.createElement('div');
         scroll.className = 'investment-table-scroll';
@@ -352,7 +353,7 @@ function renderPositionGroups(positions) {
             const row = document.createElement('tr');
             const link = document.createElement('a');
             link.href = position.url;
-            link.textContent = position.label;
+            link.textContent = position.label + (position.lot_count > 1 ? ` (${position.lot_count} lotes)` : '');
             cell(row, '').appendChild(link);
             cell(row, position.broker);
             if (unitMetrics) {
@@ -410,6 +411,16 @@ function renderTables() {
 }
 
 function renderMetrics() {
+    const coverageNote = document.getElementById('investment-source-note');
+    if (coverageNote) {
+        const pending = dashboard.source_coverage?.unmapped_positions || [];
+        coverageNote.hidden = !pending.length;
+        const brl = pending.filter(position => position.currency === 'BRL')
+            .reduce((sum, position) => sum + Number(position.value), 0);
+        coverageNote.textContent = pending.length
+            ? `Patrimônio incompleto: ${pending.length} posição(ões) ativa(s) recebida(s) da Pluggy ainda sem vínculo${brl > 0 ? `, somando ${money.format(brl)} em BRL` : ''}. Esses valores não estão incluídos no total nem no gráfico. Confira em Conciliar movimentações; reinvestimentos pendentes podem aparecer como queda.`
+            : '';
+    }
     const totals = dashboard.totals;
     document.getElementById('investment-total').textContent = money.format(Number(totals.total));
     const result = Number(totals.net_income);
@@ -556,7 +567,7 @@ async function syncPluggy() {
         if (!response.ok) throw new Error(result.detail || 'Não foi possível sincronizar.');
         store.invalidate();
         await refresh(true);
-        message(`${result.checked} posições conferidas; ${result.updated} atualizadas; ${result.pending} pendentes de vínculo. ${result.history_job_id ? 'As movimentações estão sendo processadas em segundo plano. ' : ''}Referência da conexão: ${result.source_updated_at ? new Date(result.source_updated_at).toLocaleString('pt-BR') : 'não informada'}.`);
+        message(`${result.checked} posições conferidas; ${result.updated} atualizadas; ${result.pending} pendentes de vínculo. ${result.valuation_policy === 'institution' ? 'As avaliações independentes foram preservadas. ' : ''}${result.history_job_id ? 'As movimentações estão sendo processadas em segundo plano. ' : ''}Referência da conexão: ${result.source_updated_at ? new Date(result.source_updated_at).toLocaleString('pt-BR') : 'não informada'}.`);
     } catch (error) {
         message(`${error.message} Os valores exibidos são da última atualização.`, true);
     } finally { button.disabled = false; }
