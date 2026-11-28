@@ -26,7 +26,7 @@ def test_websocket_connect_rejects_an_authenticated_user_without_mfa(mocker):
     consumer.close.assert_awaited_once_with(code=4401)
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_websocket_session_policy_rechecks_the_current_database_identity():
     user = User.objects.create(username='ws-policy', email='ws-policy@test.invalid')
     consumer = UpdateConsumer()

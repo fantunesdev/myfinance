@@ -224,7 +224,7 @@ def test_corrected_bill_due_date_marks_confirmed_occurrences_for_review(card_sou
         {'status': 'UNKNOWN'},
         {'payment_type': 'INSTALLMENT', 'number': 0},
         {'payment_type': 'INSTALLMENT', 'total': 121},
-        {'payment_type': 'INSTALLMENT', 'number': 2.0},
+        {'payment_type': 'INSTALLMENT', 'number': 2.5},
     ],
 )
 def test_card_confirmation_rejects_incomplete_financial_facts(card_source, changes):
