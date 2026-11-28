@@ -1,5 +1,6 @@
 import * as stackedAreaChart from '../layout/elements/staked-area-chart.js';
 import * as doughnutChart from '../layout/elements/doughnut-chart.js';
+import { investmentChartCategories, progressionWithInvestmentColors, investmentRedGradient } from '../layout/elements/investment-chart-colors.js';
 import { createInvestmentStore, stateFromUrl, stateUrl, DEFAULT_STATE } from '../data/investments-store.js';
 
 const config = JSON.parse(document.getElementById('investment-dashboard-config').textContent);
@@ -67,7 +68,7 @@ function drawProgressionChart() {
     if (chartToggle) chartToggle.hidden = false;
     setChartToggleMode('progression');
 
-    const investedDatasets = datasets;
+    const investedDatasets = progressionWithInvestmentColors(datasets);
     if (!investedDatasets.length || !investedDatasets[0].names.length) return;
 
     const note = document.getElementById('investment-chart-note');
@@ -157,12 +158,7 @@ function getAllocationData() {
     const allocation = { selected_type: state.assetType, positions: dashboard.positions.filter(position =>
         ['fixed_income', 'variable_income', 'crypto', 'international'].includes(position.asset_type) && Number(position.value) > 0
     ) };
-    const types = [
-        { code: 'fixed_income', label: 'Renda fixa', color: 'rgba(139, 0, 0, 1)' },
-        { code: 'variable_income', label: 'Renda variável', color: 'rgba(190, 0, 0, 1)' },
-        { code: 'crypto', label: 'Cripto', color: 'rgba(165, 0, 0, 1)' },
-        { code: 'international', label: 'Exterior', color: 'rgba(210, 0, 0, 1)' },
-    ];
+    const types = investmentChartCategories.filter(type => ['fixed_income', 'variable_income', 'crypto', 'international'].includes(type.code));
     const selectedType = types.find(type => type.code === allocation.selected_type);
     const positions = allocation.positions || [];
     const entries = selectedType
@@ -175,7 +171,7 @@ function getAllocationData() {
     const labels = entries.map(entry => entry.label);
     const values = entries.map(entry => Math.max(0, Number(entry.value) || 0));
     const colors = selectedType
-        ? entries.map((entry, index) => `rgba(${Math.round(110 + 80 * index / Math.max(entries.length - 1, 1))}, 0, 0, 1)`)
+        ? entries.map((entry, index) => investmentRedGradient(index, entries.length))
         : types.map(type => type.color);
     const total = values.reduce((sum, value) => sum + value, 0);
     return { types, selectedType, entries, labels, values, colors, total };

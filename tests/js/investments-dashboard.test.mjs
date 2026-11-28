@@ -6,6 +6,8 @@ import vm from 'node:vm';
 const source = await readFile(new URL('../../statement/static/js/pages/investments-dashboard.js', import.meta.url), 'utf8');
 const storeSource = await readFile(new URL('../../statement/static/js/data/investments-store.js', import.meta.url), 'utf8');
 const storeModule = await import(`data:text/javascript,${encodeURIComponent(storeSource)}`);
+const paletteSource = await readFile(new URL('../../statement/static/js/layout/elements/investment-chart-colors.js', import.meta.url), 'utf8');
+const paletteModule = await import(`data:text/javascript,${encodeURIComponent(paletteSource)}`);
 const tick = () => new Promise(resolve => setImmediate(resolve));
 class Element {
     constructor(tag = 'div') { this.tagName = tag.toUpperCase(); this.dataset = {}; this.children = []; this.events = {}; this.style = {}; this.attributes = {}; this.classes = new Set(); this.classList = { toggle: (name, value) => value ? this.classes.add(name) : this.classes.delete(name) }; }
@@ -48,11 +50,11 @@ function browser(storage = new Map(), transform = data => data) {
     const syncRequests = [];
     const context = vm.createContext({ window, document, Chart, URL, Intl, console, clearTimeout, setTimeout,
         fetch: async (url, options) => { syncRequests.push({ url, options }); return { status, ok: status === 200, headers: { get: () => 'application/json' }, json: async () => ({ checked: 40, updated: 1, pending: 0, source_updated_at: '2026-11-11T14:00:00Z' }) }; },
-        ...storeModule,
+        ...storeModule, ...paletteModule,
         createInvestmentStore: options => storeModule.createInvestmentStore({ ...options, fetcher }),
         stackedAreaChart: { drawStackedAreaChart: data => new Chart(get('line-chart').getContext(), { type: 'line', data: { datasets: data } }) },
         doughnutChart: { drawDoughnutChart: (data, label, ignored, options) => {
-            const chart = new Chart(get(options.canvasId).getContext(), { type: 'doughnut' });
+            const chart = new Chart(get(options.canvasId).getContext(), { type: 'doughnut', data });
             chart.select = options.onSliceClick; return chart;
         } },
     });
@@ -248,4 +250,22 @@ test('unmapped source positions are visible without increasing the displayed pat
     assert.match(asMoney(note.textContent), /2 posição.*R\$ 5.638,21/);
     assert.match(note.textContent, /não estão incluídos no total nem no gráfico/);
     assert.equal(asMoney(page.get('investment-total').textContent), 'R$ 2.000,00');
+});
+
+
+test('patrimony and allocation share one ordered red palette, including cached source colors', async () => {
+    const categories = paletteModule.investmentChartCategories;
+    const page = browser(new Map(), data => ({ ...data, progression_datasets: [...categories].reverse().map(type => ({
+        label: type.label, color: 'rgba(0, 0, 255, 1)', names: ['01/01/2026'], values: [100],
+    })) }));
+    await tick();
+    const progression = page.window.investmentChart.config.data.datasets;
+    assert.deepEqual(Array.from(progression, ds => ds.label), categories.map(type => type.label));
+    assert.deepEqual(Array.from(progression, ds => ds.color), categories.map(type => type.color));
+    const allocation = page.window.investmentAllocationChart.config.data;
+    allocation.names.forEach((label, index) => {
+        assert.equal(allocation.colors[index], progression.find(ds => ds.label === label).color);
+    });
+    const brightness = categories.map(type => type.color.match(/\d+/g).slice(0, 3).map(Number).reduce((sum, channel) => sum + channel, 0));
+    assert.deepEqual(brightness, [...brightness].sort((a, b) => a - b));
 });
